@@ -8,6 +8,7 @@ type Framework = "hermes" | "openclaw";
 type Tier = "starter" | "pro";
 type HostingPlan = "basic" | "pro";
 type SupportPlan = "none" | "semester" | "annual";
+type Onboarding = "standard" | "whiteglove";
 
 export interface ConfigSummary {
   impl: string;
@@ -19,6 +20,8 @@ export interface ConfigSummary {
   support: string;
   supportPrice: string;
   maxIntegrations: number;
+  onboarding: string;
+  onboardingFee: number;
 }
 
 interface ConfigState {
@@ -26,6 +29,7 @@ interface ConfigState {
   tier: Tier | null;
   hosting: HostingPlan | null;
   support: SupportPlan | null;
+  onboarding: Onboarding | null;
 }
 
 export const INTEGRATIONS: Record<string, string[]> = {
@@ -83,7 +87,7 @@ const HOSTING_PRICES: Record<HostingPlan, number> = { basic: 89, pro: 159 };
 export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSummary) => void } = {}) {
   const [annual, setAnnual] = useState(false);
   const [config, setConfig] = useState<ConfigState>({
-    framework: null, tier: null, hosting: null, support: null,
+    framework: null, tier: null, hosting: null, support: null, onboarding: null,
   });
 
   const selectTier = useCallback((framework: Framework, tier: Tier) => {
@@ -94,11 +98,12 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
     setConfig((prev) => ({ ...prev, hosting: plan }));
   }, []);
 
-  const isComplete = config.framework && config.tier && config.hosting && config.support;
+  const isComplete = config.framework && config.tier && config.hosting && config.support && config.onboarding;
 
   const handleCTA = () => {
+    const wg = config.onboarding === "whiteglove";
     const summary: ConfigSummary = {
-      impl: config.framework === "hermes" ? "Hermes Standard" : "OpenClaw Advanced",
+      impl: config.framework === "hermes" ? "The Undergraduate" : config.tier === "starter" ? "The Graduate" : "The Scholar",
       tier: config.tier ?? "",
       setupFee: config.tier && config.framework ? TIER_PRICES[config.framework][config.tier] : 0,
       hosting: config.hosting === "basic" ? "Basic" : "Pro",
@@ -107,6 +112,8 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
       support: SUPPORT_PLANS.find(p => p.id === config.support)?.label ?? "None",
       supportPrice: SUPPORT_PLANS.find(p => p.id === config.support)?.price ?? "Free",
       maxIntegrations: config.tier ? TIER_MAX_INT[config.tier] : 0,
+      onboarding: wg ? "White Glove" : "Standard",
+      onboardingFee: wg ? 650 : 0,
     };
     if (onComplete) { onComplete(summary); return; }
     window.open(CALENDLY, "_blank");
@@ -119,9 +126,9 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
 
   const implLabel =
     config.framework && config.tier
-      ? `${config.framework === "hermes" ? "Hermes Standard" : "OpenClaw Advanced"} — ${
-          config.tier.charAt(0).toUpperCase() + config.tier.slice(1)
-        }`
+      ? config.framework === "hermes"
+        ? "The Undergraduate"
+        : config.tier === "starter" ? "The Graduate" : "The Scholar"
       : null;
 
   return (
@@ -148,15 +155,15 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
                 [
                   {
                     id: "hermes" as Framework,
-                    badge: "Hermes",
-                    name: "The Starter",
-                    desc: "Pre-configured student agent. Fast setup, battle-tested workflows, ready to go in 72 hours.",
+                    badge: "Most Popular",
+                    name: "The Undergraduate",
+                    desc: "Pre-configured student agent. Battle-tested workflows, fast setup, ready within 24–48 hours of your onboarding form.",
                   },
                   {
                     id: "openclaw" as Framework,
-                    badge: "OpenClaw",
-                    name: "The Scholar",
-                    desc: "Deeper configuration, expanded skill set, and more flexibility in how your agent thinks and responds.",
+                    badge: "Advanced",
+                    name: "The Graduate / The Scholar",
+                    desc: "Deeper configuration, expanded skill set, and more personalization. Ready within 7 days.",
                   },
                 ] as const
               ).map((card) => (
@@ -305,10 +312,54 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
             </div>
           </div>
 
-          {/* STEP 4 */}
+          {/* STEP 4 — Onboarding */}
           <div className="config-step">
             <div className="step-header">
               <div className="step-num">4</div>
+              <span className="step-title">Choose Your Onboarding Experience</span>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {([
+                {
+                  id: "standard" as Onboarding,
+                  label: "Standard Onboarding",
+                  price: "Included",
+                  priceColor: "#27ae60",
+                  time: "Agent ready in 24–48 hrs (Undergraduate) or 7 days (Graduate/Scholar)",
+                  desc: "Complete your onboarding form after checkout. We build your agent and you're live fast.",
+                },
+                {
+                  id: "whiteglove" as Onboarding,
+                  label: "White Glove Onboarding",
+                  price: "+$650",
+                  priceColor: "var(--green)",
+                  time: "Agent ready in 14 days",
+                  desc: "A dedicated 60-minute deep-dive call with your builder. Advanced skills, custom workflows, and deep personalization — we learn how you think before we build.",
+                },
+              ] as const).map((opt) => (
+                <div
+                  key={opt.id}
+                  className={`support-option ${config.onboarding === opt.id ? "selected" : ""}`}
+                  onClick={() => setConfig(prev => ({ ...prev, onboarding: opt.id }))}
+                >
+                  <div className="tier-radio" />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "var(--navy)" }}>{opt.label}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: opt.priceColor, fontFamily: "var(--font-mono)" }}>{opt.price}</span>
+                    </div>
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--green)", fontWeight: 600, marginBottom: 4 }}>{opt.time}</div>
+                    <div style={{ fontSize: 12, color: "rgba(11,23,41,.55)", lineHeight: 1.5 }}>{opt.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* STEP 5 */}
+          <div className="config-step">
+            <div className="step-header">
+              <div className="step-num">5</div>
               <span className="step-title">What&apos;s Always Included</span>
             </div>
             <div className="included-list">
@@ -322,7 +373,7 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
                 "Google Workspace or Office 365 (appropriate access required)",
                 "Cloud hosted, access from any device",
                 "30-day hands-on co-training period included",
-                "72-hour deployment from signed agreement to live agent",
+                "Agent ready in 24–48 hrs (Undergraduate) or 7 days (Graduate/Scholar)",
                 "Support plan options available after co-training",
               ].map((item) => (
                 <div key={item} className="included-item">
@@ -339,7 +390,8 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
           <div className="progress-dots">
             <div className={`dot ${config.tier ? "done" : ""}`} />
             <div className={`dot ${config.hosting ? "done" : ""}`} />
-            <div className={`dot ${isComplete ? "done" : ""}`} />
+            <div className={`dot ${config.support ? "done" : ""}`} />
+            <div className={`dot ${config.onboarding ? "done" : ""}`} />
           </div>
           <div className="order-title">Order Summary</div>
 
@@ -378,14 +430,20 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
             </div>
           </div>
           <div className="order-row">
-            <div className="order-label">30-Day Co-Training</div>
-            <div className="order-value" style={{ color: "#27ae60" }}>
-              Included
+            <div className="order-label">Onboarding</div>
+            <div className={`order-value ${config.onboarding ? "" : "placeholder"}`}>
+              {config.onboarding === "whiteglove" ? "White Glove (+$650)" : config.onboarding === "standard" ? "Standard (Included)" : "Not selected"}
             </div>
           </div>
           <div className="order-row">
-            <div className="order-label">Deployment Time</div>
-            <div className="order-value">72 hours</div>
+            <div className="order-label">30-Day Co-Training</div>
+            <div className="order-value" style={{ color: "#27ae60" }}>Included</div>
+          </div>
+          <div className="order-row">
+            <div className="order-label">Agent Ready</div>
+            <div className="order-value">
+              {config.onboarding === "whiteglove" ? "14 days" : config.framework === "hermes" ? "24–48 hrs" : config.framework === "openclaw" ? "7 days" : "--"}
+            </div>
           </div>
 
           <hr className="order-divider" />
