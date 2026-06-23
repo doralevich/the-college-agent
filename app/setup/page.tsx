@@ -3,27 +3,28 @@ import { useState } from "react";
 import Nav from "../components/Nav";
 
 interface CredForm {
+  aiProvider: "anthropic" | "openai" | "";
   anthropicKey: string;
   openaiKey: string;
   telegramToken: string;
   telegramUsername: string;
 }
 
-type OpenSection = string | null;
-
 export default function SetupPage() {
   const [form, setForm] = useState<CredForm>({
-    anthropicKey: "", openaiKey: "", telegramToken: "", telegramUsername: "",
+    aiProvider: "", anthropicKey: "", openaiKey: "",
+    telegramToken: "", telegramUsername: "",
   });
-  const [open, setOpen] = useState<OpenSection>(null);
+  const [openSection, setOpenSection] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const set = (k: keyof CredForm, v: string) => setForm(f => ({ ...f, [k]: v }));
-  const toggle = (key: string) => setOpen(o => o === key ? null : key);
+  const toggle = (key: string) => setOpenSection(o => o === key ? null : key);
 
-  const isComplete = form.anthropicKey && form.openaiKey && form.telegramToken && form.telegramUsername;
+  const apiKeyFilled = form.aiProvider === "anthropic" ? !!form.anthropicKey : form.aiProvider === "openai" ? !!form.openaiKey : false;
+  const isComplete = form.aiProvider && apiKeyFilled && form.telegramToken && form.telegramUsername;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -69,118 +70,111 @@ export default function SetupPage() {
     <>
       <Nav />
       <main style={{ paddingTop: 100, minHeight: "100vh", background: "var(--cream2)" }}>
-        {/* Header */}
         <div className="dark-section" style={{ padding: "52px 24px" }}>
           <div style={{ maxWidth: 660, margin: "0 auto" }}>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: "rgba(255,255,255,.4)" }}>
-              Technical Setup
-            </span>
-            <h1 style={{ fontSize: 30, fontWeight: 800, color: "#fff", marginTop: 10, marginBottom: 10 }}>
-              Your API Credentials
-            </h1>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: "rgba(255,255,255,.4)" }}>Technical Setup</span>
+            <h1 style={{ fontSize: 30, fontWeight: 800, color: "#fff", marginTop: 10, marginBottom: 10 }}>Your API Credentials</h1>
             <p style={{ fontSize: 15, color: "rgba(255,255,255,.55)", lineHeight: 1.7 }}>
-              These keys connect your AI agent to the services it needs. Each section below walks you through exactly where to find them.
+              These keys connect your AI agent to the services it needs. Each section walks you through exactly where to find them.
             </p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} style={{ maxWidth: 660, margin: "0 auto", padding: "40px 24px 80px" }}>
 
-          {/* 01 — Anthropic */}
-          <CredBlock
-            num="01"
-            label="Anthropic API Key"
-            required
-            isOpen={open === "anthropic"}
-            onToggle={() => toggle("anthropic")}
-            instructions={
+          {/* 01 — AI Provider choice */}
+          <CredBlock num="01" label="AI Provider">
+            <p style={{ fontSize: 14, color: "rgba(11,23,41,.55)", marginBottom: 20, lineHeight: 1.6 }}>
+              Your agent runs on one AI provider. Select which one you have an account with — or which one you&apos;d like to use.
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 24 }}>
+              {[
+                { id: "anthropic", name: "Anthropic", desc: "Claude models. console.anthropic.com" },
+                { id: "openai", name: "OpenAI", desc: "GPT models. platform.openai.com" },
+              ].map(opt => (
+                <label
+                  key={opt.id}
+                  style={{
+                    display: "flex", alignItems: "flex-start", gap: 12, padding: "16px 18px",
+                    border: `2px solid ${form.aiProvider === opt.id ? "var(--green)" : "rgba(11,23,41,.12)"}`,
+                    borderRadius: 8, cursor: "pointer", background: form.aiProvider === opt.id ? "rgba(61,139,61,.04)" : "#fff",
+                    transition: "all .15s",
+                  }}
+                >
+                  <input
+                    type="radio" name="aiProvider" value={opt.id}
+                    checked={form.aiProvider === opt.id}
+                    onChange={() => set("aiProvider", opt.id)}
+                    style={{ marginTop: 3, accentColor: "var(--green)", width: 16, height: 16, flexShrink: 0 }}
+                  />
+                  <div>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: "var(--navy)", marginBottom: 2 }}>{opt.name}</p>
+                    <p style={{ fontSize: 12, color: "rgba(11,23,41,.45)", fontFamily: "var(--font-mono)" }}>{opt.desc}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+
+            {/* Anthropic instructions + field */}
+            {form.aiProvider === "anthropic" && (
               <>
-                <p>Go to <strong>console.anthropic.com</strong> and sign in (or create an account).</p>
-                <p>Click your name in the top right → <strong>API Keys</strong>.</p>
-                <p>Click <strong>Create Key</strong>, give it a name (e.g. <Code>My AI Assistant</Code>), and copy the key immediately — it won&apos;t be shown again.</p>
-                <p>The key starts with <Code>sk-ant-api03-...</Code> — paste it below.</p>
-                <p>You&apos;ll need to add a payment method and purchase credits. We recommend starting with $20–$50.</p>
+                <Instructions
+                  label="How to get your Anthropic API key"
+                  isOpen={openSection === "anthropic"}
+                  onToggle={() => toggle("anthropic")}
+                >
+                  <Step>Go to <strong>console.anthropic.com</strong> and sign in (or create an account).</Step>
+                  <Step>Click your name in the top right → <strong>API Keys</strong>.</Step>
+                  <Step>Click <strong>Create Key</strong>, give it a name (e.g. <Code>My Agent</Code>), and copy the key immediately — it won&apos;t be shown again.</Step>
+                  <Step>The key starts with <Code>sk-ant-api03-...</Code> — paste it below.</Step>
+                  <Step>Add a payment method and purchase credits. We recommend starting with $20–$50.</Step>
+                </Instructions>
+                <CredField label="Anthropic API Key" hint="Starts with sk-ant-..." required>
+                  <input type="password" placeholder="sk-ant-api03-..." value={form.anthropicKey} onChange={e => set("anthropicKey", e.target.value)} required autoComplete="off" />
+                </CredField>
               </>
-            }
-          >
-            <CredField label="Anthropic API Key" hint="Starts with sk-ant-..." required>
-              <input
-                type="password"
-                placeholder="sk-ant-api03-..."
-                value={form.anthropicKey}
-                onChange={e => set("anthropicKey", e.target.value)}
-                required
-                autoComplete="off"
-              />
-            </CredField>
+            )}
+
+            {/* OpenAI instructions + field */}
+            {form.aiProvider === "openai" && (
+              <>
+                <Instructions
+                  label="How to get your OpenAI API key"
+                  isOpen={openSection === "openai"}
+                  onToggle={() => toggle("openai")}
+                >
+                  <Step>Go to <strong>platform.openai.com</strong> and sign in (or create an account).</Step>
+                  <Step>Click your profile in the top right → <strong>API Keys</strong>.</Step>
+                  <Step>Click <strong>Create new secret key</strong>, give it a name (e.g. <Code>My Agent</Code>), and copy it immediately — it won&apos;t be shown again.</Step>
+                  <Step>The key starts with <Code>sk-proj-...</Code> — paste it below.</Step>
+                  <Step>Add a payment method. We recommend starting with $10–$20 in credits.</Step>
+                </Instructions>
+                <CredField label="OpenAI API Key" hint="Starts with sk-proj-..." required>
+                  <input type="password" placeholder="sk-proj-..." value={form.openaiKey} onChange={e => set("openaiKey", e.target.value)} required autoComplete="off" />
+                </CredField>
+              </>
+            )}
           </CredBlock>
 
-          {/* 02 — OpenAI */}
-          <CredBlock
-            num="02"
-            label="OpenAI API Key"
-            required
-            isOpen={open === "openai"}
-            onToggle={() => toggle("openai")}
-            instructions={
-              <>
-                <p>Go to <strong>platform.openai.com</strong> and sign in (or create an account).</p>
-                <p>Click your name in the top right → <strong>API Keys</strong>.</p>
-                <p>Click <strong>Create new secret key</strong>, give it a name (e.g. <Code>My Agent</Code>), and copy it immediately — it won&apos;t be shown again.</p>
-                <p>The key starts with <Code>sk-proj-...</Code> or <Code>sk-...</Code> — paste it below.</p>
-                <p>You&apos;ll need to add a payment method. We recommend starting with $10–$20 in credits.</p>
-              </>
-            }
-          >
-            <CredField label="OpenAI API Key" hint="Starts with sk-proj-... or sk-..." required>
-              <input
-                type="password"
-                placeholder="sk-proj-..."
-                value={form.openaiKey}
-                onChange={e => set("openaiKey", e.target.value)}
-                required
-                autoComplete="off"
-              />
-            </CredField>
-          </CredBlock>
-
-          {/* 03 — Telegram */}
-          <CredBlock
-            num="03"
-            label="Telegram Bot"
-            required
-            isOpen={open === "telegram"}
-            onToggle={() => toggle("telegram")}
-            instructions={
-              <>
-                <p>Open Telegram and search for <strong>@BotFather</strong> — the official blue-check bot.</p>
-                <p>Start a chat and send the command <Code>/newbot</Code>.</p>
-                <p>BotFather asks for a <strong>display name</strong> (e.g. <Code>Nova Assistant</Code>) — this is what you see.</p>
-                <p>Then it asks for a <strong>username</strong> — must end in <Code>bot</Code> (e.g. <Code>NovaAssistant_bot</Code>).</p>
-                <p>BotFather gives you a <strong>Token</strong> — a long string like <Code>123456789:ABCdef...</Code> — copy it.</p>
-                <p>Paste both the Token and the Username (@) into the fields below.</p>
-              </>
-            }
-          >
+          {/* 02 — Telegram */}
+          <CredBlock num="02" label="Telegram Bot">
+            <Instructions
+              label="How to create your Telegram bot"
+              isOpen={openSection === "telegram"}
+              onToggle={() => toggle("telegram")}
+            >
+              <Step>Open Telegram and search for <strong>@BotFather</strong> — the official blue-check bot.</Step>
+              <Step>Start a chat and send the command <Code>/newbot</Code>.</Step>
+              <Step>BotFather asks for a <strong>display name</strong> (e.g. <Code>Nova Assistant</Code>) — this is what you see.</Step>
+              <Step>Then it asks for a <strong>username</strong> — must end in <Code>bot</Code> (e.g. <Code>NovaAssistant_bot</Code>).</Step>
+              <Step>BotFather gives you a <strong>Token</strong> — a long string like <Code>123456789:ABCdef...</Code> — copy it.</Step>
+              <Step>Paste both the Token and the Username below.</Step>
+            </Instructions>
             <CredField label="Telegram Bot Token" hint="Format: 123456789:ABCdef..." required>
-              <input
-                type="password"
-                placeholder="123456789:ABCdef..."
-                value={form.telegramToken}
-                onChange={e => set("telegramToken", e.target.value)}
-                required
-                autoComplete="off"
-              />
+              <input type="password" placeholder="123456789:ABCdef..." value={form.telegramToken} onChange={e => set("telegramToken", e.target.value)} required autoComplete="off" />
             </CredField>
             <CredField label="Telegram Bot Username" hint="Starts with @ and ends in bot (e.g. @NovaAssistant_bot)" required>
-              <input
-                type="text"
-                placeholder="@YourBotName_bot"
-                value={form.telegramUsername}
-                onChange={e => set("telegramUsername", e.target.value)}
-                required
-                autoComplete="off"
-              />
+              <input type="text" placeholder="@YourBotName_bot" value={form.telegramUsername} onChange={e => set("telegramUsername", e.target.value)} required autoComplete="off" />
             </CredField>
           </CredBlock>
 
@@ -194,12 +188,7 @@ export default function SetupPage() {
 
           {error && <p style={{ color: "var(--red)", fontSize: 13, marginBottom: 16 }}>{error}</p>}
 
-          <button
-            type="submit"
-            className="btn-purple"
-            style={{ width: "100%", fontSize: 14, padding: "16px" }}
-            disabled={!isComplete || loading}
-          >
+          <button type="submit" className="btn-purple" style={{ width: "100%", fontSize: 14, padding: "16px" }} disabled={!isComplete || loading}>
             {loading ? "Submitting..." : "Complete My Setup →"}
           </button>
         </form>
@@ -208,71 +197,55 @@ export default function SetupPage() {
       <style>{`
         input[type="text"], input[type="password"], input[type="email"] {
           width: 100%; padding: 12px 14px;
-          border: 1.5px solid rgba(11,23,41,.12);
-          border-radius: 6px; font-size: 14px;
-          font-family: var(--font-mono); color: var(--navy);
-          background: #fff; outline: none;
-          transition: border-color .15s;
+          border: 1.5px solid rgba(11,23,41,.12); border-radius: 6px;
+          font-size: 14px; font-family: var(--font-mono); color: var(--navy);
+          background: #fff; outline: none; transition: border-color .15s;
         }
         input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(61,139,61,.08); }
-        input::placeholder { color: rgba(11,23,41,.3); font-family: var(--font-mono); }
+        input::placeholder { color: rgba(11,23,41,.3); }
         button:disabled { opacity: .5; cursor: not-allowed; }
       `}</style>
     </>
   );
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-function CredBlock({ num, label, required, isOpen, onToggle, instructions, children }: {
-  num: string; label: string; required?: boolean;
-  isOpen: boolean; onToggle: () => void;
-  instructions: React.ReactNode; children: React.ReactNode;
-}) {
+function CredBlock({ num, label, children }: { num: string; label: string; children: React.ReactNode }) {
   return (
-    <div style={{ background: "#fff", border: "1px solid rgba(11,23,41,.08)", borderRadius: 12, marginBottom: 16, overflow: "hidden" }}>
-      <div style={{ padding: "24px 28px 0" }}>
-        <p style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--green)", marginBottom: 6 }}>
-          {num} — {label}{required && <span style={{ color: "rgba(11,23,41,.3)", marginLeft: 6 }}>Required</span>}
-        </p>
-      </div>
-
-      {/* Expandable instructions */}
-      <div style={{ margin: "12px 28px 0", borderRadius: 8, border: "1px solid rgba(11,23,41,.08)", overflow: "hidden" }}>
-        <button
-          type="button"
-          onClick={onToggle}
-          style={{
-            width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
-            padding: "12px 16px", background: "rgba(11,23,41,.02)", border: "none",
-            cursor: "pointer", fontFamily: "inherit",
-          }}
-        >
-          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--navy)", display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ color: "rgba(11,23,41,.4)" }}>{isOpen ? "▼" : "▶"}</span>
-            How to get your {label}
-          </span>
-          <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: ".08em", color: "var(--green)", textTransform: "uppercase" }}>
-            {isOpen ? "Hide" : "Show"}
-          </span>
-        </button>
-        {isOpen && (
-          <div style={{ padding: "16px 16px 20px", borderTop: "1px solid rgba(11,23,41,.06)", display: "flex", flexDirection: "column", gap: 10 }}>
-            {instructions}
-          </div>
-        )}
-      </div>
-
-      <div style={{ padding: "20px 28px 28px", display: "flex", flexDirection: "column", gap: 16 }}>
-        {children}
-      </div>
+    <div style={{ background: "#fff", border: "1px solid rgba(11,23,41,.08)", borderRadius: 12, marginBottom: 16, padding: "28px 28px 28px" }}>
+      <p style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--green)", marginBottom: 20 }}>
+        {num} — {label}
+      </p>
+      {children}
     </div>
   );
 }
 
+function Instructions({ label, isOpen, onToggle, children }: { label: string; isOpen: boolean; onToggle: () => void; children: React.ReactNode }) {
+  return (
+    <div style={{ borderRadius: 8, border: "1px solid rgba(11,23,41,.08)", overflow: "hidden", marginBottom: 20 }}>
+      <button type="button" onClick={onToggle} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", background: "rgba(11,23,41,.02)", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--navy)", display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ color: "rgba(11,23,41,.4)" }}>{isOpen ? "▼" : "▶"}</span>
+          {label}
+        </span>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: ".08em", color: "var(--green)", textTransform: "uppercase" }}>{isOpen ? "Hide" : "Show"}</span>
+      </button>
+      {isOpen && (
+        <div style={{ padding: "16px 16px 20px", borderTop: "1px solid rgba(11,23,41,.06)", display: "flex", flexDirection: "column", gap: 8 }}>
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Step({ children }: { children: React.ReactNode }) {
+  return <p style={{ fontSize: 13, color: "rgba(11,23,41,.65)", lineHeight: 1.65 }}>{children}</p>;
+}
+
 function CredField({ label, hint, required, children }: { label: string; hint?: string; required?: boolean; children: React.ReactNode }) {
   return (
-    <div>
+    <div style={{ marginBottom: 16 }}>
       <label style={{ display: "block", fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "rgba(11,23,41,.5)", marginBottom: 4 }}>
         {label}{required && <span style={{ color: "var(--green)", marginLeft: 3 }}>*</span>}
       </label>
@@ -283,9 +256,5 @@ function CredField({ label, hint, required, children }: { label: string; hint?: 
 }
 
 function Code({ children }: { children: React.ReactNode }) {
-  return (
-    <code style={{ background: "rgba(11,23,41,.06)", padding: "2px 6px", borderRadius: 4, fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--navy)" }}>
-      {children}
-    </code>
-  );
+  return <code style={{ background: "rgba(11,23,41,.06)", padding: "2px 6px", borderRadius: 4, fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--navy)" }}>{children}</code>;
 }
