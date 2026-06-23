@@ -83,7 +83,7 @@ export default function Explainer() {
             Every other AI personal agent is shared, generic, and forgets the moment the tab closes. The College Agent has a name. Knows their voice, their schedule, their goals. Tracks what&apos;s coming, drafts what needs to be sent, and gets smarter every week.
           </p>
           <p style={{ fontSize: 13, fontFamily: "var(--font-mono)", color: "rgba(11,23,41,.35)", marginTop: 20, letterSpacing: ".04em" }}>
-            Built in 72 hours. Trained over 30 days. Running for four years.
+            Live in as little as 24 hours. Trained over 30 days. Running for four years.
           </p>
         </div>
       </section>
