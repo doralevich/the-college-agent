@@ -96,7 +96,7 @@ export default function Home() {
             Apollo[Claw] College Edition
           </div>
           <h1 className="hero-h1">
-            <em style={{ fontStyle: "normal", color: "var(--green)" }}>The edge that lasts four years.</em>
+            <em style={{ fontStyle: "normal", color: "#fff", whiteSpace: "nowrap" }}>The edge that lasts four years.</em>
           </h1>
           <p className="hero-sub">
             Your own AI personal agent. Named. Trained on your voice. Knows your schedule, your classes, your
@@ -196,48 +196,16 @@ export default function Home() {
       {/* INTEGRATION MENU */}
       <section id="integrations" style={{ background: "var(--cream2)", padding: "90px 0" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
-          <div style={{ textAlign: "center", marginBottom: 56 }}>
+          <div style={{ textAlign: "center" }}>
             <span className="mono-label">Integrations</span>
-            <h2 className="section-title">Works with the tools<br />students already use</h2>
-            <p className="section-sub" style={{ maxWidth: 560, margin: "16px auto 0" }}>
-              {Object.values(INTEGRATIONS).flat().length}+ integrations across academics, career, wellness, and social life. Your agent connects to the tools already in your life — not the other way around.
+            <h2 className="section-title">Integrates with the tools<br />you already use</h2>
+            <p className="section-sub" style={{ maxWidth: 600, margin: "16px auto 40px" }}>
+              Hundreds of integrations across academics, careers, wellness, and social life.
             </p>
-          </div>
-          <div className="int-menu-grid">
-            {Object.entries(INTEGRATIONS).map(([cat, items]) => (
-              <div key={cat} style={{
-                background: "#fff", borderRadius: 12, padding: "28px 28px 24px",
-                border: "1px solid rgba(11,23,41,.07)",
-                boxShadow: "0 2px 12px rgba(11,23,41,.04)",
-              }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
-                  <h3 style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".12em", color: "var(--green)" }}>
-                    {cat}
-                  </h3>
-                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "rgba(11,23,41,.3)", letterSpacing: ".04em" }}>
-                    {items.length} apps
-                  </span>
-                </div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {items.map((item) => (
-                    <span key={item} style={{
-                      fontSize: 12, fontWeight: 500, color: "rgba(11,23,41,.7)",
-                      background: "var(--cream2)", border: "1px solid rgba(11,23,41,.09)",
-                      borderRadius: 6, padding: "5px 10px",
-                    }}>
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-          <p style={{ textAlign: "center", fontSize: 13, color: "rgba(11,23,41,.4)", marginTop: 36, fontFamily: "var(--font-mono)", letterSpacing: ".02em" }}>
-            Don&apos;t see what you need?{" "}
-            <a href={CALENDLY} target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)", fontWeight: 600 }}>
-              Custom integrations available on request.
+            <a href="/build" className="btn-purple" style={{ fontSize: 14, padding: "16px 44px" }}>
+              Build My Agent
             </a>
-          </p>
+          </div>
         </div>
       </section>
 

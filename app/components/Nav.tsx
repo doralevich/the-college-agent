@@ -27,7 +27,7 @@ export default function Nav() {
             <img
               src="/logo-college-agent.png"
               alt="The College [Agent]"
-              style={{ height: 48, width: "auto", display: "block" }}
+              style={{ height: 72, width: "auto", display: "block" }}
             />
           </a>
 
@@ -40,13 +40,9 @@ export default function Nav() {
 
           {/* Desktop CTA */}
           <div className="nav-cta-desktop">
-            <span className="nav-powered">
-              Powered by{" "}
-              <a href="https://apolloclaw.ai" target="_blank" rel="noopener noreferrer"
-                style={{ color: "rgba(11,23,41,.4)" }}>
-                Apollo[Claw]
-              </a>
-            </span>
+            <a href="https://www.apolloclaw.ai/login" className="nav-login-btn">
+              Log In
+            </a>
             <a href="/build" className="btn-purple" style={{ fontSize: 12, padding: "10px 22px" }}>
               Build My Agent
             </a>
@@ -76,12 +72,9 @@ export default function Nav() {
             <a href="/build" className="btn-purple nav-mobile-cta" onClick={() => setOpen(false)}>
               Build My Agent
             </a>
-            <p className="nav-mobile-powered">
-              Powered by{" "}
-              <a href="https://apolloclaw.ai" target="_blank" rel="noopener noreferrer">
-                Apollo[Claw]
-              </a>
-            </p>
+            <a href="https://www.apolloclaw.ai/login" className="nav-mobile-login" onClick={() => setOpen(false)}>
+              Log In
+            </a>
           </div>
         )}
       </nav>
@@ -99,10 +92,13 @@ export default function Nav() {
         .nav-cta-desktop {
           display: flex; align-items: center; gap: 20px;
         }
-        .nav-powered {
-          font-family: var(--font-mono); font-size: 10px;
-          color: rgba(11,23,41,.35); letter-spacing: .06em;
+        .nav-login-btn {
+          font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+          letter-spacing: .06em; color: rgba(11,23,41,.6);
+          border: 1.5px solid rgba(11,23,41,.2); border-radius: 4px;
+          padding: 8px 18px; transition: border-color .15s, color .15s;
         }
+        .nav-login-btn:hover { border-color: var(--green); color: var(--green); }
         .nav-hamburger {
           display: none; flex-direction: column; justify-content: center;
           gap: 5px; background: none; border: none; cursor: pointer;
@@ -139,7 +135,11 @@ export default function Nav() {
           color: rgba(11,23,41,.3); letter-spacing: .06em;
           text-align: center; margin-top: 12px;
         }
-        .nav-mobile-powered a { color: rgba(11,23,41,.4); }
+        .nav-mobile-login {
+          font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+          letter-spacing: .06em; color: rgba(11,23,41,.55);
+          text-align: center; margin-top: 8px; padding: 10px 0;
+        }
 
         @media (max-width: 768px) {
           .nav-links-desktop { display: none; }
