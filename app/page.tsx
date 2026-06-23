@@ -95,8 +95,8 @@ export default function Home() {
             <span style={{ color: "var(--green)", fontSize: 14 }}>&#9670;</span>
             Apollo[Claw] College Edition
           </div>
-          <h1 className="hero-h1">
-            <em style={{ fontStyle: "normal", color: "#fff", whiteSpace: "nowrap" }}>The edge that lasts four years.</em>
+          <h1 className="hero-h1" style={{ color: "#fff", whiteSpace: "nowrap" }}>
+            The edge that lasts four years.
           </h1>
           <p className="hero-sub">
             Your own AI personal agent. Named. Trained on your voice. Knows your schedule, your classes, your
@@ -107,7 +107,7 @@ export default function Home() {
             <a href="#how-it-works" className="btn-outline">See How It Works</a>
           </div>
           <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.3)", letterSpacing: ".04em" }}>
-            Built on Apollo[Claw] infrastructure. 72-hour deployment. 30-day co-training included.
+            Built on Apollo[Claw] infrastructure. Live in as little as 24 hours.
           </p>
         </div>
       </section>
@@ -164,32 +164,33 @@ export default function Home() {
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <span className="mono-label" style={{ color: "rgba(61,139,61,.7)" }}>The Process</span>
             <h2 className="section-title" style={{ color: "#fff" }}>
-              From Configure to Live in 72 Hours
+              Select &rarr; Configure &rarr; Live
             </h2>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", maxWidth: 700, margin: "0 auto" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px 48px", maxWidth: 1000, margin: "0 auto" }}>
             {[
-              { n: "1", phase: "Step 1", title: "Tell Us About Yourself", desc: "Fill out a quick profile — your school, year, AI comfort level, and the goals you want your agent to tackle. Takes under two minutes.", last: false },
-              { n: "2", phase: "Step 2", title: "Build Your Agent", desc: "Choose your agent tier (The Undergraduate, The Graduate, or The Scholar), your hosting plan, support level, and onboarding experience. Standard or White Glove — your call.", last: false },
-              { n: "3", phase: "Step 3", title: "Complete Your Onboarding Form", desc: "After checkout, you'll receive a personalized onboarding form. This is where your agent gets its identity — your communication style, your schedule, your tools, your goals. The more you share, the better it knows you.", last: false },
-              { n: "4", phase: "Step 4", title: "Your Agent Goes Live", desc: "The Undergraduate and Graduate agents are ready within 24–48 hours. The Scholar takes up to 7 days. White Glove onboarding adds a dedicated 60-minute build call and deep personalization — ready in 14 days.", last: false },
-              { n: "5", phase: "Step 5", title: "30 Days Side by Side", desc: "Your setup fee includes a full 30-day co-training period. We work alongside you and your agent — refining how it responds, adjusting integrations as your semester shifts, and making sure it sounds like you. By day 30, it knows your rhythm.", last: true },
+              { n: "1", phase: "Step 1", title: "Tell Us About Yourself", desc: "Fill out a quick profile — your school, year, AI comfort level, and the goals you want your agent to tackle. Takes under two minutes." },
+              { n: "2", phase: "Step 2", title: "Build Your Agent", desc: "Choose your agent tier (The Undergraduate, The Graduate, or The Scholar), your hosting plan, support level, and onboarding experience. Standard or White Glove — your call." },
+              { n: "3", phase: "Step 3", title: "Complete Your Onboarding Form", desc: "After checkout, you'll receive a personalized onboarding form. This is where your agent gets its identity — your communication style, your schedule, your tools, your goals." },
+              { n: "4", phase: "Step 4", title: "Your Agent Goes Live", desc: "The Undergraduate and Graduate agents are ready within 24–48 hours. The Scholar takes up to 7 days. White Glove onboarding adds a dedicated 60-minute build call — ready in 14 days." },
             ].map((step) => (
-              <div key={step.n} style={{ display: "flex", gap: 28 }}>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                  <div className="proc-circle">{step.n}</div>
-                  {!step.last && <div className="proc-line" />}
-                </div>
-                <div style={{ paddingBottom: step.last ? 0 : 44 }}>
+              <div key={step.n} style={{ display: "flex", gap: 20 }}>
+                <div className="proc-circle" style={{ flexShrink: 0 }}>{step.n}</div>
+                <div>
                   <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".1em", color: "rgba(61,139,61,.7)", marginBottom: 5 }}>
                     {step.phase}
                   </div>
-                  <h3 style={{ fontSize: 20, fontWeight: 800, color: "#fff", marginBottom: 8 }}>{step.title}</h3>
+                  <h3 style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8 }}>{step.title}</h3>
                   <p style={{ fontSize: 14, lineHeight: 1.75, color: "rgba(255,255,255,.55)" }}>{step.desc}</p>
                 </div>
               </div>
             ))}
           </div>
+          <style>{`
+            @media (max-width: 680px) {
+              #how-it-works .proc-grid { grid-template-columns: 1fr; }
+            }
+          `}</style>
         </div>
       </section>
 
