@@ -32,9 +32,9 @@ export default function SchoolMarquee() {
               <img
                 src={`/${school.file}`}
                 alt={school.name}
-                style={{ height: 52, width: "auto", maxWidth: 140, objectFit: "contain", filter: "grayscale(100%)", opacity: 0.55, transition: "opacity .2s, filter .2s" }}
-                onMouseEnter={e => { (e.target as HTMLImageElement).style.filter = "grayscale(0%)"; (e.target as HTMLImageElement).style.opacity = "1"; }}
-                onMouseLeave={e => { (e.target as HTMLImageElement).style.filter = "grayscale(100%)"; (e.target as HTMLImageElement).style.opacity = "0.55"; }}
+                style={{ height: 52, width: "auto", maxWidth: 140, objectFit: "contain", opacity: 0.85, transition: "opacity .2s" }}
+                onMouseEnter={e => { (e.target as HTMLImageElement).style.opacity = "1"; }}
+                onMouseLeave={e => { (e.target as HTMLImageElement).style.opacity = "0.85"; }}
               />
             </div>
           ))}
