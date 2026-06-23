@@ -3,12 +3,24 @@ import { useState } from "react";
 import Nav from "../components/Nav";
 
 const YEARS = ["Freshman (1st Year)", "Sophomore (2nd Year)", "Junior (3rd Year)", "Senior (4th Year)", "Graduate Student", "Other"];
-const SCHOOLS_LIST = [
+
+const SCHOOL_SUGGESTIONS = [
   "University of Michigan", "Northwestern University", "Indiana University",
   "Ohio State University", "University of Georgia", "University of Maryland",
   "Tulane University", "UNC Chapel Hill", "University of Miami",
   "University of Florida", "Washington University in St. Louis",
-  "Columbia University", "Syracuse University", "UCLA", "Other",
+  "Columbia University", "Syracuse University", "UCLA", "Harvard University",
+  "Yale University", "Princeton University", "Stanford University",
+  "University of Pennsylvania", "Duke University", "Georgetown University",
+  "New York University", "Boston University", "Northeastern University",
+  "University of Southern California", "University of Texas at Austin",
+  "University of Virginia", "University of Wisconsin-Madison",
+  "Penn State University", "Purdue University", "Michigan State University",
+  "University of Illinois Urbana-Champaign", "University of Minnesota",
+  "Arizona State University", "University of Arizona", "University of Colorado Boulder",
+  "Florida State University", "University of North Carolina", "Wake Forest University",
+  "Emory University", "Vanderbilt University", "Rice University",
+  "Carnegie Mellon University", "Georgia Tech", "University of Notre Dame",
 ];
 
 export default function OnboardPage() {
@@ -25,6 +37,7 @@ export default function OnboardPage() {
   const isComplete =
     form.firstName && form.lastName && form.schoolEmail &&
     form.phone && form.school && form.year && form.major;
+
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -119,17 +132,19 @@ export default function OnboardPage() {
               </Field>
 
               {/* School */}
-              <Field label="School" required style={{ marginBottom: form.school === "Other" ? 12 : 20 }}>
-                <select value={form.school} onChange={e => set("school", e.target.value)} required>
-                  <option value="">Select your school...</option>
-                  {SCHOOLS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
+              <Field label="School" required style={{ marginBottom: 20 }}>
+                <input
+                  type="text"
+                  list="school-suggestions"
+                  placeholder="Start typing your school name..."
+                  value={form.school}
+                  onChange={e => set("school", e.target.value)}
+                  required
+                />
+                <datalist id="school-suggestions">
+                  {SCHOOL_SUGGESTIONS.map(s => <option key={s} value={s} />)}
+                </datalist>
               </Field>
-              {form.school === "Other" && (
-                <Field label="School Name" required style={{ marginBottom: 20 }}>
-                  <input type="text" placeholder="Enter your school name" value={form.schoolOther} onChange={e => set("schoolOther", e.target.value)} required />
-                </Field>
-              )}
 
               {/* Year & Major */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
