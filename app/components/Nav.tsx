@@ -20,7 +20,7 @@ export default function Nav() {
       }}>
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          height: 72, maxWidth: 1160, margin: "0 auto", padding: "0 24px",
+          height: 72, maxWidth: 1400, margin: "0 auto", padding: "0 48px",
         }}>
           {/* Logo */}
           <a href="/">
