@@ -34,12 +34,10 @@ export const POST = route(async () => {
     return json({ ok: true, agent37_id: existing[0].agent37_id, already: true });
   }
 
-  // The student path REQUIRES both onboarding artifacts (the dashboard only enables the
-  // create button once both are done). Admin-create is the lenient path (bare if missing).
+  // Onboarding is the only hard prerequisite (it drives the persona / SOUL.md). Telegram is
+  // OPTIONAL: if it's missing we still provision the agent — configureAgentFromIntake just
+  // leaves it unconfigured rather than failing, and the student can connect Telegram later.
   const { onboard, setup } = await readProvisioningIntake(db, user.id);
-  if (!setup?.telegram_token || !setup?.telegram_user_id) {
-    throw new ApiError(400, "setup_incomplete", "Finish Telegram setup first");
-  }
   if (!onboard) throw new ApiError(400, "onboard_incomplete", "Finish onboarding first");
 
   // Create the Hermes instance, tagged to the student, at the default monthly cap.
