@@ -131,7 +131,7 @@ export default function OnboardPage() {
             <p style={{ fontSize: 16, color: "rgba(11,23,41,.6)", lineHeight: 1.7, marginBottom: 32 }}>
               We received everything we need to build your agent. Your team will be in touch within 24 hours.
             </p>
-            <a href="/" className="btn-purple">Back to Home</a>
+            <a href="/dashboard" className="btn-purple">Back to Dashboard</a>
           </div>
         </main>
       </>
