@@ -55,7 +55,12 @@ export function mapMembershipsToWorkspaces(rows: MembershipRow[] | null): Worksp
 export const getUserWorkspaces = cache(async (userId: string): Promise<WorkspaceWithRole[]> => {
   const db = createAdminClient();
   const load = async () => {
-    const { data } = await db.from("memberships").select("role, workspaces(*)").eq("user_id", userId);
+    const { data, error } = await db.from("memberships").select("role, workspaces(*)").eq("user_id", userId);
+    // A failed read means "unknown", NOT "no workspaces". Swallowing it would let a
+    // transient DB blip (e.g. PostgREST reloading its schema cache mid-migration) read as
+    // an empty result and bootstrap a duplicate workspace — that's how one account piled up
+    // nine. Surface the error so the dashboard retries instead of spawning a phantom.
+    if (error) throw error;
     return mapMembershipsToWorkspaces(data);
   };
 
