@@ -102,7 +102,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, hasAgent }: Prop
       </aside>
 
       <main className="min-w-0 flex-1 overflow-y-auto">
-        <div className="mx-auto w-full max-w-4xl p-6 md:p-10">
+        <div className="mx-auto w-full max-w-6xl p-6 md:px-10 md:py-8">
           {hasAgent ? (
             active === "settings" ? (
               <SettingsView />
@@ -167,7 +167,7 @@ function StepsView({
   }
 
   return (
-    <div>
+    <div className="max-w-3xl">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight">Set up your agent</h1>
         <p className="mt-1 text-sm text-muted-foreground">

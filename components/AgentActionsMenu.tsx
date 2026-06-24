@@ -3,10 +3,11 @@
 import { useState } from "react";
 import {
   ArrowDownToLine,
+  ArrowRight,
   Copy,
   FolderOpen,
-  KanbanSquare,
   LayoutDashboard,
+  Loader2,
   MoreHorizontal,
   Play,
   RotateCw,
@@ -36,10 +37,15 @@ import {
 } from "@/components/ui/tooltip";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 
-// The "open a port in a new tab" quick actions — identical button, varying port/icon/label.
+// Minions Mission Control is where students actually work with the agent (chat / tasks),
+// so it's promoted to the primary "Open" CTA below instead of living in the row of
+// equal-weight icon buttons. That gives every agent one obvious thing to click.
+const PRIMARY_PORT = PORTS.minions;
+
+// The remaining "open a port in a new tab" surfaces — secondary, shown as icon buttons.
+// The Hermes dashboard leads (it's the next-most-useful surface after Minions).
 const PORT_ACTIONS = [
-  { port: PORTS.dashboard, Icon: LayoutDashboard, label: "Open the dashboard", aria: "Open dashboard" },
-  { port: PORTS.minions, Icon: KanbanSquare, label: "Open Minions", aria: "Open Minions mission control" },
+  { port: PORTS.dashboard, Icon: LayoutDashboard, label: "Open the Hermes dashboard", aria: "Open Hermes dashboard" },
   { port: PORTS.files, Icon: FolderOpen, label: "Open file browser", aria: "Open file browser" },
   { port: PORTS.terminal, Icon: Terminal, label: "Open terminal", aria: "Open terminal" },
 ] as const;
@@ -111,7 +117,29 @@ export function AgentActionsMenu({
   return (
     <>
       <TooltipProvider delayDuration={200}>
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex items-center justify-end gap-2">
+        {/* Primary CTA — the one obvious thing to click. Opens Minions Mission Control. */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="sm"
+              className="h-8 gap-1.5 px-3.5"
+              disabled={!running || opening === PRIMARY_PORT}
+              onClick={() => openPort(PRIMARY_PORT)}
+              aria-label="Open Minions"
+            >
+              {opening === PRIMARY_PORT ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : null}
+              Open
+              {opening === PRIMARY_PORT ? null : <ArrowRight className="h-4 w-4" />}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {running ? "Open Minions — chat with your agent" : "Start the agent to open it"}
+          </TooltipContent>
+        </Tooltip>
+
         {PORT_ACTIONS.map(({ port, Icon, label, aria }) => (
           <Tooltip key={port}>
             <TooltipTrigger asChild>
@@ -129,6 +157,8 @@ export function AgentActionsMenu({
             <TooltipContent>{label}</TooltipContent>
           </Tooltip>
         ))}
+
+        {isAdmin && <div className="mx-0.5 h-5 w-px bg-border" aria-hidden />}
 
         {isAdmin && (
           <Tooltip>

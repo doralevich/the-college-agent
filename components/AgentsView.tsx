@@ -66,7 +66,7 @@ export function AgentsView() {
                 <th className="px-4 py-2 font-medium">Status</th>
                 <th className="px-4 py-2 font-medium">Template</th>
                 <th className="px-4 py-2 font-medium">Resources</th>
-                <th className="px-4 py-2 text-center font-medium">Quick actions</th>
+                <th className="px-4 py-2 text-right font-medium">Quick actions</th>
               </tr>
             </thead>
             <tbody>

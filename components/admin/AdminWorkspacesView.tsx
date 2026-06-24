@@ -203,7 +203,7 @@ function InstanceList({ detail, onChanged }: { detail: Detail | undefined; onCha
             <th className="px-3 py-2 font-medium">Budget (spent / cap)</th>
             <th className="px-3 py-2 font-medium">Usage (period)</th>
             <th className="px-3 py-2 font-medium">Created</th>
-            <th className="px-3 py-2 text-center font-medium">Actions</th>
+            <th className="px-3 py-2 text-right font-medium">Actions</th>
           </tr>
         </thead>
         <tbody>
