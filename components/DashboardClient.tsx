@@ -13,27 +13,17 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AgentsView } from "@/components/AgentsView";
 import { SettingsView } from "@/components/SettingsView";
-import type { OnboardSummary, TelegramSummary } from "@/lib/types";
 
 type Props = {
   paid: boolean;
   onboardDone: boolean;
   setupDone: boolean;
   hasAgent: boolean;
-  onboardSummary: OnboardSummary | null;
-  telegramSummary: TelegramSummary | null;
 };
 
 type TabId = "agents" | "agent" | "settings";
 
-export function DashboardClient({
-  paid,
-  onboardDone,
-  setupDone,
-  hasAgent,
-  onboardSummary,
-  telegramSummary,
-}: Props) {
+export function DashboardClient({ paid, onboardDone, setupDone, hasAgent }: Props) {
   const { userEmail } = useWorkspace();
   const router = useRouter();
 
@@ -115,7 +105,7 @@ export function DashboardClient({
         <div className="mx-auto w-full max-w-4xl p-6 md:p-10">
           {hasAgent ? (
             active === "settings" ? (
-              <SettingsView onboardSummary={onboardSummary} telegramSummary={telegramSummary} />
+              <SettingsView />
             ) : (
               <AgentsView />
             )

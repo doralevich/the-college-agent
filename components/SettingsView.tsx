@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
 import { useWorkspace } from "@/components/WorkspaceProvider";
@@ -10,15 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import type { OnboardSummary, TelegramSummary } from "@/lib/types";
 
-export function SettingsView({
-  onboardSummary,
-  telegramSummary,
-}: {
-  onboardSummary: OnboardSummary | null;
-  telegramSummary: TelegramSummary | null;
-}) {
+export function SettingsView() {
   const { current, refresh, setCurrentId } = useWorkspace();
   const [name, setName] = useState(current?.name ?? "");
   const [syncedId, setSyncedId] = useState(current?.id);
@@ -62,13 +54,6 @@ export function SettingsView({
     window.location.href = "/dashboard";
   }
 
-  const fullName = [onboardSummary?.first_name, onboardSummary?.last_name]
-    .filter(Boolean)
-    .join(" ");
-  const telegramHandle = telegramSummary?.telegram_username
-    ? `@${telegramSummary.telegram_username.replace(/^@/, "")}`
-    : null;
-
   return (
     <div className="max-w-xl space-y-8">
       <div>
@@ -110,63 +95,6 @@ export function SettingsView({
         </div>
       </div>
 
-      <section className="space-y-3 rounded-lg border p-4">
-        <div className="flex items-center justify-between gap-4">
-          <h2 className="text-sm font-medium">Your details</h2>
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/onboard">Update onboarding</Link>
-          </Button>
-        </div>
-        {onboardSummary ? (
-          <dl className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
-            <Field label="Name" value={fullName} />
-            <Field label="Agent name" value={onboardSummary.agent_name} />
-            <Field label="School" value={onboardSummary.school} />
-            <Field label="Year" value={onboardSummary.year} />
-            <Field label="Major" value={onboardSummary.major} />
-            <Field label="School email" value={onboardSummary.school_email} />
-            <Field label="Personal email" value={onboardSummary.personal_email} />
-            <Field label="Phone" value={onboardSummary.phone} />
-            <div className="space-y-0.5">
-              <dt className="text-xs text-muted-foreground">Resume</dt>
-              <dd className="text-sm">
-                {onboardSummary.resume_url ? (
-                  <a
-                    href={onboardSummary.resume_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary underline-offset-2 hover:underline"
-                  >
-                    View resume
-                  </a>
-                ) : (
-                  <span className="text-muted-foreground">Not uploaded</span>
-                )}
-              </dd>
-            </div>
-          </dl>
-        ) : (
-          <p className="text-sm text-muted-foreground">No onboarding details on file yet.</p>
-        )}
-      </section>
-
-      <section className="space-y-3 rounded-lg border p-4">
-        <div className="flex items-center justify-between gap-4">
-          <h2 className="text-sm font-medium">Telegram connection</h2>
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/setup">Reconnect Telegram</Link>
-          </Button>
-        </div>
-        {telegramSummary?.telegram_user_id ? (
-          <dl className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
-            <Field label="Username" value={telegramHandle} />
-            <Field label="User ID" value={telegramSummary.telegram_user_id} mono />
-          </dl>
-        ) : (
-          <p className="text-sm text-muted-foreground">Telegram isn&apos;t connected yet.</p>
-        )}
-      </section>
-
       {isAdmin && (
         <div className="rounded-lg border border-destructive/40 p-4">
           <h2 className="text-sm font-medium">Delete workspace</h2>
@@ -189,17 +117,6 @@ export function SettingsView({
         destructive
         onConfirm={remove}
       />
-    </div>
-  );
-}
-
-function Field({ label, value, mono }: { label: string; value: string | null; mono?: boolean }) {
-  return (
-    <div className="space-y-0.5">
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className={mono ? "font-mono text-xs" : "text-sm"}>
-        {value ? value : <span className="text-muted-foreground">—</span>}
-      </dd>
     </div>
   );
 }

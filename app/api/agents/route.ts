@@ -9,16 +9,32 @@ import { ApiError, json, readJson, route } from "@/lib/http";
 import { configureAgentFromIntake, readProvisioningIntake } from "@/lib/provisioning";
 import type { AgentRow, MergedAgent } from "@/lib/types";
 
-async function resolveTemplate(): Promise<string | undefined> {
+// The whole app — the remapped PORTS, the signed-url allowlist, the Hermes wiring —
+// assumes the custom `college-agent` template. Any other template exposes different
+// ports, so every surface 400s when we mint a signed URL for 9120/7682/8081/6969.
+// Therefore: do NOT silently fall back to a stock template (that's how an unopenable
+// `agent37-hermes` box gets created). If `college-agent` isn't registered in this
+// Agent37 account, refuse to provision and say exactly how to fix it.
+async function resolveTemplate(): Promise<string> {
+  let data: Awaited<ReturnType<typeof agent37.listTemplates>>["data"];
   try {
-    const { data } = await agent37.listTemplates();
-    const preferred = data.find((t) => t.name === DEFAULT_AGENT.template);
-    if (preferred) return preferred.name;
-    const builtin = data.find((t) => t.scope === "system");
-    return (builtin ?? data[0])?.name;
-  } catch {
-    return DEFAULT_AGENT.template;
+    ({ data } = await agent37.listTemplates());
+  } catch (e) {
+    throw new ApiError(
+      502,
+      "upstream_error",
+      `Could not list Agent37 templates to verify "${DEFAULT_AGENT.template}" is registered: ${(e as Error).message}`
+    );
   }
+  const preferred = data.find((t) => t.name === DEFAULT_AGENT.template);
+  if (!preferred) {
+    throw new ApiError(
+      409,
+      "template_not_registered",
+      `The "${DEFAULT_AGENT.template}" template is not registered in this Agent37 account, so a provisioned agent would have no openable ports. Publish it with \`npm run release:agent\`, then retry.`
+    );
+  }
+  return preferred.name;
 }
 
 export const GET = route(async (request: Request) => {
