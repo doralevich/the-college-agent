@@ -3,6 +3,8 @@ import { useState } from "react";
 import BuildNav from "../components/BuildNav";
 import Configurator, { ConfigSummary, INTEGRATIONS } from "../components/Configurator";
 import StudentInfoForm, { StudentInfo } from "../components/StudentInfoForm";
+import CheckoutPanel from "./CheckoutPanel";
+import { dueToday, monthlyRecurring, formatUSD } from "@/lib/pricing";
 
 export default function BuildPage() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -35,28 +37,8 @@ export default function BuildPage() {
     setConfigSummary(summary);
     setStep(3);
     window.scrollTo({ top: 0, behavior: "smooth" });
-    // Fire-and-forget notification
-    if (studentInfo) {
-      const body = {
-        name: `${studentInfo.firstName} ${studentInfo.lastName}`,
-        schoolEmail: studentInfo.schoolEmail,
-        personalEmail: studentInfo.personalEmail,
-        mobile: studentInfo.mobile,
-        school: studentInfo.school,
-        year: studentInfo.year,
-        implementation: summary.impl,
-        setupFee: `$${summary.setupFee.toLocaleString()}`,
-        hosting: `${summary.hosting} — $${summary.hostingFee}/mo`,
-        supportPlan: `${summary.support} (${summary.supportPrice})`,
-        onboarding: summary.onboarding === "White Glove" ? "White Glove (+$650)" : "Standard (Included)",
-        integrations: integrations.join(", ") || "To be finalized during co-training",
-      };
-      fetch("/api/notify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      }).catch(() => {});
-    }
+    // The order-summary email now fires from the Stripe webhook on successful payment
+    // (lib/email/order-summary.ts), not here — so we only notify on real, paid orders.
   }
 
   const steps = [
@@ -64,6 +46,19 @@ export default function BuildPage() {
     { n: 2, label: "Build Your Agent" },
     { n: 3, label: "Checkout" },
   ];
+
+  // Authoritative amounts come from lib/pricing via the selection keys (not the
+  // Configurator's display strings) — the same source the server charges from.
+  const selection = configSummary
+    ? {
+        plan: configSummary.planKey,
+        hosting: configSummary.hostingKey,
+        support: configSummary.supportKey,
+        onboarding: configSummary.onboardingKey,
+      }
+    : null;
+  const dueTodayCents = selection ? dueToday(selection) : 0;
+  const monthlyCents = selection ? monthlyRecurring(selection) : 0;
 
   return (
     <>
@@ -255,34 +250,17 @@ export default function BuildPage() {
 
                 <div style={{ background: "var(--cream)", padding: "18px 28px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: "var(--navy)", textTransform: "uppercase", letterSpacing: ".06em" }}>Total Due Today</span>
-                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 800, color: "var(--green)" }}>$0</span>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 800, color: "var(--green)" }}>{formatUSD(dueTodayCents)}</span>
                 </div>
               </div>
 
-              <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(11,23,41,.4)", textAlign: "center", marginBottom: 32, lineHeight: 1.7 }}>
-                Create your account to continue. Next you&apos;ll activate your plan, complete a<br />quick onboarding, and your Hermes agent goes live automatically.
-              </p>
-
-              <div style={{ textAlign: "center" }}>
-                <a
-                  href="/checkout"
-                  onClick={() => {
-                    try {
-                      localStorage.setItem(
-                        "college_agent_build_draft",
-                        JSON.stringify({ studentInfo, configSummary, integrations })
-                      );
-                    } catch {}
-                  }}
-                  className="btn-purple"
-                  style={{ fontSize: 14, padding: "18px 48px", borderRadius: 8 }}
-                >
-                  Continue to Checkout →
-                </a>
-                <p style={{ marginTop: 14, fontFamily: "var(--font-mono)", fontSize: 10, color: "rgba(11,23,41,.3)", letterSpacing: ".04em" }}>
-                  Your Hermes agent ships automatically once you finish onboarding.
-                </p>
-              </div>
+              <CheckoutPanel
+                studentInfo={studentInfo}
+                configSummary={configSummary}
+                integrations={integrations}
+                dueTodayCents={dueTodayCents}
+                monthlyCents={monthlyCents}
+              />
             </div>
           </section>
         )}

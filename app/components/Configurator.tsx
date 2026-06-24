@@ -21,6 +21,11 @@ export interface ConfigSummary {
   maxIntegrations: number;
   onboarding: string;
   onboardingFee: number;
+  // Keys for server-side Stripe price resolution (must match lib/pricing.ts keys).
+  planKey: Tier;
+  hostingKey: HostingPlan;
+  supportKey: SupportPlan;
+  onboardingKey: Onboarding;
 }
 
 interface ConfigState {
@@ -146,6 +151,10 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
       maxIntegrations: tierData.maxInt,
       onboarding: wg ? "White Glove" : "Standard",
       onboardingFee: wg ? 650 : 0,
+      planKey: config.tier!,
+      hostingKey: config.hosting!,
+      supportKey: config.support!,
+      onboardingKey: config.onboarding!,
     };
     if (onComplete) { onComplete(summary); return; }
     window.open(CALENDLY, "_blank");

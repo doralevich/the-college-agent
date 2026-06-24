@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Bot, Check, Loader2, LogOut, Settings2, UserRound } from "lucide-react";
+import { Bot, Check, Loader2, LogOut, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
@@ -24,7 +24,7 @@ type Props = {
   telegramSummary: TelegramSummary | null;
 };
 
-type TabId = "onboard" | "setup" | "agent" | "settings";
+type TabId = "agents" | "agent" | "settings";
 
 export function DashboardClient({
   paid,
@@ -37,44 +37,35 @@ export function DashboardClient({
   const { userEmail } = useWorkspace();
   const router = useRouter();
 
-  const provisioningState = paid && !hasAgent && onboardDone && setupDone;
-
+  // Provisioning fires only when the student clicks "Create my agent" (both steps done).
+  const [provisioning, setProvisioning] = useState(false);
   const [provisionFailed, setProvisionFailed] = useState(false);
-  const started = useRef(false);
 
   async function provision() {
     setProvisionFailed(false);
+    setProvisioning(true);
     try {
       await apiFetch("/api/provision", { method: "POST", body: JSON.stringify({}) });
       router.refresh(); // page re-renders → hasAgent flips → AgentsView
     } catch (e) {
+      setProvisioning(false);
       setProvisionFailed(true);
       toast.error((e as Error).message || "Provisioning failed. You can retry.");
     }
   }
 
-  useEffect(() => {
-    if (provisioningState && !started.current) {
-      started.current = true;
-      void provision();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [provisioningState]);
-
-  // Sidebar tabs depend on state. Unpaid → no tabs (just the build CTA).
-  const tabs: { id: TabId; label: string; icon: typeof Bot; done?: boolean }[] = hasAgent
+  // Sidebar nav. Unpaid → nothing (just the build CTA). Pre-agent → a single "Agents"
+  // item (the steps live in the main view now, not as separate tabs).
+  const tabs: { id: TabId; label: string; icon: typeof Bot }[] = hasAgent
     ? [
         { id: "agent", label: "Your Agent", icon: Bot },
         { id: "settings", label: "Settings", icon: Settings2 },
       ]
     : paid
-    ? [
-        { id: "onboard", label: "Tell the agent about you", icon: UserRound, done: onboardDone },
-        { id: "setup", label: "Technical setup", icon: Settings2, done: setupDone },
-      ]
+    ? [{ id: "agents", label: "Agents", icon: Bot }]
     : [];
 
-  const [active, setActive] = useState<TabId>(hasAgent ? "agent" : "onboard");
+  const [active, setActive] = useState<TabId>(hasAgent ? "agent" : "agents");
 
   return (
     <div className="flex min-h-screen">
@@ -105,7 +96,6 @@ export function DashboardClient({
                 >
                   <Icon className="h-4 w-4" />
                   <span className="flex-1 text-left">{t.label}</span>
-                  {t.done && <Check className="h-4 w-4 text-primary" />}
                 </button>
               );
             })}
@@ -131,24 +121,10 @@ export function DashboardClient({
             )
           ) : !paid ? (
             <BuildCta />
-          ) : provisioningState ? (
+          ) : provisioning || provisionFailed ? (
             <Provisioning failed={provisionFailed} onRetry={provision} />
-          ) : active === "setup" ? (
-            <StepCard
-              title="Technical setup"
-              desc="Connect your Telegram bot so you can chat with your agent. Takes about two minutes."
-              done={setupDone}
-              href="/setup"
-              cta={setupDone ? "Review Telegram setup" : "Connect Telegram"}
-            />
           ) : (
-            <StepCard
-              title="Tell the agent about you"
-              desc="A few questions about your classes, schedule, and goals so your agent is built around you."
-              done={onboardDone}
-              href="/onboard"
-              cta={onboardDone ? "Review your answers" : "Start onboarding"}
-            />
+            <StepsView onboardDone={onboardDone} setupDone={setupDone} onCreate={provision} />
           )}
         </div>
       </main>
@@ -171,42 +147,119 @@ function BuildCta() {
   );
 }
 
-function StepCard({
-  title,
-  desc,
-  done,
-  href,
-  cta,
+// The setup checklist shown until the student has an agent. Three numbered steps in one
+// rhythm: the two prep steps (any order) collapse to a "Done" badge when complete, and the
+// final "Create your agent" step lights up (and its button enables) only once both are done.
+function StepsView({
+  onboardDone,
+  setupDone,
+  onCreate,
 }: {
-  title: string;
-  desc: string;
-  done: boolean;
-  href: string;
-  cta: string;
+  onboardDone: boolean;
+  setupDone: boolean;
+  onCreate: () => void;
 }) {
+  const bothDone = onboardDone && setupDone;
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Finish setting up your agent</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Set up your agent</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Complete both steps and your Hermes agent goes live automatically. You can do them in any order.
+          Three quick steps and your agent comes to life. The first two can be done in any order.
         </p>
       </div>
-      <div className="rounded-xl border p-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium">{title}</h2>
-          {done ? (
-            <span className="flex items-center gap-1 text-sm font-medium text-primary">
-              <Check className="h-4 w-4" /> Done
-            </span>
-          ) : (
-            <span className="text-sm text-muted-foreground">Not started</span>
+
+      <div className="space-y-4">
+        <StepRow
+          n={1}
+          title="Tell the agent about you"
+          desc="A few questions about your classes, schedule, and goals so your agent is built around you."
+          done={onboardDone}
+        >
+          {!onboardDone && (
+            <Button asChild className="mt-4">
+              <Link href="/onboard">Get started</Link>
+            </Button>
           )}
+        </StepRow>
+
+        <StepRow
+          n={2}
+          title="Technical setup"
+          desc="Connect your Telegram bot so you can chat with your agent. Takes about two minutes."
+          done={setupDone}
+        >
+          {!setupDone && (
+            <Button asChild className="mt-4">
+              <Link href="/setup">Connect Telegram</Link>
+            </Button>
+          )}
+        </StepRow>
+
+        <StepRow
+          n={3}
+          title="Create your agent"
+          desc="We'll provision your agent and connect it to Telegram. This takes about a minute."
+          ready={bothDone}
+        >
+          <Button className="mt-4" disabled={!bothDone} onClick={onCreate}>
+            Create my agent
+          </Button>
+          {!bothDone && (
+            <p className="mt-2 text-xs text-muted-foreground">Finish steps 1 and 2 first.</p>
+          )}
+        </StepRow>
+      </div>
+    </div>
+  );
+}
+
+// One row in the setup checklist. `done` shows a green check + "Done" badge; `ready`
+// highlights the row (used by the final create step once its prerequisites are met).
+function StepRow({
+  n,
+  title,
+  desc,
+  done = false,
+  ready = false,
+  children,
+}: {
+  n: number;
+  title: string;
+  desc: string;
+  done?: boolean;
+  ready?: boolean;
+  children?: ReactNode;
+}) {
+  const filled = done || ready;
+  return (
+    <div
+      className={cn(
+        "rounded-xl border p-6 transition-colors",
+        ready && "border-primary/60 bg-primary/[0.03]"
+      )}
+    >
+      <div className="flex items-start gap-4">
+        <div
+          className={cn(
+            "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold",
+            filled ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
+          )}
+        >
+          {done ? <Check className="h-4 w-4" /> : n}
         </div>
-        <p className="mt-2 text-sm text-muted-foreground">{desc}</p>
-        <Button asChild className="mt-5" variant={done ? "outline" : "default"}>
-          <Link href={href}>{cta}</Link>
-        </Button>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-lg font-medium">{title}</h2>
+            {done && (
+              <span className="flex shrink-0 items-center gap-1 text-sm font-medium text-primary">
+                <Check className="h-4 w-4" /> Done
+              </span>
+            )}
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">{desc}</p>
+          {children}
+        </div>
       </div>
     </div>
   );

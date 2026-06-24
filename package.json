@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "stripe:listen": "node --env-file=.env.local -e \"require('child_process').spawn('stripe',['listen','--api-key',process.env.STRIPE_SECRET_KEY,'--forward-to','localhost:3000/api/stripe/webhook'],{stdio:'inherit'})\"",
+    "release:agent": "bash template/release.sh"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.17",
@@ -25,6 +27,7 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "sonner": "^1.7.4",
+    "stripe": "^22.2.3",
     "tailwind-merge": "^2.6.1",
     "tailwindcss-animate": "^1.0.7"
   },

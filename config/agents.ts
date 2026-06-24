@@ -1,12 +1,14 @@
-// The agent provisioned for each student is HERMES (Nous Research), hosted on
-// Agent 37. (NOT OpenClaw — apolloclaw2's source used OpenClaw.)
+// The agent provisioned for each student is HERMES (Nous Research), hosted on Agent 37,
+// via our custom workspace template `college-agent` — the full Hermes image plus Minions
+// Mission Control and a preinstalled Claude Code CLI. The template image + publish/register
+// scripts live in ./template (see template/README.md).
 //
-// TODO(Phase 8 / hermes spike): verify `template` against Agent37 GET /v1/templates
-// (a prebuilt Hermes template may exist; otherwise use a base Linux template and
-// install Hermes via the install.sh exec step) and confirm the Hermes control/gateway
-// PORT. The 9119 value below is from apolloclaw2's own note ("Hermes' 9119"); confirm.
+// Because `college-agent` is a CUSTOM template, it cannot reuse Agent37's reserved ports
+// (3737/7681/8080/9119); the image remaps those surfaces to the non-reserved ports below
+// and the template declares them (template/register.sh). The signed-url allowlist tracks
+// PORTS automatically (app/api/agents/[id]/signed-url/route.ts).
 export const DEFAULT_AGENT = {
-  template: "agent37-hermes",
+  template: "college-agent",
   cpu: 2,
   memory: 4,
   disk: 6,
@@ -14,9 +16,9 @@ export const DEFAULT_AGENT = {
 } as const;
 
 export const PORTS = {
-  // Hermes serves its control/gateway UI on 9119 (per apolloclaw2's note).
-  // terminal/files are the shared Agent37 ports. Verify in Phase 8.
-  dashboard: 9119,
-  terminal: 7681,
-  files: 8080,
+  // Remapped, non-reserved ports declared by the `college-agent` template.
+  dashboard: 9120, // Hermes dashboard      (stock 9119, reserved)
+  terminal: 7682,  // ttyd terminal — where students run `claude` (stock 7681, reserved)
+  files: 8081,     // file browser          (stock 8080, reserved)
+  minions: 6969,   // Minions Mission Control
 } as const;

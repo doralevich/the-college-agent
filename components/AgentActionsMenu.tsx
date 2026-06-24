@@ -5,6 +5,7 @@ import {
   ArrowDownToLine,
   Copy,
   FolderOpen,
+  KanbanSquare,
   LayoutDashboard,
   MoreHorizontal,
   Play,
@@ -38,6 +39,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 // The "open a port in a new tab" quick actions — identical button, varying port/icon/label.
 const PORT_ACTIONS = [
   { port: PORTS.dashboard, Icon: LayoutDashboard, label: "Open the dashboard", aria: "Open dashboard" },
+  { port: PORTS.minions, Icon: KanbanSquare, label: "Open Minions", aria: "Open Minions mission control" },
   { port: PORTS.files, Icon: FolderOpen, label: "Open file browser", aria: "Open file browser" },
   { port: PORTS.terminal, Icon: Terminal, label: "Open terminal", aria: "Open terminal" },
 ] as const;

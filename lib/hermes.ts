@@ -3,9 +3,10 @@ import { agent37 } from "@/lib/agent37";
 
 // Hermes (Nous Research) provisioning, run over the Agent37 `exec` endpoint.
 //
-// The `agent37-hermes` template ships Hermes pre-installed and pre-wired to Agent37's
-// metered model gateway (that's how usage counts against the budget cap), so we do NOT
-// touch ~/.hermes/config.yaml's model/provider config. We only:
+// The `college-agent` template (built FROM the agent37 full Hermes image) ships Hermes
+// pre-installed and pre-wired to Agent37's metered model gateway (that's how usage counts
+// against the budget cap), so we do NOT touch ~/.hermes/config.yaml's model/provider
+// config. We only:
 //   1. write the student's Telegram bot token + numeric user id to ~/.hermes/.env
 //   2. write the persona (from the onboarding questionnaire) to ~/.hermes/SOUL.md
 //   3. start the messaging gateway (managed service, with a nohup loop fallback)

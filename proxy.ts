@@ -12,7 +12,6 @@ export const config = {
   matcher: [
     "/dashboard/:path*",
     "/admin/:path*",
-    "/checkout",
     "/login",
     "/reset-password",
     "/auth/callback",
