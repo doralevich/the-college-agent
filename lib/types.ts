@@ -115,13 +115,11 @@ export interface AdminWorkspaceSummary {
   running_count: number;
 }
 
-// One instance inside an expanded workspace row, enriched with live agent37 state plus
-// per-instance budget/usage (fetched lazily on expand). budget/usage are null when the
-// agent37 call fails (e.g. unfunded wallet, instance not yet provisioned).
-export interface AdminAgentDetail extends AgentRow {
-  live_status: string | null;
-  status_reason: Agent["status_reason"];
-  past_due: boolean;
+// One instance inside an expanded workspace row. A full MergedAgent (so the same
+// AgentActionsMenu — open dashboard/terminal/files, restart, budget, etc. — drives admin
+// rows) enriched with per-instance budget/usage, fetched lazily on expand. budget/usage
+// are null when the agent37 call fails (e.g. unfunded wallet, instance not yet provisioned).
+export interface AdminAgentDetail extends MergedAgent {
   budget: Budget | null;
   usage: Usage | null;
 }

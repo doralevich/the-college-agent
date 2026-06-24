@@ -1,6 +1,6 @@
 import { getSession } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { mapMembershipsToWorkspaces } from "@/lib/workspaces";
+import { getUserWorkspaces } from "@/lib/workspaces";
 import { DashboardClient } from "@/components/DashboardClient";
 
 // Server component: figure out where the student is in the funnel, then hand the flags
@@ -13,11 +13,8 @@ export default async function DashboardPage() {
   const db = createAdminClient();
   const email = (user.email ?? "").toLowerCase();
 
-  const { data: memberships } = await db
-    .from("memberships")
-    .select("role, workspaces(*)")
-    .eq("user_id", user.id);
-  const workspace = mapMembershipsToWorkspaces(memberships)[0] ?? null;
+  // Shares the layout's memberships query within this request (React cache()).
+  const workspace = (await getUserWorkspaces(user.id))[0] ?? null;
 
   const [entRes, onboardRes, setupRes, agentRes] = await Promise.all([
     db.from("entitlements").select("status").eq("email", email).maybeSingle(),

@@ -5,28 +5,13 @@ import { ApiError, json, readJson, route } from "@/lib/http";
 
 const ALLOWED_PORTS = Object.values(PORTS) as number[];
 
-// Reads OpenClaw's gateway auth token from the instance config. The Control UI served on the
-// dashboard port (18789) reads this token from the URL fragment to authenticate the browser
-// session — mirroring the B2C launch flow. Device-auth pairing is disabled and the edge origin
-// is allow-listed on the openclaw image, so this token rides in alongside the edge signed URL.
-const READ_OPENCLAW_TOKEN_CMD =
-  'CONFIG="${OPENCLAW_CONFIG_PATH:-${OPENCLAW_STATE_DIR:-/home/node/.openclaw}/openclaw.json}"; ' +
-  '[ -f "$CONFIG" ] && jq -r ".gateway.auth.token // empty" "$CONFIG" 2>/dev/null';
-
-async function openclawDashboardToken(id: string): Promise<string | null> {
-  try {
-    const { stdout } = await agent37.exec(id, READ_OPENCLAW_TOKEN_CMD);
-    // jq prints the token on its own line; take the last non-empty line and ignore any noise.
-    const token = stdout.trim().split("\n").map((l) => l.trim()).filter(Boolean).pop() ?? "";
-    return token || null;
-  } catch (e) {
-    console.error("[signed-url:openclaw-token]", id, (e as Error).message);
-    return null;
-  }
-}
-
 type Ctx = { params: Promise<{ id: string }> };
 
+// Mints a short-lived edge signed URL to one of the agent's allow-listed ports — the
+// Hermes dashboard (9119), the terminal (7681), or the file browser (8080). The signed
+// URL is the auth boundary: it grants authenticated network access to that port, and
+// Hermes' gateway handles its own session behind it. Members of the workspace and
+// platform admins (operators, cross-tenant) may open these.
 export const POST = route(async (request: Request, { params }: Ctx) => {
   const { id } = await params;
   await requireAgentAccess(id, "member");
@@ -36,19 +21,5 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   // Enforce the allowlist server-side: a member must not open an arbitrary internal port.
   if (!ALLOWED_PORTS.includes(port)) throw new ApiError(400, "invalid_request", "port is not openable");
 
-  // The OpenClaw Control UI (dashboard port) authenticates off the gateway token carried in the
-  // URL fragment. Mint the signed URL and read that token concurrently — they're independent —
-  // then append #token=...; if the token can't be read, fall back to the plain signed URL
-  // (device-auth is disabled, so the edge signed URL may suffice on its own).
-  const [result, token] = await Promise.all([
-    agent37.signedUrl(id, port, ttl_seconds),
-    port === PORTS.dashboard ? openclawDashboardToken(id) : Promise.resolve(null),
-  ]);
-  if (token) {
-    const url = new URL(result.url);
-    url.hash = `token=${encodeURIComponent(token)}`;
-    result.url = url.toString();
-  }
-
-  return json(result);
+  return json(await agent37.signedUrl(id, port, ttl_seconds));
 });

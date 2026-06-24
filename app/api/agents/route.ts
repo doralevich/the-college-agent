@@ -1,11 +1,12 @@
 import { agent37 } from "@/lib/agent37";
+import { loadLiveAgentState, mergeAgent } from "@/lib/agents";
 import { requireMember, requireUser } from "@/lib/auth";
 import { requirePlatformAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { DEFAULT_AGENT } from "@/config/agents";
 import { usdToMicros } from "@/lib/format";
 import { ApiError, json, readJson, route } from "@/lib/http";
-import type { Agent, AgentRow, MergedAgent } from "@/lib/types";
+import type { AgentRow, MergedAgent } from "@/lib/types";
 
 async function resolveTemplate(): Promise<string | undefined> {
   try {
@@ -33,20 +34,7 @@ export const GET = route(async (request: Request) => {
     .order("created_at", { ascending: false });
   if (error) throw new ApiError(500, "db_error", error.message);
 
-  let live = new Map<string, Agent>();
-  let templateImages = new Map<string, string>();
-  const [liveRes, tmplRes] = await Promise.allSettled([
-    agent37.listAgents(),
-    agent37.listTemplates(),
-  ]);
-  if (liveRes.status === "fulfilled") {
-    live = new Map(liveRes.value.data.map((i) => [i.id, i]));
-  }
-  if (tmplRes.status === "fulfilled") {
-    templateImages = new Map(
-      tmplRes.value.data.filter((t) => t.image_ref).map((t) => [t.name, t.image_ref])
-    );
-  }
+  const { live, templateImages } = await loadLiveAgentState();
 
   const agents: MergedAgent[] = (rows as AgentRow[]).map((row) => {
     const l = live.get(row.agent37_id);
@@ -55,18 +43,7 @@ export const GET = route(async (request: Request) => {
         .rpc("set_agent_status", { p_agent37_id: row.agent37_id, p_status: l.status })
         .then(undefined, (err: unknown) => console.error("[agents:set_agent_status]", err));
     }
-    const latestImage = l ? templateImages.get(l.template) : undefined;
-    return {
-      ...row,
-      cpu: l?.resources.cpu ?? row.cpu,
-      memory: l?.resources.memory ?? row.memory,
-      disk: l?.resources.disk ?? row.disk,
-      live_status: l?.status ?? row.status,
-      status_reason: l?.status_reason ?? null,
-      past_due: l?.past_due ?? false,
-      ports: l?.ports ?? [],
-      update_available: !!(l?.image_ref && latestImage && l.image_ref !== latestImage),
-    };
+    return mergeAgent(row, l, templateImages);
   });
 
   return json({ agents, role });

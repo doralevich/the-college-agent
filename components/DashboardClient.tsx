@@ -26,8 +26,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, hasAgent }: Prop
   const { userEmail } = useWorkspace();
   const router = useRouter();
 
-  const bothDone = paid && onboardDone && setupDone;
-  const provisioningState = paid && !hasAgent && bothDone;
+  const provisioningState = paid && !hasAgent && onboardDone && setupDone;
 
   const [provisionFailed, setProvisionFailed] = useState(false);
   const started = useRef(false);

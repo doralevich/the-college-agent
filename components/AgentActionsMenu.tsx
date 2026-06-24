@@ -67,14 +67,17 @@ export function AgentActionsMenu({
     });
   }
 
+  function signedUrl(port: number) {
+    return apiFetch<{ url: string }>(`/api/agents/${agent.agent37_id}/signed-url`, {
+      method: "POST",
+      body: JSON.stringify({ port }),
+    }).then((r) => r.url);
+  }
+
   async function openPort(port: number) {
     setOpening(port);
     try {
-      const { url } = await apiFetch<{ url: string }>(
-        `/api/agents/${agent.agent37_id}/signed-url`,
-        { method: "POST", body: JSON.stringify({ port }) }
-      );
-      window.open(url, "_blank", "noopener");
+      window.open(await signedUrl(port), "_blank", "noopener");
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
@@ -85,12 +88,8 @@ export function AgentActionsMenu({
   async function copyDashboardUrl() {
     const toastId = toast.loading("Preparing dashboard URL…");
     try {
-      // Same signed URL "Open the dashboard" uses — already carries the #token= fragment.
-      const { url } = await apiFetch<{ url: string }>(
-        `/api/agents/${agent.agent37_id}/signed-url`,
-        { method: "POST", body: JSON.stringify({ port: PORTS.dashboard }) }
-      );
-      await navigator.clipboard.writeText(url);
+      // Same signed URL the "Open the dashboard" action uses.
+      await navigator.clipboard.writeText(await signedUrl(PORTS.dashboard));
       toast.success("Dashboard URL copied to clipboard", { id: toastId });
     } catch (e) {
       toast.error((e as Error).message, { id: toastId });

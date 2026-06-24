@@ -89,7 +89,7 @@ export default function Explainer() {
       </section>
 
       {/* BEFORE / AFTER */}
-      <section style={{ background: "var(--cream)", padding: "0 0 80px" }}>
+      <section id="before-after" style={{ background: "var(--cream)", padding: "0 0 80px", scrollMarginTop: 80 }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
           {/* Column headers */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 12, paddingTop: 16 }}>

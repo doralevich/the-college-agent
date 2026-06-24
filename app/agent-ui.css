@@ -52,3 +52,37 @@
   --font-display: var(--font-inter), 'Inter', sans-serif;
   --font-mono: var(--font-mono), 'IBM Plex Mono', monospace;
 }
+
+/*
+ * Base layer for the authed surface. shadcn components lean on these defaults —
+ * without them Tailwind v4 leaves the default border color as `currentColor`
+ * (every `border` utility renders dark/navy: harsh dividers, black input
+ * outlines) and the body has no token-driven background/foreground. Mirrors the
+ * white-label app's base layer, re-skinned to the green theme.
+ */
+@layer base {
+  * {
+    border-color: var(--color-border);
+    outline-color: var(--color-ring);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Green-tinted text selection to match the brand. */
+  ::selection {
+    background-color: hsl(120 39% 39% / 0.18);
+  }
+
+  /* Tailwind v4 Preflight sets buttons to `cursor: default`; restore the hand
+     pointer on interactive, non-disabled controls. */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}

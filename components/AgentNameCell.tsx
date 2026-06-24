@@ -29,13 +29,15 @@ export function AgentNameCell({
     wasEditing.current = editing;
   }, [editing]);
 
+  const reset = () => setName(agent.name ?? "");
+
   function startEditing() {
-    setName(agent.name ?? "");
+    reset();
     setEditing(true);
   }
 
   function cancel() {
-    setName(agent.name ?? "");
+    reset();
     setEditing(false);
   }
 

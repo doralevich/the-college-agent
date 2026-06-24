@@ -8,6 +8,7 @@ import { formatDate, statusVariant, usd } from "@/lib/format";
 import type { AdminAgentDetail, AdminWorkspaceSummary } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { CreateAgentButton } from "@/components/CreateAgentButton";
+import { AgentActionsMenu } from "@/components/AgentActionsMenu";
 
 type Detail = { loading: boolean; agents: AdminAgentDetail[] | null };
 
@@ -152,7 +153,7 @@ export function AdminWorkspacesView() {
                     {isOpen && (
                       <tr className="border-t bg-muted/30">
                         <td colSpan={6} className="px-4 py-3">
-                          <InstanceList detail={detail} />
+                          <InstanceList detail={detail} onChanged={() => onCreated(w.id)} />
                         </td>
                       </tr>
                     )}
@@ -167,7 +168,7 @@ export function AdminWorkspacesView() {
   );
 }
 
-function InstanceList({ detail }: { detail: Detail | undefined }) {
+function InstanceList({ detail, onChanged }: { detail: Detail | undefined; onChanged: () => void }) {
   if (!detail || detail.loading) {
     return <p className="px-2 py-2 text-xs text-muted-foreground">Loading instances...</p>;
   }
@@ -176,7 +177,7 @@ function InstanceList({ detail }: { detail: Detail | undefined }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-md border bg-background">
+    <div className="overflow-x-auto rounded-md border bg-background">
       <table className="w-full text-xs">
         <thead className="bg-muted/50 text-left text-muted-foreground">
           <tr>
@@ -187,6 +188,7 @@ function InstanceList({ detail }: { detail: Detail | undefined }) {
             <th className="px-3 py-2 font-medium">Budget (spent / cap)</th>
             <th className="px-3 py-2 font-medium">Usage (period)</th>
             <th className="px-3 py-2 font-medium">Created</th>
+            <th className="px-3 py-2 text-center font-medium">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -223,6 +225,9 @@ function InstanceList({ detail }: { detail: Detail | undefined }) {
                 {a.usage ? `${usd(a.usage.total_micros)} (${a.usage.period})` : "-"}
               </td>
               <td className="px-3 py-2 text-muted-foreground">{formatDate(a.created_at)}</td>
+              <td className="px-3 py-2">
+                <AgentActionsMenu agent={a} role="admin" onChanged={onChanged} />
+              </td>
             </tr>
           ))}
         </tbody>

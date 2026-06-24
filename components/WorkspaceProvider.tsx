@@ -53,11 +53,14 @@ export function WorkspaceProvider({
     [workspaces, currentId]
   );
 
-  return (
-    <WorkspaceContext.Provider value={{ workspaces, current, setCurrentId, refresh, userEmail }}>
-      {children}
-    </WorkspaceContext.Provider>
+  // Memoized so consumers don't re-render on every provider render from an
+  // identity-only change to the context value object.
+  const value = useMemo(
+    () => ({ workspaces, current, setCurrentId, refresh, userEmail }),
+    [workspaces, current, setCurrentId, refresh, userEmail]
   );
+
+  return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;
 }
 
 export function useWorkspace() {

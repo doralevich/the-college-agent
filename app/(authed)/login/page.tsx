@@ -7,15 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { branding } from "@/config/branding";
 import { MIN_PASSWORD } from "@/config/auth";
-import { publicSiteOrigin } from "@/lib/site-url";
+import { publicSiteOrigin, safeNextPath } from "@/lib/site-url";
 import { toast } from "sonner";
 
 type Mode = "signin" | "signup" | "reset";
-
-// Only allow internal redirects — mirrors the open-redirect guard in /auth/callback.
-function safeNext(raw: string | null): string {
-  return raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/dashboard";
-}
 
 const COPY: Record<Mode, { title: string; subtitle: string; cta: string; busy: string }> = {
   signin: { title: "Sign in", subtitle: "Welcome back.", cta: "Sign in", busy: "Signing in..." },
@@ -62,7 +57,7 @@ export default function LoginPage() {
     if (!mail) return;
 
     const supabase = createClient();
-    const next = safeNext(new URLSearchParams(window.location.search).get("next"));
+    const next = safeNextPath(new URLSearchParams(window.location.search).get("next"));
 
     if (mode === "reset") {
       setLoading(true);

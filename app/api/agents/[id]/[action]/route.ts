@@ -20,8 +20,10 @@ export const POST = route(async (_request: Request, { params }: Ctx) => {
   const fn = ACTIONS[action as keyof typeof ACTIONS];
   if (!fn) throw new ApiError(404, "not_found", `Unknown action: ${action}`);
 
-  const { supabase } = await requireAgentAccess(id, "admin");
-  if (SPEND_ACTIONS.has(action)) await requireEntitled(supabase);
+  const { supabase, isPlatformAdmin } = await requireAgentAccess(id, "admin");
+  // Operators acting from /admin aren't subject to the per-user entitlement gate — that
+  // gate is the student's Stripe seam, not the operator's.
+  if (SPEND_ACTIONS.has(action) && !isPlatformAdmin) await requireEntitled(supabase);
 
   const result = await fn(id);
   if (result.status) {

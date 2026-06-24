@@ -1,15 +1,31 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 const NAV_LINKS = [
   { label: "How It Works", href: "#how-it-works" },
-  { label: "Before & After", href: "#explainer" },
-  { label: "Pricing", href: "#support" },
+  { label: "Before & After", href: "#before-after" },
   { label: "FAQ", href: "#faq" },
 ];
 
 export default function Nav() {
   const [open, setOpen] = useState(false);
+
+  // Swap the "Log In" affordance for "Dashboard" once we know the visitor already has a
+  // session. Starts false so the first client render matches the static SSR'd markup
+  // (no hydration mismatch); the browser session resolves a tick later and flips it.
+  const [authed, setAuthed] = useState(false);
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data }) => setAuthed(!!data.session));
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) =>
+      setAuthed(!!session)
+    );
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  const accountHref = authed ? "/dashboard" : "/login";
+  const accountLabel = authed ? "Dashboard" : "Log In";
 
   return (
     <>
@@ -40,8 +56,8 @@ export default function Nav() {
 
           {/* Desktop CTA */}
           <div className="nav-cta-desktop">
-            <a href="/login" className="nav-login-btn">
-              Log In
+            <a href={accountHref} className="nav-login-btn">
+              {accountLabel}
             </a>
             <a href="/build" className="btn-purple" style={{ fontSize: 12, padding: "10px 22px" }}>
               Build My Agent
@@ -72,8 +88,8 @@ export default function Nav() {
             <a href="/build" className="btn-purple nav-mobile-cta" onClick={() => setOpen(false)}>
               Build My Agent
             </a>
-            <a href="/login" className="nav-mobile-login" onClick={() => setOpen(false)}>
-              Log In
+            <a href={accountHref} className="nav-mobile-login" onClick={() => setOpen(false)}>
+              {accountLabel}
             </a>
           </div>
         )}
