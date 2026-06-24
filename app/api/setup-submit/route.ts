@@ -4,6 +4,12 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 const supabase = createAdminClient();
 
+// Treat empty / whitespace-only strings as "not provided" so optional fields store as NULL.
+const orNull = (v: unknown) => {
+  const s = typeof v === "string" ? v.trim() : "";
+  return s.length > 0 ? s : null;
+};
+
 export async function POST(req: NextRequest) {
   try {
     const data = await req.json();
@@ -12,10 +18,14 @@ export async function POST(req: NextRequest) {
     // can detect that they've completed technical setup. Anonymous submits stay null.
     const userId = await getOptionalUserId();
 
+    // Every field is optional (BYO-key). We store whatever the student provided —
+    // Telegram credentials and/or their own Anthropic / OpenAI key — and NULL the rest.
     const { error: dbError } = await supabase.from("setup_submissions").insert([{
-      telegram_token: data.telegramToken,
-      telegram_user_id: data.telegramUserId,
-      telegram_username: data.telegramUsername || null,
+      telegram_token: orNull(data.telegramToken),
+      telegram_user_id: orNull(data.telegramUserId),
+      telegram_username: orNull(data.telegramUsername),
+      anthropic_key: orNull(data.anthropicKey),
+      openai_key: orNull(data.openaiKey),
       user_id: userId,
       submitted_at: new Date().toISOString(),
     }]);
@@ -33,15 +43,17 @@ export async function POST(req: NextRequest) {
             from_email: "noreply@thecollegeagent.ai",
             from_name: "The College Agent",
             to: [{ email: "david@apolloclaw.ai", name: "David", type: "to" }],
-            subject: "New Technical Setup — Telegram connected",
+            subject: "New Technical Setup submission",
             html: `
               <h2>Technical Setup Received</h2>
               <p style="font-family:sans-serif;font-size:14px;color:#555">
-                A student connected Telegram. Stored in Supabase → the-college-agent → setup_submissions.
+                A student submitted technical setup. Stored in Supabase → the-college-agent → setup_submissions.
               </p>
               <table style="font-family:sans-serif;font-size:14px;border-collapse:collapse">
-                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Telegram User ID</td><td>${data.telegramUserId}</td></tr>
-                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Bot Token</td><td>${String(data.telegramToken).slice(0, 12)}...</td></tr>
+                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Telegram User ID</td><td>${orNull(data.telegramUserId) ?? "—"}</td></tr>
+                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Bot Token</td><td>${orNull(data.telegramToken) ? String(data.telegramToken).slice(0, 12) + "…" : "—"}</td></tr>
+                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Anthropic key</td><td>${orNull(data.anthropicKey) ? "provided" : "—"}</td></tr>
+                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">OpenAI key</td><td>${orNull(data.openaiKey) ? "provided" : "—"}</td></tr>
               </table>
             `,
           },
