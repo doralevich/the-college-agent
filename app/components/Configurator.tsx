@@ -69,10 +69,45 @@ export const INTEGRATIONS: Record<string, string[]> = {
   ],
 };
 
-const TIERS: { id: Tier; badge: string; name: string; price: number; maxInt: number; readyTime: string; desc: string }[] = [
-  { id: "undergraduate", badge: "Most Popular",  name: "The Undergraduate", price: 999,  maxInt: 3, readyTime: "24–48 hours", desc: "Pre-configured student agent. Battle-tested workflows, fast setup, ready within 24–48 hours of your onboarding form." },
-  { id: "graduate",      badge: "Advanced",      name: "The Graduate",      price: 1499, maxInt: 5, readyTime: "7 days",      desc: "Deeper configuration and expanded skill set with more personalization. Ready within 7 days." },
-  { id: "scholar",       badge: "Most Powerful", name: "The Scholar",       price: 1999, maxInt: 7, readyTime: "7 days",      desc: "Maximum depth, custom workflows, and full personalization. Built for high-achievers who want more from their agent." },
+const TIERS: { id: Tier; badge: string; name: string; price: number; maxInt: number; readyTime: string; desc: string; features: string[] }[] = [
+  {
+    id: "undergraduate", badge: "Most Popular", name: "The Undergraduate", price: 999, maxInt: 3, readyTime: "24–48 hours",
+    desc: "The fastest path to your own AI agent. Pre-configured with battle-tested student workflows — fill out your onboarding form and you're live within 48 hours.",
+    features: [
+      "3 integrations included",
+      "Agent live in 24–48 hours",
+      "30-day co-training period",
+      "Standard onboarding form",
+      "Cloud hosted via Apollo",
+      "Telegram access",
+    ],
+  },
+  {
+    id: "graduate", badge: "Advanced", name: "The Graduate", price: 1499, maxInt: 5, readyTime: "7 days",
+    desc: "More depth, more personalization. Includes a live onboarding call with your builder plus a week of post-launch support to make sure everything runs the way you think.",
+    features: [
+      "5 integrations included",
+      "Agent live in 7 days",
+      "30-day co-training period",
+      "30-minute onboarding call",
+      "7 days post-launch support",
+      "Cloud hosted via Apollo",
+      "Telegram access",
+    ],
+  },
+  {
+    id: "scholar", badge: "Most Powerful", name: "The Scholar", price: 1999, maxInt: 7, readyTime: "7 days",
+    desc: "Built for high-achievers who want the full picture. A deep-dive onboarding session, extended support, and the most integrations — your agent learns how you actually think.",
+    features: [
+      "7 integrations included",
+      "Agent live in 7 days",
+      "30-day co-training period",
+      "60-minute onboarding call",
+      "14 days post-launch support",
+      "Cloud hosted via Apollo",
+      "Telegram access",
+    ],
+  },
 ];
 
 const SUPPORT_PLANS: { id: SupportPlan; label: string; price: string; fee: number; desc: string }[] = [
@@ -131,42 +166,58 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
         </p>
       </div>
 
+      {/* STEP 1 — full width */}
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px 32px" }}>
+        <div className="config-step">
+          <div className="step-header">
+            <div className="step-num">1</div>
+            <span className="step-title">Choose Your Implementation</span>
+          </div>
+          <p style={{ fontSize: 14, color: "rgba(11,23,41,.55)", lineHeight: 1.7, marginBottom: 24, maxWidth: 680 }}>
+            Every College Agent is built around you — your schedule, your goals, your communication style.
+            Choose the tier that fits where you are right now. All three include cloud hosting, Telegram access,
+            a 30-day co-training period, and everything listed below.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+            {TIERS.map((card) => (
+              <div
+                key={card.id}
+                className={`impl-card ${config.tier === card.id ? "selected" : ""}`}
+                onClick={() => setConfig(prev => ({ ...prev, tier: card.id }))}
+                style={{ cursor: "pointer", display: "flex", flexDirection: "column" }}
+              >
+                <div className="impl-badge">{card.badge}</div>
+                <div className="impl-name">{card.name}</div>
+                <div className="impl-desc" style={{ marginBottom: 16 }}>{card.desc}</div>
+                <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 7, marginBottom: 20, flex: 1 }}>
+                  {card.features.map(f => (
+                    <li key={f} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "rgba(11,23,41,.7)" }}>
+                      <span style={{ width: 16, height: 16, borderRadius: "50%", background: "rgba(61,139,61,.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 9, color: "var(--green)", fontWeight: 700 }}>✓</span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <div style={{ borderTop: "1px solid rgba(11,23,41,.07)", paddingTop: 14 }}>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 22, fontWeight: 800, color: "var(--green)" }}>
+                    ${card.price.toLocaleString()}
+                    <span style={{ fontSize: 12, fontWeight: 400, color: "rgba(11,23,41,.35)", marginLeft: 4 }}>one-time</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="custom-note" style={{ marginTop: 16 }}>
+            Need more integrations or something custom?{" "}
+            <a href={CALENDLY} target="_blank" rel="noopener noreferrer">
+              Custom integrations available as needed.
+            </a>
+          </p>
+        </div>
+      </div>
+
       <div className="config-layout">
         {/* LEFT COLUMN */}
         <div className="config-main">
-          {/* STEP 1 */}
-          <div className="config-step">
-            <div className="step-header">
-              <div className="step-num">1</div>
-              <span className="step-title">Choose Your Implementation</span>
-            </div>
-            <div className="impl-grid" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
-              {TIERS.map((card) => (
-                <div
-                  key={card.id}
-                  className={`impl-card ${config.tier === card.id ? "selected" : ""}`}
-                  onClick={() => setConfig(prev => ({ ...prev, tier: card.id }))}
-                  style={{ cursor: "pointer" }}
-                >
-                  <div className="impl-badge">{card.badge}</div>
-                  <div className="impl-name">{card.name}</div>
-                  <div className="impl-desc">{card.desc}</div>
-                  <div style={{ borderTop: "1px solid rgba(11,23,41,.07)", paddingTop: 12, marginTop: 4 }}>
-                    <div className="tier-price" style={{ fontSize: 18 }}>${card.price.toLocaleString()}</div>
-                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "rgba(11,23,41,.4)", marginTop: 4 }}>
-                      Up to {card.maxInt} integrations · Ready {card.readyTime}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <p className="custom-note">
-              Need more integrations or something custom?{" "}
-              <a href={CALENDLY} target="_blank" rel="noopener noreferrer">
-                Custom integrations available as needed.
-              </a>
-            </p>
-          </div>
 
           {/* STEP 2 */}
           <div className="config-step">
