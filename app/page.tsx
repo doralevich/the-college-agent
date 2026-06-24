@@ -238,8 +238,10 @@ export default function Home() {
               { label: "Book a Consultation", href: CALENDLY },
               { label: "Contact", href: "https://apolloclaw.ai/contact" },
               { label: "Apollo[Claw]", href: "https://apolloclaw.ai" },
+              { label: "Privacy Policy", href: "/privacy" },
+              { label: "Terms & Conditions", href: "/terms" },
             ].map((link) => (
-              <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer"
+              <a key={link.label} href={link.href} target={link.href.startsWith("http") ? "_blank" : undefined} rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
                 style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.4)", letterSpacing: ".04em", transition: "color .15s" }}>
                 {link.label}
               </a>

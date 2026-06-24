@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import Nav from "../components/Nav";
+import BuildNav from "../components/BuildNav";
 import Configurator, { ConfigSummary, INTEGRATIONS } from "../components/Configurator";
 import StudentInfoForm, { StudentInfo } from "../components/StudentInfoForm";
 
@@ -69,7 +69,7 @@ export default function BuildPage() {
 
   return (
     <>
-      <Nav />
+      <BuildNav />
 
       <main style={{ paddingTop: 72 }}>
 
