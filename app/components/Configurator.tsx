@@ -71,11 +71,11 @@ export const INTEGRATIONS: Record<string, string[]> = {
 
 const TIERS: { id: Tier; badge: string; name: string; price: number; maxInt: number; readyTime: string; desc: string; features: string[] }[] = [
   {
-    id: "undergraduate", badge: "Most Popular", name: "The Undergraduate", price: 999, maxInt: 3, readyTime: "24–48 hours",
+    id: "undergraduate", badge: "Most Popular", name: "The Undergraduate", price: 999, maxInt: 3, readyTime: "30 min – 72 hours",
     desc: "The fastest path to your own AI agent. Pre-configured with battle-tested student workflows — fill out your onboarding form and you're live within 48 hours.",
     features: [
       "3 integrations included",
-      "Agent live in 24–48 hours",
+      "Agent live in 30 min – 72 hours",
       "Standard onboarding form",
       "Web portal access",
       "Cloud hosted via Apollo Claw",
@@ -83,11 +83,11 @@ const TIERS: { id: Tier; badge: string; name: string; price: number; maxInt: num
     ],
   },
   {
-    id: "graduate", badge: "Advanced", name: "The Graduate", price: 1499, maxInt: 5, readyTime: "7 days",
+    id: "graduate", badge: "Advanced", name: "The Graduate", price: 1499, maxInt: 5, readyTime: "30 min – 72 hours",
     desc: "More depth, more personalization. Includes a live onboarding call with your builder plus a week of post-launch support to make sure everything runs the way you think.",
     features: [
       "5 integrations included",
-      "Agent live in 7 days",
+      "Agent live in 30 min – 72 hours",
       "Enhanced onboarding form",
       "30-minute onboarding call",
       "7 days post-launch support",
@@ -97,11 +97,11 @@ const TIERS: { id: Tier; badge: string; name: string; price: number; maxInt: num
     ],
   },
   {
-    id: "scholar", badge: "Most Powerful", name: "The Scholar", price: 1999, maxInt: 7, readyTime: "7 days",
+    id: "scholar", badge: "Most Powerful", name: "The Scholar", price: 1999, maxInt: 7, readyTime: "30 min – 72 hours",
     desc: "Built for high-achievers who want the full picture. A deep-dive onboarding session, extended support, and the most integrations — your agent learns how you actually think.",
     features: [
       "7 integrations included",
-      "Agent live in 7 days",
+      "Agent live in 30 min – 72 hours",
       "Enhanced onboarding form",
       "60-minute onboarding call",
       "14 days post-launch support",
@@ -307,7 +307,7 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
                   label: "Standard Onboarding",
                   price: "Included",
                   priceColor: "#27ae60",
-                  time: "Agent ready in 24–48 hrs (Undergraduate) or 7 days (Graduate/Scholar)",
+                  time: "Agent ready in 30 minutes to 72 hours",
                   desc: "Complete your onboarding form after checkout. We build your agent and you're live fast.",
                 },
                 {
@@ -315,7 +315,7 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
                   label: "White Glove Onboarding",
                   price: "+$650",
                   priceColor: "var(--green)",
-                  time: "Agent ready in 14 days",
+                  time: "Agent ready in 30 minutes to 72 hours",
                   desc: "A dedicated 60-minute deep-dive call with your builder. Advanced skills, custom workflows, and deep personalization — we learn how you think before we build.",
                 },
               ] as const).map((opt) => (
@@ -355,7 +355,7 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
                 "LinkedIn integration included",
                 "Google Workspace or Office 365 (appropriate access required)",
                 "Cloud hosted via Apollo Claw, access from any device",
-                "Agent ready in 24–48 hrs (Undergraduate) or 7 days (Graduate/Scholar)",
+                "Agent ready in 30 minutes to 72 hours",
                 "Support plan options available",
               ].map((item) => (
                 <div key={item} className="included-item">
@@ -418,7 +418,7 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
           <div className="order-row">
             <div className="order-label">Agent Ready</div>
             <div className="order-value">
-              {config.onboarding === "whiteglove" ? "14 days" : tierData?.readyTime ?? "--"}
+              {config.onboarding ? "30 minutes to 72 hours" : "--"}
             </div>
           </div>
 
