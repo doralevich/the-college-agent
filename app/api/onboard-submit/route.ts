@@ -29,7 +29,10 @@ export async function POST(req: NextRequest) {
     // Tie to the logged-in student (if any) so the dashboard checklist sees completion.
     const userId = await getOptionalUserId();
 
-    const { error: dbError } = await supabase.from("onboard_submissions").insert([{
+    // Upsert on user_id: one row per signed-in student, so re-onboarding overwrites the
+    // existing answers instead of stacking a new row. Anonymous submits (user_id null)
+    // don't conflict and just insert.
+    const { error: dbError } = await supabase.from("onboard_submissions").upsert([{
       user_id: userId,
       first_name: data.firstName,
       last_name: data.lastName,
@@ -44,7 +47,7 @@ export async function POST(req: NextRequest) {
       questionnaire: data,
       resume_url: resumeUrl,
       submitted_at: new Date().toISOString(),
-    }]);
+    }], { onConflict: "user_id" });
 
     if (dbError) throw dbError;
 

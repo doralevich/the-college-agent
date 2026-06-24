@@ -20,7 +20,9 @@ export async function POST(req: NextRequest) {
 
     // Every field is optional (BYO-key). We store whatever the student provided —
     // Telegram credentials and/or their own Anthropic / OpenAI key — and NULL the rest.
-    const { error: dbError } = await supabase.from("setup_submissions").insert([{
+    // Upsert on user_id: one row per signed-in student, so a re-submit overwrites instead
+    // of stacking. Anonymous submits (user_id null) don't conflict and just insert.
+    const { error: dbError } = await supabase.from("setup_submissions").upsert([{
       telegram_token: orNull(data.telegramToken),
       telegram_user_id: orNull(data.telegramUserId),
       telegram_username: orNull(data.telegramUsername),
@@ -28,7 +30,7 @@ export async function POST(req: NextRequest) {
       openai_key: orNull(data.openaiKey),
       user_id: userId,
       submitted_at: new Date().toISOString(),
-    }]);
+    }], { onConflict: "user_id" });
 
     if (dbError) throw dbError;
 
