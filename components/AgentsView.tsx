@@ -64,7 +64,6 @@ export function AgentsView() {
               <tr>
                 <th className="px-4 py-2 font-medium">Name</th>
                 <th className="px-4 py-2 font-medium">Status</th>
-                <th className="px-4 py-2 font-medium">Template</th>
                 <th className="px-4 py-2 font-medium">Resources</th>
                 <th className="px-4 py-2 text-right font-medium">Quick actions</th>
               </tr>
@@ -89,7 +88,6 @@ export function AgentsView() {
                       </div>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">{a.template ?? "-"}</td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {a.cpu} vCPU · {a.memory} GB · {a.disk} GB
                   </td>

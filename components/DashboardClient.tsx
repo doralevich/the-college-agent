@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Bot, Check, Loader2, LogOut, RotateCcw, Settings2 } from "lucide-react";
+import { Bot, Check, CreditCard, Loader2, LogOut, RotateCcw, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AgentsView } from "@/components/AgentsView";
 import { SettingsView } from "@/components/SettingsView";
+import { BillingView } from "@/components/BillingView";
 
 type Props = {
   paid: boolean;
@@ -21,7 +22,7 @@ type Props = {
   hasAgent: boolean;
 };
 
-type TabId = "agents" | "agent" | "settings";
+type TabId = "agents" | "agent" | "settings" | "billing";
 
 export function DashboardClient({ paid, onboardDone, setupDone, hasAgent }: Props) {
   const { userEmail } = useWorkspace();
@@ -47,10 +48,12 @@ export function DashboardClient({ paid, onboardDone, setupDone, hasAgent }: Prop
   // Sidebar nav. Settings is always present — every account has a workspace (name/ID/delete
   // don't need an agent or a paid plan). The other item swaps with the funnel stage: "Agents"
   // (which hosts the build CTA when unpaid, the setup checklist once paid) → "Your Agent".
+  // Billing appears once they've paid (there's a subscription to show / manage).
   const tabs: { id: TabId; label: string; icon: typeof Bot }[] = [
     hasAgent
       ? { id: "agent", label: "Your Agent", icon: Bot }
       : { id: "agents", label: "Agents", icon: Bot },
+    ...(paid ? [{ id: "billing" as TabId, label: "Billing", icon: CreditCard }] : []),
     { id: "settings", label: "Settings", icon: Settings2 },
   ];
 
@@ -104,6 +107,8 @@ export function DashboardClient({ paid, onboardDone, setupDone, hasAgent }: Prop
         <div className="mx-auto w-full max-w-6xl p-6 md:px-10 md:py-8">
           {active === "settings" ? (
             <SettingsView />
+          ) : active === "billing" ? (
+            <BillingView />
           ) : !paid ? (
             <BuildCta />
           ) : hasAgent ? (
