@@ -44,16 +44,17 @@ export function DashboardClient({ paid, onboardDone, setupDone, hasAgent }: Prop
     }
   }
 
-  // Sidebar nav. Unpaid → nothing (just the build CTA). Pre-agent → a single "Agents"
-  // item (the steps live in the main view now, not as separate tabs).
-  const tabs: { id: TabId; label: string; icon: typeof Bot }[] = hasAgent
-    ? [
-        { id: "agent", label: "Your Agent", icon: Bot },
+  // Sidebar nav. Unpaid → nothing (just the build CTA). Once paid, Settings is always
+  // present (workspace name/ID/delete don't need an agent); the other item swaps between
+  // "Agents" (the setup checklist lives in that view) and "Your Agent".
+  const tabs: { id: TabId; label: string; icon: typeof Bot }[] = !paid
+    ? []
+    : [
+        hasAgent
+          ? { id: "agent", label: "Your Agent", icon: Bot }
+          : { id: "agents", label: "Agents", icon: Bot },
         { id: "settings", label: "Settings", icon: Settings2 },
-      ]
-    : paid
-    ? [{ id: "agents", label: "Agents", icon: Bot }]
-    : [];
+      ];
 
   const [active, setActive] = useState<TabId>(hasAgent ? "agent" : "agents");
 
@@ -103,14 +104,12 @@ export function DashboardClient({ paid, onboardDone, setupDone, hasAgent }: Prop
 
       <main className="min-w-0 flex-1 overflow-y-auto">
         <div className="mx-auto w-full max-w-6xl p-6 md:px-10 md:py-8">
-          {hasAgent ? (
-            active === "settings" ? (
-              <SettingsView />
-            ) : (
-              <AgentsView />
-            )
-          ) : !paid ? (
+          {!paid ? (
             <BuildCta />
+          ) : active === "settings" ? (
+            <SettingsView />
+          ) : hasAgent ? (
+            <AgentsView />
           ) : provisioning || provisionFailed ? (
             <Provisioning failed={provisionFailed} onRetry={provision} />
           ) : (

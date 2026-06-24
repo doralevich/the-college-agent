@@ -57,7 +57,7 @@ export default function CheckoutPanel({
       if (error) {
         if (error.code === "user_already_exists") {
           setMode("signin");
-          setError("That email already has an account — enter your password to sign in.");
+          setError("That email already has an account. Enter your password to sign in.");
         } else {
           setError(error.message);
         }

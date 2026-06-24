@@ -1,5 +1,7 @@
 import { getWorkspaceOwner, requireAdmin, requireUser } from "@/lib/auth";
 import { agent37 } from "@/lib/agent37";
+import { loadLiveAgentState } from "@/lib/agents";
+import { isActiveStatus } from "@/lib/format";
 import { clearStudentIntake } from "@/lib/intake";
 import { ApiError, json, readJson, requireTrimmed, route } from "@/lib/http";
 import type { Workspace } from "@/lib/types";
@@ -33,6 +35,24 @@ export const DELETE = route(async (_request: Request, { params }: Ctx) => {
   if (!owner) throw new ApiError(404, "not_found", "Workspace not found");
   if (owner !== user.id) throw new ApiError(403, "forbidden", "Only the owner can delete a workspace");
 
+  const { data: rows } = await supabase.from("agents").select("agent37_id").eq("workspace_id", id);
+  const agentIds = (rows ?? []).map((row) => row.agent37_id as string);
+
+  // Refuse while any agent's Agent37 instance is live (running or mid-lifecycle). The owner
+  // must stop or delete an active agent first, so we never pull a running box — and its
+  // in-flight work — out from under them. Checked before any side effect so a block leaves
+  // everything (intake included) untouched. Stopped/failed/absent boxes don't count.
+  if (agentIds.length) {
+    const { live } = await loadLiveAgentState();
+    if (agentIds.some((aid) => isActiveStatus(live.get(aid)?.status))) {
+      throw new ApiError(
+        409,
+        "agent_active",
+        "Stop or delete your active agent before deleting this workspace."
+      );
+    }
+  }
+
   // This is the self-serve owner deleting their own workspace. The dashboard re-bootstraps
   // a fresh empty workspace on the next load, so clear their onboarding + setup intake too —
   // otherwise the funnel would instantly re-provision a new (billed) agent into the new
@@ -41,12 +61,11 @@ export const DELETE = route(async (_request: Request, { params }: Ctx) => {
 
   // Tear down the workspace's Agent37 agents first so none are orphaned. Concurrent —
   // each delete is independent and per-agent failures are logged, never fatal.
-  const { data: rows } = await supabase.from("agents").select("agent37_id").eq("workspace_id", id);
   await Promise.allSettled(
-    (rows ?? []).map((row) =>
+    agentIds.map((aid) =>
       agent37
-        .deleteAgent(row.agent37_id as string)
-        .catch((err) => console.error("[workspace-delete:orphaned-agent]", row.agent37_id, err))
+        .deleteAgent(aid)
+        .catch((err) => console.error("[workspace-delete:orphaned-agent]", aid, err))
     )
   );
 

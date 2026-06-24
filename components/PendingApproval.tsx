@@ -17,7 +17,7 @@ export function PendingApproval({ email }: { email: string }) {
           <p className="text-lg font-medium">You&apos;re on the list 🎉</p>
           <p className="text-sm text-muted-foreground">
             Thanks for signing in{email ? ` as ${email}` : ""}. Your account is pending
-            approval — we&apos;ll email you the moment your agent access is switched on.
+            approval. We&apos;ll email you the moment your agent access is switched on.
           </p>
         </div>
         <Button variant="outline" onClick={signOut}>

@@ -17,7 +17,7 @@ type Step =
 const BOT_FLOW: Record<Step, string> = {
   who:       "Hi! Are you a student looking for an edge, or a parent investing in your student's future?",
   school:    "Great! What school do you or your student attend?",
-  challenge: "What's the biggest thing you're trying to solve — staying on top of coursework, landing internships, managing everything at once?",
+  challenge: "What's the biggest thing you're trying to solve: staying on top of coursework, landing internships, managing everything at once?",
   email:     "Got it. What's the best email to reach you? David will personally follow up within 24 hours.",
   done:      "You're all set. David will be in touch soon. Or if you'd rather talk now, book a call below.",
 };

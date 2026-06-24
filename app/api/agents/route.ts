@@ -139,7 +139,7 @@ export const POST = route(async (request: Request) => {
   // on the same bot token would conflict). Best-effort; the agent already exists either way.
   let configured = false;
   let configDetail =
-    "workspace already has an agent — new box left bare to avoid a Telegram gateway conflict";
+    "workspace already has an agent, new box left bare to avoid a Telegram gateway conflict";
   if (!workspaceHadAgent) {
     const { onboard, setup } = await readProvisioningIntake(db, ownerId);
     const r = await configureAgentFromIntake(agent.id, onboard, setup);

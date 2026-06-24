@@ -72,7 +72,7 @@ export async function configureAgentFromIntake(
   const hasTelegram = !!(setup?.telegram_token && setup?.telegram_user_id);
   const hasModelKey = !!(setup?.anthropic_key || setup?.openai_key);
   if (!hasTelegram && !hasModelKey) {
-    return { configured: false, detail: "no credentials on file — agent left unconfigured" };
+    return { configured: false, detail: "no credentials on file, agent left unconfigured" };
   }
 
   // Split the intake across the files Hermes reads: identity -> SOUL.md, durable student

@@ -52,10 +52,10 @@ export async function POST(req: NextRequest) {
                 A student submitted technical setup. Stored in Supabase → the-college-agent → setup_submissions.
               </p>
               <table style="font-family:sans-serif;font-size:14px;border-collapse:collapse">
-                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Telegram User ID</td><td>${orNull(data.telegramUserId) ?? "—"}</td></tr>
-                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Bot Token</td><td>${orNull(data.telegramToken) ? String(data.telegramToken).slice(0, 12) + "…" : "—"}</td></tr>
-                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Anthropic key</td><td>${orNull(data.anthropicKey) ? "provided" : "—"}</td></tr>
-                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">OpenAI key</td><td>${orNull(data.openaiKey) ? "provided" : "—"}</td></tr>
+                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Telegram User ID</td><td>${orNull(data.telegramUserId) ?? "-"}</td></tr>
+                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Bot Token</td><td>${orNull(data.telegramToken) ? String(data.telegramToken).slice(0, 12) + "…" : "-"}</td></tr>
+                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Anthropic key</td><td>${orNull(data.anthropicKey) ? "provided" : "-"}</td></tr>
+                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">OpenAI key</td><td>${orNull(data.openaiKey) ? "provided" : "-"}</td></tr>
               </table>
             `,
           },

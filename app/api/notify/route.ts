@@ -43,7 +43,7 @@ async function buildPDF(data: Record<string, string>): Promise<string> {
   function row(label: string, value: string) {
     y -= 20;
     page.drawText(label, { x: L + 8, y, size: 10, font: bold, color: navy });
-    page.drawText(value || "—", { x: L + 170, y, size: 10, font: regular, color: navy });
+    page.drawText(value || "N/A", { x: L + 170, y, size: 10, font: regular, color: navy });
     page.drawLine({ start: { x: L, y: y - 4 }, end: { x: R, y: y - 4 }, thickness: 0.5, color: rgb(0.9, 0.9, 0.9) });
   }
 
@@ -51,10 +51,10 @@ async function buildPDF(data: Record<string, string>): Promise<string> {
   section("Student Information");
   row("Name", data.name);
   row("School Email", data.schoolEmail);
-  row("Personal Email", data.personalEmail || "—");
-  row("Mobile", data.mobile || "—");
-  row("School", data.school || "—");
-  row("Year", data.year || "—");
+  row("Personal Email", data.personalEmail || "N/A");
+  row("Mobile", data.mobile || "N/A");
+  row("School", data.school || "N/A");
+  row("Year", data.year || "N/A");
 
   // Configuration
   y -= 10;
@@ -94,8 +94,8 @@ async function buildPDF(data: Record<string, string>): Promise<string> {
   const included = [
     "Named AI personal agent, built around you",
     "30-day hands-on co-training period",
-    "Brave Search — real-time research built in",
-    "PDF reader — upload, summarize, query any document",
+    "Brave Search: real-time research built in",
+    "PDF reader: upload, summarize, query any document",
     "Communication via Telegram, accessible anywhere",
     "Google Workspace or Office 365 (appropriate access required)",
     "LinkedIn integration included",
@@ -154,10 +154,10 @@ export async function POST(req: NextRequest) {
       <tr><td colspan="2" style="padding:10px 12px;background:#0b1220;color:#fff;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.05em;">Student Information</td></tr>
       <tr><td style="padding:8px 12px;background:#f5f4f1;font-weight:700;width:180px;">Name</td><td style="padding:8px 12px;border-bottom:1px solid #eee;">${name}</td></tr>
       <tr><td style="padding:8px 12px;background:#f5f4f1;font-weight:700;">School Email</td><td style="padding:8px 12px;border-bottom:1px solid #eee;">${schoolEmail}</td></tr>
-      <tr><td style="padding:8px 12px;background:#f5f4f1;font-weight:700;">Personal Email</td><td style="padding:8px 12px;border-bottom:1px solid #eee;">${personalEmail || "—"}</td></tr>
-      <tr><td style="padding:8px 12px;background:#f5f4f1;font-weight:700;">Mobile</td><td style="padding:8px 12px;border-bottom:1px solid #eee;">${mobile || "—"}</td></tr>
-      <tr><td style="padding:8px 12px;background:#f5f4f1;font-weight:700;">School</td><td style="padding:8px 12px;border-bottom:1px solid #eee;">${school || "—"}</td></tr>
-      <tr><td style="padding:8px 12px;background:#f5f4f1;font-weight:700;">Year</td><td style="padding:8px 12px;border-bottom:1px solid #eee;">${year || "—"}</td></tr>
+      <tr><td style="padding:8px 12px;background:#f5f4f1;font-weight:700;">Personal Email</td><td style="padding:8px 12px;border-bottom:1px solid #eee;">${personalEmail || "N/A"}</td></tr>
+      <tr><td style="padding:8px 12px;background:#f5f4f1;font-weight:700;">Mobile</td><td style="padding:8px 12px;border-bottom:1px solid #eee;">${mobile || "N/A"}</td></tr>
+      <tr><td style="padding:8px 12px;background:#f5f4f1;font-weight:700;">School</td><td style="padding:8px 12px;border-bottom:1px solid #eee;">${school || "N/A"}</td></tr>
+      <tr><td style="padding:8px 12px;background:#f5f4f1;font-weight:700;">Year</td><td style="padding:8px 12px;border-bottom:1px solid #eee;">${year || "N/A"}</td></tr>
       <tr><td colspan="2" style="padding:10px 12px;background:#3d8b3d;color:#fff;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.05em;">Configuration</td></tr>
       <tr><td style="padding:8px 12px;background:#f5f4f1;font-weight:700;">Implementation</td><td style="padding:8px 12px;border-bottom:1px solid #eee;">${implementation}</td></tr>
       <tr><td style="padding:8px 12px;background:#f5f4f1;font-weight:700;">Setup Fee</td><td style="padding:8px 12px;border-bottom:1px solid #eee;">${setupFee}</td></tr>
@@ -184,7 +184,7 @@ export async function POST(req: NextRequest) {
       key: process.env.MANDRILL_API_KEY,
       message: {
         html: htmlBody,
-        subject: `Your College Agent Order Summary — ${name}`,
+        subject: `Your College Agent Order Summary: ${name}`,
         from_email: "noreply@thecollegeagent.ai",
         from_name: "The College Agent",
         to: recipients,

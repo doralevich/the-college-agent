@@ -29,15 +29,15 @@ const FAQS = [
   },
   {
     q: 'What is a "named persona" and why does it matter?',
-    a: "Your agent has a name you choose, and it is trained on your communication style, your tone, your priorities, and your context. It does not sound like a generic chatbot. Over time, it sounds like a version of you — which is the point.",
+    a: "Your agent has a name you choose, and it is trained on your communication style, your tone, your priorities, and your context. It does not sound like a generic chatbot. Over time, it sounds like a version of you, which is the point.",
   },
   {
     q: "Is there a Mac Mini or hardware option?",
-    a: "No. The College Agent is cloud-only. This keeps it accessible from anywhere — dorms, libraries, apartments — without requiring hardware you have to carry between locations.",
+    a: "No. The College Agent is cloud-only. This keeps it accessible from anywhere (dorms, libraries, apartments) without requiring hardware you have to carry between locations.",
   },
   {
     q: "Who is this for?",
-    a: "Undergrads, graduate students, and pre-professional students who want an AI personal agent that actually knows their life, their schedule, their goals, and their voice — not a generic tool that treats every user the same.",
+    a: "Undergrads, graduate students, and pre-professional students who want an AI personal agent that actually knows their life, their schedule, their goals, and their voice, not a generic tool that treats every user the same.",
   },
   {
     q: "Can someone purchase this as a gift?",

@@ -150,8 +150,8 @@ export function IntakeDialog({
         });
         toast.success(
           res.configured
-            ? "Saved — agent provisioning (Telegram + persona wired up)"
-            : `Saved — agent provisioning, left unconfigured (${res.config_detail ?? "no Telegram on file"})`
+            ? "Saved. Agent provisioning (Telegram + persona wired up)"
+            : `Saved. Agent provisioning, left unconfigured (${res.config_detail ?? "no Telegram on file"})`
         );
         onSaved();
         onOpenChange(false);
@@ -196,7 +196,7 @@ export function IntakeDialog({
               )}
             </Section>
 
-            <Section title="Questionnaire (raw JSON — shapes the persona)">
+            <Section title="Questionnaire (raw JSON: shapes the persona)">
               <Textarea
                 value={questionnaire}
                 onChange={(e) => setQuestionnaire(e.target.value)}
@@ -216,7 +216,7 @@ export function IntakeDialog({
 
             <Section title="BYO API keys">
               <p className="-mt-1 mb-2 text-xs text-muted-foreground">
-                Stored only — not used at provisioning yet (the agent runs on the metered gateway).
+                Stored only, not used at provisioning yet (the agent runs on the metered gateway).
               </p>
               <Grid>
                 <Field label="Anthropic key" value={setup.anthropic_key} onChange={(v) => setSetup((f) => ({ ...f, anthropic_key: v }))} mono />

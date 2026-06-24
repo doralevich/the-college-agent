@@ -177,7 +177,7 @@ export default function BuildPage() {
                 <div style={{ marginBottom: 20 }}>
                   <h2 style={{ fontSize: 20, fontWeight: 800, color: "var(--navy)", marginBottom: 6 }}>Choose Your Integrations</h2>
                   <p style={{ fontSize: 13, color: "rgba(11,23,41,.5)", lineHeight: 1.6 }}>
-                    Select the tools you already use — up to <strong>{configSummary.maxIntegrations}</strong> included with your plan.
+                    Select the tools you already use, up to <strong>{configSummary.maxIntegrations}</strong> included with your plan.
                   </p>
                   <div style={{ marginTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: integrations.length >= configSummary.maxIntegrations ? "var(--green)" : "rgba(11,23,41,.4)" }}>
@@ -217,7 +217,7 @@ export default function BuildPage() {
                 </div>
 
                 <p style={{ marginTop: 14, fontFamily: "var(--font-mono)", fontSize: 10, color: "rgba(11,23,41,.35)", lineHeight: 1.7, textAlign: "center" }}>
-                  Need something not listed or more than {configSummary.maxIntegrations}? Custom integrations available — we&apos;ll discuss on the call.
+                  Need something not listed or more than {configSummary.maxIntegrations}? Custom integrations available, we&apos;ll discuss on the call.
                 </p>
               </div>
 
@@ -235,7 +235,7 @@ export default function BuildPage() {
                   {[
                     { label: "Implementation", value: configSummary.impl },
                     { label: "Setup Fee", value: `$${configSummary.setupFee.toLocaleString()} (one-time)` },
-                    { label: "Hosting", value: `${configSummary.hosting} — $${configSummary.hostingFee}/mo` },
+                    { label: "Hosting", value: `${configSummary.hosting}: $${configSummary.hostingFee}/mo` },
                     { label: "Support Plan", value: `${configSummary.support} (${configSummary.supportPrice})` },
                     { label: "Integrations", value: integrations.length > 0 ? integrations.join(", ") : "Finalized during co-training" },
                     { label: "Co-Training", value: "30-day hands-on (included)" },

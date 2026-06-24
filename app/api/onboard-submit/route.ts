@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
             from_email: "noreply@thecollegeagent.ai",
             from_name: "The College Agent",
             to: [{ email: "david@apolloclaw.ai", name: "David", type: "to" }],
-            subject: `New Student Onboarding — ${fullName} (${data.school})`,
+            subject: `New Student Onboarding: ${fullName} (${data.school})`,
             html: `
               <h2>New Onboarding Submission</h2>
               <table style="font-family:sans-serif;font-size:14px;border-collapse:collapse">
@@ -85,9 +85,9 @@ export async function POST(req: NextRequest) {
                 <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">School</td><td>${data.school}</td></tr>
                 <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Year</td><td>${data.year}</td></tr>
                 <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Major</td><td>${data.major}</td></tr>
-                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Agent Name</td><td>${data.agentName || "—"}</td></tr>
-                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Industry</td><td>${data.industryInterest || "—"}</td></tr>
-                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Top Priority</td><td>${data.topPriority || "—"}</td></tr>
+                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Agent Name</td><td>${data.agentName || "N/A"}</td></tr>
+                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Industry</td><td>${data.industryInterest || "N/A"}</td></tr>
+                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Top Priority</td><td>${data.topPriority || "N/A"}</td></tr>
                 <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Resume</td><td>${resumeUrl ? `<a href="${resumeUrl}">Download</a>` : "Not uploaded"}</td></tr>
               </table>
               <p style="margin-top:16px;font-size:13px;color:#888">Full submission stored in Supabase → the-college-agent → onboard_submissions</p>

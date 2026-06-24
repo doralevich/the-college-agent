@@ -29,6 +29,13 @@ export function isTransitional(status?: string | null): boolean {
   return ["provisioning", "starting", "restarting", "updating", "deleting"].includes(status || "");
 }
 
+// An agent whose Agent37 instance is up or moving toward up — running, or any transitional
+// lifecycle state. Used to block destructive workspace ops that would pull a live instance
+// out from under the student. A stopped/failed/absent box does NOT count as active.
+export function isActiveStatus(status?: string | null): boolean {
+  return status === "running" || isTransitional(status);
+}
+
 export function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString();
 }

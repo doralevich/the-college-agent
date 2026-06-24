@@ -37,21 +37,21 @@ export async function sendOrderSummaryEmail(order: OrderForEmail): Promise<void>
     `<tr><td style="padding:8px 12px;background:#f5f4f1;font-weight:700;width:200px;">${label}</td><td style="padding:8px 12px;border-bottom:1px solid #eee;">${value}</td></tr>`;
 
   const html = `
-    <h2 style="color:#0b1220;font-family:sans-serif;">Paid Order — College Agent</h2>
+    <h2 style="color:#0b1220;font-family:sans-serif;">Paid Order: College Agent</h2>
     <table style="font-family:sans-serif;font-size:14px;border-collapse:collapse;width:100%;max-width:620px;">
       <tr><td colspan="2" style="padding:10px 12px;background:#0b1220;color:#fff;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.05em;">Student</td></tr>
       ${row("Name", name)}
       ${row("Account Email", order.email)}
-      ${row("School Email", info.schoolEmail || "—")}
-      ${row("School", info.school || "—")}
-      ${row("Year", info.year || "—")}
+      ${row("School Email", info.schoolEmail || "N/A")}
+      ${row("School", info.school || "N/A")}
+      ${row("Year", info.year || "N/A")}
       <tr><td colspan="2" style="padding:10px 12px;background:#3d8b3d;color:#fff;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.05em;">Order</td></tr>
-      ${row("Plan", `${planLabel} — ${formatUSD(PLANS[order.plan as PlanKey]?.amount ?? 0)}`)}
-      ${row("Hosting", `${hostingLabel} — ${formatUSD(hostingAmt)}/mo`)}
+      ${row("Plan", `${planLabel}: ${formatUSD(PLANS[order.plan as PlanKey]?.amount ?? 0)}`)}
+      ${row("Hosting", `${hostingLabel}: ${formatUSD(hostingAmt)}/mo`)}
       ${row("Support", supportLabel)}
       ${row("Onboarding", onboardingLabel)}
       ${row("Integrations", integrations)}
-      ${row("Paid Today", order.amount_subtotal != null ? formatUSD(order.amount_subtotal) : "—")}
+      ${row("Paid Today", order.amount_subtotal != null ? formatUSD(order.amount_subtotal) : "N/A")}
     </table>
     <p style="font-family:sans-serif;font-size:13px;color:#888;margin-top:16px;">Payment confirmed via Stripe. Hosting recurs at ${formatUSD(hostingAmt)}/mo.</p>
   `;
@@ -71,7 +71,7 @@ export async function sendOrderSummaryEmail(order: OrderForEmail): Promise<void>
       key,
       message: {
         html,
-        subject: `Paid Order — College Agent — ${name}`,
+        subject: `Paid Order: College Agent, ${name}`,
         from_email: "noreply@thecollegeagent.ai",
         from_name: "The College Agent",
         to: recipients,

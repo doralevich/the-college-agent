@@ -50,7 +50,7 @@ export function buildSoul(p: HermesPersonaInput): string {
   const tone = q(p, "agentTone") || "warm, focused, and direct";
   const responseStyle = q(p, "responseStyle");
   const verbosity = /short|direct|bullet/i.test(responseStyle)
-    ? "Keep replies short and direct — lead with the action, skip the fluff."
+    ? "Keep replies short and direct: lead with the action, skip the fluff."
     : /detail|full|context/i.test(responseStyle)
     ? "Give full context and explanation when it helps."
     : "Concise by default; add detail when it genuinely helps.";
@@ -67,7 +67,7 @@ export function buildSoul(p: HermesPersonaInput): string {
   return [
     "# Identity",
     `You are ${name}, a personal AI agent for a college student. You help them stay on top of ` +
-      "school and life — deadlines, planning, study scheduling, email drafting, the internship " +
+      "school and life: deadlines, planning, study scheduling, email drafting, the internship " +
       "and job search, and proactive check-ins. Be proactive and concrete.",
     "",
     "# Style",
@@ -146,7 +146,7 @@ export function buildCheckinPrompt(p: HermesPersonaInput, label: string): string
   const priority = q(p, "topPriority");
   return [
     `Proactive ${label} check-in for ${who}. You are their personal college agent.`,
-    `Review what matters right now — ${topics}${priority ? `, keeping their top priority (${priority}) in mind` : ""} —`,
+    `Review what matters right now: ${topics}${priority ? `, keeping their top priority (${priority}) in mind` : ""}.`,
     "and send a short, friendly, concrete message with the few things to focus on and any deadlines coming up.",
     "Keep it brief and actionable. If there is genuinely nothing worth flagging, reply with only [SILENT].",
   ].join(" ");
@@ -290,7 +290,7 @@ export async function configureHermes(
       ok,
       detail: ok
         ? warns.length
-          ? `configured (${warns.join("; ")} — non-fatal)`
+          ? `configured (${warns.join("; ")}, non-fatal)`
           : "configured"
         : `exec exit=${res.exit_code} stderr=${(res.stderr || "").slice(0, 300)}`,
     };

@@ -52,7 +52,7 @@ export default function SetupPage() {
             </div>
             <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--navy)", marginBottom: 12 }}>Setup saved.</h1>
             <p style={{ fontSize: 16, color: "rgba(11,23,41,.6)", lineHeight: 1.7, marginBottom: 32 }}>
-              Your technical setup is saved. Head back to your dashboard — once you&apos;ve finished
+              Your technical setup is saved. Head back to your dashboard. Once you&apos;ve finished
               onboarding, you can create your agent.
             </p>
             <a href="/dashboard" className="btn-purple">Back to Dashboard</a>
@@ -87,11 +87,11 @@ export default function SetupPage() {
               isOpen={openSection === "telegram"}
               onToggle={() => toggle("telegram")}
             >
-              <Step>Open Telegram and search for <strong>@BotFather</strong> — the official blue-check bot.</Step>
+              <Step>Open Telegram and search for <strong>@BotFather</strong>, the official blue-check bot.</Step>
               <Step>Start a chat and send the command <Code>/newbot</Code>.</Step>
-              <Step>BotFather asks for a <strong>display name</strong> (e.g. <Code>Nova Assistant</Code>) — this is what you see.</Step>
-              <Step>Then it asks for a <strong>username</strong> — must end in <Code>bot</Code> (e.g. <Code>NovaAssistant_bot</Code>).</Step>
-              <Step>BotFather gives you a <strong>Token</strong> — a long string like <Code>123456789:ABCdef...</Code> — copy it below.</Step>
+              <Step>BotFather asks for a <strong>display name</strong> (e.g. <Code>Nova Assistant</Code>). This is what you see.</Step>
+              <Step>Then it asks for a <strong>username</strong>, which must end in <Code>bot</Code> (e.g. <Code>NovaAssistant_bot</Code>).</Step>
+              <Step>BotFather gives you a <strong>Token</strong>, a long string like <Code>123456789:ABCdef...</Code>. Copy it below.</Step>
             </Instructions>
             <CredField label="Telegram Bot Token" hint="Format: 123456789:ABCdef..." optional>
               <input type="password" placeholder="123456789:ABCdef..." value={form.telegramToken} onChange={e => set("telegramToken", e.target.value)} autoComplete="off" />
@@ -107,7 +107,7 @@ export default function SetupPage() {
             >
               <Step>Open Telegram and search for <strong>@userinfobot</strong>.</Step>
               <Step>Start a chat and press <strong>Start</strong> (or send any message).</Step>
-              <Step>It replies with your account info — copy the numeric <strong>Id</strong> (e.g. <Code>123456789</Code>).</Step>
+              <Step>It replies with your account info. Copy the numeric <strong>Id</strong> (e.g. <Code>123456789</Code>).</Step>
               <Step>This is how Hermes knows it&apos;s really you when you message your bot.</Step>
             </Instructions>
             <CredField label="Telegram User ID" hint="Numbers only, e.g. 123456789" optional>
@@ -124,9 +124,9 @@ export default function SetupPage() {
             >
               <Step>Go to <strong>console.anthropic.com</strong> and sign in (or create an account).</Step>
               <Step>Open <strong>Settings → API Keys</strong> and click <strong>Create Key</strong>.</Step>
-              <Step>Copy the key — it starts with <Code>sk-ant-</Code> — and paste it below.</Step>
+              <Step>Copy the key (it starts with <Code>sk-ant-</Code>) and paste it below.</Step>
             </Instructions>
-            <CredField label="Anthropic API Key" hint="Optional — starts with sk-ant-" optional>
+            <CredField label="Anthropic API Key" hint="Optional, starts with sk-ant-" optional>
               <input type="password" placeholder="sk-ant-..." value={form.anthropicKey} onChange={e => set("anthropicKey", e.target.value)} autoComplete="off" />
             </CredField>
           </CredBlock>
@@ -140,9 +140,9 @@ export default function SetupPage() {
             >
               <Step>Go to <strong>platform.openai.com</strong> and sign in (or create an account).</Step>
               <Step>Open <strong>API keys</strong> and click <strong>Create new secret key</strong>.</Step>
-              <Step>Copy the key — it starts with <Code>sk-</Code> — and paste it below.</Step>
+              <Step>Copy the key (it starts with <Code>sk-</Code>) and paste it below.</Step>
             </Instructions>
-            <CredField label="OpenAI API Key" hint="Optional — starts with sk-" optional>
+            <CredField label="OpenAI API Key" hint="Optional, starts with sk-" optional>
               <input type="password" placeholder="sk-..." value={form.openaiKey} onChange={e => set("openaiKey", e.target.value)} autoComplete="off" />
             </CredField>
           </CredBlock>
@@ -183,7 +183,7 @@ function CredBlock({ num, label, children }: { num: string; label: string; child
   return (
     <div style={{ background: "#fff", border: "1px solid rgba(11,23,41,.08)", borderRadius: 12, marginBottom: 16, padding: "28px 28px 28px" }}>
       <p style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--green)", marginBottom: 20 }}>
-        {num} — {label}
+        {num}: {label}
       </p>
       {children}
     </div>

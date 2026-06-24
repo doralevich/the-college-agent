@@ -53,7 +53,7 @@ const TAG_TEXT: Record<string, string> = {
 const SCENARIOS = [
   {
     before: { headline: "Sunday night panic.", body: "What's due this week? Three tabs open. Canvas won't load. Texts flying. Nothing organized. Sleep at 1am, still uncertain." },
-    after:  { headline: "Friday briefing. Done.", body: "Every Friday at 4pm, the agent sends a prioritized week-ahead — deadlines, reminders, what can wait. Sunday nights are quiet now." },
+    after:  { headline: "Friday briefing. Done.", body: "Every Friday at 4pm, the agent sends a prioritized week-ahead: deadlines, reminders, what can wait. Sunday nights are quiet now." },
   },
   {
     before: { headline: "Missed it by two hours.", body: "The Handshake internship posting closed. No one flagged it. The deadline came and went. Another opportunity gone." },

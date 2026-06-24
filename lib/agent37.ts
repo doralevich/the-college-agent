@@ -51,7 +51,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
     let message = err.message || res.statusText;
     if (res.status === 402) {
       // Almost always an unfunded wallet at create/start time — point the operator at billing.
-      message = `${message} (Agent37 payment required — fund your wallet under Cloud → Billing in the dashboard, then retry.)`;
+      message = `${message} (Agent37 payment required: fund your wallet under Cloud → Billing in the dashboard, then retry.)`;
     }
     throw new Agent37Error(res.status, err.code || "error", message);
   }

@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { apiFetch } from "@/lib/api";
+import { isActiveStatus } from "@/lib/format";
+import type { MergedAgent } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +18,24 @@ export function SettingsView() {
   const [syncedId, setSyncedId] = useState(current?.id);
   const [busy, setBusy] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  // Whether any agent in this workspace has a live instance up. Deleting the workspace
+  // tears its agents down, so we block that while one is active and tell the student to
+  // stop/delete it first. Best-effort UI gate — the DELETE route enforces the same rule.
+  const [hasActiveAgent, setHasActiveAgent] = useState(false);
+
+  const workspaceId = current?.id;
+  useEffect(() => {
+    if (!workspaceId) return;
+    let cancelled = false;
+    apiFetch<{ agents: MergedAgent[] }>(`/api/agents?workspace=${workspaceId}`)
+      .then(({ agents }) => {
+        if (!cancelled) setHasActiveAgent(agents.some((a) => isActiveStatus(a.live_status)));
+      })
+      .catch(() => {}); // non-fatal: the API still blocks the delete if an agent is active
+    return () => {
+      cancelled = true;
+    };
+  }, [workspaceId]);
 
   // Reset the editable field if the active workspace changes — the render-time pattern
   // React recommends over a state-syncing effect.
@@ -102,7 +122,18 @@ export function SettingsView() {
             Permanently deletes this workspace and your agent, and resets your onboarding. To get a
             new agent you&apos;ll fill out the setup forms again.
           </p>
-          <Button variant="destructive" className="mt-3" onClick={() => setDeleting(true)}>
+          {hasActiveAgent && (
+            <p className="mt-2 text-sm text-destructive">
+              Your agent is still active. Stop or delete it first — you can&apos;t delete the
+              workspace while it&apos;s running.
+            </p>
+          )}
+          <Button
+            variant="destructive"
+            className="mt-3"
+            disabled={hasActiveAgent}
+            onClick={() => setDeleting(true)}
+          >
             Delete workspace
           </Button>
         </div>

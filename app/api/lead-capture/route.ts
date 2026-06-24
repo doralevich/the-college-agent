@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
             from_email: "noreply@thecollegeagent.ai",
             from_name: "The College Agent",
             to: [{ email: "david@apolloclaw.ai", name: "David", type: "to" }],
-            subject: `New Lead — ${data.firstName} ${data.lastName} (${data.school || "Unknown School"})`,
+            subject: `New Lead: ${data.firstName} ${data.lastName} (${data.school || "Unknown School"})`,
             html: `
               <h2>New Lead Captured</h2>
               <p style="font-family:sans-serif;font-size:14px;color:#555">
@@ -42,10 +42,10 @@ export async function POST(req: NextRequest) {
               <table style="font-family:sans-serif;font-size:14px;border-collapse:collapse">
                 <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Name</td><td>${data.firstName} ${data.lastName}</td></tr>
                 <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">School Email</td><td>${data.schoolEmail}</td></tr>
-                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Personal Email</td><td>${data.personalEmail || "—"}</td></tr>
-                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Mobile</td><td>${data.mobile || "—"}</td></tr>
-                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">School</td><td>${data.school || "—"}</td></tr>
-                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Year</td><td>${data.year || "—"}</td></tr>
+                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Personal Email</td><td>${data.personalEmail || "N/A"}</td></tr>
+                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Mobile</td><td>${data.mobile || "N/A"}</td></tr>
+                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">School</td><td>${data.school || "N/A"}</td></tr>
+                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Year</td><td>${data.year || "N/A"}</td></tr>
               </table>
               <p style="margin-top:16px;font-size:13px;color:#888">Stored in Supabase → the-college-agent → leads</p>
             `,

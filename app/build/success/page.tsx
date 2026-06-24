@@ -24,7 +24,7 @@ export default function CheckoutSuccessPage() {
             Payment received
           </h1>
           <p style={{ fontSize: 15, color: "rgba(11,23,41,.6)", lineHeight: 1.7, marginBottom: 32, maxWidth: 440, marginLeft: "auto", marginRight: "auto" }}>
-            Your College Agent order is confirmed. We&apos;re setting up your account now — next,
+            Your College Agent order is confirmed. We&apos;re setting up your account now. Next,
             complete a quick onboarding and your agent goes live automatically. A confirmation
             email is on its way.
           </p>

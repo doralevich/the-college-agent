@@ -9,7 +9,7 @@ const TIMEZONES = ["Eastern Time (ET)","Central Time (CT)","Mountain Time (MT)",
 const LMS_OPTIONS = ["Canvas","Blackboard","Moodle","D2L / Brightspace","Google Classroom","Other / None"];
 const ACADEMIC_CHALLENGES = ["Time management","Procrastination","Test anxiety","Writing papers","Math / quantitative work","Staying organized","Group projects","Heavy reading load","Balancing work & school","Participating in class"];
 const GPA_GOALS = ["3.8 – 4.0","3.5 – 3.7","3.0 – 3.4","2.5 – 2.9","Pass / No fail","Not focused on GPA right now"];
-const STUDY_STYLES = ["Alone","In groups","Both — depends on the subject"];
+const STUDY_STYLES = ["Alone","In groups","Both, depends on the subject"];
 const STUDY_METHODS = ["Flashcards","Rewriting notes","Practice tests","YouTube / videos","Tutoring","Study guides","Pomodoro technique","Mind maps","Working through problems","Reading the textbook"];
 const STUDY_TIMES = ["Early morning (before 8am)","Morning (8am – 12pm)","Afternoon (12pm – 5pm)","Evening (5pm – 9pm)","Late night (9pm+)","Varies day to day"];
 const STUDY_LOCATIONS = ["Dorm room / bedroom","Library","Coffee shop","Campus study lounge","Home","Outdoors / anywhere","Varies"];
@@ -17,20 +17,20 @@ const SESSION_LENGTHS = ["Under 30 minutes","30 – 60 minutes","1 – 2 hours",
 const TIMES_OF_DAY = ["Before 6am","6 – 7am","7 – 8am","8 – 9am","9 – 10am","10am – 12pm","12 – 2pm","2 – 4pm","4 – 6pm","6 – 8pm","8 – 10pm","10pm – 12am","After midnight","Varies"];
 const SLEEP_TIMES = ["Before 9pm","9 – 10pm","10 – 11pm","11pm – 12am","12 – 1am","1 – 2am","After 2am","Varies"];
 const WORK_STATUSES = ["Not working","Part-time job (on campus)","Part-time job (off campus)","Full-time job","Internship or co-op","Freelance / self-employed"];
-const GREEK = ["Yes — fraternity","Yes — sorority","No","Interested / currently rushing"];
+const GREEK = ["Yes, fraternity","Yes, sorority","No","Interested / currently rushing"];
 const SOCIAL_ACTIVITIES = ["Parties / social events","Bars / nightlife","Concerts & shows","Gaming","Intramural sports","Outdoor recreation","Dating / dating apps","Heavy social media user","Road trips / travel","Dining out frequently"];
-const SOCIAL_FREQ = ["Very active — something almost every day","A few times a week","Mostly weekends","Occasional — mostly focused on school","Rarely — I keep to myself"];
+const SOCIAL_FREQ = ["Very active: something almost every day","A few times a week","Mostly weekends","Occasional, mostly focused on school","Rarely, I keep to myself"];
 const CLUB_TYPES = ["Academic / honor society","Cultural / international","Sports / athletics","Arts / performance","Pre-professional (law, med, business)","Political / advocacy","Religious / spiritual","Community service","Media / journalism","STEM / research","Entrepreneurship"];
 const LEADERSHIP_ROLES = ["President / Chair","Vice President / Officer","Committee lead","General member","Not currently in any clubs"];
 const CLUB_TIME = ["Under 2 hours / week","2 – 5 hours / week","5 – 10 hours / week","10+ hours / week"];
 const VOLUNTEERING = ["Yes, regularly","Occasionally","Not right now, but I'm interested","No"];
 const CAUSE_AREAS = ["Education / tutoring","Environmental","Hunger / homelessness","Healthcare / mental health","Animal welfare","Social justice","Faith-based","International / global causes"];
-const SLEEP_QUALITY = ["Great — I wake up feeling rested","OK — some nights are rough","Poor — I rarely feel rested","Very inconsistent"];
-const STRESS_LEVELS = ["1 — Very low","2","3","4","5 — Moderate","6","7","8","9","10 — Extremely high"];
+const SLEEP_QUALITY = ["Great, I wake up feeling rested","OK, some nights are rough","Poor, I rarely feel rested","Very inconsistent"];
+const STRESS_LEVELS = ["1: Very low","2","3","4","5: Moderate","6","7","8","9","10: Extremely high"];
 const BURNOUT_SIGNALS = ["Skipping class","Procrastinating more than usual","Withdrawing from friends","Trouble sleeping","Loss of motivation","Emotional exhaustion","Irritability or mood swings","Overeating or undereating"];
-const COMM_STYLES = ["Formal — I prefer structured, professional writing","Casual — conversational and relaxed","It depends on who I'm writing to"];
+const COMM_STYLES = ["Formal: I prefer structured, professional writing","Casual: conversational and relaxed","It depends on who I'm writing to"];
 const CHANNELS = ["Email","Text / SMS","Telegram","Discord","Slack","WhatsApp","Phone call"];
-const RESPONSE_STYLES = ["Short and direct — bullet points, no fluff","Detailed — full context and explanation","Depends on the situation"];
+const RESPONSE_STYLES = ["Short and direct: bullet points, no fluff","Detailed: full context and explanation","Depends on the situation"];
 const EMAIL_RESPONSE = ["Same day","Within 24 hours","Within 48 hours","A few days is fine","I tend to let emails sit"];
 const APPS_LIST = ["Notion","Google Docs","Microsoft Word","Obsidian","Evernote","OneNote","Trello","Asana","Todoist","Things 3","Slack","Discord","Telegram","LinkedIn","Handshake","Zoom","Microsoft Teams","Gmail","Outlook","ChatGPT","Copilot","Spotify"];
 const DEVICES = ["MacBook","Windows laptop","iPad / tablet","iPhone","Android phone","Desktop PC","Chromebook"];
@@ -43,13 +43,13 @@ const START_DOING = ["Building a weekly schedule","Checking emails daily","Netwo
 const PRIORITIES = ["Academic performance","Career / internship search","Mental health & wellbeing","Social life & relationships","Health & fitness","Financial stability","Personal growth"];
 const INDUSTRIES = ["Finance / Banking","Consulting","Technology / Software","Healthcare / Medicine","Law","Marketing / PR","Media / Entertainment","Non-profit / Social impact","Government / Policy","Real estate","Entrepreneurship / Startups","Education","Engineering","Research / Academia","Not sure yet"];
 const GRAD_YEARS = ["2025","2026","2027","2028","2029","2030+"];
-const INTERNSHIP_STATUS = ["Currently in an internship","Actively searching right now","Have offers — deciding","Plan to search next semester","Not focused on internships right now"];
+const INTERNSHIP_STATUS = ["Currently in an internship","Actively searching right now","Have offers, deciding","Plan to search next semester","Not focused on internships right now"];
 const JOB_SEARCH = ["Updating my resume","Reaching out on LinkedIn","Attending career fairs","Applying on Handshake or LinkedIn","Sending cold emails","Practicing interview questions","Building a portfolio or projects","Working with the career center"];
 const STRESSORS = ["Deadlines and workload","Grades / GPA pressure","Social pressure","Financial stress","Family expectations","Career uncertainty","Relationship issues","Health concerns","Poor time management","FOMO"];
 const FALLS_THROUGH = ["Emails from professors or advisors","Assignment deadlines","Internship or job applications","Advisor meetings","Club or organization obligations","Friend plans","Personal health appointments","Financial aid tasks"];
 const HANDLE_FIRST = ["Email drafting and follow-ups","Deadline tracking and reminders","Internship / job search support","Study scheduling","Weekly planning briefings","Meeting and class prep","General task management"];
-const TONES = ["Professional and polished","Friendly and conversational","Motivational / coaching style","Short and direct — just give me the facts","Warm but focused"];
-const CHECKIN_FREQ = ["Daily morning briefing","Twice a week","Weekly digest only","Only when I ask","Real-time — whenever something comes up"];
+const TONES = ["Professional and polished","Friendly and conversational","Motivational / coaching style","Short and direct: just give me the facts","Warm but focused"];
+const CHECKIN_FREQ = ["Daily morning briefing","Twice a week","Weekly digest only","Only when I ask","Real-time, whenever something comes up"];
 const AGENT_TOPICS = ["Upcoming deadlines","Internship / job opportunities","Unanswered emails","Schedule conflicts","Study reminders","Weekly goal check-ins","Mental health check-ins","Campus events","Networking suggestions"];
 
 // ─── Wizard config ────────────────────────────────────────────────────────────
@@ -151,7 +151,7 @@ export default function OnboardPage() {
           <div style={{ maxWidth: 680, margin: "0 auto" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: ".08em", color: "var(--green)", textTransform: "uppercase" }}>
-                Step {step} of {STEPS.length} — {s.label}
+                Step {step} of {STEPS.length}: {s.label}
               </span>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(11,23,41,.35)" }}>{Math.round(progress)}% complete</span>
             </div>
@@ -278,7 +278,7 @@ export default function OnboardPage() {
                 <RadioGrid options={GREEK} name="greekLife" selected={form.greekLife as string} onSelect={v => set("greekLife", v)} cols={2} />
               </Field>
               <Field label="Sports teams (varsity, club, or intramural)?">
-                <input type="text" placeholder="e.g. Club soccer, intramural basketball — or leave blank" value={form.sportsTeams as string} onChange={e => set("sportsTeams", e.target.value)} />
+                <input type="text" placeholder="e.g. Club soccer, intramural basketball, or leave blank" value={form.sportsTeams as string} onChange={e => set("sportsTeams", e.target.value)} />
               </Field>
               <Field label="How socially active are you?">
                 <RadioGrid options={SOCIAL_FREQ} name="socialFreq" selected={form.socialFrequency as string} onSelect={v => set("socialFrequency", v)} cols={1} />
@@ -316,7 +316,7 @@ export default function OnboardPage() {
 
           {/* ── Step 5: Mental Health & Wellbeing ── */}
           {step === 5 && (
-            <Section title="Mental health & wellbeing." sub="Your agent will use this to look out for you — not judge you.">
+            <Section title="Mental health & wellbeing." sub="Your agent will use this to look out for you, not judge you.">
               <Field label="How would you rate your sleep quality?">
                 <RadioGrid options={SLEEP_QUALITY} name="sleepQuality" selected={form.sleepQuality as string} onSelect={v => set("sleepQuality", v)} cols={1} />
               </Field>
@@ -327,7 +327,7 @@ export default function OnboardPage() {
                 <CheckGrid options={BURNOUT_SIGNALS} selected={form.burnoutSignals as string[]} onToggle={v => toggle("burnoutSignals", v)} cols={2} />
               </Field>
               <Field label="Should your agent flag you when you look overloaded?">
-                <RadioGrid options={["Yes — flag me when my schedule looks too full","Yes — check in if I haven't responded in a while","No — I'll manage it myself"]} name="agentWellbeingFlag" selected={form.agentWellbeingFlag as string} onSelect={v => set("agentWellbeingFlag", v)} cols={1} />
+                <RadioGrid options={["Yes, flag me when my schedule looks too full","Yes, check in if I haven't responded in a while","No, I'll manage it myself"]} name="agentWellbeingFlag" selected={form.agentWellbeingFlag as string} onSelect={v => set("agentWellbeingFlag", v)} cols={1} />
               </Field>
               <Field label="Anything your agent should never bring up? (optional)">
                 <textarea rows={2} placeholder="e.g. Please don't ask about my family situation" value={form.wellbeingBoundaries as string} onChange={e => set("wellbeingBoundaries", e.target.value)} />
@@ -405,7 +405,7 @@ export default function OnboardPage() {
                 <RadioGrid options={INTERNSHIP_STATUS} name="internshipStatus" selected={form.internshipStatus as string} onSelect={v => set("internshipStatus", v)} cols={1} />
               </Field>
               <Field label="Is your resume ready to send?">
-                <RadioGrid options={["Yes — updated and ready to go","Needs updating","I don't have one yet"]} name="resumeReady" selected={form.resumeReady as string} onSelect={v => set("resumeReady", v)} cols={1} />
+                <RadioGrid options={["Yes, updated and ready to go","Needs updating","I don't have one yet"]} name="resumeReady" selected={form.resumeReady as string} onSelect={v => set("resumeReady", v)} cols={1} />
               </Field>
               <Field label="Job search activities you're doing (check all that apply)">
                 <CheckGrid options={JOB_SEARCH} selected={form.jobSearchActivities as string[]} onToggle={v => toggle("jobSearchActivities", v)} cols={2} />
@@ -424,7 +424,7 @@ export default function OnboardPage() {
               </Field>
 
               {/* Resume Upload */}
-              <Field label="Upload your resume (optional — PDF preferred)">
+              <Field label="Upload your resume (optional, PDF preferred)">
                 <div
                   onClick={() => fileRef.current?.click()}
                   style={{ border: "2px dashed rgba(11,23,41,.15)", borderRadius: 8, padding: "24px", textAlign: "center", cursor: "pointer", background: "#fff", transition: "border-color .15s" }}
@@ -436,7 +436,7 @@ export default function OnboardPage() {
                   ) : (
                     <>
                       <p style={{ fontSize: 14, color: "rgba(11,23,41,.5)", marginBottom: 4 }}>Click to upload your resume</p>
-                      <p style={{ fontSize: 12, color: "rgba(11,23,41,.3)", fontFamily: "var(--font-mono)" }}>PDF, DOC, or DOCX — max 5MB</p>
+                      <p style={{ fontSize: 12, color: "rgba(11,23,41,.3)", fontFamily: "var(--font-mono)" }}>PDF, DOC, or DOCX, max 5MB</p>
                     </>
                   )}
                 </div>
@@ -447,7 +447,7 @@ export default function OnboardPage() {
 
           {/* ── Step 8: Your Agent ── */}
           {step === 8 && (
-            <Section title="Your agent's personality." sub="The last step — how you want it to show up for you every day.">
+            <Section title="Your agent's personality." sub="The last step: how you want it to show up for you every day.">
               <Field label="How should your agent talk to you?">
                 <RadioGrid options={TONES} name="agentTone" selected={form.agentTone as string} onSelect={v => set("agentTone", v)} cols={1} />
               </Field>
@@ -461,7 +461,7 @@ export default function OnboardPage() {
                 <textarea rows={2} placeholder="e.g. Don't bring up my relationship status or finances" value={form.agentOffLimits as string} onChange={e => set("agentOffLimits", e.target.value)} />
               </Field>
               <Field label="Anything else your agent should always know about you?">
-                <textarea rows={4} placeholder="Habits, preferences, context, quirks — anything that didn't fit above. The more you share, the better your agent." value={form.anythingElse as string} onChange={e => set("anythingElse", e.target.value)} />
+                <textarea rows={4} placeholder="Habits, preferences, context, quirks, anything that didn't fit above. The more you share, the better your agent." value={form.anythingElse as string} onChange={e => set("anythingElse", e.target.value)} />
               </Field>
             </Section>
           )}

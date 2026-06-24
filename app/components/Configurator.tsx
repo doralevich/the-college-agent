@@ -77,7 +77,7 @@ export const INTEGRATIONS: Record<string, string[]> = {
 const TIERS: { id: Tier; badge: string; name: string; price: number; maxInt: number; readyTime: string; desc: string; features: string[] }[] = [
   {
     id: "undergraduate", badge: "Most Popular", name: "The Undergraduate", price: 999, maxInt: 3, readyTime: "30 min – 72 hours",
-    desc: "The fastest path to your own AI agent. Submit your completed onboarding form and our proprietary software spins up your agent — ready within 30 minutes to 72 hours.",
+    desc: "The fastest path to your own AI agent. Submit your completed onboarding form and our proprietary software spins up your agent, ready within 30 minutes to 72 hours.",
     features: [
       "3 integrations included",
       "Agent live in 30 min – 72 hours",
@@ -89,7 +89,7 @@ const TIERS: { id: Tier; badge: string; name: string; price: number; maxInt: num
   },
   {
     id: "graduate", badge: "Advanced", name: "The Graduate", price: 1499, maxInt: 5, readyTime: "30 min – 72 hours",
-    desc: "More depth, more personalization. Submit your enhanced onboarding form and our proprietary software develops your agent within 30 minutes to 72 hours — plus a live call and 7 days of post-launch support.",
+    desc: "More depth, more personalization. Submit your enhanced onboarding form and our proprietary software develops your agent within 30 minutes to 72 hours, plus a live call and 7 days of post-launch support.",
     features: [
       "5 integrations included",
       "Agent live in 30 min – 72 hours",
@@ -103,7 +103,7 @@ const TIERS: { id: Tier; badge: string; name: string; price: number; maxInt: num
   },
   {
     id: "scholar", badge: "Most Powerful", name: "The Scholar", price: 1999, maxInt: 7, readyTime: "30 min – 72 hours",
-    desc: "Built for high-achievers who want the full picture. Submit your enhanced onboarding form and our proprietary software develops your agent within 30 minutes to 72 hours — backed by a 60-minute deep-dive call and 14 days of post-launch support.",
+    desc: "Built for high-achievers who want the full picture. Submit your enhanced onboarding form and our proprietary software develops your agent within 30 minutes to 72 hours, backed by a 60-minute deep-dive call and 14 days of post-launch support.",
     features: [
       "7 integrations included",
       "Agent live in 30 min – 72 hours",
@@ -318,7 +318,7 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
                   price: "+$650",
                   priceColor: "var(--green)",
                   time: "Agent ready in 30 minutes to 72 hours",
-                  desc: "A dedicated 60-minute deep-dive call before your form is submitted. Our proprietary software develops your agent with advanced skills, custom workflows, and deep personalization — live within 30 minutes to 72 hours.",
+                  desc: "A dedicated 60-minute deep-dive call before your form is submitted. Our proprietary software develops your agent with advanced skills, custom workflows, and deep personalization, live within 30 minutes to 72 hours.",
                 },
               ] as const).map((opt) => (
                 <div
@@ -408,7 +408,7 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
           <div className="order-row">
             <div className="order-label">Integrations</div>
             <div className={`order-value ${maxInt ? "" : "placeholder"}`}>
-              {maxInt ? `Up to ${maxInt} — chosen at checkout` : "Select plan first"}
+              {maxInt ? `Up to ${maxInt}, chosen at checkout` : "Select plan first"}
             </div>
           </div>
           <div className="order-row">

@@ -136,7 +136,7 @@ export function AgentActionsMenu({
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            {running ? "Open Minions — chat with your agent" : "Start the agent to open it"}
+            {running ? "Open Minions to chat with your agent" : "Start the agent to open it"}
           </TooltipContent>
         </Tooltip>
 
@@ -192,7 +192,7 @@ export function AgentActionsMenu({
                 <ArrowDownToLine className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Update available — roll to the latest image</TooltipContent>
+            <TooltipContent>Update available: roll to the latest image</TooltipContent>
           </Tooltip>
         )}
 
