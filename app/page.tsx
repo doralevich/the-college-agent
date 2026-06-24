@@ -107,7 +107,7 @@ export default function Home() {
             <a href="#how-it-works" className="btn-outline">See How It Works</a>
           </div>
           <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.3)", letterSpacing: ".04em" }}>
-            Built on Apollo[Claw] infrastructure. Live in as little as 24 hours.
+            Built on Apollo[Claw] infrastructure. Live in 30 minutes to 72 hours.
           </p>
         </div>
       </section>
@@ -172,7 +172,7 @@ export default function Home() {
               { n: "1", phase: "Step 1", title: "Tell Us About Yourself", desc: "Fill out a quick profile — your school, year, AI comfort level, and the goals you want your agent to tackle. Takes under two minutes." },
               { n: "2", phase: "Step 2", title: "Build Your Agent", desc: "Choose your agent tier (The Undergraduate, The Graduate, or The Scholar), your hosting plan, support level, and onboarding experience. Standard or White Glove — your call." },
               { n: "3", phase: "Step 3", title: "Complete Your Onboarding Form", desc: "After checkout, you'll receive a personalized onboarding form. This is where your agent gets its identity — your communication style, your schedule, your tools, your goals." },
-              { n: "4", phase: "Step 4", title: "Your Agent Goes Live", desc: "The Undergraduate and Graduate agents are ready within 24–48 hours. The Scholar takes up to 7 days. White Glove onboarding adds a dedicated 60-minute build call — ready in 14 days." },
+              { n: "4", phase: "Step 4", title: "Your Agent Goes Live", desc: "Once your completed onboarding form is submitted, our proprietary software develops and spins up your agent — live in 30 minutes to 72 hours. White Glove includes a dedicated 60-minute deep-dive call before your form goes in." },
             ].map((step) => (
               <div key={step.n} style={{ display: "flex", gap: 20 }}>
                 <div className="proc-circle" style={{ flexShrink: 0 }}>{step.n}</div>
