@@ -95,7 +95,7 @@ export default function Home() {
             <span style={{ color: "var(--green)", fontSize: 14 }}>&#9670;</span>
             Apollo[Claw] College Edition
           </div>
-          <h1 className="hero-h1" style={{ color: "#fff", whiteSpace: "nowrap" }}>
+          <h1 className="hero-h1" style={{ color: "#fff" }}>
             The edge that lasts four years.
           </h1>
           <p className="hero-sub">
@@ -169,8 +169,8 @@ export default function Home() {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px 48px", maxWidth: 1000, margin: "0 auto" }}>
             {[
-              { n: "1", phase: "Step 1", title: "Tell Us About Yourself", desc: "Fill out a quick profile — your school, year, AI comfort level, and the goals you want your agent to tackle. Takes under two minutes." },
-              { n: "2", phase: "Step 2", title: "Build Your Agent", desc: "Choose your agent tier (The Undergraduate, The Graduate, or The Scholar), your hosting plan, support level, and onboarding experience. Standard or White Glove — your call." },
+              { n: "1", phase: "Step 1", title: "Tell Us About Yourself", desc: "Fill out a quick profile with your school, year, and the goals you want your agent to tackle. Takes under two minutes." },
+              { n: "2", phase: "Step 2", title: "Build Your Agent", desc: "Choose your agent tier (The Undergraduate, The Graduate, or The Scholar), your hosting plan, support level, and onboarding experience. Standard or White Glove." },
               { n: "3", phase: "Step 3", title: "Complete Your Onboarding Form", desc: "After checkout, you'll receive a personalized onboarding form. This is where your agent gets its identity — your communication style, your schedule, your tools, your goals." },
               { n: "4", phase: "Step 4", title: "Your Agent Goes Live", desc: "Once your completed onboarding form is submitted, our proprietary software develops and spins up your agent — live in 30 minutes to 72 hours. White Glove includes a dedicated 60-minute deep-dive call before your form goes in." },
             ].map((step) => (
