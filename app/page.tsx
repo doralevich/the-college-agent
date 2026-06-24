@@ -59,21 +59,6 @@ const jsonLd = {
   ],
 };
 
-const INTEGRATIONS: Record<string, string[]> = {
-  "School & LMS": ["Canvas", "Blackboard", "Brightspace (D2L)", "Google Classroom", "Moodle", "Gradescope"],
-  "Notes & Knowledge": ["Notion", "Google Docs", "Obsidian", "Microsoft OneNote", "Apple Notes", "Roam Research"],
-  "Cloud Storage": ["Google Drive", "iCloud Drive", "Dropbox", "OneDrive"],
-  "Email & Calendar": ["Gmail", "Google Calendar", "Outlook / Microsoft 365", "Apple Mail", "Apple Calendar", "Calendly"],
-  "Messaging": ["iMessage", "WhatsApp", "Telegram", "Discord", "Slack", "GroupMe"],
-  "Tasks & Planning": ["Todoist", "Apple Reminders", "TickTick", "Things 3", "Google Tasks", "Structured"],
-  "Research & Writing": ["Zotero", "Grammarly", "Overleaf", "Google Scholar", "Perplexity AI", "ChatGPT"],
-  "Career & Internships": ["LinkedIn", "Handshake", "GitHub", "Indeed", "Glassdoor", "Canva"],
-  "Finance & Payments": ["Venmo", "Cash App", "Splitwise", "Zelle", "YNAB", "Robinhood"],
-  "Health & Wellness": ["Apple Health", "MyFitnessPal", "Headspace", "Calm", "Strava", "Nike Run Club"],
-  "Social": ["Instagram", "TikTok", "Snapchat", "Reddit", "X (Twitter)", "BeReal"],
-  "Entertainment": ["Spotify", "Apple Music", "YouTube", "Audible", "Pocket Casts"],
-};
-
 export default function Home() {
   return (
     <>
