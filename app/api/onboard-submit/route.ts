@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOptionalUserId } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { renameWorkspaceFromIntake } from "@/lib/workspaces";
 
 const supabase = createAdminClient();
 
@@ -50,6 +51,17 @@ export async function POST(req: NextRequest) {
     }], { onConflict: "user_id" });
 
     if (dbError) throw dbError;
+
+    // Now that we know the student's name, rename their workspace from the email-handle
+    // default (set on first dashboard visit) to "<First>'s Workspace". Best-effort —
+    // never fail the submission over a cosmetic rename.
+    if (userId) {
+      try {
+        await renameWorkspaceFromIntake(supabase, userId, data.firstName);
+      } catch (err) {
+        console.error("onboard-submit: workspace rename failed:", err);
+      }
+    }
 
     const mandrillKey = process.env.MANDRILL_API_KEY;
     if (mandrillKey) {
