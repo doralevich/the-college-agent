@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getOptionalUserId } from "@/lib/auth";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -28,7 +29,11 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Tie to the logged-in student (if any) so the dashboard checklist sees completion.
+    const userId = await getOptionalUserId();
+
     const { error: dbError } = await supabase.from("onboard_submissions").insert([{
+      user_id: userId,
       first_name: data.firstName,
       last_name: data.lastName,
       school_email: data.schoolEmail,

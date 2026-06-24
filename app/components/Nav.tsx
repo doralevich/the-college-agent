@@ -40,7 +40,7 @@ export default function Nav() {
 
           {/* Desktop CTA */}
           <div className="nav-cta-desktop">
-            <a href="https://www.apolloclaw.ai/login" className="nav-login-btn">
+            <a href="/login" className="nav-login-btn">
               Log In
             </a>
             <a href="/build" className="btn-purple" style={{ fontSize: 12, padding: "10px 22px" }}>
@@ -72,7 +72,7 @@ export default function Nav() {
             <a href="/build" className="btn-purple nav-mobile-cta" onClick={() => setOpen(false)}>
               Build My Agent
             </a>
-            <a href="https://www.apolloclaw.ai/login" className="nav-mobile-login" onClick={() => setOpen(false)}>
+            <a href="/login" className="nav-mobile-login" onClick={() => setOpen(false)}>
               Log In
             </a>
           </div>

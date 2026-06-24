@@ -3,19 +3,13 @@ import { useState } from "react";
 import Nav from "../components/Nav";
 
 interface CredForm {
-  aiProvider: "anthropic" | "openai" | "";
-  anthropicKey: string;
-  openaiKey: string;
   telegramToken: string;
-  telegramUsername: string;
+  telegramUserId: string;
 }
 
 export default function SetupPage() {
-  const [form, setForm] = useState<CredForm>({
-    aiProvider: "", anthropicKey: "", openaiKey: "",
-    telegramToken: "", telegramUsername: "",
-  });
-  const [openSection, setOpenSection] = useState<string | null>(null);
+  const [form, setForm] = useState<CredForm>({ telegramToken: "", telegramUserId: "" });
+  const [openSection, setOpenSection] = useState<string | null>("telegram");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -23,8 +17,9 @@ export default function SetupPage() {
   const set = (k: keyof CredForm, v: string) => setForm(f => ({ ...f, [k]: v }));
   const toggle = (key: string) => setOpenSection(o => o === key ? null : key);
 
-  const apiKeyFilled = form.aiProvider === "anthropic" ? !!form.anthropicKey : form.aiProvider === "openai" ? !!form.openaiKey : false;
-  const isComplete = form.aiProvider && apiKeyFilled && form.telegramToken && form.telegramUsername;
+  // The model is provided by the platform (metered via your plan), so the only
+  // credentials we need are the Telegram bot token + your numeric Telegram user id.
+  const isComplete = !!form.telegramToken && !!form.telegramUserId;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -55,11 +50,12 @@ export default function SetupPage() {
             <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(61,139,61,.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L19 7" stroke="#3d8b3d" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </div>
-            <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--navy)", marginBottom: 12 }}>Setup complete.</h1>
+            <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--navy)", marginBottom: 12 }}>Telegram connected.</h1>
             <p style={{ fontSize: 16, color: "rgba(11,23,41,.6)", lineHeight: 1.7, marginBottom: 32 }}>
-              Your credentials have been received. Your agent will be deployed within 24 hours. Check your email for a confirmation.
+              Your Telegram bot is saved. Head back to your dashboard — if you&apos;ve finished onboarding,
+              your Hermes agent will start provisioning automatically.
             </p>
-            <a href="/" className="btn-purple">Back to Home</a>
+            <a href="/dashboard" className="btn-purple">Back to Dashboard</a>
           </div>
         </main>
       </>
@@ -73,91 +69,18 @@ export default function SetupPage() {
         <div className="dark-section" style={{ padding: "52px 24px" }}>
           <div style={{ maxWidth: 660, margin: "0 auto" }}>
             <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: "rgba(255,255,255,.4)" }}>Technical Setup</span>
-            <h1 style={{ fontSize: 30, fontWeight: 800, color: "#fff", marginTop: 10, marginBottom: 10 }}>Your API Credentials</h1>
+            <h1 style={{ fontSize: 30, fontWeight: 800, color: "#fff", marginTop: 10, marginBottom: 10 }}>Connect Telegram</h1>
             <p style={{ fontSize: 15, color: "rgba(255,255,255,.55)", lineHeight: 1.7 }}>
-              These keys connect your AI agent to the services it needs. Each section walks you through exactly where to find them.
+              Your agent talks to you over Telegram. We just need your bot token and your numeric Telegram
+              user id — the AI model itself is included with your plan, so there are no API keys to paste.
             </p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} style={{ maxWidth: 660, margin: "0 auto", padding: "40px 24px 80px" }}>
 
-          {/* 01 — AI Provider choice */}
-          <CredBlock num="01" label="AI Provider">
-            <p style={{ fontSize: 14, color: "rgba(11,23,41,.55)", marginBottom: 20, lineHeight: 1.6 }}>
-              Your agent runs on one AI provider. Select which one you have an account with — or which one you&apos;d like to use.
-            </p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 24 }}>
-              {[
-                { id: "anthropic", name: "Anthropic", desc: "Claude models. console.anthropic.com" },
-                { id: "openai", name: "OpenAI", desc: "GPT models. platform.openai.com" },
-              ].map(opt => (
-                <label
-                  key={opt.id}
-                  style={{
-                    display: "flex", alignItems: "flex-start", gap: 12, padding: "16px 18px",
-                    border: `2px solid ${form.aiProvider === opt.id ? "var(--green)" : "rgba(11,23,41,.12)"}`,
-                    borderRadius: 8, cursor: "pointer", background: form.aiProvider === opt.id ? "rgba(61,139,61,.04)" : "#fff",
-                    transition: "all .15s",
-                  }}
-                >
-                  <input
-                    type="radio" name="aiProvider" value={opt.id}
-                    checked={form.aiProvider === opt.id}
-                    onChange={() => set("aiProvider", opt.id)}
-                    style={{ marginTop: 3, accentColor: "var(--green)", width: 16, height: 16, flexShrink: 0 }}
-                  />
-                  <div>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: "var(--navy)", marginBottom: 2 }}>{opt.name}</p>
-                    <p style={{ fontSize: 12, color: "rgba(11,23,41,.45)", fontFamily: "var(--font-mono)" }}>{opt.desc}</p>
-                  </div>
-                </label>
-              ))}
-            </div>
-
-            {/* Anthropic instructions + field */}
-            {form.aiProvider === "anthropic" && (
-              <>
-                <Instructions
-                  label="How to get your Anthropic API key"
-                  isOpen={openSection === "anthropic"}
-                  onToggle={() => toggle("anthropic")}
-                >
-                  <Step>Go to <strong>console.anthropic.com</strong> and sign in (or create an account).</Step>
-                  <Step>Click your name in the top right → <strong>API Keys</strong>.</Step>
-                  <Step>Click <strong>Create Key</strong>, give it a name (e.g. <Code>My Agent</Code>), and copy the key immediately — it won&apos;t be shown again.</Step>
-                  <Step>The key starts with <Code>sk-ant-api03-...</Code> — paste it below.</Step>
-                  <Step>Add a payment method and purchase credits. We recommend starting with $20–$50.</Step>
-                </Instructions>
-                <CredField label="Anthropic API Key" hint="Starts with sk-ant-..." required>
-                  <input type="password" placeholder="sk-ant-api03-..." value={form.anthropicKey} onChange={e => set("anthropicKey", e.target.value)} required autoComplete="off" />
-                </CredField>
-              </>
-            )}
-
-            {/* OpenAI instructions + field */}
-            {form.aiProvider === "openai" && (
-              <>
-                <Instructions
-                  label="How to get your OpenAI API key"
-                  isOpen={openSection === "openai"}
-                  onToggle={() => toggle("openai")}
-                >
-                  <Step>Go to <strong>platform.openai.com</strong> and sign in (or create an account).</Step>
-                  <Step>Click your profile in the top right → <strong>API Keys</strong>.</Step>
-                  <Step>Click <strong>Create new secret key</strong>, give it a name (e.g. <Code>My Agent</Code>), and copy it immediately — it won&apos;t be shown again.</Step>
-                  <Step>The key starts with <Code>sk-proj-...</Code> — paste it below.</Step>
-                  <Step>Add a payment method. We recommend starting with $10–$20 in credits.</Step>
-                </Instructions>
-                <CredField label="OpenAI API Key" hint="Starts with sk-proj-..." required>
-                  <input type="password" placeholder="sk-proj-..." value={form.openaiKey} onChange={e => set("openaiKey", e.target.value)} required autoComplete="off" />
-                </CredField>
-              </>
-            )}
-          </CredBlock>
-
-          {/* 02 — Telegram */}
-          <CredBlock num="02" label="Telegram Bot">
+          {/* 01 — Telegram */}
+          <CredBlock num="01" label="Telegram Bot">
             <Instructions
               label="How to create your Telegram bot"
               isOpen={openSection === "telegram"}
@@ -167,14 +90,27 @@ export default function SetupPage() {
               <Step>Start a chat and send the command <Code>/newbot</Code>.</Step>
               <Step>BotFather asks for a <strong>display name</strong> (e.g. <Code>Nova Assistant</Code>) — this is what you see.</Step>
               <Step>Then it asks for a <strong>username</strong> — must end in <Code>bot</Code> (e.g. <Code>NovaAssistant_bot</Code>).</Step>
-              <Step>BotFather gives you a <strong>Token</strong> — a long string like <Code>123456789:ABCdef...</Code> — copy it.</Step>
-              <Step>Paste both the Token and the Username below.</Step>
+              <Step>BotFather gives you a <strong>Token</strong> — a long string like <Code>123456789:ABCdef...</Code> — copy it below.</Step>
             </Instructions>
             <CredField label="Telegram Bot Token" hint="Format: 123456789:ABCdef..." required>
               <input type="password" placeholder="123456789:ABCdef..." value={form.telegramToken} onChange={e => set("telegramToken", e.target.value)} required autoComplete="off" />
             </CredField>
-            <CredField label="Telegram Bot Username" hint="Starts with @ and ends in bot (e.g. @NovaAssistant_bot)" required>
-              <input type="text" placeholder="@YourBotName_bot" value={form.telegramUsername} onChange={e => set("telegramUsername", e.target.value)} required autoComplete="off" />
+          </CredBlock>
+
+          {/* 02 — Telegram user id */}
+          <CredBlock num="02" label="Your Telegram User ID">
+            <Instructions
+              label="How to find your numeric Telegram user id"
+              isOpen={openSection === "userid"}
+              onToggle={() => toggle("userid")}
+            >
+              <Step>Open Telegram and search for <strong>@userinfobot</strong>.</Step>
+              <Step>Start a chat and press <strong>Start</strong> (or send any message).</Step>
+              <Step>It replies with your account info — copy the numeric <strong>Id</strong> (e.g. <Code>123456789</Code>).</Step>
+              <Step>This is how Hermes knows it&apos;s really you when you message your bot.</Step>
+            </Instructions>
+            <CredField label="Telegram User ID" hint="Numbers only, e.g. 123456789" required>
+              <input type="text" inputMode="numeric" placeholder="123456789" value={form.telegramUserId} onChange={e => set("telegramUserId", e.target.value.replace(/[^0-9]/g, ""))} required autoComplete="off" />
             </CredField>
           </CredBlock>
 
@@ -182,14 +118,15 @@ export default function SetupPage() {
           <div style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "16px 20px", background: "rgba(61,139,61,.05)", border: "1px solid rgba(61,139,61,.15)", borderRadius: 8, marginBottom: 28 }}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, marginTop: 2 }}><path d="M8 1.5L2 4v4c0 3.3 2.5 6.4 6 7 3.5-.6 6-3.7 6-7V4L8 1.5z" stroke="#3d8b3d" strokeWidth="1.5" strokeLinejoin="round"/><path d="M5.5 8l2 2 3-3" stroke="#3d8b3d" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
             <p style={{ fontSize: 13, color: "rgba(11,23,41,.55)", lineHeight: 1.6, margin: 0 }}>
-              Your credentials are transmitted securely over HTTPS and used solely to configure your deployment. They are never shared, sold, or stored beyond setup. Questions? <a href="mailto:hello@thecollegeagent.ai" style={{ color: "var(--green)" }}>hello@thecollegeagent.ai</a>
+              Your credentials are transmitted securely over HTTPS and used solely to configure your agent.
+              They are never shared or sold. Questions? <a href="mailto:hello@thecollegeagent.ai" style={{ color: "var(--green)" }}>hello@thecollegeagent.ai</a>
             </p>
           </div>
 
           {error && <p style={{ color: "var(--red)", fontSize: 13, marginBottom: 16 }}>{error}</p>}
 
           <button type="submit" className="btn-purple" style={{ width: "100%", fontSize: 14, padding: "16px" }} disabled={!isComplete || loading}>
-            {loading ? "Submitting..." : "Complete My Setup →"}
+            {loading ? "Submitting..." : "Save & Continue →"}
           </button>
         </form>
       </main>

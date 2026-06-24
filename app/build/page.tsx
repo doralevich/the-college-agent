@@ -4,8 +4,6 @@ import BuildNav from "../components/BuildNav";
 import Configurator, { ConfigSummary, INTEGRATIONS } from "../components/Configurator";
 import StudentInfoForm, { StudentInfo } from "../components/StudentInfoForm";
 
-const CALENDLY = "https://calendly.com/therealdaveo/apolloai";
-
 export default function BuildPage() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null);
@@ -262,21 +260,27 @@ export default function BuildPage() {
               </div>
 
               <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(11,23,41,.4)", textAlign: "center", marginBottom: 32, lineHeight: 1.7 }}>
-                No payment is collected today. After your setup call, we&apos;ll send an invoice<br />and begin building within 72 hours of receipt.
+                Create your account to continue. Next you&apos;ll activate your plan, complete a<br />quick onboarding, and your Hermes agent goes live automatically.
               </p>
 
               <div style={{ textAlign: "center" }}>
                 <a
-                  href={CALENDLY}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="/checkout"
+                  onClick={() => {
+                    try {
+                      localStorage.setItem(
+                        "college_agent_build_draft",
+                        JSON.stringify({ studentInfo, configSummary, integrations })
+                      );
+                    } catch {}
+                  }}
                   className="btn-purple"
                   style={{ fontSize: 14, padding: "18px 48px", borderRadius: 8 }}
                 >
-                  Book My Setup Call →
+                  Continue to Checkout →
                 </a>
                 <p style={{ marginTop: 14, fontFamily: "var(--font-mono)", fontSize: 10, color: "rgba(11,23,41,.3)", letterSpacing: ".04em" }}>
-                  30 minutes · Your agent ships within 72 hours
+                  Your Hermes agent ships automatically once you finish onboarding.
                 </p>
               </div>
             </div>
@@ -287,7 +291,7 @@ export default function BuildPage() {
 
       <footer className="dark-section" style={{ borderTop: "1px solid rgba(255,255,255,.06)", padding: "32px 24px", textAlign: "center" }}>
         <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.25)", letterSpacing: ".04em" }}>
-          &copy; 2025 Apollo[Claw]. All rights reserved. &nbsp;&middot;&nbsp; thecollegeagent.ai
+          &copy; 2025 The College Agent. All rights reserved. &nbsp;&middot;&nbsp; thecollegeagent.ai
         </p>
       </footer>
     </>

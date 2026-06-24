@@ -1,0 +1,54 @@
+/*
+ * Tailwind + shadcn design tokens for the AUTHED app surface (login, dashboard,
+ * admin). Imported ONLY by the authed route-group layout — NOT the root layout —
+ * so Tailwind's preflight + utilities never reach the hand-rolled marketing site
+ * (app/globals.css). Palette is re-skinned to The College Agent: green primary,
+ * navy foreground, cream surfaces.
+ */
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+
+@theme {
+  /* Surfaces */
+  --color-background: hsl(0 0% 100%);
+  --color-foreground: hsl(220 49% 8%);          /* navy #0b1220 */
+
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(220 49% 8%);
+
+  --color-popover: hsl(0 0% 100%);
+  --color-popover-foreground: hsl(220 49% 8%);
+
+  /* Brand */
+  --color-primary: hsl(120 39% 39%);            /* college green #3d8b3d */
+  --color-primary-foreground: hsl(0 0% 100%);
+
+  --color-accent: hsl(120 39% 39%);
+  --color-accent-foreground: hsl(0 0% 100%);
+
+  --color-secondary: hsl(45 11% 93%);           /* cream #f2f1ed */
+  --color-secondary-foreground: hsl(220 49% 12%);
+
+  --color-muted: hsl(45 11% 93%);
+  --color-muted-foreground: hsl(220 12% 40%);
+
+  --color-destructive: hsl(0 70% 50%);          /* red */
+  --color-destructive-foreground: hsl(0 0% 100%);
+
+  --color-border: hsl(220 13% 88%);
+  --color-input: hsl(220 13% 88%);
+  --color-ring: hsl(120 39% 39%);
+
+  /* Radius */
+  --radius: 10px;
+  --radius-lg: 12px;
+  --radius-md: 8px;
+  --radius-sm: 6px;
+
+  /* Fonts (reuse the root layout's next/font CSS vars). --font-body/-display match
+     the class names used by the ported shadcn components. */
+  --font-sans: var(--font-inter), 'Inter', sans-serif;
+  --font-body: var(--font-inter), 'Inter', sans-serif;
+  --font-display: var(--font-inter), 'Inter', sans-serif;
+  --font-mono: var(--font-mono), 'IBM Plex Mono', monospace;
+}
