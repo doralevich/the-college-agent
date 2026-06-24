@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Bot, Check, Loader2, LogOut, Settings2 } from "lucide-react";
+import { Bot, Check, Loader2, LogOut, RotateCcw, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "@/lib/supabase/client";
 import { branding } from "@/config/branding";
@@ -159,7 +159,23 @@ function StepsView({
   setupDone: boolean;
   onCreate: () => void;
 }) {
+  const router = useRouter();
   const bothDone = onboardDone && setupDone;
+
+  // "Redo" clears that step's saved answers and stays on the dashboard — the card flips
+  // back to "not done" so the student can re-launch the form themselves when ready.
+  const [redoing, setRedoing] = useState<"onboard" | "setup" | null>(null);
+  async function redo(step: "onboard" | "setup") {
+    setRedoing(step);
+    try {
+      await apiFetch("/api/intake/reset", { method: "POST", body: JSON.stringify({ step }) });
+      router.refresh(); // step flips to not-done; its action button reappears in place
+    } catch (e) {
+      setRedoing(null);
+      toast.error((e as Error).message || "Couldn't reset that step. Try again.");
+    }
+  }
+
   return (
     <div>
       <div className="mb-6">
@@ -175,6 +191,8 @@ function StepsView({
           title="Tell the agent about you"
           desc="A few questions about your classes, schedule, and goals so your agent is built around you."
           done={onboardDone}
+          onRedo={() => redo("onboard")}
+          redoing={redoing === "onboard"}
         >
           {!onboardDone && (
             <Button asChild className="mt-4">
@@ -186,12 +204,14 @@ function StepsView({
         <StepRow
           n={2}
           title="Technical setup"
-          desc="Connect your Telegram bot so you can chat with your agent. Takes about two minutes."
+          desc="Connect Telegram to chat with your agent, and optionally bring your own Anthropic or OpenAI key. Takes about two minutes."
           done={setupDone}
+          onRedo={() => redo("setup")}
+          redoing={redoing === "setup"}
         >
           {!setupDone && (
             <Button asChild className="mt-4">
-              <Link href="/setup">Connect Telegram</Link>
+              <Link href="/setup">Start setup</Link>
             </Button>
           )}
         </StepRow>
@@ -222,6 +242,8 @@ function StepRow({
   desc,
   done = false,
   ready = false,
+  onRedo,
+  redoing = false,
   children,
 }: {
   n: number;
@@ -229,6 +251,8 @@ function StepRow({
   desc: string;
   done?: boolean;
   ready?: boolean;
+  onRedo?: () => void;
+  redoing?: boolean;
   children?: ReactNode;
 }) {
   const filled = done || ready;
@@ -252,9 +276,22 @@ function StepRow({
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-lg font-medium">{title}</h2>
             {done && (
-              <span className="flex shrink-0 items-center gap-1 text-sm font-medium text-primary">
-                <Check className="h-4 w-4" /> Done
-              </span>
+              <div className="flex shrink-0 items-center gap-1.5">
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                  <Check className="h-3 w-3" /> Done
+                </span>
+                {onRedo && (
+                  <button
+                    type="button"
+                    onClick={onRedo}
+                    disabled={redoing}
+                    className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
+                  >
+                    <RotateCcw className={cn("h-3 w-3", redoing && "animate-spin")} />
+                    {redoing ? "Resetting…" : "Redo"}
+                  </button>
+                )}
+              </div>
             )}
           </div>
           <p className="mt-1 text-sm text-muted-foreground">{desc}</p>
