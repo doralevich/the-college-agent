@@ -7,10 +7,13 @@
 // (3737/7681/8080/9119); the image remaps those surfaces to the non-reserved ports below
 // and the template declares them (template/register.sh). The signed-url allowlist tracks
 // PORTS automatically (app/api/agents/[id]/signed-url/route.ts).
+// Minimum machine spec for every provisioned agent: 4 vCPU / 8 GB RAM. This is the floor
+// we always provision at — both the student auto-provision path (app/api/provision) and the
+// admin path (app/api/agents) read these, so they stay in sync.
 export const DEFAULT_AGENT = {
   template: "college-agent",
-  cpu: 2,
-  memory: 4,
+  cpu: 4,
+  memory: 8,
   disk: 6,
   monthlyCapUsd: 20,
 } as const;
