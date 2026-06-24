@@ -447,12 +447,7 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
           >
             Build My Agent &rarr;
           </button>
-          <button
-            className="order-secondary"
-            onClick={() => window.open(CALENDLY, "_blank")}
-          >
-            Ask a Question
-          </button>
+
         </div>
       </div>
 
