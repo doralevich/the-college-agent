@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useCallback, useEffect, useState } from "react";
-import { ChevronDown, ChevronRight, Pencil } from "lucide-react";
+import { ChevronDown, ChevronRight, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { formatDate, statusVariant, usd } from "@/lib/format";
@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CreateAgentButton } from "@/components/CreateAgentButton";
 import { AgentActionsMenu } from "@/components/AgentActionsMenu";
+import { AgentNameCell } from "@/components/AgentNameCell";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { IntakeDialog } from "@/components/admin/IntakeDialog";
 
 type Detail = { loading: boolean; agents: AdminAgentDetail[] | null };
@@ -19,6 +21,7 @@ export function AdminWorkspacesView() {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [details, setDetails] = useState<Record<string, Detail>>({});
   const [editWs, setEditWs] = useState<AdminWorkspaceSummary | null>(null);
+  const [deleteWs, setDeleteWs] = useState<AdminWorkspaceSummary | null>(null);
 
   const loadWorkspaces = useCallback(async () => {
     try {
@@ -82,6 +85,25 @@ export function AdminWorkspacesView() {
       if (expanded.has(workspaceId)) void loadDetail(workspaceId);
     },
     [loadWorkspaces, loadDetail, expanded]
+  );
+
+  // After a workspace is deleted, drop its (now-stale) expanded/detail state and refresh
+  // the top-level list so the row disappears.
+  const onDeleted = useCallback(
+    (workspaceId: string) => {
+      setExpanded((prev) => {
+        const next = new Set(prev);
+        next.delete(workspaceId);
+        return next;
+      });
+      setDetails((d) => {
+        const next = { ...d };
+        delete next[workspaceId];
+        return next;
+      });
+      void loadWorkspaces();
+    },
+    [loadWorkspaces]
   );
 
   return (
@@ -160,6 +182,21 @@ export function AdminWorkspacesView() {
                             label="Create Hermes"
                             size="sm"
                           />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            disabled={w.agent_count > 0}
+                            title={
+                              w.agent_count > 0
+                                ? "Delete this workspace's instances first"
+                                : "Delete workspace"
+                            }
+                            onClick={() => setDeleteWs(w)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Delete
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -185,6 +222,26 @@ export function AdminWorkspacesView() {
         workspaceId={editWs?.id ?? null}
         ownerEmail={editWs?.owner_email ?? null}
         onSaved={() => { if (editWs) onCreated(editWs.id); }}
+      />
+
+      <ConfirmDialog
+        open={!!deleteWs}
+        onOpenChange={(o) => { if (!o) setDeleteWs(null); }}
+        title="Delete workspace?"
+        description={
+          deleteWs
+            ? `Permanently delete "${deleteWs.name}" (${deleteWs.owner_email ?? "no owner"}) and its memberships. This cannot be undone.`
+            : undefined
+        }
+        confirmText="Delete"
+        destructive
+        onConfirm={async () => {
+          if (!deleteWs) return;
+          const id = deleteWs.id;
+          await apiFetch(`/api/admin/workspaces/${id}`, { method: "DELETE" });
+          toast.success("Workspace deleted");
+          onDeleted(id);
+        }}
       />
     </div>
   );
@@ -217,8 +274,7 @@ function InstanceList({ detail, onChanged }: { detail: Detail | undefined; onCha
           {detail.agents.map((a) => (
             <tr key={a.agent37_id} className="border-t [&>td]:align-middle">
               <td className="px-3 py-2">
-                <div className="font-medium">{a.name || "Untitled agent"}</div>
-                <div className="font-mono text-[11px] text-muted-foreground">{a.agent37_id}</div>
+                <AgentNameCell agent={a} canEdit onRenamed={onChanged} />
               </td>
               <td className="px-3 py-2">
                 <div className="flex items-center gap-1">
@@ -244,7 +300,7 @@ function InstanceList({ detail, onChanged }: { detail: Detail | undefined; onCha
                   : "-"}
               </td>
               <td className="px-3 py-2 text-muted-foreground">
-                {a.usage ? `${usd(a.usage.total_micros)} (${a.usage.period})` : "-"}
+                <UsageCell usage={a.usage} />
               </td>
               <td className="px-3 py-2 text-muted-foreground">{formatDate(a.created_at)}</td>
               <td className="px-3 py-2">
@@ -254,6 +310,35 @@ function InstanceList({ detail, onChanged }: { detail: Detail | undefined; onCha
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+// Period usage for one instance: the total, plus the per-integration breakdown (cost + call
+// count for LLM, Search, Tools). The breakdown is already in the agent37 getUsage payload, so
+// rendering it costs nothing extra.
+function UsageCell({ usage }: { usage: AdminAgentDetail["usage"] }) {
+  if (!usage) return <>-</>;
+  const { llm, brave, composio } = usage.by_integration;
+  const rows = [
+    { label: "LLM", cost: llm.cost_micros, calls: llm.calls },
+    { label: "Search", cost: brave.cost_micros, calls: brave.calls },
+    { label: "Tools", cost: composio.cost_micros, calls: composio.calls },
+  ];
+  return (
+    <div className="space-y-1">
+      <div className="text-foreground">
+        {usd(usage.total_micros)} <span className="text-[11px] text-muted-foreground">({usage.period})</span>
+      </div>
+      <div className="space-y-0.5 text-[11px]">
+        {rows.map((r) => (
+          <div key={r.label} className="flex gap-1.5">
+            <span className="w-12 shrink-0">{r.label}</span>
+            <span className="tabular-nums">{usd(r.cost)}</span>
+            <span className="text-muted-foreground tabular-nums">· {r.calls} calls</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
