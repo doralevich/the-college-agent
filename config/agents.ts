@@ -14,7 +14,8 @@ export const DEFAULT_AGENT = {
   template: "college-agent",
   cpu: 4,
   memory: 8,
-  disk: 6,
+  // The 4/8 shape requires disk 20–40 GB (smaller 400s the create). 20 is the floor.
+  disk: 20,
   monthlyCapUsd: 20,
 } as const;
 

@@ -9,12 +9,8 @@ import { ApiError, json, readJson, route } from "@/lib/http";
 import { configureAgentFromIntake, readProvisioningIntake } from "@/lib/provisioning";
 import type { AgentRow, MergedAgent } from "@/lib/types";
 
-// The whole app — the remapped PORTS, the signed-url allowlist, the Hermes wiring —
-// assumes the custom `college-agent` template. Any other template exposes different
-// ports, so every surface 400s when we mint a signed URL for 9120/7682/8081/6969.
-// Therefore: do NOT silently fall back to a stock template (that's how an unopenable
-// `agent37-hermes` box gets created). If `college-agent` isn't registered in this
-// Agent37 account, refuse to provision and say exactly how to fix it.
+// The app assumes the custom `college-agent` template (its remapped ports). Never fall back
+// to a stock template — that creates an unopenable box. Fail loudly if it isn't registered.
 async function resolveTemplate(): Promise<string> {
   let data: Awaited<ReturnType<typeof agent37.listTemplates>>["data"];
   try {

@@ -1,6 +1,13 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { buildSoul, configureHermes } from "@/lib/hermes";
+import {
+  buildSoul,
+  buildUserProfile,
+  buildCheckinPrompt,
+  mapCheckinToCron,
+  configureHermes,
+  type HermesPersonaInput,
+} from "@/lib/hermes";
 
 type DB = ReturnType<typeof createAdminClient>;
 
@@ -21,6 +28,9 @@ export type OnboardIntake = {
 export type SetupIntake = {
   telegram_token: string | null;
   telegram_user_id: string | null;
+  // Optional BYO model keys (-> the agent's ~/.hermes/.env).
+  anthropic_key: string | null;
+  openai_key: string | null;
 } | null;
 
 // Read a user's current intake (one row per user; we still order+limit defensively).
@@ -38,7 +48,7 @@ export async function readProvisioningIntake(
       .maybeSingle(),
     db
       .from("setup_submissions")
-      .select("telegram_token, telegram_user_id")
+      .select("telegram_token, telegram_user_id, anthropic_key, openai_key")
       .eq("user_id", userId)
       .order("submitted_at", { ascending: false })
       .limit(1)
@@ -52,18 +62,22 @@ export async function readProvisioningIntake(
 
 export type ConfigureOutcome = { configured: boolean; detail: string };
 
-// Best-effort: if the user has Telegram credentials, build the persona from their onboarding
-// answers and wire up Hermes (Telegram + SOUL.md + gateway). Without Telegram there's nothing
-// to connect, so the agent is left bare — and we say so rather than failing. Never throws.
+// Best-effort, never throws: with any credential on file (Telegram and/or a BYO model key),
+// build the persona and wire up Hermes; with nothing to connect, leave the agent bare.
 export async function configureAgentFromIntake(
   agent37Id: string,
   onboard: OnboardIntake,
   setup: SetupIntake
 ): Promise<ConfigureOutcome> {
-  if (!setup?.telegram_token || !setup?.telegram_user_id) {
-    return { configured: false, detail: "no Telegram credentials on file — agent left unconfigured" };
+  const hasTelegram = !!(setup?.telegram_token && setup?.telegram_user_id);
+  const hasModelKey = !!(setup?.anthropic_key || setup?.openai_key);
+  if (!hasTelegram && !hasModelKey) {
+    return { configured: false, detail: "no credentials on file — agent left unconfigured" };
   }
-  const soul = buildSoul({
+
+  // Split the intake across the files Hermes reads: identity -> SOUL.md, durable student
+  // facts -> USER.md, check-in cadence -> a cron job. (See lib/hermes.ts for each mapping.)
+  const persona: HermesPersonaInput = {
     agentName: onboard?.agent_name ?? null,
     firstName: onboard?.first_name ?? null,
     lastName: onboard?.last_name ?? null,
@@ -71,12 +85,26 @@ export async function configureAgentFromIntake(
     year: onboard?.year ?? null,
     major: onboard?.major ?? null,
     questionnaire: onboard?.questionnaire ?? null,
-  });
+  };
+  const soul = buildSoul(persona);
+  const userProfile = buildUserProfile(persona);
+
+  // A scheduled check-in only makes sense when Telegram is connected (it's the delivery
+  // channel) and the chosen cadence maps to a real cron schedule; otherwise we skip it and
+  // the cadence still lives in USER.md as a fact.
+  const cadence = (persona.questionnaire?.checkinFrequency as string | undefined) ?? null;
+  const cron = hasTelegram ? mapCheckinToCron(cadence) : null;
+  const checkin = cron ? { schedule: cron.schedule, prompt: buildCheckinPrompt(persona, cron.label) } : null;
+
   try {
     const r = await configureHermes(agent37Id, {
-      telegramBotToken: setup.telegram_token,
-      telegramUserId: setup.telegram_user_id,
+      telegramBotToken: setup?.telegram_token ?? undefined,
+      telegramUserId: setup?.telegram_user_id ?? undefined,
+      anthropicKey: setup?.anthropic_key ?? undefined,
+      openaiKey: setup?.openai_key ?? undefined,
       soul,
+      userProfile,
+      checkin,
     });
     return { configured: r.ok, detail: r.detail };
   } catch (e) {

@@ -41,13 +41,19 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   }
 
   if (!res.ok) {
-    const body = (data ?? {}) as { code?: string; message?: string };
-    let message = body.message || res.statusText;
+    // Errors come back nested ({"error":{...}}) or flat; unwrap so the real message survives.
+    const raw = (data ?? {}) as {
+      code?: string;
+      message?: string;
+      error?: { code?: string; message?: string };
+    };
+    const err = raw.error ?? raw;
+    let message = err.message || res.statusText;
     if (res.status === 402) {
       // Almost always an unfunded wallet at create/start time — point the operator at billing.
       message = `${message} (Agent37 payment required — fund your wallet under Cloud → Billing in the dashboard, then retry.)`;
     }
-    throw new Agent37Error(res.status, body.code || "error", message);
+    throw new Agent37Error(res.status, err.code || "error", message);
   }
 
   return data as T;
