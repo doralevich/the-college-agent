@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { DEFAULT_AGENT } from "@/config/agents";
 import { usdToMicros } from "@/lib/format";
 import { ApiError, json, readJson, route } from "@/lib/http";
+import { configureAgentFromIntake, readProvisioningIntake } from "@/lib/provisioning";
 import type { AgentRow, MergedAgent } from "@/lib/types";
 
 async function resolveTemplate(): Promise<string | undefined> {
@@ -76,6 +77,16 @@ export const POST = route(async (request: Request) => {
   if (!workspace) throw new ApiError(404, "not_found", "Workspace not found");
   const ownerId = (workspace.owner_id as string) ?? user.id;
 
+  // Only the FIRST agent in a workspace gets wired to Telegram: getUpdates long-polling is
+  // exclusive per bot token, so a second gateway on the owner's token would 409 against the
+  // first and split/drop the student's messages. Admins can still create extra boxes (that's
+  // intentional) — they just come up bare instead of fighting the live gateway.
+  const { count: priorAgentCount } = await db
+    .from("agents")
+    .select("agent37_id", { count: "exact", head: true })
+    .eq("workspace_id", workspaceId);
+  const workspaceHadAgent = (priorAgentCount ?? 0) > 0;
+
   const template = await resolveTemplate();
 
   const agent = await agent37.createAgent({
@@ -111,5 +122,19 @@ export const POST = route(async (request: Request) => {
     throw new ApiError(500, "db_error", error.message);
   }
 
-  return json(agent, 201);
+  // Honor the owner's saved intake the same way the student path does — build the persona +
+  // wire up Telegram if on file — but ONLY for the workspace's first agent (a second gateway
+  // on the same bot token would conflict). Best-effort; the agent already exists either way.
+  let configured = false;
+  let configDetail =
+    "workspace already has an agent — new box left bare to avoid a Telegram gateway conflict";
+  if (!workspaceHadAgent) {
+    const { onboard, setup } = await readProvisioningIntake(db, ownerId);
+    const r = await configureAgentFromIntake(agent.id, onboard, setup);
+    configured = r.configured;
+    configDetail = r.detail;
+    if (!configured) console.error("[agents:configure]", agent.id, configDetail);
+  }
+
+  return json({ ...agent, configured, config_detail: configDetail }, 201);
 });

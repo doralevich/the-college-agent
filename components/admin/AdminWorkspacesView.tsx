@@ -1,14 +1,16 @@
 "use client";
 
 import { Fragment, useCallback, useEffect, useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { formatDate, statusVariant, usd } from "@/lib/format";
 import type { AdminAgentDetail, AdminWorkspaceSummary } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { CreateAgentButton } from "@/components/CreateAgentButton";
 import { AgentActionsMenu } from "@/components/AgentActionsMenu";
+import { IntakeDialog } from "@/components/admin/IntakeDialog";
 
 type Detail = { loading: boolean; agents: AdminAgentDetail[] | null };
 
@@ -16,6 +18,7 @@ export function AdminWorkspacesView() {
   const [workspaces, setWorkspaces] = useState<AdminWorkspaceSummary[] | null>(null);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [details, setDetails] = useState<Record<string, Detail>>({});
+  const [editWs, setEditWs] = useState<AdminWorkspaceSummary | null>(null);
 
   const loadWorkspaces = useCallback(async () => {
     try {
@@ -139,7 +142,11 @@ export function AdminWorkspacesView() {
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">{formatDate(w.created_at)}</td>
                       <td className="px-4 py-3 text-right">
-                        <div className="flex justify-end">
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" size="sm" onClick={() => setEditWs(w)}>
+                            <Pencil className="h-4 w-4" />
+                            Edit intake
+                          </Button>
                           <CreateAgentButton
                             workspaceId={w.id}
                             onCreated={() => onCreated(w.id)}
@@ -164,6 +171,14 @@ export function AdminWorkspacesView() {
           </table>
         </div>
       )}
+
+      <IntakeDialog
+        open={!!editWs}
+        onOpenChange={(o) => { if (!o) setEditWs(null); }}
+        workspaceId={editWs?.id ?? null}
+        ownerEmail={editWs?.owner_email ?? null}
+        onSaved={() => { if (editWs) onCreated(editWs.id); }}
+      />
     </div>
   );
 }

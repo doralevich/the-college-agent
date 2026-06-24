@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { DEFAULT_AGENT } from "@/config/agents";
 import { usdToMicros } from "@/lib/format";
 import { ApiError, json, route } from "@/lib/http";
-import { buildSoul, configureHermes } from "@/lib/hermes";
+import { configureAgentFromIntake, readProvisioningIntake } from "@/lib/provisioning";
 
 // Auto-provision the student's Hermes agent. Triggered by the dashboard once they've
 // PAID (entitlement active) and completed BOTH onboarding steps. This is the system
@@ -34,33 +34,20 @@ export const POST = route(async () => {
     return json({ ok: true, agent37_id: existing[0].agent37_id, already: true });
   }
 
-  // Require the two onboarding artifacts.
-  const { data: setupRow } = await db
-    .from("setup_submissions")
-    .select("telegram_token, telegram_user_id")
-    .eq("user_id", user.id)
-    .order("submitted_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (!setupRow?.telegram_token || !setupRow?.telegram_user_id) {
+  // The student path REQUIRES both onboarding artifacts (the dashboard only enables the
+  // create button once both are done). Admin-create is the lenient path (bare if missing).
+  const { onboard, setup } = await readProvisioningIntake(db, user.id);
+  if (!setup?.telegram_token || !setup?.telegram_user_id) {
     throw new ApiError(400, "setup_incomplete", "Finish Telegram setup first");
   }
-
-  const { data: onboardRow } = await db
-    .from("onboard_submissions")
-    .select("first_name, last_name, school, year, major, agent_name, questionnaire")
-    .eq("user_id", user.id)
-    .order("submitted_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (!onboardRow) throw new ApiError(400, "onboard_incomplete", "Finish onboarding first");
+  if (!onboard) throw new ApiError(400, "onboard_incomplete", "Finish onboarding first");
 
   // Create the Hermes instance, tagged to the student, at the default monthly cap.
   const agent = await agent37.createAgent({
     template: DEFAULT_AGENT.template,
     resources: { cpu: DEFAULT_AGENT.cpu, memory: DEFAULT_AGENT.memory, disk: DEFAULT_AGENT.disk },
     user: user.id,
-    name: onboardRow.agent_name || "Hermes",
+    name: onboard.agent_name || "Hermes",
     metadata: { app_workspace: workspaceId, provisioned_for: user.id },
     budget: { monthly_cap_micros: usdToMicros(DEFAULT_AGENT.monthlyCapUsd) },
   });
@@ -68,7 +55,7 @@ export const POST = route(async () => {
   const { error: insErr } = await db.from("agents").insert({
     agent37_id: agent.id,
     workspace_id: workspaceId,
-    name: agent.name || onboardRow.agent_name || "Hermes",
+    name: agent.name || onboard.agent_name || "Hermes",
     status: agent.status,
     template: agent.template,
     cpu: agent.resources.cpu,
@@ -88,31 +75,8 @@ export const POST = route(async () => {
 
   // Best-effort: install/config Hermes + Telegram + persona, then start the gateway.
   // If this fails the agent still exists (operator fallback finishes it in /admin).
-  const soul = buildSoul({
-    agentName: onboardRow.agent_name,
-    firstName: onboardRow.first_name,
-    lastName: onboardRow.last_name,
-    school: onboardRow.school,
-    year: onboardRow.year,
-    major: onboardRow.major,
-    questionnaire: (onboardRow.questionnaire as Record<string, unknown>) ?? null,
-  });
-
-  let configured = false;
-  let configDetail = "";
-  try {
-    const r = await configureHermes(agent.id, {
-      telegramBotToken: setupRow.telegram_token as string,
-      telegramUserId: setupRow.telegram_user_id as string,
-      soul,
-    });
-    configured = r.ok;
-    configDetail = r.detail;
-    if (!r.ok) console.error("[provision:configure]", agent.id, r.detail);
-  } catch (e) {
-    configDetail = (e as Error).message;
-    console.error("[provision:configure-threw]", agent.id, e);
-  }
+  const { configured, detail: configDetail } = await configureAgentFromIntake(agent.id, onboard, setup);
+  if (!configured) console.error("[provision:configure]", agent.id, configDetail);
 
   return json({ ok: true, agent37_id: agent.id, configured, configDetail }, 201);
 });
