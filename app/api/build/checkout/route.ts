@@ -80,6 +80,8 @@ export const POST = route(async (req) => {
   const stripe = getStripe();
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
+    allow_promotion_codes: true, // shows a promo-code box at checkout (comp/testing codes)
+    payment_method_collection: "if_required", // a 100%-off code makes total $0 → no card needed
     line_items: lineItems,
     customer_email: email,
     client_reference_id: order.id,
