@@ -341,7 +341,7 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
               {[
                 "Named AI personal agent, built around you",
                 "Your voice and communication style trained in",
-                "Tavily Web Search, real-time research built in",
+                "Brave Search, real-time research built in",
                 "PDF reader, upload, summarize, and query any document",
                 "Communication via Telegram, accessible anywhere",
                 "Web portal access",

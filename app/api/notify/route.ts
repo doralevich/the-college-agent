@@ -94,7 +94,7 @@ async function buildPDF(data: Record<string, string>): Promise<string> {
   const included = [
     "Named AI personal agent, built around you",
     "30-day hands-on co-training period",
-    "Tavily Web Search — real-time research built in",
+    "Brave Search — real-time research built in",
     "PDF reader — upload, summarize, query any document",
     "Communication via Telegram, accessible anywhere",
     "Google Workspace or Office 365 (appropriate access required)",

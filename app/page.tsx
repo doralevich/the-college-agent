@@ -145,7 +145,7 @@ export default function Home() {
             {[
               { icon: "📚", title: "Academic Performance", desc: "Your agent tracks deadlines, surfaces upcoming assignments, and helps you stay ahead of your course load, so nothing slips through." },
               { icon: "💼", title: "Career + Internships", desc: "From Handshake alerts to resume feedback to follow-up drafts, your agent keeps your career search organized and moving forward." },
-              { icon: "🔍", title: "Research Support", desc: "Tavily-powered web search, citation tracking, and source summarization, available the moment you need it, trained on your topic areas." },
+              { icon: "🔍", title: "Research Support", desc: "Brave Search-powered web search, citation tracking, and source summarization, available the moment you need it, trained on your topic areas." },
               { icon: "📅", title: "Communication + Scheduling", desc: "Draft emails, schedule meetings, manage your calendar, and keep your inbox under control, without spending hours on admin." },
             ].map((uc) => (
               <div key={uc.title} className="uc-card">
