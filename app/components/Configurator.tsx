@@ -159,14 +159,7 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
   const implLabel = tierData?.name ?? null;
 
   return (
-    <section id="configurator" style={{ background: "var(--cream)", padding: "90px 0" }}>
-      <div style={{ textAlign: "center", padding: "0 24px", marginBottom: 48 }}>
-        <span className="mono-label">Configure Yours</span>
-        <h2 className="section-title">Build Your Agent</h2>
-        <p className="section-sub" style={{ maxWidth: 520, margin: "12px auto 0" }}>
-          Four steps. Under five minutes. Complete all steps to unlock your agent.
-        </p>
-      </div>
+    <section id="configurator" style={{ background: "var(--cream)", padding: "32px 0 90px" }}>
 
       {/* STEP 1 — full width */}
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px 32px" }}>
