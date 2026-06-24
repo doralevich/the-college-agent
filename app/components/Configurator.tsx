@@ -76,9 +76,9 @@ const TIERS: { id: Tier; badge: string; name: string; price: number; maxInt: num
     features: [
       "3 integrations included",
       "Agent live in 24–48 hours",
-      "30-day co-training period",
       "Standard onboarding form",
-      "Cloud hosted via Apollo",
+      "Web portal access",
+      "Cloud hosted via Apollo Claw",
       "Telegram access",
     ],
   },
@@ -88,10 +88,11 @@ const TIERS: { id: Tier; badge: string; name: string; price: number; maxInt: num
     features: [
       "5 integrations included",
       "Agent live in 7 days",
-      "30-day co-training period",
+      "Enhanced onboarding form",
       "30-minute onboarding call",
       "7 days post-launch support",
-      "Cloud hosted via Apollo",
+      "Web portal access",
+      "Cloud hosted via Apollo Claw",
       "Telegram access",
     ],
   },
@@ -101,10 +102,11 @@ const TIERS: { id: Tier; badge: string; name: string; price: number; maxInt: num
     features: [
       "7 integrations included",
       "Agent live in 7 days",
-      "30-day co-training period",
+      "Enhanced onboarding form",
       "60-minute onboarding call",
       "14 days post-launch support",
-      "Cloud hosted via Apollo",
+      "Web portal access",
+      "Cloud hosted via Apollo Claw",
       "Telegram access",
     ],
   },
@@ -176,7 +178,7 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
           <p style={{ fontSize: 14, color: "rgba(11,23,41,.55)", lineHeight: 1.7, marginBottom: 24, maxWidth: 680 }}>
             Every College Agent is built around you — your schedule, your goals, your communication style.
             Choose the tier that fits where you are right now. All three include cloud hosting, Telegram access,
-            a 30-day co-training period, and everything listed below.
+            web portal access, and everything listed below.
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
             {TIERS.map((card) => (
@@ -261,7 +263,7 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
               ))}
             </div>
             <p className="hosting-note">
-              Apollo Cloud hosting is required for all College Agent deployments. Your agent lives
+              Apollo Claw cloud hosting is required for all College Agent deployments. Your agent lives
               in the cloud, accessible from anywhere, on any device.
             </p>
           </div>
@@ -349,12 +351,12 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
                 "Tavily Web Search, real-time research built in",
                 "PDF reader, upload, summarize, and query any document",
                 "Communication via Telegram, accessible anywhere",
+                "Web portal access",
                 "LinkedIn integration included",
                 "Google Workspace or Office 365 (appropriate access required)",
-                "Cloud hosted, access from any device",
-                "30-day hands-on co-training period included",
+                "Cloud hosted via Apollo Claw, access from any device",
                 "Agent ready in 24–48 hrs (Undergraduate) or 7 days (Graduate/Scholar)",
-                "Support plan options available after co-training",
+                "Support plan options available",
               ].map((item) => (
                 <div key={item} className="included-item">
                   <div className="included-check" />
@@ -412,10 +414,6 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
             <div className={`order-value ${config.onboarding ? "" : "placeholder"}`}>
               {config.onboarding === "whiteglove" ? "White Glove (+$650)" : config.onboarding === "standard" ? "Standard (Included)" : "Not selected"}
             </div>
-          </div>
-          <div className="order-row">
-            <div className="order-label">30-Day Co-Training</div>
-            <div className="order-value" style={{ color: "#27ae60" }}>Included</div>
           </div>
           <div className="order-row">
             <div className="order-label">Agent Ready</div>
