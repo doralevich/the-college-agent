@@ -44,17 +44,15 @@ export function DashboardClient({ paid, onboardDone, setupDone, hasAgent }: Prop
     }
   }
 
-  // Sidebar nav. Unpaid → nothing (just the build CTA). Once paid, Settings is always
-  // present (workspace name/ID/delete don't need an agent); the other item swaps between
-  // "Agents" (the setup checklist lives in that view) and "Your Agent".
-  const tabs: { id: TabId; label: string; icon: typeof Bot }[] = !paid
-    ? []
-    : [
-        hasAgent
-          ? { id: "agent", label: "Your Agent", icon: Bot }
-          : { id: "agents", label: "Agents", icon: Bot },
-        { id: "settings", label: "Settings", icon: Settings2 },
-      ];
+  // Sidebar nav. Settings is always present — every account has a workspace (name/ID/delete
+  // don't need an agent or a paid plan). The other item swaps with the funnel stage: "Agents"
+  // (which hosts the build CTA when unpaid, the setup checklist once paid) → "Your Agent".
+  const tabs: { id: TabId; label: string; icon: typeof Bot }[] = [
+    hasAgent
+      ? { id: "agent", label: "Your Agent", icon: Bot }
+      : { id: "agents", label: "Agents", icon: Bot },
+    { id: "settings", label: "Settings", icon: Settings2 },
+  ];
 
   const [active, setActive] = useState<TabId>(hasAgent ? "agent" : "agents");
 
@@ -104,10 +102,10 @@ export function DashboardClient({ paid, onboardDone, setupDone, hasAgent }: Prop
 
       <main className="min-w-0 flex-1 overflow-y-auto">
         <div className="mx-auto w-full max-w-6xl p-6 md:px-10 md:py-8">
-          {!paid ? (
-            <BuildCta />
-          ) : active === "settings" ? (
+          {active === "settings" ? (
             <SettingsView />
+          ) : !paid ? (
+            <BuildCta />
           ) : hasAgent ? (
             <AgentsView />
           ) : provisioning || provisionFailed ? (

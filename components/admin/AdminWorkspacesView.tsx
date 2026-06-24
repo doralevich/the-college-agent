@@ -24,18 +24,13 @@ export function AdminWorkspacesView() {
     try {
       const data = await apiFetch<{ workspaces: AdminWorkspaceSummary[] }>("/api/admin/workspaces");
       setWorkspaces(data.workspaces);
+      return data.workspaces;
     } catch (e) {
       toast.error((e as Error).message);
       setWorkspaces([]);
+      return [];
     }
   }, []);
-
-  useEffect(() => {
-    // Initial fetch on mount. setState happens after the await (async), not synchronously
-    // in the effect body, so it doesn't cause the cascading renders the rule guards against.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadWorkspaces();
-  }, [loadWorkspaces]);
 
   const loadDetail = useCallback(async (workspaceId: string) => {
     setDetails((d) => ({ ...d, [workspaceId]: { loading: true, agents: d[workspaceId]?.agents ?? null } }));
@@ -49,6 +44,18 @@ export function AdminWorkspacesView() {
       setDetails((d) => ({ ...d, [workspaceId]: { loading: false, agents: [] } }));
     }
   }, []);
+
+  useEffect(() => {
+    // Initial fetch on mount. Pre-expand every row and load its instances up front so the
+    // god-view shows all instances without manual clicks (rows can still be collapsed).
+    // setState happens after the await (async), not synchronously in the effect body, so it
+    // doesn't cause the cascading renders the rule guards against.
+    void (async () => {
+      const ws = await loadWorkspaces();
+      setExpanded(new Set(ws.map((w) => w.id)));
+      ws.forEach((w) => void loadDetail(w.id));
+    })();
+  }, [loadWorkspaces, loadDetail]);
 
   const toggle = useCallback(
     (workspaceId: string) => {
@@ -82,7 +89,7 @@ export function AdminWorkspacesView() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Workspaces</h1>
         <p className="text-sm text-muted-foreground">
-          All workspaces across the platform (newest 50). Expand a row to see its instances.
+          All workspaces across the platform (newest 50). Instances are shown inline; collapse a row to hide them.
         </p>
       </div>
 
