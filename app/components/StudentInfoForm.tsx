@@ -9,7 +9,6 @@ export interface StudentInfo {
   mobile: string;
   school: string;
   year: string;
-  aiLevel: string;
 }
 
 interface Props {
@@ -35,16 +34,9 @@ const YEARS = [
   "Post-Doctoral Researcher",
 ];
 
-const AI_LEVELS = [
-  { value: "ready", label: "Beginner, but ready to learn" },
-  { value: "medium", label: "Medium, I use it regularly" },
-  { value: "advanced", label: "Advanced, I know what I'm doing" },
-  { value: "super", label: "Super User, I live in AI tools" },
-];
-
 const empty: StudentInfo = {
   firstName: "", lastName: "", schoolEmail: "", personalEmail: "",
-  mobile: "", school: "", year: "", aiLevel: "",
+  mobile: "", school: "", year: "",
 };
 
 export default function StudentInfoForm({ onComplete }: Props) {
@@ -68,7 +60,6 @@ export default function StudentInfoForm({ onComplete }: Props) {
     if (!form.mobile.trim()) e.mobile = "Required";
     if (!form.school) e.school = "Required";
     if (!form.year) e.year = "Required";
-    if (!form.aiLevel) e.aiLevel = "Required";
     return e;
   }
 
@@ -215,22 +206,6 @@ export default function StudentInfoForm({ onComplete }: Props) {
             {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
           </select>
           {errors.year && <span className="sif-err">{errors.year}</span>}
-        </div>
-
-        {/* AI Level */}
-        <div className="sif-field">
-          <label className="sif-label" style={{ marginBottom: 4 }}>AI Skill Level *</label>
-          <div className="ai-grid">
-            {AI_LEVELS.map(l => (
-              <div key={l.value}
-                className={`ai-option${form.aiLevel === l.value ? " selected" : ""}`}
-                onClick={() => set("aiLevel", l.value)}>
-                <div className="ai-radio" />
-                <span className="ai-label">{l.label}</span>
-              </div>
-            ))}
-          </div>
-          {errors.aiLevel && <span className="sif-err">{errors.aiLevel}</span>}
         </div>
 
         <button type="submit" className="sif-submit">

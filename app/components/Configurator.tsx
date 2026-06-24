@@ -4,10 +4,9 @@ import { useState, useCallback } from "react";
 
 const CALENDLY = "https://calendly.com/therealdaveo/apolloai";
 
-type Framework = "hermes" | "openclaw";
-type Tier = "starter" | "pro";
+type Tier = "undergraduate" | "graduate" | "scholar";
 type HostingPlan = "basic" | "pro";
-type SupportPlan = "none" | "semester" | "annual";
+type SupportPlan = "none" | "sixmonths" | "annual";
 type Onboarding = "standard" | "whiteglove";
 
 export interface ConfigSummary {
@@ -25,7 +24,6 @@ export interface ConfigSummary {
 }
 
 interface ConfigState {
-  framework: Framework | null;
   tier: Tier | null;
   hosting: HostingPlan | null;
   support: SupportPlan | null;
@@ -71,47 +69,44 @@ export const INTEGRATIONS: Record<string, string[]> = {
   ],
 };
 
-const SUPPORT_PLANS: { id: SupportPlan; label: string; price: string; desc: string }[] = [
-  { id: "none",     label: "No Support Plan",     price: "Free",        desc: "Go independent after co-training. You own the agent." },
-  { id: "semester", label: "Semester Plan",        price: "$500/semester", desc: "Ongoing check-ins, integration updates, and priority support for one semester." },
-  { id: "annual",   label: "Annual Plan",          price: "$900/yr",     desc: "Best value. Full year of support, updates, and access to new features as they ship." },
+const TIERS: { id: Tier; badge: string; name: string; price: number; maxInt: number; readyTime: string; desc: string }[] = [
+  { id: "undergraduate", badge: "Most Popular",  name: "The Undergraduate", price: 999,  maxInt: 3, readyTime: "24–48 hours", desc: "Pre-configured student agent. Battle-tested workflows, fast setup, ready within 24–48 hours of your onboarding form." },
+  { id: "graduate",      badge: "Advanced",      name: "The Graduate",      price: 1499, maxInt: 5, readyTime: "7 days",      desc: "Deeper configuration and expanded skill set with more personalization. Ready within 7 days." },
+  { id: "scholar",       badge: "Most Powerful", name: "The Scholar",       price: 1999, maxInt: 7, readyTime: "7 days",      desc: "Maximum depth, custom workflows, and full personalization. Built for high-achievers who want more from their agent." },
 ];
 
-const TIER_PRICES: Record<Framework, Record<Tier, number>> = {
-  hermes:   { starter: 999,  pro: 1499 },
-  openclaw: { starter: 1499, pro: 1999 },
-};
-const TIER_MAX_INT: Record<Tier, number> = { starter: 3, pro: 5 };
+const SUPPORT_PLANS: { id: SupportPlan; label: string; price: string; fee: number; desc: string }[] = [
+  { id: "none",      label: "No Support Plan",  price: "Included",   fee: 0,    desc: "Go independent after setup. You own the agent." },
+  { id: "sixmonths", label: "6 Months Support", price: "$750",       fee: 750,  desc: "6 months of check-ins, integration updates, and priority support." },
+  { id: "annual",    label: "Annual Support",   price: "$1,200/yr",  fee: 1200, desc: "Best value. Full year of support, updates, and access to new features as they ship." },
+];
+
 const HOSTING_PRICES: Record<HostingPlan, number> = { basic: 89, pro: 159 };
 
 export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSummary) => void } = {}) {
-  const [annual, setAnnual] = useState(false);
   const [config, setConfig] = useState<ConfigState>({
-    framework: null, tier: null, hosting: null, support: null, onboarding: null,
+    tier: null, hosting: null, support: null, onboarding: null,
   });
-
-  const selectTier = useCallback((framework: Framework, tier: Tier) => {
-    setConfig((prev) => ({ ...prev, framework, tier }));
-  }, []);
 
   const selectHosting = useCallback((plan: HostingPlan) => {
     setConfig((prev) => ({ ...prev, hosting: plan }));
   }, []);
 
-  const isComplete = config.framework && config.tier && config.hosting && config.support && config.onboarding;
+  const isComplete = config.tier && config.hosting && config.support && config.onboarding;
 
   const handleCTA = () => {
+    const tierData = TIERS.find(t => t.id === config.tier)!;
     const wg = config.onboarding === "whiteglove";
     const summary: ConfigSummary = {
-      impl: config.framework === "hermes" ? "The Undergraduate" : config.tier === "starter" ? "The Graduate" : "The Scholar",
+      impl: tierData.name,
       tier: config.tier ?? "",
-      setupFee: config.tier && config.framework ? TIER_PRICES[config.framework][config.tier] : 0,
+      setupFee: tierData.price,
       hosting: config.hosting === "basic" ? "Basic" : "Pro",
       hostingFee: config.hosting ? HOSTING_PRICES[config.hosting] : 0,
-      hostingAnnual: annual,
+      hostingAnnual: false,
       support: SUPPORT_PLANS.find(p => p.id === config.support)?.label ?? "None",
-      supportPrice: SUPPORT_PLANS.find(p => p.id === config.support)?.price ?? "Free",
-      maxIntegrations: config.tier ? TIER_MAX_INT[config.tier] : 0,
+      supportPrice: SUPPORT_PLANS.find(p => p.id === config.support)?.price ?? "Included",
+      maxIntegrations: tierData.maxInt,
       onboarding: wg ? "White Glove" : "Standard",
       onboardingFee: wg ? 650 : 0,
     };
@@ -119,17 +114,12 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
     window.open(CALENDLY, "_blank");
   };
 
-  const setupFee = config.tier && config.framework ? TIER_PRICES[config.framework][config.tier] : null;
+  const tierData = config.tier ? TIERS.find(t => t.id === config.tier) : null;
+  const setupFee = tierData?.price ?? null;
   const hostingFee = config.hosting ? HOSTING_PRICES[config.hosting] : null;
-  const supportLabel = config.support ? SUPPORT_PLANS.find(p => p.id === config.support)?.price ?? null : null;
-  const maxInt = config.tier ? TIER_MAX_INT[config.tier] : null;
-
-  const implLabel =
-    config.framework && config.tier
-      ? config.framework === "hermes"
-        ? "The Undergraduate"
-        : config.tier === "starter" ? "The Graduate" : "The Scholar"
-      : null;
+  const supportPlan = config.support ? SUPPORT_PLANS.find(p => p.id === config.support) : null;
+  const maxInt = tierData?.maxInt ?? null;
+  const implLabel = tierData?.name ?? null;
 
   return (
     <section id="configurator" style={{ background: "var(--cream)", padding: "90px 0" }}>
@@ -150,62 +140,28 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
               <div className="step-num">1</div>
               <span className="step-title">Choose Your Implementation</span>
             </div>
-            <div className="impl-grid">
-              {(
-                [
-                  {
-                    id: "hermes" as Framework,
-                    badge: "Most Popular",
-                    name: "The Undergraduate",
-                    desc: "Pre-configured student agent. Battle-tested workflows, fast setup, ready within 24–48 hours of your onboarding form.",
-                  },
-                  {
-                    id: "openclaw" as Framework,
-                    badge: "Advanced",
-                    name: "The Graduate / The Scholar",
-                    desc: "Deeper configuration, expanded skill set, and more personalization. Ready within 7 days.",
-                  },
-                ] as const
-              ).map((card) => (
+            <div className="impl-grid" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
+              {TIERS.map((card) => (
                 <div
                   key={card.id}
-                  className={`impl-card ${config.framework === card.id ? "selected" : ""}`}
+                  className={`impl-card ${config.tier === card.id ? "selected" : ""}`}
+                  onClick={() => setConfig(prev => ({ ...prev, tier: card.id }))}
+                  style={{ cursor: "pointer" }}
                 >
                   <div className="impl-badge">{card.badge}</div>
                   <div className="impl-name">{card.name}</div>
                   <div className="impl-desc">{card.desc}</div>
-                  <div className="tier-options">
-                    {(["starter", "pro"] as Tier[]).map((tier) => (
-                      <div
-                        key={tier}
-                        className={`tier-row ${tier === "pro" && card.id === "hermes" ? "recommended" : ""} ${
-                          config.framework === card.id && config.tier === tier ? "selected" : ""
-                        }`}
-                        onClick={() => selectTier(card.id, tier)}
-                      >
-                        <div className="tier-radio" />
-                        <div className="tier-info">
-                          <div className="tier-name">
-                            {tier.charAt(0).toUpperCase() + tier.slice(1)}
-                            {tier === "pro" && card.id === "hermes" && (
-                              <span className="recommended-badge">Recommended</span>
-                            )}
-                          </div>
-                          <div className="tier-detail">
-                            {TIER_MAX_INT[tier]} integrations
-                          </div>
-                        </div>
-                        <div className="tier-price">
-                          ${TIER_PRICES[card.id][tier].toLocaleString()}
-                        </div>
-                      </div>
-                    ))}
+                  <div style={{ borderTop: "1px solid rgba(11,23,41,.07)", paddingTop: 12, marginTop: 4 }}>
+                    <div className="tier-price" style={{ fontSize: 18 }}>${card.price.toLocaleString()}</div>
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "rgba(11,23,41,.4)", marginTop: 4 }}>
+                      Up to {card.maxInt} integrations · Ready {card.readyTime}
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
             <p className="custom-note">
-              Need more than 5 integrations or something not on the list?{" "}
+              Need more integrations or something custom?{" "}
               <a href={CALENDLY} target="_blank" rel="noopener noreferrer">
                 Custom integrations available as needed.
               </a>
@@ -217,27 +173,6 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
             <div className="step-header">
               <div className="step-num">2</div>
               <span className="step-title">Choose Your Hosting Plan</span>
-            </div>
-            {/* Billing toggle */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: annual ? "rgba(11,23,41,.35)" : "var(--navy)" }}>Monthly</span>
-              <div
-                onClick={() => setAnnual(a => !a)}
-                style={{
-                  width: 40, height: 22, borderRadius: 11, cursor: "pointer",
-                  background: annual ? "var(--green)" : "rgba(11,23,41,.15)",
-                  position: "relative", transition: "background .2s",
-                }}
-              >
-                <div style={{
-                  position: "absolute", top: 3, left: annual ? 21 : 3,
-                  width: 16, height: 16, borderRadius: "50%", background: "#fff",
-                  transition: "left .2s", boxShadow: "0 1px 3px rgba(0,0,0,.2)",
-                }} />
-              </div>
-              <span style={{ fontSize: 12, fontWeight: 600, color: annual ? "var(--green)" : "rgba(11,23,41,.35)" }}>
-                Annual <span style={{ fontSize: 10, background: "rgba(61,139,61,.12)", color: "var(--green)", padding: "2px 6px", borderRadius: 4, marginLeft: 4 }}>2 months free</span>
-              </span>
             </div>
             <div className="hosting-grid">
               {(
@@ -262,15 +197,9 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
                   onClick={() => selectHosting(plan.id)}
                 >
                   <div className="hosting-price">
-                    ${annual ? (plan.price * 10).toLocaleString()
-                      : plan.price}
-                    <span className="hosting-price-unit">{annual ? "/yr" : "/mo"}</span>
+                    ${plan.price}
+                    <span className="hosting-price-unit">/mo</span>
                   </div>
-                  {annual && (
-                    <div style={{ fontSize: 10, color: "var(--green)", fontFamily: "var(--font-mono)", fontWeight: 600, marginBottom: 6 }}>
-                      Save ${(plan.price * 2).toLocaleString()}/yr
-                    </div>
-                  )}
                   <div className="hosting-name">{plan.name}</div>
                   <ul className="hosting-features">
                     {plan.features.map((f) => (
@@ -411,16 +340,14 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
             <div className="order-label">Hosting</div>
             <div className={`order-value ${config.hosting ? "" : "placeholder"}`}>
               {config.hosting
-                ? `${config.hosting === "basic" ? "Basic" : "Pro"} ($${annual ? (hostingFee! * 10).toLocaleString() + "/yr" : hostingFee + "/mo"})`
+                ? `${config.hosting === "basic" ? "Basic" : "Pro"} ($${hostingFee}/mo)`
                 : "Not selected"}
             </div>
           </div>
           <div className="order-row">
             <div className="order-label">Support Plan</div>
             <div className={`order-value ${config.support ? "" : "placeholder"}`}>
-              {config.support
-                ? SUPPORT_PLANS.find(p => p.id === config.support)?.price ?? "Not selected"
-                : "Not selected"}
+              {supportPlan ? supportPlan.price : "Not selected"}
             </div>
           </div>
           <div className="order-row">
@@ -442,7 +369,7 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
           <div className="order-row">
             <div className="order-label">Agent Ready</div>
             <div className="order-value">
-              {config.onboarding === "whiteglove" ? "14 days" : config.framework === "hermes" ? "24–48 hrs" : config.framework === "openclaw" ? "7 days" : "--"}
+              {config.onboarding === "whiteglove" ? "14 days" : tierData?.readyTime ?? "--"}
             </div>
           </div>
 
@@ -454,14 +381,14 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
               <>
                 ${setupFee.toLocaleString()}
                 {hostingFee && (
-                  <span> + ${annual ? (hostingFee * 10).toLocaleString() + "/yr" : hostingFee + "/mo"}</span>
+                  <span> + ${hostingFee}/mo</span>
                 )}
-                {supportLabel && supportLabel !== "Free" && (
-                  <span> + {supportLabel}</span>
+                {supportPlan && supportPlan.fee > 0 && (
+                  <span> + {supportPlan.price}</span>
                 )}
               </>
             ) : (
-              <>-- <span>+ --/{annual ? "yr" : "mo"}</span></>
+              <>-- <span>+ --/mo</span></>
             )}
           </div>
 

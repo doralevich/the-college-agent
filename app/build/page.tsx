@@ -26,6 +26,11 @@ export default function BuildPage() {
     setStudentInfo(info);
     setStep(2);
     window.scrollTo({ top: 0, behavior: "smooth" });
+    fetch("/api/lead-capture", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(info),
+    }).catch(() => {});
   }
 
   function handleConfigComplete(summary: ConfigSummary) {
@@ -41,13 +46,12 @@ export default function BuildPage() {
         mobile: studentInfo.mobile,
         school: studentInfo.school,
         year: studentInfo.year,
-        aiLevel: studentInfo.aiLevel,
         implementation: summary.impl,
-        tier: summary.tier,
         setupFee: `$${summary.setupFee.toLocaleString()}`,
-        hosting: `${summary.hosting} — $${summary.hostingAnnual ? (summary.hostingFee * 10).toLocaleString() + "/yr" : summary.hostingFee + "/mo"}`,
+        hosting: `${summary.hosting} — $${summary.hostingFee}/mo`,
         supportPlan: `${summary.support} (${summary.supportPrice})`,
-        integrations: integrations.join(", ") || "None selected",
+        onboarding: summary.onboarding === "White Glove" ? "White Glove (+$650)" : "Standard (Included)",
+        integrations: integrations.join(", ") || "To be finalized during co-training",
       };
       fetch("/api/notify", {
         method: "POST",
@@ -236,9 +240,9 @@ export default function BuildPage() {
 
                 <div style={{ padding: "24px 28px", display: "flex", flexDirection: "column", gap: 0 }}>
                   {[
-                    { label: "Implementation", value: `${configSummary.impl} — ${configSummary.tier.charAt(0).toUpperCase() + configSummary.tier.slice(1)}` },
+                    { label: "Implementation", value: configSummary.impl },
                     { label: "Setup Fee", value: `$${configSummary.setupFee.toLocaleString()} (one-time)` },
-                    { label: "Hosting", value: `${configSummary.hosting} — $${configSummary.hostingAnnual ? (configSummary.hostingFee * 10).toLocaleString() + "/yr" : configSummary.hostingFee + "/mo"}` },
+                    { label: "Hosting", value: `${configSummary.hosting} — $${configSummary.hostingFee}/mo` },
                     { label: "Support Plan", value: `${configSummary.support} (${configSummary.supportPrice})` },
                     { label: "Integrations", value: integrations.length > 0 ? integrations.join(", ") : "Finalized during co-training" },
                     { label: "Co-Training", value: "30-day hands-on (included)" },
