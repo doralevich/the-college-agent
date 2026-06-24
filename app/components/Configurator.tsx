@@ -168,8 +168,8 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
             <div className="step-num">1</div>
             <span className="step-title">Choose Your Implementation</span>
           </div>
-          <p style={{ fontSize: 14, color: "rgba(11,23,41,.55)", lineHeight: 1.7, marginBottom: 24, maxWidth: 680 }}>
-            Every College Agent is built around you — your schedule, your goals, your communication style.
+          <p style={{ fontSize: 14, color: "rgba(11,23,41,.55)", lineHeight: 1.7, marginBottom: 24 }}>
+            Every College Agent is built around you. Your schedule, your goals, your communication style.
             Choose the tier that fits where you are right now. All three include cloud hosting, Telegram access,
             web portal access, and everything listed below.
           </p>
