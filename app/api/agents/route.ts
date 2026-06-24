@@ -3,7 +3,7 @@ import { loadLiveAgentState, mergeAgent } from "@/lib/agents";
 import { requireMember, requireUser } from "@/lib/auth";
 import { requirePlatformAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { DEFAULT_AGENT } from "@/config/agents";
+import { DEFAULT_AGENT, shapeForHosting } from "@/config/agents";
 import { usdToMicros } from "@/lib/format";
 import { ApiError, json, readJson, route } from "@/lib/http";
 import { configureAgentFromIntake, readProvisioningIntake } from "@/lib/provisioning";
@@ -89,6 +89,17 @@ export const POST = route(async (request: Request) => {
   if (!workspace) throw new ApiError(404, "not_found", "Workspace not found");
   const ownerId = (workspace.owner_id as string) ?? user.id;
 
+  // Match the student path: the machine shape follows the owner's purchased hosting plan
+  // (Basic vs Pro). Falls back to the Basic floor when the owner has no paid order on file.
+  const { data: ownerOrders } = await db
+    .from("orders")
+    .select("hosting")
+    .eq("user_id", ownerId)
+    .eq("status", "paid")
+    .order("created_at", { ascending: false })
+    .limit(1);
+  const shape = shapeForHosting(ownerOrders?.[0]?.hosting as string | undefined);
+
   // Only the FIRST agent in a workspace gets wired to Telegram: getUpdates long-polling is
   // exclusive per bot token, so a second gateway on the owner's token would 409 against the
   // first and split/drop the student's messages. Admins can still create extra boxes (that's
@@ -104,9 +115,9 @@ export const POST = route(async (request: Request) => {
   const agent = await agent37.createAgent({
     template,
     resources: {
-      cpu: DEFAULT_AGENT.cpu,
-      memory: DEFAULT_AGENT.memory,
-      disk: DEFAULT_AGENT.disk,
+      cpu: shape.cpu,
+      memory: shape.memory,
+      disk: shape.disk,
     },
     user: ownerId,
     metadata: { app_workspace: workspaceId },

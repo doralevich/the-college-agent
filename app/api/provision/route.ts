@@ -1,7 +1,7 @@
 import { agent37 } from "@/lib/agent37";
 import { requireUser, requireEntitled } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { DEFAULT_AGENT } from "@/config/agents";
+import { DEFAULT_AGENT, shapeForHosting } from "@/config/agents";
 import { usdToMicros } from "@/lib/format";
 import { ApiError, json, route } from "@/lib/http";
 import { configureAgentFromIntake, readProvisioningIntake } from "@/lib/provisioning";
@@ -40,10 +40,21 @@ export const POST = route(async () => {
   const { onboard, setup } = await readProvisioningIntake(db, user.id);
   if (!onboard) throw new ApiError(400, "onboard_incomplete", "Finish onboarding first");
 
+  // Machine shape follows the hosting plan the student bought (Basic vs Pro). Read the most
+  // recent paid order; shapeForHosting falls back to the Basic floor if none is found.
+  const { data: paidOrders } = await db
+    .from("orders")
+    .select("hosting")
+    .eq("user_id", user.id)
+    .eq("status", "paid")
+    .order("created_at", { ascending: false })
+    .limit(1);
+  const shape = shapeForHosting(paidOrders?.[0]?.hosting as string | undefined);
+
   // Create the Hermes instance, tagged to the student, at the default monthly cap.
   const agent = await agent37.createAgent({
     template: DEFAULT_AGENT.template,
-    resources: { cpu: DEFAULT_AGENT.cpu, memory: DEFAULT_AGENT.memory, disk: DEFAULT_AGENT.disk },
+    resources: { cpu: shape.cpu, memory: shape.memory, disk: shape.disk },
     user: user.id,
     name: onboard.agent_name || "Hermes",
     metadata: { app_workspace: workspaceId, provisioned_for: user.id },
