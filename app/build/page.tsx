@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import BuildNav from "../components/BuildNav";
-import Configurator, { ConfigSummary, INTEGRATIONS } from "../components/Configurator";
+import Configurator, { ConfigSummary } from "../components/Configurator";
 import StudentInfoForm, { StudentInfo } from "../components/StudentInfoForm";
 import CheckoutPanel from "./CheckoutPanel";
 import { dueToday, monthlyRecurring, formatUSD } from "@/lib/pricing";
@@ -10,17 +10,6 @@ export default function BuildPage() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null);
   const [configSummary, setConfigSummary] = useState<ConfigSummary | null>(null);
-  const [integrations, setIntegrations] = useState<string[]>([]);
-
-  function toggleIntegration(name: string) {
-    if (!configSummary) return;
-    const max = configSummary.maxIntegrations;
-    setIntegrations(prev =>
-      prev.includes(name)
-        ? prev.filter(i => i !== name)
-        : prev.length >= max ? prev : [...prev, name]
-    );
-  }
 
   function handleInfoComplete(info: StudentInfo) {
     setStudentInfo(info);
@@ -114,7 +103,7 @@ export default function BuildPage() {
               Build Your Agent
             </h1>
             <p style={{ fontSize: 15, color: "rgba(11,23,41,.55)", maxWidth: 460, margin: "0 auto" }}>
-              Choose your framework, hosting, support, and integrations.
+              Choose your framework, hosting, and support plan.
             </p>
           </>}
           {step === 3 && <>
@@ -158,71 +147,6 @@ export default function BuildPage() {
           <section style={{ background: "#fff", padding: "60px 24px 100px" }}>
             <div style={{ maxWidth: 660, margin: "0 auto" }}>
 
-              {/* Integrations Picker */}
-              <style>{`
-                .int-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-                .int-card { border: 1.5px solid rgba(11,23,41,.08); border-radius: 10px; padding: 16px 18px; background: #fff; }
-                .int-cat { font-family: var(--font-mono); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: rgba(11,23,41,.35); margin-bottom: 10px; }
-                .int-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(11,23,41,.05); cursor: pointer; }
-                .int-row:last-child { border-bottom: none; padding-bottom: 0; }
-                .int-row.disabled { opacity: 0.3; cursor: not-allowed; }
-                .int-check { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid rgba(11,23,41,.2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all .12s; }
-                .int-check.checked { background: var(--green); border-color: var(--green); }
-                .int-check.checked::after { content: '✓'; color: #fff; font-size: 10px; font-weight: 700; }
-                .int-name { font-size: 12.5px; font-weight: 500; color: var(--navy); }
-                .int-row:not(.disabled):hover .int-check { border-color: var(--green); }
-                @media (max-width: 600px) { .int-grid { grid-template-columns: 1fr; } }
-              `}</style>
-              <div style={{ marginBottom: 48 }}>
-                <div style={{ marginBottom: 20 }}>
-                  <h2 style={{ fontSize: 20, fontWeight: 800, color: "var(--navy)", marginBottom: 6 }}>Choose Your Integrations</h2>
-                  <p style={{ fontSize: 13, color: "rgba(11,23,41,.5)", lineHeight: 1.6 }}>
-                    Select the tools you already use, up to <strong>{configSummary.maxIntegrations}</strong> included with your plan.
-                  </p>
-                  <div style={{ marginTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: integrations.length >= configSummary.maxIntegrations ? "var(--green)" : "rgba(11,23,41,.4)" }}>
-                      {integrations.length} / {configSummary.maxIntegrations} selected
-                    </span>
-                    {integrations.length > 0 && (
-                      <button onClick={() => setIntegrations([])} style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "rgba(11,23,41,.4)", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
-                        Clear all
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <div className="int-grid">
-                  {Object.entries(INTEGRATIONS).map(([cat, items]) => {
-                    const atCap = integrations.length >= configSummary.maxIntegrations;
-                    return (
-                      <div key={cat} className="int-card">
-                        <div className="int-cat">{cat}</div>
-                        {items.map(item => {
-                          const sel = integrations.includes(item);
-                          const disabled = !sel && atCap;
-                          return (
-                            <div
-                              key={item}
-                              className={`int-row${disabled ? " disabled" : ""}`}
-                              onClick={() => !disabled && toggleIntegration(item)}
-                            >
-                              <div className={`int-check${sel ? " checked" : ""}`} />
-                              <span className="int-name">{item}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <p style={{ marginTop: 14, fontFamily: "var(--font-mono)", fontSize: 10, color: "rgba(11,23,41,.35)", lineHeight: 1.7, textAlign: "center" }}>
-                  Need something not listed or more than {configSummary.maxIntegrations}? Custom integrations available, we&apos;ll discuss on the call.
-                </p>
-              </div>
-
-              <hr style={{ border: "none", borderTop: "1px solid rgba(11,23,41,.08)", marginBottom: 40 }} />
-
               {/* Order Review Card */}
               <div style={{ border: "1.5px solid rgba(11,23,41,.1)", borderRadius: 14, overflow: "hidden", marginBottom: 40 }}>
                 <div style={{ background: "var(--navy)", padding: "20px 28px" }}>
@@ -237,7 +161,6 @@ export default function BuildPage() {
                     { label: "Setup Fee", value: `$${configSummary.setupFee.toLocaleString()} (one-time)` },
                     { label: "Hosting", value: `${configSummary.hosting}: $${configSummary.hostingFee}/mo` },
                     { label: "Support Plan", value: `${configSummary.support} (${configSummary.supportPrice})` },
-                    { label: "Integrations", value: integrations.length > 0 ? integrations.join(", ") : "Finalized during co-training" },
                     { label: "Co-Training", value: "30-day hands-on (included)" },
                     { label: "Deployment", value: "72 hours from signed agreement" },
                   ].map(({ label, value }) => (
@@ -257,7 +180,6 @@ export default function BuildPage() {
               <CheckoutPanel
                 studentInfo={studentInfo}
                 configSummary={configSummary}
-                integrations={integrations}
                 dueTodayCents={dueTodayCents}
                 monthlyCents={monthlyCents}
               />

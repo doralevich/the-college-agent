@@ -15,7 +15,7 @@ export const POST = route(async (req) => {
   const email = (user.email ?? "").toLowerCase();
   if (!email) throw new ApiError(400, "invalid_request", "No email on account");
 
-  const body = await readJson<{ selection?: unknown; integrations?: unknown; studentInfo?: unknown }>(req);
+  const body = await readJson<{ selection?: unknown; studentInfo?: unknown }>(req);
 
   let selection;
   try {
@@ -24,9 +24,6 @@ export const POST = route(async (req) => {
     throw new ApiError(400, "invalid_request", (e as Error).message);
   }
 
-  const integrations = Array.isArray(body.integrations)
-    ? body.integrations.filter((x): x is string => typeof x === "string").slice(0, 24)
-    : [];
   const studentInfo =
     body.studentInfo && typeof body.studentInfo === "object" ? (body.studentInfo as Record<string, unknown>) : null;
 
@@ -58,7 +55,6 @@ export const POST = route(async (req) => {
       onboarding: selection.onboarding,
       onboarding_price_id: onboardingPriceId,
       onboarding_amount: ONBOARDING[selection.onboarding].amount,
-      integrations,
       amount_subtotal: dueToday(selection),
       student_info: studentInfo,
       config: selection,

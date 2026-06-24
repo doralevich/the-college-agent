@@ -15,13 +15,11 @@ import type { StudentInfo } from "../components/StudentInfoForm";
 export default function CheckoutPanel({
   studentInfo,
   configSummary,
-  integrations,
   dueTodayCents,
   monthlyCents,
 }: {
   studentInfo: StudentInfo;
   configSummary: ConfigSummary;
-  integrations: string[];
   dueTodayCents: number;
   monthlyCents: number;
 }) {
@@ -97,7 +95,6 @@ export default function CheckoutPanel({
             support: configSummary.supportKey,
             onboarding: configSummary.onboardingKey,
           },
-          integrations,
           studentInfo,
         }),
       });

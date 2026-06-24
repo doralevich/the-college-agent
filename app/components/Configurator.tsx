@@ -18,7 +18,6 @@ export interface ConfigSummary {
   hostingAnnual: boolean;
   support: string;
   supportPrice: string;
-  maxIntegrations: number;
   onboarding: string;
   onboardingFee: number;
   // Keys for server-side Stripe price resolution (must match lib/pricing.ts keys).
@@ -35,48 +34,9 @@ interface ConfigState {
   onboarding: Onboarding | null;
 }
 
-export const INTEGRATIONS: Record<string, string[]> = {
-  "School & LMS": [
-    "Canvas", "Blackboard", "Brightspace (D2L)", "Google Classroom", "Moodle", "Gradescope",
-  ],
-  "Notes & Knowledge": [
-    "Notion", "Google Docs", "Obsidian", "Microsoft OneNote", "Apple Notes", "Roam Research",
-  ],
-  "Cloud Storage": [
-    "Google Drive", "iCloud Drive", "Dropbox", "OneDrive",
-  ],
-  "Email & Calendar": [
-    "Gmail", "Google Calendar", "Outlook / Microsoft 365", "Apple Mail", "Apple Calendar", "Calendly",
-  ],
-  "Messaging": [
-    "iMessage", "WhatsApp", "Telegram", "Discord", "Slack", "GroupMe",
-  ],
-  "Tasks & Planning": [
-    "Todoist", "Apple Reminders", "TickTick", "Things 3", "Google Tasks", "Structured",
-  ],
-  "Research & Writing": [
-    "Zotero", "Grammarly", "Overleaf", "Google Scholar", "Perplexity AI", "ChatGPT",
-  ],
-  "Career & Internships": [
-    "LinkedIn", "Handshake", "GitHub", "Indeed", "Glassdoor", "Canva",
-  ],
-  "Finance & Payments": [
-    "Venmo", "Cash App", "Splitwise", "Zelle", "YNAB", "Robinhood",
-  ],
-  "Health & Wellness": [
-    "Apple Health", "MyFitnessPal", "Headspace", "Calm", "Strava", "Nike Run Club",
-  ],
-  "Social": [
-    "Instagram", "TikTok", "Snapchat", "Reddit", "X (Twitter)", "BeReal",
-  ],
-  "Entertainment": [
-    "Spotify", "Apple Music", "YouTube", "Audible", "Pocket Casts",
-  ],
-};
-
-const TIERS: { id: Tier; badge: string; name: string; price: number; maxInt: number; readyTime: string; desc: string; features: string[] }[] = [
+const TIERS: { id: Tier; badge: string; name: string; price: number; readyTime: string; desc: string; features: string[] }[] = [
   {
-    id: "undergraduate", badge: "Most Popular", name: "The Undergraduate", price: 999, maxInt: 3, readyTime: "30 min – 72 hours",
+    id: "undergraduate", badge: "Most Popular", name: "The Undergraduate", price: 999, readyTime: "30 min – 72 hours",
     desc: "The fastest path to your own AI agent. Submit your completed onboarding form and our proprietary software spins up your agent, ready within 30 minutes to 72 hours.",
     features: [
       "3 integrations included",
@@ -88,7 +48,7 @@ const TIERS: { id: Tier; badge: string; name: string; price: number; maxInt: num
     ],
   },
   {
-    id: "graduate", badge: "Advanced", name: "The Graduate", price: 1499, maxInt: 5, readyTime: "30 min – 72 hours",
+    id: "graduate", badge: "Advanced", name: "The Graduate", price: 1499, readyTime: "30 min – 72 hours",
     desc: "More depth, more personalization. Submit your enhanced onboarding form and our proprietary software develops your agent within 30 minutes to 72 hours, plus a live call and 7 days of post-launch support.",
     features: [
       "5 integrations included",
@@ -102,7 +62,7 @@ const TIERS: { id: Tier; badge: string; name: string; price: number; maxInt: num
     ],
   },
   {
-    id: "scholar", badge: "Most Powerful", name: "The Scholar", price: 1999, maxInt: 7, readyTime: "30 min – 72 hours",
+    id: "scholar", badge: "Most Powerful", name: "The Scholar", price: 1999, readyTime: "30 min – 72 hours",
     desc: "Built for high-achievers who want the full picture. Submit your enhanced onboarding form and our proprietary software develops your agent within 30 minutes to 72 hours, backed by a 60-minute deep-dive call and 14 days of post-launch support.",
     features: [
       "7 integrations included",
@@ -148,7 +108,6 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
       hostingAnnual: false,
       support: SUPPORT_PLANS.find(p => p.id === config.support)?.label ?? "None",
       supportPrice: SUPPORT_PLANS.find(p => p.id === config.support)?.price ?? "Included",
-      maxIntegrations: tierData.maxInt,
       onboarding: wg ? "White Glove" : "Standard",
       onboardingFee: wg ? 650 : 0,
       planKey: config.tier!,
@@ -164,7 +123,6 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
   const setupFee = tierData?.price ?? null;
   const hostingFee = config.hosting ? HOSTING_PRICES[config.hosting] : null;
   const supportPlan = config.support ? SUPPORT_PLANS.find(p => p.id === config.support) : null;
-  const maxInt = tierData?.maxInt ?? null;
   const implLabel = tierData?.name ?? null;
 
   return (
@@ -406,12 +364,6 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
             </div>
           </div>
           <div className="order-row">
-            <div className="order-label">Integrations</div>
-            <div className={`order-value ${maxInt ? "" : "placeholder"}`}>
-              {maxInt ? `Up to ${maxInt}, chosen at checkout` : "Select plan first"}
-            </div>
-          </div>
-          <div className="order-row">
             <div className="order-label">Onboarding</div>
             <div className={`order-value ${config.onboarding ? "" : "placeholder"}`}>
               {config.onboarding === "whiteglove" ? "White Glove (+$650)" : config.onboarding === "standard" ? "Standard (Included)" : "Not selected"}
@@ -569,43 +521,6 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
           margin-top: 14px; padding: 12px; background: rgba(11,23,41,.03);
           border-radius: 7px; font-family: var(--font-mono);
         }
-
-        .int-counter-row {
-          display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
-        }
-        .int-counter-text {
-          font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--green);
-        }
-        .clear-btn {
-          font-size: 11px; color: rgba(11,23,41,.4); background: none; border: none;
-          cursor: pointer; font-family: var(--font-mono); text-decoration: underline;
-        }
-        .clear-btn:hover { color: var(--green); }
-        .int-checkbox-grid {
-          display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 32px;
-        }
-        .int-category { margin-bottom: 20px; }
-        .int-cat-label {
-          font-family: var(--font-mono); font-size: 10px; font-weight: 700;
-          text-transform: uppercase; letter-spacing: .1em; color: rgba(11,23,41,.35);
-          margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid rgba(11,23,41,.06);
-        }
-        .int-checkbox-list { display: flex; flex-direction: column; gap: 2px; }
-        .int-checkbox-row {
-          display: flex; align-items: center; gap: 10px;
-          padding: 8px 10px; border-radius: 7px; cursor: pointer;
-          transition: background .12s; user-select: none;
-        }
-        .int-checkbox-row:hover:not(.disabled) { background: rgba(61,139,61,.05); }
-        .int-checkbox-row.disabled { opacity: .35; cursor: not-allowed; }
-        .int-checkbox-input {
-          width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0;
-          accent-color: var(--green); cursor: pointer;
-        }
-        .int-checkbox-row.disabled .int-checkbox-input { cursor: not-allowed; }
-        .int-checkbox-label { font-size: 13px; color: rgba(11,23,41,.75); line-height: 1.3; }
-        .int-checkbox-row:not(.disabled):hover .int-checkbox-label { color: var(--navy); }
-        @media (max-width: 600px) { .int-checkbox-grid { grid-template-columns: 1fr; } }
 
         .included-list { display: flex; flex-direction: column; gap: 10px; }
         .included-item { display: flex; align-items: center; gap: 10px; font-size: 13px; color: rgba(11,23,41,.7); }

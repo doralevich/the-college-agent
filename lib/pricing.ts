@@ -14,10 +14,10 @@ export type OnboardingKey = "standard" | "whiteglove";
 
 export const CURRENCY = "usd";
 
-export const PLANS: Record<PlanKey, { label: string; amount: number; lookupKey: string; maxIntegrations: number }> = {
-  undergraduate: { label: "The Undergraduate", amount: 99900, lookupKey: "plan_undergraduate", maxIntegrations: 3 },
-  graduate:      { label: "The Graduate",      amount: 149900, lookupKey: "plan_graduate",      maxIntegrations: 5 },
-  scholar:       { label: "The Scholar",       amount: 199900, lookupKey: "plan_scholar",       maxIntegrations: 7 },
+export const PLANS: Record<PlanKey, { label: string; amount: number; lookupKey: string }> = {
+  undergraduate: { label: "The Undergraduate", amount: 99900, lookupKey: "plan_undergraduate" },
+  graduate:      { label: "The Graduate",      amount: 149900, lookupKey: "plan_graduate" },
+  scholar:       { label: "The Scholar",       amount: 199900, lookupKey: "plan_scholar" },
 };
 
 export const HOSTING: Record<HostingKey, { label: string; amount: number; lookupKey: string }> = {

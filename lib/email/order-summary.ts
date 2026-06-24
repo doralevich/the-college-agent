@@ -12,7 +12,6 @@ export interface OrderForEmail {
   hosting: string;
   support: string;
   onboarding: string;
-  integrations: string[] | null;
   amount_subtotal: number | null;
   student_info: { firstName?: string; lastName?: string; schoolEmail?: string; personalEmail?: string; school?: string; year?: string } | null;
 }
@@ -31,7 +30,6 @@ export async function sendOrderSummaryEmail(order: OrderForEmail): Promise<void>
   const supportLabel = SUPPORT[order.support as SupportKey]?.label ?? order.support;
   const onboardingLabel = ONBOARDING[order.onboarding as OnboardingKey]?.label ?? order.onboarding;
   const hostingAmt = HOSTING[order.hosting as HostingKey]?.amount ?? 0;
-  const integrations = order.integrations?.length ? order.integrations.join(", ") : "To be finalized during co-training";
 
   const row = (label: string, value: string) =>
     `<tr><td style="padding:8px 12px;background:#f5f4f1;font-weight:700;width:200px;">${label}</td><td style="padding:8px 12px;border-bottom:1px solid #eee;">${value}</td></tr>`;
@@ -50,7 +48,6 @@ export async function sendOrderSummaryEmail(order: OrderForEmail): Promise<void>
       ${row("Hosting", `${hostingLabel}: ${formatUSD(hostingAmt)}/mo`)}
       ${row("Support", supportLabel)}
       ${row("Onboarding", onboardingLabel)}
-      ${row("Integrations", integrations)}
       ${row("Paid Today", order.amount_subtotal != null ? formatUSD(order.amount_subtotal) : "N/A")}
     </table>
     <p style="font-family:sans-serif;font-size:13px;color:#888;margin-top:16px;">Payment confirmed via Stripe. Hosting recurs at ${formatUSD(hostingAmt)}/mo.</p>

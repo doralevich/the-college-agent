@@ -92,7 +92,7 @@ async function handleCheckoutCompleted(db: DB, session: Stripe.Checkout.Session)
         paid_at: new Date().toISOString(),
       })
       .eq("id", orderId)
-      .select("id, email, plan, hosting, support, onboarding, integrations, amount_subtotal, student_info, user_id")
+      .select("id, email, plan, hosting, support, onboarding, amount_subtotal, student_info, user_id")
       .maybeSingle();
     if (data) {
       orderRow = data as unknown as OrderForEmail;
