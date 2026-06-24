@@ -1,5 +1,6 @@
 import { getWorkspaceOwner, requireAdmin, requireUser } from "@/lib/auth";
 import { agent37 } from "@/lib/agent37";
+import { clearStudentIntake } from "@/lib/intake";
 import { ApiError, json, readJson, requireTrimmed, route } from "@/lib/http";
 import type { Workspace } from "@/lib/types";
 
@@ -31,6 +32,12 @@ export const DELETE = route(async (_request: Request, { params }: Ctx) => {
   const owner = await getWorkspaceOwner(supabase, id);
   if (!owner) throw new ApiError(404, "not_found", "Workspace not found");
   if (owner !== user.id) throw new ApiError(403, "forbidden", "Only the owner can delete a workspace");
+
+  // This is the self-serve owner deleting their own workspace. The dashboard re-bootstraps
+  // a fresh empty workspace on the next load, so clear their onboarding + setup intake too —
+  // otherwise the funnel would instantly re-provision a new (billed) agent into the new
+  // workspace from the saved answers. Runs first: if it fails we abort before any teardown.
+  await clearStudentIntake(user.id);
 
   // Tear down the workspace's Agent37 agents first so none are orphaned. Concurrent —
   // each delete is independent and per-agent failures are logged, never fatal.

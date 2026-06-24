@@ -46,10 +46,14 @@ export function AgentActionsMenu({
   agent,
   role,
   onChanged,
+  confirmDeleteDescription = "This permanently deletes the agent and its data. This cannot be undone.",
 }: {
   agent: MergedAgent;
   role: Role;
   onChanged: () => void;
+  // Copy for the delete confirmation. Defaults to the operator-grade wording; the
+  // student view overrides it to explain the re-onboarding flow.
+  confirmDeleteDescription?: string;
 }) {
   const isAdmin = role === "admin";
   const running = agent.live_status === "running";
@@ -210,7 +214,7 @@ export function AgentActionsMenu({
         open={deleting}
         onOpenChange={setDeleting}
         title="Delete agent?"
-        description="This permanently deletes the agent and its data. This cannot be undone."
+        description={confirmDeleteDescription}
         confirmText="Delete"
         destructive
         onConfirm={remove}

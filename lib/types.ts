@@ -100,6 +100,29 @@ export interface MergedAgent extends AgentRow {
   update_available: boolean;
 }
 
+// ---- Read-only intake summaries shown on the student Settings tab ----
+
+// A serializable slice of the student's latest onboard_submissions row. NEVER includes
+// the questionnaire blob's secrets; just the structured fields the Settings card renders.
+export interface OnboardSummary {
+  first_name: string | null;
+  last_name: string | null;
+  school_email: string | null;
+  personal_email: string | null;
+  phone: string | null;
+  school: string | null;
+  year: string | null;
+  major: string | null;
+  agent_name: string | null;
+  resume_url: string | null;
+}
+
+// The student's Telegram connection — username + numeric id only. NEVER the bot token.
+export interface TelegramSummary {
+  telegram_username: string | null;
+  telegram_user_id: string | null;
+}
+
 // ---- Platform admin god-view (/admin) ----
 
 // One row in the all-workspaces table. Counts are computed server-side across every

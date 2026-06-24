@@ -12,17 +12,28 @@ import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AgentsView } from "@/components/AgentsView";
+import { SettingsView } from "@/components/SettingsView";
+import type { OnboardSummary, TelegramSummary } from "@/lib/types";
 
 type Props = {
   paid: boolean;
   onboardDone: boolean;
   setupDone: boolean;
   hasAgent: boolean;
+  onboardSummary: OnboardSummary | null;
+  telegramSummary: TelegramSummary | null;
 };
 
-type TabId = "onboard" | "setup" | "agent";
+type TabId = "onboard" | "setup" | "agent" | "settings";
 
-export function DashboardClient({ paid, onboardDone, setupDone, hasAgent }: Props) {
+export function DashboardClient({
+  paid,
+  onboardDone,
+  setupDone,
+  hasAgent,
+  onboardSummary,
+  telegramSummary,
+}: Props) {
   const { userEmail } = useWorkspace();
   const router = useRouter();
 
@@ -52,7 +63,10 @@ export function DashboardClient({ paid, onboardDone, setupDone, hasAgent }: Prop
 
   // Sidebar tabs depend on state. Unpaid → no tabs (just the build CTA).
   const tabs: { id: TabId; label: string; icon: typeof Bot; done?: boolean }[] = hasAgent
-    ? [{ id: "agent", label: "Your Agent", icon: Bot }]
+    ? [
+        { id: "agent", label: "Your Agent", icon: Bot },
+        { id: "settings", label: "Settings", icon: Settings2 },
+      ]
     : paid
     ? [
         { id: "onboard", label: "Tell the agent about you", icon: UserRound, done: onboardDone },
@@ -110,7 +124,11 @@ export function DashboardClient({ paid, onboardDone, setupDone, hasAgent }: Prop
       <main className="min-w-0 flex-1 overflow-y-auto">
         <div className="mx-auto w-full max-w-4xl p-6 md:p-10">
           {hasAgent ? (
-            <AgentsView />
+            active === "settings" ? (
+              <SettingsView onboardSummary={onboardSummary} telegramSummary={telegramSummary} />
+            ) : (
+              <AgentsView />
+            )
           ) : !paid ? (
             <BuildCta />
           ) : provisioningState ? (

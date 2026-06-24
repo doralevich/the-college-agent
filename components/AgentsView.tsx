@@ -94,7 +94,12 @@ export function AgentsView() {
                     {a.cpu} vCPU · {a.memory} GB · {a.disk} GB
                   </td>
                   <td className="px-4 py-3">
-                    <AgentActionsMenu agent={a} role={role} onChanged={load} />
+                    <AgentActionsMenu
+                      agent={a}
+                      role={role}
+                      onChanged={load}
+                      confirmDeleteDescription="This deletes your agent and clears your onboarding answers. To get a new agent you'll fill out the setup forms again. This cannot be undone."
+                    />
                   </td>
                 </tr>
               ))}
