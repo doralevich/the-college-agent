@@ -2,11 +2,11 @@
 
 import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { Bot, Check, CreditCard, Loader2, LogOut, RotateCcw, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "@/lib/supabase/client";
-import { branding } from "@/config/branding";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -62,12 +62,15 @@ export function DashboardClient({ paid, onboardDone, setupDone, hasAgent }: Prop
   return (
     <div className="flex min-h-screen">
       <aside className="flex w-64 shrink-0 flex-col border-r bg-card p-4">
-        <div className="flex items-center gap-2 px-2 py-1">
-          {branding.logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={branding.logoUrl} alt="" className="h-6 w-6 rounded" />
-          ) : null}
-          <span className="truncate font-semibold">{branding.appName}</span>
+        <div className="flex items-center px-2 py-1">
+          <Image
+            src="/logo-college-agent.png"
+            alt="The College Agent"
+            width={183}
+            height={40}
+            priority
+            className="h-8 w-auto"
+          />
         </div>
 
         {tabs.length > 0 && (
