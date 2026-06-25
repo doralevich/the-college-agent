@@ -120,7 +120,7 @@ export default function Home() {
         overflow: "hidden",
       }}>
         <div className="hero-glow" />
-        <div style={{ position: "relative", zIndex: 1, textAlign: "center", maxWidth: 860, margin: "0 auto", padding: "0 24px" }}>
+        <div style={{ position: "relative", zIndex: 1, textAlign: "center", maxWidth: 1160, margin: "0 auto", padding: "0 24px" }}>
           <div className="hero-badge">
             <span style={{ color: "var(--green)", fontSize: 14 }}>&#9670;</span>
             Apollo[Claw] College Edition
@@ -335,8 +335,9 @@ export default function Home() {
           padding: 6px 14px; border-radius: 99px; margin-bottom: 28px;
         }
         .hero-h1 {
-          font-size: clamp(36px, 5.5vw, 68px); font-weight: 800; line-height: 1.02;
-          letter-spacing: -.03em; color: #fff; margin-bottom: 20px;
+          font-size: clamp(34px, 5vw, 64px); font-weight: 800; line-height: 1.02;
+          letter-spacing: -.035em; color: #fff; margin-bottom: 20px;
+          white-space: nowrap;
         }
         .hero-sub {
           font-size: clamp(16px, 1.4vw, 19px); line-height: 1.7;
@@ -419,6 +420,7 @@ export default function Home() {
           .int-menu-grid { grid-template-columns: repeat(2, 1fr); }
         }
         @media (max-width: 640px) {
+          .hero-h1 { white-space: normal; font-size: clamp(34px, 10vw, 52px); }
           .dual-grid { grid-template-columns: 1fr; }
           .uc-grid { grid-template-columns: 1fr; }
           .stat-grid { grid-template-columns: repeat(2, 1fr); }
