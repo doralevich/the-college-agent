@@ -52,49 +52,40 @@ const TAG_TEXT: Record<string, string> = {
 
 const SCENARIOS = [
   {
-    before: { headline: "Sunday night panic.", body: "What's due this week? Three tabs open. Canvas won't load. Texts flying. Nothing organized. Sleep at 1am, still uncertain." },
-    after:  { headline: "Friday briefing. Done.", body: "Every Friday at 4pm, the agent sends a prioritized week-ahead: deadlines, reminders, what can wait. Sunday nights are quiet now." },
+    before: { headline: "Deadlines get missed.", body: "Assignments live in Canvas, syllabi, email, and memory. By Sunday night, the week is already behind." },
+    after:  { headline: "The week is already mapped.", body: "The agent sends a prioritized briefing with deadlines, study blocks, prep work, and what needs attention first." },
   },
   {
-    before: { headline: "Missed it by two hours.", body: "The Handshake internship posting closed. No one flagged it. The deadline came and went. Another opportunity gone." },
-    after:  { headline: "Applied Wednesday.", body: "Agent spotted the posting Tuesday morning, drafted the application, and reminded them to review. Submitted 48 hours before close." },
+    before: { headline: "Internship windows close fast.", body: "Handshake posts, alumni leads, recruiter notes, and application deadlines scatter across too many places." },
+    after:  { headline: "Applications move on time.", body: "The agent tracks target roles, drafts outreach, flags deadlines, and keeps follow-up moving before opportunities disappear." },
   },
   {
-    before: { headline: "4 days. Unread.", body: "Email from a professor sitting in the inbox. Important. Just… ignored. The longer it waits, the worse it looks." },
-    after:  { headline: "Replied in 2 minutes.", body: "Agent drafted a professional response in their voice. Student reviewed, hit send. Professor responded the same day." },
+    before: { headline: "Important emails sit too long.", body: "Professors, advisors, recruiters, and group projects all need responses. The longer it waits, the worse it looks." },
+    after:  { headline: "Replies sound polished and on time.", body: "The agent drafts clear responses in the student's voice so they can review, send, and move on." },
   },
   {
-    before: { headline: "Can't find the paper.", body: "Forty browser tabs. Zotero half-set-up. The citation is somewhere. The deadline is tonight. The thesis is not going well." },
-    after:  { headline: "Cited in 90 seconds.", body: "Agent pulled the paper, summarized it, and dropped a formatted citation. The thesis section was done before dinner." },
+    before: { headline: "Studying starts from scratch.", body: "Notes, textbooks, slides, and test dates are disconnected. Review becomes last-minute and inefficient." },
+    after:  { headline: "Study guides are ready when needed.", body: "The agent turns class materials into guides, review plans, practice questions, and prep checklists built around the next exam." },
   },
 ];
 
 export default function Explainer() {
   return (
     <>
-      {/* INTRO */}
-      <section id="what-it-is" style={{ background: "#fff", padding: "80px 0 60px" }}>
-        <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
-          <span className="mono-label">What It Actually Is</span>
-          <h2 className="section-title" style={{ marginBottom: 20 }}>
-            Your student&apos;s first hire.
-          </h2>
-          <p style={{ fontSize: 17, lineHeight: 1.8, color: "rgba(11,23,41,.6)" }}>
-            Every other AI personal agent is shared, generic, and forgets the moment the tab closes. The College Agent has a name. Knows their voice, their schedule, their goals. Tracks what&apos;s coming, drafts what needs to be sent, and gets smarter every week.
-          </p>
-          <p style={{ fontSize: 13, fontFamily: "var(--font-mono)", color: "rgba(11,23,41,.35)", marginTop: 20, letterSpacing: ".04em" }}>
-            Live in 30 minutes to 72 hours. Running for four years.
-          </p>
-        </div>
-      </section>
-
       {/* BEFORE / AFTER */}
-      <section id="before-after" style={{ background: "var(--cream)", padding: "0 0 80px", scrollMarginTop: 80 }}>
+      <section id="before-after" style={{ background: "var(--cream)", padding: "80px 0", scrollMarginTop: 80 }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
+          <div style={{ textAlign: "center", marginBottom: 40 }}>
+            <span className="mono-label">Before & After</span>
+            <h2 className="section-title">From scattered to handled.</h2>
+            <p className="section-sub" style={{ maxWidth: 620, margin: "12px auto 0" }}>
+              The difference is not another chatbot. It is a personalized agent that knows the student's real college life and keeps the work moving.
+            </p>
+          </div>
           {/* Column headers */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 12, paddingTop: 16 }}>
-            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: "rgba(11,23,41,.35)", paddingLeft: 4 }}>Without</div>
-            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--green)", paddingLeft: 4 }}>With The College Agent</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: "rgba(11,23,41,.38)", paddingLeft: 4 }}>Without</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--green)", paddingLeft: 4 }}>With The College Agent</div>
           </div>
 
           {/* Rows */}
@@ -114,33 +105,30 @@ export default function Explainer() {
           </div>
         </div>
         <style>{`
-          .ba-card {
-            border-radius: 14px;
-            padding: 28px 32px;
-          }
+          .ba-card { border-radius: 16px; padding: 30px 32px; }
           .ba-card-before {
-            background: #fff;
-            border: 1px solid rgba(11,23,41,.08);
+            background: rgba(255,255,255,.62);
+            border: 1px solid rgba(11,23,41,.1);
           }
           .ba-card-after {
             background: #fff;
-            border: 2px solid rgba(61,139,61,.25);
-            box-shadow: 0 4px 20px rgba(61,139,61,.07);
+            border: 2px solid rgba(61,139,61,.35);
+            box-shadow: 0 12px 34px rgba(61,139,61,.1);
           }
           .ba-headline {
-            font-size: 22px;
+            font-size: 23px;
             font-weight: 800;
             line-height: 1.25;
             margin-bottom: 10px;
           }
-          .ba-headline-before { color: rgba(11,23,41,.3); }
+          .ba-headline-before { color: rgba(11,23,41,.48); }
           .ba-headline-after  { color: var(--navy); }
           .ba-body {
             font-size: 14px;
             line-height: 1.75;
           }
-          .ba-body-before { color: rgba(11,23,41,.35); }
-          .ba-body-after  { color: rgba(11,23,41,.65); }
+          .ba-body-before { color: rgba(11,23,41,.5); }
+          .ba-body-after  { color: rgba(11,23,41,.72); }
           @media (max-width: 680px) {
             .ba-card { padding: 22px 20px; }
             .ba-headline { font-size: 18px; }
