@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOptionalUserId } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { buildSummaryPdf, pdfAttachment } from "@/lib/email/pdf";
 
 const supabase = createAdminClient();
 
@@ -36,6 +37,24 @@ export async function POST(req: NextRequest) {
 
     const mandrillKey = process.env.MANDRILL_API_KEY;
     if (mandrillKey) {
+      // Same redacted view as the HTML below, attached as a PDF for the admin's records.
+      const pdfBase64 = await buildSummaryPdf({
+        title: "Technical Setup",
+        sections: [
+          {
+            heading: "Technical Setup",
+            rows: [
+              ["Telegram User ID", orNull(data.telegramUserId) ?? "-"],
+              ["Telegram Username", orNull(data.telegramUsername) ?? "-"],
+              ["Bot Token", orNull(data.telegramToken) ? String(data.telegramToken).slice(0, 12) + "..." : "-"],
+              ["Anthropic Key", orNull(data.anthropicKey) ? "Provided" : "-"],
+              ["OpenAI Key", orNull(data.openaiKey) ? "Provided" : "-"],
+            ],
+          },
+        ],
+        note: "Secrets are redacted here. Full values are stored in Supabase -> setup_submissions.",
+      });
+
       await fetch("https://mandrillapp.com/api/1.0/messages/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -58,6 +77,7 @@ export async function POST(req: NextRequest) {
                 <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">OpenAI key</td><td>${orNull(data.openaiKey) ? "provided" : "-"}</td></tr>
               </table>
             `,
+            attachments: [pdfAttachment("technical-setup.pdf", pdfBase64)],
           },
         }),
       });

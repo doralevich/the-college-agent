@@ -2,8 +2,28 @@ import { NextRequest, NextResponse } from "next/server";
 import { getOptionalUserId } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { renameWorkspaceFromIntake } from "@/lib/workspaces";
+import { buildSummaryPdf, pdfAttachment, type PdfSection } from "@/lib/email/pdf";
 
 const supabase = createAdminClient();
+
+// The onboarding questionnaire, grouped to mirror the 8 wizard steps, so the admin PDF reads
+// like the form. Each entry maps a stored field key to a human label; values are pulled from
+// the submitted `data` blob and empty answers are skipped.
+const ONBOARD_GROUPS: { heading: string; fields: Array<[string, string]> }[] = [
+  { heading: "About You", fields: [["schoolEmail", "School Email"], ["personalEmail", "Personal Email"], ["phone", "Phone"], ["school", "School"], ["year", "Year"], ["timezone", "Timezone"], ["major", "Major"], ["agentName", "Agent Name"]] },
+  { heading: "Academic Life", fields: [["currentClasses", "Current Classes"], ["lmsType", "LMS"], ["gpaGoal", "GPA Goal"], ["academicChallenges", "Academic Challenges"], ["studyStyle", "Study Style"], ["studyMethods", "Study Methods"], ["studyTime", "Best Study Time"], ["studyLocation", "Study Location"], ["studySessionLength", "Session Length"]] },
+  { heading: "Schedule & Routine", fields: [["wakeTime", "Wake Time"], ["sleepTime", "Sleep Time"], ["productiveTime", "Most Productive"], ["classDays", "Class Days"], ["workStatus", "Work Status"], ["weeklyHours", "Weekly Hours"]] },
+  { heading: "Social & Campus Life", fields: [["greekLife", "Greek Life"], ["sportsTeams", "Sports Teams"], ["socialFrequency", "Social Frequency"], ["socialActivities", "Social Activities"], ["clubTypes", "Clubs & Orgs"], ["specificClubs", "Specific Clubs"], ["leadershipRole", "Leadership Role"], ["clubTimeCommitment", "Club Time/Week"], ["volunteering", "Volunteering"], ["causeAreas", "Cause Areas"], ["volunteerOrgs", "Volunteer Orgs"]] },
+  { heading: "Mental Health & Wellbeing", fields: [["sleepQuality", "Sleep Quality"], ["stressLevel", "Stress Level"], ["burnoutSignals", "Burnout Signals"], ["agentWellbeingFlag", "Wellbeing Flagging"], ["wellbeingBoundaries", "Wellbeing Boundaries"]] },
+  { heading: "Tools & Communication", fields: [["apps", "Apps"], ["devices", "Devices"], ["browser", "Browser"], ["noteTaking", "Note Taking"], ["calendarApp", "Calendar"], ["taskManager", "Task Manager"], ["commStyle", "Writing Style"], ["preferredChannels", "Channels"], ["responseStyle", "Response Style"], ["emailResponseTime", "Email Response Time"]] },
+  { heading: "Goals & Career", fields: [["topPriority", "Top Priority"], ["academicGoal", "Academic Goal"], ["careerGoal", "Career Goal"], ["personalGoal", "Personal Goal"], ["stopDoing", "Wants to Stop"], ["startDoing", "Wants to Start"], ["industryInterest", "Industry"], ["graduationYear", "Graduation Year"], ["internshipStatus", "Internship Status"], ["resumeReady", "Resume Ready"], ["jobSearchActivities", "Job Search"], ["dreamCompany", "Dream Company"], ["biggestStressors", "Biggest Stressors"], ["fallsThrough", "Falls Through Cracks"], ["agentHandleFirst", "Agent Handle First"]] },
+  { heading: "Your Agent", fields: [["agentTone", "Tone"], ["checkinFrequency", "Check-in Frequency"], ["agentTopics", "Surface Proactively"], ["agentOffLimits", "Off Limits"], ["anythingElse", "Anything Else"]] },
+];
+
+function formatVal(v: unknown): string {
+  if (Array.isArray(v)) return v.map((x) => String(x).trim()).filter(Boolean).join(", ");
+  return typeof v === "string" ? v.trim() : v == null ? "" : String(v);
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -66,6 +86,22 @@ export async function POST(req: NextRequest) {
     const mandrillKey = process.env.MANDRILL_API_KEY;
     if (mandrillKey) {
       const fullName = `${data.firstName} ${data.lastName}`;
+
+      // Full questionnaire, grouped like the wizard, attached as a PDF for the admin's records.
+      const sections: PdfSection[] = [];
+      for (const group of ONBOARD_GROUPS) {
+        const rows = group.fields
+          .map(([key, label]) => [label, formatVal(data[key])] as [string, string])
+          .filter(([, value]) => value !== "");
+        if (rows.length) sections.push({ heading: group.heading, rows });
+      }
+      sections.push({ heading: "Files", rows: [["Resume", resumeUrl || "Not uploaded"]] });
+      const pdfBase64 = await buildSummaryPdf({
+        title: "Onboarding",
+        subtitle: `${fullName}${data.school ? ` — ${data.school}` : ""}`,
+        sections,
+      });
+
       await fetch("https://mandrillapp.com/api/1.0/messages/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -90,8 +126,9 @@ export async function POST(req: NextRequest) {
                 <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Top Priority</td><td>${data.topPriority || "N/A"}</td></tr>
                 <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Resume</td><td>${resumeUrl ? `<a href="${resumeUrl}">Download</a>` : "Not uploaded"}</td></tr>
               </table>
-              <p style="margin-top:16px;font-size:13px;color:#888">Full submission stored in Supabase → the-college-agent → onboard_submissions</p>
+              <p style="margin-top:16px;font-size:13px;color:#888">Full submission attached as a PDF and stored in Supabase → the-college-agent → onboard_submissions</p>
             `,
+            attachments: [pdfAttachment(`onboarding-${fullName}.pdf`.replace(/\s+/g, "-").toLowerCase(), pdfBase64)],
           },
         }),
       });
