@@ -1,8 +1,8 @@
 "use client";
 
-import { LogOut, ShieldCheck } from "lucide-react";
+import Image from "next/image";
+import { LogOut } from "lucide-react";
 import { signOut } from "@/lib/supabase/client";
-import { branding } from "@/config/branding";
 import { Button } from "@/components/ui/button";
 
 // Standalone chrome for the admin god-view — deliberately NOT the workspace-scoped
@@ -18,9 +18,15 @@ export function AdminShell({
   return (
     <div className="flex min-h-screen flex-col">
       <header className="flex items-center justify-between border-b bg-card px-4 py-3 md:px-6">
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="h-5 w-5 text-primary" />
-          <span className="font-semibold">{branding.appName}</span>
+        <div className="flex items-center gap-3">
+          <Image
+            src="/logo-college-agent.png"
+            alt="The College Agent"
+            width={183}
+            height={40}
+            priority
+            className="h-8 w-auto md:h-9"
+          />
           <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
             Admin
           </span>
