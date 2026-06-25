@@ -4,8 +4,52 @@ import Explainer from "./components/Explainer";
 import ChatBot from "./components/ChatBot";
 import Nav from "./components/Nav";
 import IntegrationGlobe from "./components/IntegrationGlobe";
+import { BookOpenCheck, BriefcaseBusiness, CalendarDays, FileText, GraduationCap, Mail, Network, NotebookTabs } from "lucide-react";
 
 const CALENDLY = "https://calendly.com/therealdaveo/apolloai";
+
+const AGENT_WAYS = [
+  {
+    icon: GraduationCap,
+    title: "Student Life",
+    desc: "A personalized assistant that knows the student, their goals, and how they actually work day to day.",
+  },
+  {
+    icon: BookOpenCheck,
+    title: "Academic Planning",
+    desc: "Tracks classes, assignments, teachers, tests, textbooks, and what needs attention next.",
+  },
+  {
+    icon: CalendarDays,
+    title: "College Schedule",
+    desc: "Keeps the week organized across class time, study blocks, deadlines, meetings, and campus commitments.",
+  },
+  {
+    icon: BriefcaseBusiness,
+    title: "Internships",
+    desc: "Helps manage target roles, deadlines, outreach, resumes, applications, interviews, and follow-ups.",
+  },
+  {
+    icon: NotebookTabs,
+    title: "Study Guides",
+    desc: "Turns notes, textbooks, and class materials into organized study guides, review plans, and prep checklists.",
+  },
+  {
+    icon: FileText,
+    title: "Writing Support",
+    desc: "Helps outline papers, organize research, clean up drafts, and keep citations and sources in order.",
+  },
+  {
+    icon: Mail,
+    title: "Communication",
+    desc: "Drafts polished emails to professors, advisors, recruiters, classmates, and internship contacts.",
+  },
+  {
+    icon: Network,
+    title: "Career Network",
+    desc: "Builds a smarter contact system for alumni, family connections, mentors, and finance career conversations.",
+  },
+];
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -114,35 +158,33 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SCHOOL MARQUEE */}
-      <SchoolMarquee />
-
-      {/* EXPLAINER + TESTIMONIALS */}
-      <Explainer />
-
       {/* USE CASES */}
-      <section id="what-it-does" style={{ background: "#fff", padding: "80px 0" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
-          <div style={{ textAlign: "center", marginBottom: 48 }}>
+      <section id="what-it-does" style={{ background: "#fff", padding: "72px 0 78px" }}>
+        <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px" }}>
+          <div style={{ textAlign: "center", marginBottom: 38 }}>
             <span className="mono-label">What It Does</span>
-            <h2 className="section-title">Four Ways Your Agent Works for You</h2>
+            <h2 className="section-title ways-title">Ways Your Agent Can Work for You</h2>
+            <p className="section-sub" style={{ maxWidth: 720, margin: "14px auto 0" }}>
+              Not ChatGPT. Not Claude. This is your own personalized assistant, built around your classes, teachers, tests, textbooks, goals, and schedule.
+            </p>
           </div>
           <div className="uc-grid">
-            {[
-              { icon: "📚", title: "Academic Performance", desc: "Your agent tracks deadlines, surfaces upcoming assignments, and helps you stay ahead of your course load, so nothing slips through." },
-              { icon: "💼", title: "Career + Internships", desc: "From Handshake alerts to resume feedback to follow-up drafts, your agent keeps your career search organized and moving forward." },
-              { icon: "🔍", title: "Research Support", desc: "Brave Search-powered web search, citation tracking, and source summarization, available the moment you need it, trained on your topic areas." },
-              { icon: "📅", title: "Communication + Scheduling", desc: "Draft emails, schedule meetings, manage your calendar, and keep your inbox under control, without spending hours on admin." },
-            ].map((uc) => (
-              <div key={uc.title} className="uc-card">
-                <div className="uc-icon">{uc.icon}</div>
-                <h3>{uc.title}</h3>
-                <p>{uc.desc}</p>
+            {AGENT_WAYS.map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="uc-card">
+                <div className="uc-icon-flat"><Icon size={24} strokeWidth={1.9} /></div>
+                <h3>{title}</h3>
+                <p>{desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
+
+      {/* SCHOOL MARQUEE */}
+      <SchoolMarquee />
+
+      {/* EXPLAINER + TESTIMONIALS */}
+      <Explainer />
 
       {/* HOW IT WORKS */}
       <section id="how-it-works" className="dark-section" style={{ padding: "80px 0" }}>
@@ -310,11 +352,19 @@ export default function Home() {
         .dual-card p { font-size: 15px; line-height: 1.75; color: rgba(11,23,41,.7); }
 
         /* USE CASES */
-        .uc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-        .uc-card { background: var(--cream2); border: 1px solid rgba(11,23,41,.07); border-radius: 12px; padding: 28px; }
-        .uc-icon { font-size: 28px; margin-bottom: 16px; }
-        .uc-card h3 { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
-        .uc-card p { font-size: 13px; line-height: 1.7; color: rgba(11,23,41,.6); }
+        .ways-title { white-space: nowrap; }
+        .uc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+        .uc-card {
+          background: var(--cream2); border: 1px solid rgba(11,23,41,.07); border-radius: 16px;
+          padding: 24px; min-height: 218px; box-shadow: 0 8px 28px rgba(11,23,41,.04);
+        }
+        .uc-icon-flat {
+          width: 46px; height: 46px; border-radius: 14px; margin-bottom: 18px;
+          display: flex; align-items: center; justify-content: center;
+          background: rgba(61,139,61,.1); color: var(--green);
+        }
+        .uc-card h3 { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 9px; letter-spacing: -.01em; }
+        .uc-card p { font-size: 13px; line-height: 1.62; color: rgba(11,23,41,.62); }
 
         /* PROCESS */
         .proc-circle {
@@ -343,6 +393,8 @@ export default function Home() {
 
         /* RESPONSIVE */
         @media (max-width: 900px) {
+          .ways-title { white-space: normal; }
+          .uc-grid { grid-template-columns: repeat(2, 1fr); }
           .stat-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; }
           .stat-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,.15); padding-bottom: 20px; }
           .stat-item:last-child { border-bottom: none; }
