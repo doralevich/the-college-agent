@@ -3,6 +3,7 @@ import SchoolMarquee from "./components/SchoolMarquee";
 import Explainer from "./components/Explainer";
 import ChatBot from "./components/ChatBot";
 import Nav from "./components/Nav";
+import IntegrationGlobe from "./components/IntegrationGlobe";
 
 const CALENDLY = "https://calendly.com/therealdaveo/apolloai";
 
@@ -180,21 +181,8 @@ export default function Home() {
       </section>
 
 
-      {/* INTEGRATION MENU */}
-      <section id="integrations" style={{ background: "var(--cream2)", padding: "90px 0" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
-          <div style={{ textAlign: "center" }}>
-            <span className="mono-label">Integrations</span>
-            <h2 className="section-title">Integrates with the tools<br />you already use</h2>
-            <p className="section-sub" style={{ maxWidth: 600, margin: "16px auto 40px" }}>
-              Hundreds of integrations across academics, careers, wellness, and social life.
-            </p>
-            <a href="/build" className="btn-purple" style={{ fontSize: 14, padding: "16px 44px" }}>
-              Build My Agent
-            </a>
-          </div>
-        </div>
-      </section>
+      {/* INTEGRATIONS */}
+      <IntegrationGlobe />
 
       {/* SUPPORT PLANS */}
 
