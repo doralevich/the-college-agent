@@ -4,7 +4,7 @@ import Explainer from "./components/Explainer";
 import ChatBot from "./components/ChatBot";
 import Nav from "./components/Nav";
 import IntegrationGlobe from "./components/IntegrationGlobe";
-import { BookOpenCheck, BriefcaseBusiness, CalendarDays, FileText, GraduationCap, Mail, Network, NotebookTabs } from "lucide-react";
+import { BookOpenCheck, BriefcaseBusiness, CalendarDays, FileText, GraduationCap, Mail, Network, NotebookTabs, ShieldCheck, Sparkles } from "lucide-react";
 
 const CALENDLY = "https://calendly.com/therealdaveo/apolloai";
 
@@ -146,13 +146,17 @@ export default function Home() {
       <section style={{ background: "var(--cream2)", padding: "70px 0" }}>
         <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
           <div className="dual-grid">
-            <div className="dual-card">
+            <div className="dual-card dual-card-student">
+              <div className="dual-icon"><Sparkles size={24} strokeWidth={1.9} /></div>
               <span className="dual-tag dual-tag-student">For Students</span>
-              <p>Your own AI personal agent that knows your schedule, your classes, your deadlines, and your voice. Not ChatGPT. Not a shared tool. Yours, named, trained, always on.</p>
+              <h2>Your own AI operator for college.</h2>
+              <p>It knows your classes, deadlines, professors, goals, and communication style. It helps you stay ahead academically, prepare for internships, write better emails, and stop letting important things slip.</p>
             </div>
-            <div className="dual-card">
+            <div className="dual-card dual-card-parent">
+              <div className="dual-icon"><ShieldCheck size={24} strokeWidth={1.9} /></div>
               <span className="dual-tag dual-tag-parent">For Parents</span>
-              <p>A one-time investment in your student&apos;s academic and career trajectory. Less than a semester of tutoring. Available 24/7. Gets smarter the more they use it.</p>
+              <h2>A four-year advantage, not another app.</h2>
+              <p>You are not buying tutoring hours or a generic AI subscription. You are giving your student a personalized support system that keeps them organized, accountable, and prepared for the opportunities that matter.</p>
             </div>
           </div>
         </div>
@@ -341,7 +345,20 @@ export default function Home() {
 
         /* DUAL BUYER */
         .dual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-        .dual-card { background: #fff; border: 1px solid rgba(11,23,41,.08); border-radius: 12px; padding: 32px; }
+        .dual-card {
+          position: relative; background: #fff; border: 1px solid rgba(11,23,41,.08); border-radius: 18px;
+          padding: 34px 34px 36px; overflow: hidden; box-shadow: 0 16px 44px rgba(11,23,41,.06);
+        }
+        .dual-card::before {
+          content: ""; position: absolute; left: 0; right: 0; top: 0; height: 5px; background: var(--green);
+        }
+        .dual-card-student { border-color: rgba(61,139,61,.22); }
+        .dual-card-parent { border-color: rgba(11,23,41,.1); }
+        .dual-icon {
+          width: 48px; height: 48px; border-radius: 15px; margin-bottom: 18px;
+          display: flex; align-items: center; justify-content: center;
+          background: rgba(61,139,61,.1); color: var(--green);
+        }
         .dual-tag {
           font-family: var(--font-mono); font-size: 10px; font-weight: 700;
           text-transform: uppercase; letter-spacing: .1em; padding: 4px 10px;
@@ -349,7 +366,8 @@ export default function Home() {
         }
         .dual-tag-student { background: rgba(61,139,61,.1); color: var(--green); }
         .dual-tag-parent { background: rgba(11,23,41,.07); color: rgba(11,23,41,.55); }
-        .dual-card p { font-size: 15px; line-height: 1.75; color: rgba(11,23,41,.7); }
+        .dual-card h2 { font-size: 24px; line-height: 1.12; letter-spacing: -.03em; color: var(--navy); margin-bottom: 14px; }
+        .dual-card p { font-size: 15px; line-height: 1.72; color: rgba(11,23,41,.72); }
 
         /* USE CASES */
         .ways-title { white-space: nowrap; }
