@@ -69,7 +69,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, hasAgent }: Prop
             width={183}
             height={40}
             priority
-            className="h-8 w-auto"
+            className="h-[2.4rem] w-auto"
           />
         </div>
 
