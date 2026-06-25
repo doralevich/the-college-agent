@@ -123,8 +123,7 @@ function Plan({
     <div className="rounded-xl border">
       <div className="flex items-start justify-between gap-3 border-b p-6">
         <div>
-          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Plan</div>
-          <div className="mt-1 text-lg font-medium">{PLANS[order.plan].label}</div>
+          <div className="text-lg font-medium">{PLANS[order.plan].label}</div>
         </div>
         <span
           className={cn(

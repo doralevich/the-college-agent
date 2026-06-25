@@ -6,7 +6,6 @@ import {
   ArrowRight,
   Copy,
   FolderOpen,
-  LayoutDashboard,
   Loader2,
   MoreHorizontal,
   Play,
@@ -43,9 +42,9 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 const PRIMARY_PORT = PORTS.minions;
 
 // The remaining "open a port in a new tab" surfaces — secondary, shown as icon buttons.
-// The Hermes dashboard leads (it's the next-most-useful surface after Minions).
+// The Hermes dashboard is intentionally NOT exposed here: it's Hermes-branded and we don't
+// want students seeing it. Admins can still grab its URL via "Copy dashboard URL" below.
 const PORT_ACTIONS = [
-  { port: PORTS.dashboard, Icon: LayoutDashboard, label: "Open the Hermes dashboard", aria: "Open Hermes dashboard" },
   { port: PORTS.files, Icon: FolderOpen, label: "Open file browser", aria: "Open file browser" },
   { port: PORTS.terminal, Icon: Terminal, label: "Open terminal", aria: "Open terminal" },
 ] as const;
