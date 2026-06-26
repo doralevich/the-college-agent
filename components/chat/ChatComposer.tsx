@@ -100,10 +100,8 @@ export function ChatComposer({ agentId, isStreaming, att, onSend, onStop, large 
       />
       <AttachmentTray files={att.files} onRemove={att.removeFile} onRetry={att.retryFile} />
       <div className="flex items-center gap-2 px-3 pb-3">
-        <div className="flex min-w-0 items-center gap-1">
+        <div className="flex min-w-0 items-center gap-1.5">
           <AttachButton onFiles={att.addFiles} disabled={isStreaming} />
-        </div>
-        <div className="ml-auto flex min-w-0 items-center gap-1.5">
           {totalModels >= 1 && (
             <ModelMenu
               groups={groups}
@@ -119,6 +117,8 @@ export function ChatComposer({ agentId, isStreaming, att, onSend, onStop, large 
             disabled={isStreaming}
             onChange={(reasoningEffort) => setSettings((s) => ({ ...s, reasoningEffort }))}
           />
+        </div>
+        <div className="ml-auto flex shrink-0 items-center">
           {isStreaming ? (
             <button
               type="button"
