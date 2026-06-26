@@ -16,6 +16,9 @@ export const metadata: Metadata = {
     "Your own AI agent. Named. Trained on your voice, your schedule, your classes, and your goals. Not ChatGPT. Yours. Built on Apollo[Claw] infrastructure.",
   metadataBase: new URL("https://thecollegeagent.ai"),
   alternates: { canonical: "https://thecollegeagent.ai" },
+  verification: {
+    google: "5fRSMFjZatwPejPvw4h30ZVsT0ZbPagGU39YXJUVjn8",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
