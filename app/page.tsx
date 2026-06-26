@@ -245,10 +245,10 @@ export default function Home() {
             <div style={{ fontFamily: "var(--font-inter, Inter, sans-serif)", fontSize: 18, fontWeight: 800, letterSpacing: "-.02em", color: "#fff" }}>
               The College <span style={{ color: "var(--green)" }}>[Agent]</span>
             </div>
-            <div style={{ marginTop: 6, fontFamily: "var(--font-mono)", fontSize: 10, color: "rgba(255,255,255,.35)", letterSpacing: ".06em" }}>
-              Powered by{" "}
-              <a href="https://apolloclaw.ai" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(255,255,255,.4)" }}>
-                Apollo[Claw]
+            <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8, fontFamily: "var(--font-mono)", fontSize: 10, color: "rgba(255,255,255,.35)", letterSpacing: ".06em" }}>
+              Powered by
+              <a href="https://apolloclaw.ai" target="_blank" rel="noopener noreferrer" aria-label="Apollo Claw" style={{ display: "inline-flex", alignItems: "center", borderRadius: 4, background: "#fff", padding: "4px 7px" }}>
+                <img src="/apollo-claw.svg" alt="Apollo Claw" style={{ height: 16, width: "auto" }} />
               </a>
             </div>
           </div>
