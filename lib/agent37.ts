@@ -1,7 +1,19 @@
 import "server-only";
-import type { Agent, Budget, Template, Usage } from "@/lib/types";
+import type { Agent, Budget, ModelsResponse, SessionDetail, SessionListResponse, Template, Usage } from "@/lib/types";
 
 const BASE = (process.env.AGENT37_API_BASE_URL || "https://api.agent37.com").replace(/\/$/, "");
+
+// The per-instance Agents API (chat: /v1/responses, /v1/models, /v1/sessions, /v1/files) is
+// served on the INSTANCE host — the bare instance URL `https://{id}.agent37.app`, default port
+// 3737 — NOT the control-plane BASE above (which owns instance lifecycle: start/stop/exec/etc).
+// The `college-agent` template remaps only its OWN surfaces off the reserved ports (see
+// config/agents.ts), leaving the platform agents API on the bare host. Overridable via env in
+// case the apex domain ever differs by environment.
+const INSTANCE_DOMAIN = process.env.AGENT37_INSTANCE_DOMAIN || "agent37.app";
+
+function instanceBaseUrl(id: string): string {
+  return `https://${id}.${INSTANCE_DOMAIN}`;
+}
 
 export class Agent37Error extends Error {
   status: number;
@@ -12,6 +24,38 @@ export class Agent37Error extends Error {
     this.status = status;
     this.code = code;
   }
+}
+
+// Read a JSON response from either Agent37 surface (control-plane or instance) and throw a
+// typed Agent37Error on non-2xx. Errors come back nested ({"error":{...}}) or flat; unwrap so
+// the real message survives. `augment402` adds the billing hint that only create/start hits.
+async function parseAgent37<T>(res: Response, augment402 = false): Promise<T> {
+  const text = await res.text();
+  let data: unknown = undefined;
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = { message: text };
+    }
+  }
+
+  if (!res.ok) {
+    const raw = (data ?? {}) as {
+      code?: string;
+      message?: string;
+      error?: { code?: string; message?: string };
+    };
+    const err = raw.error ?? raw;
+    let message = err.message || res.statusText;
+    if (augment402 && res.status === 402) {
+      // Almost always an unfunded wallet at create/start time — point the operator at billing.
+      message = `${message} (Agent37 payment required: fund your wallet under Cloud → Billing in the dashboard, then retry.)`;
+    }
+    throw new Agent37Error(res.status, err.code || "error", message);
+  }
+
+  return data as T;
 }
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
@@ -30,33 +74,33 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
     cache: "no-store",
   });
 
-  const text = await res.text();
-  let data: unknown = undefined;
-  if (text) {
-    try {
-      data = JSON.parse(text);
-    } catch {
-      data = { message: text };
-    }
-  }
+  return parseAgent37<T>(res, true);
+}
 
-  if (!res.ok) {
-    // Errors come back nested ({"error":{...}}) or flat; unwrap so the real message survives.
-    const raw = (data ?? {}) as {
-      code?: string;
-      message?: string;
-      error?: { code?: string; message?: string };
-    };
-    const err = raw.error ?? raw;
-    let message = err.message || res.statusText;
-    if (res.status === 402) {
-      // Almost always an unfunded wallet at create/start time — point the operator at billing.
-      message = `${message} (Agent37 payment required: fund your wallet under Cloud → Billing in the dashboard, then retry.)`;
-    }
-    throw new Agent37Error(res.status, err.code || "error", message);
+// Raw fetch against an instance's Agents API with the shared bearer. Returns the raw Response
+// so callers can stream SSE, upload multipart, or stream a download — things the JSON-parsing
+// `call` helper above can't. Only throws for missing server config; HTTP status is the
+// caller's to handle (e.g. a 409 session_busy is surfaced, not thrown here).
+export async function instanceFetch(id: string, path: string, init?: RequestInit): Promise<Response> {
+  const key = process.env.AGENT37_API_KEY;
+  if (!key) {
+    throw new Agent37Error(500, "config_error", "AGENT37_API_KEY is not set on the server");
   }
+  return fetch(`${instanceBaseUrl(id)}${path}`, {
+    ...init,
+    headers: { Authorization: `Bearer ${key}`, ...(init?.headers || {}) },
+    cache: "no-store",
+  });
+}
 
-  return data as T;
+// JSON helper against an instance's Agents API — same parse + Agent37Error semantics as `call`.
+async function instanceCall<T>(id: string, path: string, init?: RequestInit): Promise<T> {
+  const res = await instanceFetch(id, path, {
+    ...init,
+    headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
+  });
+
+  return parseAgent37<T>(res);
 }
 
 export interface CreateAgentInput {
@@ -114,4 +158,33 @@ export const agent37 = {
     call<Usage>(`/instances/${id}/usage${month ? `?month=${encodeURIComponent(month)}` : ""}`),
 
   listTemplates: () => call<{ data: Template[] }>("/templates"),
+
+  // ---- Per-instance Agents API (web chat) — served on the instance host, see instanceFetch ----
+  listModels: (id: string) => instanceCall<ModelsResponse>(id, "/v1/models"),
+  // The thread rail: every session on the instance, newest first. Items carry `title`, a
+  // `preview` of the first message, and `last_active` — the sessions route turns these into the
+  // rail's label + ordering (no per-session fetch needed).
+  listSessions: (id: string) => instanceCall<SessionListResponse>(id, "/v1/sessions"),
+  getSession: (id: string, sessionId: string) =>
+    instanceCall<SessionDetail>(id, `/v1/sessions/${encodeURIComponent(sessionId)}`),
+  deleteSession: (id: string, sessionId: string) =>
+    instanceCall<{ id: string; deleted: boolean }>(
+      id,
+      `/v1/sessions/${encodeURIComponent(sessionId)}`,
+      { method: "DELETE" }
+    ),
+  // Set a session's title. Supported on newer Hermes builds; older ones answer 404/405 (the
+  // PATCH route maps that to a friendly "not supported yet" so the rail degrades gracefully).
+  renameSession: (id: string, sessionId: string, title: string) =>
+    instanceCall<{ id: string; agent: string; renamed: boolean }>(
+      id,
+      `/v1/sessions/${encodeURIComponent(sessionId)}`,
+      { method: "PATCH", body: JSON.stringify({ title }) }
+    ),
+  cancelResponse: (id: string, responseId: string) =>
+    instanceCall<{ id: string; status: string }>(
+      id,
+      `/v1/responses/${encodeURIComponent(responseId)}/cancel`,
+      { method: "POST" }
+    ),
 };

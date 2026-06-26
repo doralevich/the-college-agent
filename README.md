@@ -26,8 +26,19 @@ The e2e creates a real (billed) instance named `e2e-smoke-<timestamp>` tagged `m
 
 ## Publish a new agent template
 
-The student agent image (Hermes + Minions + Claude Code) lives in `template/`. After editing it:
+The student agent image (Hermes + Claude Code) lives in `template/`. After editing it, bump the
+`TAG` line near the top of `template/release.sh` (tags are immutable — `YYYY.MM.DD` + a letter:
+`a`, `b`, `c`…) and run:
 
 ```bash
 npm run release:agent
 ```
+
+Or set the tag inline without editing the file:
+
+```bash
+TAG=2026.06.26c npm run release:agent
+HERMES_TAG=2026.06.22a TAG=2026.06.26c npm run release:agent   # pin an older Hermes base to roll back
+```
+
+Existing instances keep the tag they were created with — update or reprovision them to pick up a new version.

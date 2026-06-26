@@ -4,7 +4,7 @@ import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Bot, Check, CreditCard, Loader2, LogOut, RotateCcw, Settings2 } from "lucide-react";
+import { Bot, Check, CreditCard, Loader2, LogOut, MessageSquare, RotateCcw, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "@/lib/supabase/client";
 import { useWorkspace } from "@/components/WorkspaceProvider";
@@ -14,17 +14,22 @@ import { cn } from "@/lib/utils";
 import { AgentsView } from "@/components/AgentsView";
 import { SettingsView } from "@/components/SettingsView";
 import { BillingView } from "@/components/BillingView";
+import { ChatProvider, useChatContext } from "@/components/chat/ChatProvider";
+import { ChatSidebar } from "@/components/chat/ChatSidebar";
+import { ChatView } from "@/components/chat/ChatView";
 
 type Props = {
   paid: boolean;
   onboardDone: boolean;
   setupDone: boolean;
-  hasAgent: boolean;
+  // The student's single agent id, or null before one is provisioned. null => Chat tab hidden.
+  agentId: string | null;
 };
 
-type TabId = "agents" | "agent" | "settings" | "billing";
+type TabId = "chat" | "agents" | "agent" | "settings" | "billing";
 
-export function DashboardClient({ paid, onboardDone, setupDone, hasAgent }: Props) {
+export function DashboardClient({ paid, onboardDone, setupDone, agentId }: Props) {
+  const hasAgent = !!agentId;
   const { userEmail } = useWorkspace();
   const router = useRouter();
 
@@ -46,10 +51,12 @@ export function DashboardClient({ paid, onboardDone, setupDone, hasAgent }: Prop
   }
 
   // Sidebar nav. Settings is always present — every account has a workspace (name/ID/delete
-  // don't need an agent or a paid plan). The other item swaps with the funnel stage: "Agents"
-  // (which hosts the build CTA when unpaid, the setup checklist once paid) → "Your Agent".
-  // Billing appears once they've paid (there's a subscription to show / manage).
+  // don't need an agent or a paid plan). "Chat" leads once there's an agent to talk to (and is
+  // the default landing then). The next item swaps with the funnel stage: "Agents" (which hosts
+  // the build CTA when unpaid, the setup checklist once paid) → "Your Agent". Billing appears
+  // once they've paid (there's a subscription to show / manage).
   const tabs: { id: TabId; label: string; icon: typeof Bot }[] = [
+    ...(hasAgent ? [{ id: "chat" as TabId, label: "Chat", icon: MessageSquare }] : []),
     hasAgent
       ? { id: "agent", label: "Your Agent", icon: Bot }
       : { id: "agents", label: "Agents", icon: Bot },
@@ -57,10 +64,14 @@ export function DashboardClient({ paid, onboardDone, setupDone, hasAgent }: Prop
     { id: "settings", label: "Settings", icon: Settings2 },
   ];
 
-  const [active, setActive] = useState<TabId>(hasAgent ? "agent" : "agents");
+  const [active, setActive] = useState<TabId>(hasAgent ? "chat" : "agents");
 
-  return (
-    <div className="flex min-h-screen">
+  // `active` can only reach "chat" when there's an agent (the tab and its triggers are gated on
+  // hasAgent), so this implies hasAgent.
+  const isChat = active === "chat";
+
+  const shell = (
+    <div className="flex h-screen">
       <aside className="flex w-64 shrink-0 flex-col border-r bg-card p-4">
         <div className="flex items-center px-2 py-1">
           <Image
@@ -78,24 +89,29 @@ export function DashboardClient({ paid, onboardDone, setupDone, hasAgent }: Prop
             {tabs.map((t) => {
               const Icon = t.icon;
               const isActive = active === t.id;
-              return (
-                <button
+              return t.id === "chat" ? (
+                <ChatTabButton
                   key={t.id}
+                  Icon={Icon}
+                  label={t.label}
+                  isActive={isActive}
+                  onActivate={() => setActive("chat")}
+                />
+              ) : (
+                <NavButton
+                  key={t.id}
+                  Icon={Icon}
+                  label={t.label}
+                  isActive={isActive}
                   onClick={() => setActive(t.id)}
-                  className={cn(
-                    "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                    isActive
-                      ? "bg-secondary text-secondary-foreground"
-                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                  )}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span className="flex-1 text-left">{t.label}</span>
-                </button>
+                />
               );
             })}
           </nav>
         )}
+
+        {/* Keep the thread rail visible across dashboard tabs; selecting a thread returns to Chat. */}
+        {hasAgent && <ChatSidebar onOpenChat={() => setActive("chat")} />}
 
         <div className="mt-auto space-y-2 pt-4">
           <div className="truncate px-3 text-xs text-muted-foreground">{userEmail}</div>
@@ -106,24 +122,93 @@ export function DashboardClient({ paid, onboardDone, setupDone, hasAgent }: Prop
         </div>
       </aside>
 
-      <main className="min-w-0 flex-1 overflow-y-auto">
-        <div className="mx-auto w-full max-w-6xl p-6 md:px-10 md:py-8">
-          {active === "settings" ? (
-            <SettingsView />
-          ) : active === "billing" ? (
-            <BillingView />
-          ) : !paid ? (
-            <BuildCta />
-          ) : hasAgent ? (
-            <AgentsView />
-          ) : provisioning || provisionFailed ? (
-            <Provisioning failed={provisionFailed} onRetry={provision} />
-          ) : (
-            <StepsView onboardDone={onboardDone} setupDone={setupDone} onCreate={provision} />
-          )}
-        </div>
+      <main className="min-w-0 flex-1 overflow-hidden">
+        {/* Chat owns its full height (scrolling messages + pinned composer) — no page padding.
+            It stays MOUNTED (just hidden) across tab switches so an in-flight first turn, the
+            composer draft, and the model selection survive leaving and returning to the tab. */}
+        {hasAgent && (
+          <div className={cn("h-full", !isChat && "hidden")}>
+            <ChatView />
+          </div>
+        )}
+        {!isChat && (
+          <div className="h-full overflow-y-auto">
+            <div className="mx-auto w-full max-w-6xl p-6 md:px-10 md:py-8">
+              {active === "settings" ? (
+                <SettingsView />
+              ) : active === "billing" ? (
+                <BillingView />
+              ) : !paid ? (
+                <BuildCta />
+              ) : hasAgent ? (
+                <AgentsView onOpenChat={() => setActive("chat")} />
+              ) : provisioning || provisionFailed ? (
+                <Provisioning failed={provisionFailed} onRetry={provision} />
+              ) : (
+                <StepsView onboardDone={onboardDone} setupDone={setupDone} onCreate={provision} />
+              )}
+            </div>
+          </div>
+        )}
       </main>
     </div>
+  );
+
+  // The chat thread rail (aside) and conversation (main) share one provider. Only mount it
+  // when there's an agent to talk to — otherwise the Chat tab doesn't exist. (Keying off
+  // `agentId` rather than `hasAgent` narrows it to a non-null string for the provider.)
+  return agentId ? <ChatProvider agentId={agentId}>{shell}</ChatProvider> : shell;
+}
+
+function ChatTabButton({
+  Icon,
+  label,
+  isActive,
+  onActivate,
+}: {
+  Icon: typeof Bot;
+  label: string;
+  isActive: boolean;
+  onActivate: () => void;
+}) {
+  const { startNewChat } = useChatContext();
+
+  return (
+    <NavButton
+      Icon={Icon}
+      label={label}
+      isActive={isActive}
+      onClick={() => {
+        startNewChat();
+        onActivate();
+      }}
+    />
+  );
+}
+
+function NavButton({
+  Icon,
+  label,
+  isActive,
+  onClick,
+}: {
+  Icon: typeof Bot;
+  label: string;
+  isActive: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+        isActive ? "bg-secondary text-secondary-foreground" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+      )}
+    >
+      <Icon className="h-4 w-4" />
+      <span className="flex-1 text-left">{label}</span>
+    </button>
   );
 }
 

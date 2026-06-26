@@ -9,9 +9,18 @@ import type { MergedAgent, Role } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { AgentActionsMenu } from "@/components/AgentActionsMenu";
 import { AgentNameCell } from "@/components/AgentNameCell";
+import { useChatContext } from "@/components/chat/ChatProvider";
 
-export function AgentsView() {
+// `onOpenChat` switches the dashboard to the Chat tab; combined with startNewChat it powers
+// the per-row "Chat" CTA. Only the student dashboard (always under a ChatProvider) renders
+// this view, so reading chat context here is safe.
+export function AgentsView({ onOpenChat }: { onOpenChat: () => void }) {
   const { current } = useWorkspace();
+  const { startNewChat } = useChatContext();
+  const handleChat = () => {
+    startNewChat();
+    onOpenChat();
+  };
   const [agents, setAgents] = useState<MergedAgent[]>([]);
   const [role, setRole] = useState<Role>("admin");
   const [loading, setLoading] = useState(true);
@@ -96,6 +105,7 @@ export function AgentsView() {
                       agent={a}
                       role={role}
                       onChanged={load}
+                      onChat={handleChat}
                       confirmDeleteDescription="This deletes your agent and clears your onboarding answers. To get a new agent you'll fill out the setup forms again. This cannot be undone."
                     />
                   </td>

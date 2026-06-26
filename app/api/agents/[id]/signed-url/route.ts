@@ -8,8 +8,8 @@ const ALLOWED_PORTS = Object.values(PORTS) as number[];
 type Ctx = { params: Promise<{ id: string }> };
 
 // Mints a short-lived edge signed URL to one of the agent's allow-listed ports — the
-// Hermes dashboard (9120), the terminal (7682), the file browser (8081), or Minions
-// Mission Control (6969), all declared by the `college-agent` custom template. The signed
+// Hermes dashboard (9120), the terminal (7682), or the file browser (8081), all declared
+// by the `college-agent` custom template. The signed
 // URL is the auth boundary: it grants authenticated network access to that port, and
 // Hermes' gateway handles its own session behind it. Members of the workspace and
 // platform admins (operators, cross-tenant) may open these.

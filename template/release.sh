@@ -6,6 +6,9 @@
 #   - docker login ghcr.io   (pull ghcr.io/agent37-platform/*, push ghcr.io/apolloclawplatform/*)
 #   - First publish only: set the GHCR package Public ->
 #       https://github.com/orgs/ApolloClawPlatform/packages
+#
+# The Hermes base tag is auto-resolved to the newest date tag in GHCR at build time, so
+# you never hand-edit it. Override with HERMES_TAG=YYYY.MM.DD[x] to pin a specific one.
 set -euo pipefail
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"   # template/
@@ -20,26 +23,47 @@ read_env() {
   printf '%s' "$v"
 }
 
+BASE_REPO="${BASE_REPO:-agent37-platform/hermes}"
+
+# Resolve the newest Hermes *date* tag (YYYY.MM.DD[x]) straight from GHCR's tag list — the
+# source of truth (the docs don't publish a current tag). The anonymous pull token suffices
+# for the public tag list. Prints nothing on failure so the caller can fall back / error out.
+resolve_hermes_tag() {
+  local token
+  token="$(curl -fsSL "https://ghcr.io/token?scope=repository:${BASE_REPO}:pull" \
+    | grep -o '"token":"[^"]*"' | cut -d'"' -f4)" || return 1
+  [ -n "$token" ] || return 1
+  curl -fsSL -H "Authorization: Bearer ${token}" \
+    "https://ghcr.io/v2/${BASE_REPO}/tags/list" \
+    | grep -oE '"[0-9]{4}\.[0-9]{2}\.[0-9]{2}[a-z]*"' \
+    | tr -d '"' | LC_ALL=C sort | tail -1
+}
+
 AGENT37_API_KEY="${AGENT37_API_KEY:-$(read_env AGENT37_API_KEY)}"
 : "${AGENT37_API_KEY:?not found — set AGENT37_API_KEY in .env.local}"
 
 IMAGE="${IMAGE:-ghcr.io/apolloclawplatform/college-agent}"
-TAG="${TAG:-$(date -u +%Y.%m.%d)a}"
+# Bump this every release — image tags are immutable (date + a revision letter: a, b, c…).
+TAG="${TAG:-2026.06.26c}"
 NAME="${TEMPLATE_NAME:-college-agent}"
+HERMES_TAG="${HERMES_TAG:-$(resolve_hermes_tag || true)}"
+: "${HERMES_TAG:?could not resolve a Hermes tag from GHCR — set HERMES_TAG explicitly, e.g. HERMES_TAG=2026.06.26b}"
 API="${AGENT37_API:-$(read_env AGENT37_API_BASE_URL)}"; API="${API:-https://api.agent37.com/v1}"
 AUTH="Authorization: Bearer ${AGENT37_API_KEY}"
 
 echo "==> Build + push ${IMAGE}:${TAG} (linux/amd64)"
-docker buildx build --platform linux/amd64 -t "${IMAGE}:${TAG}" --push "${DIR}"
+echo "    base: ghcr.io/${BASE_REPO}:${HERMES_TAG}"
+docker buildx build --platform linux/amd64 --pull \
+  --build-arg "HERMES_TAG=${HERMES_TAG}" \
+  -t "${IMAGE}:${TAG}" --push "${DIR}"
 
 BODY=$(cat <<JSON
 {
   "name": "${NAME}",
   "image_ref": "${IMAGE}:${TAG}",
-  "description": "The College Agent — Hermes + Minions Mission Control + Claude Code.",
+  "description": "The College Agent — Hermes + Claude Code.",
   "ports": [
     { "port": 3738, "default": true },
-    { "port": 6969 },
     { "port": 7682 },
     { "port": 9120 },
     { "port": 8081 }

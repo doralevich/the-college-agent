@@ -20,22 +20,30 @@ export default async function DashboardPage() {
     db.from("entitlements").select("status").eq("email", email).maybeSingle(),
     db.from("onboard_submissions").select("user_id", { count: "exact", head: true }).eq("user_id", user.id),
     db.from("setup_submissions").select("user_id", { count: "exact", head: true }).eq("user_id", user.id),
+    // Each student has a single agent; grab its id (oldest first) so the dashboard can target
+    // it for the Chat tab. null when none yet -> chat tab hidden, funnel shown.
     workspace
-      ? db.from("agents").select("agent37_id", { count: "exact", head: true }).eq("workspace_id", workspace.id)
-      : Promise.resolve({ count: 0 }),
+      ? db
+          .from("agents")
+          .select("agent37_id")
+          .eq("workspace_id", workspace.id)
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
 
   const paid = entRes.data?.status === "active";
   const onboardDone = (onboardRes.count ?? 0) > 0;
   const setupDone = (setupRes.count ?? 0) > 0;
-  const hasAgent = (agentRes.count ?? 0) > 0;
+  const agentId = (agentRes.data?.agent37_id as string | undefined) ?? null;
 
   return (
     <DashboardClient
       paid={paid}
       onboardDone={onboardDone}
       setupDone={setupDone}
-      hasAgent={hasAgent}
+      agentId={agentId}
     />
   );
 }

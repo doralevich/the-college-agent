@@ -3,10 +3,9 @@
 import { useState } from "react";
 import {
   ArrowDownToLine,
-  ArrowRight,
   Copy,
   FolderOpen,
-  Loader2,
+  MessageSquare,
   MoreHorizontal,
   Play,
   RotateCw,
@@ -36,14 +35,9 @@ import {
 } from "@/components/ui/tooltip";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 
-// Minions Mission Control is where students actually work with the agent (chat / tasks),
-// so it's promoted to the primary "Open" CTA below instead of living in the row of
-// equal-weight icon buttons. That gives every agent one obvious thing to click.
-const PRIMARY_PORT = PORTS.minions;
-
-// The remaining "open a port in a new tab" surfaces — secondary, shown as icon buttons.
-// The Hermes dashboard is intentionally NOT exposed here: it's Hermes-branded and we don't
-// want students seeing it. Admins can still grab its URL via "Copy dashboard URL" below.
+// The "open a port in a new tab" surfaces — shown as icon buttons. The Hermes dashboard is
+// intentionally NOT exposed here: it's Hermes-branded and we don't want students seeing it.
+// Admins can still grab its URL via "Copy dashboard URL" below.
 const PORT_ACTIONS = [
   { port: PORTS.files, Icon: FolderOpen, label: "Open file browser", aria: "Open file browser" },
   { port: PORTS.terminal, Icon: Terminal, label: "Open terminal", aria: "Open terminal" },
@@ -53,11 +47,15 @@ export function AgentActionsMenu({
   agent,
   role,
   onChanged,
+  onChat,
   confirmDeleteDescription = "This permanently deletes the agent and its data. This cannot be undone.",
 }: {
   agent: MergedAgent;
   role: Role;
   onChanged: () => void;
+  // When provided (student dashboard only), renders the primary "Chat" CTA that opens the
+  // in-app Chat tab. Omitted in the admin cross-tenant view, which has no in-app chat.
+  onChat?: () => void;
   // Copy for the delete confirmation. Defaults to the operator-grade wording; the
   // student view overrides it to explain the re-onboarding flow.
   confirmDeleteDescription?: string;
@@ -117,27 +115,27 @@ export function AgentActionsMenu({
     <>
       <TooltipProvider delayDuration={200}>
       <div className="flex items-center justify-end gap-2">
-        {/* Primary CTA — the one obvious thing to click. Opens Minions Mission Control. */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              size="sm"
-              className="h-8 gap-1.5 px-3.5"
-              disabled={!running || opening === PRIMARY_PORT}
-              onClick={() => openPort(PRIMARY_PORT)}
-              aria-label="Open Minions"
-            >
-              {opening === PRIMARY_PORT ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : null}
-              Open
-              {opening === PRIMARY_PORT ? null : <ArrowRight className="h-4 w-4" />}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            {running ? "Open Minions to chat with your agent" : "Start the agent to open it"}
-          </TooltipContent>
-        </Tooltip>
+        {/* Primary CTA — the one obvious thing to click. Opens the in-app Chat tab (student
+            dashboard only; omitted for admins, who have no in-app chat). */}
+        {onChat && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="sm"
+                className="h-8 gap-1.5 px-3.5"
+                disabled={!running}
+                onClick={onChat}
+                aria-label="Chat with your agent"
+              >
+                <MessageSquare className="h-4 w-4" />
+                Chat
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {running ? "Chat with your agent" : "Start the agent to chat"}
+            </TooltipContent>
+          </Tooltip>
+        )}
 
         {PORT_ACTIONS.map(({ port, Icon, label, aria }) => (
           <Tooltip key={port}>
