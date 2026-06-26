@@ -42,7 +42,7 @@ export default function Nav() {
           {/* Logo */}
           <a href="/">
             <img
-              src="/logo-college-agent.png"
+              src="/logo-college-agent.svg"
               alt="The College [Agent]"
               style={{ height: 72, width: "auto", display: "block" }}
             />

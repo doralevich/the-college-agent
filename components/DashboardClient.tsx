@@ -75,7 +75,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId }: Props
       <aside className="flex w-64 shrink-0 flex-col border-r bg-card p-4">
         <div className="flex items-center px-2 py-1">
           <Image
-            src="/logo-college-agent.png"
+            src="/logo-college-agent.svg"
             alt="The College Agent"
             width={183}
             height={40}
