@@ -43,11 +43,14 @@ const CHECKIN_FREQ = [
 
 const STEPS = [
   { num: 1, label: "Basics" },
-  { num: 2, label: "What You Need" },
-  { num: 3, label: "Final Details" },
+  { num: 2, label: "Priorities" },
+  { num: 3, label: "Agent Focus" },
+  { num: 4, label: "Response Style" },
+  { num: 5, label: "Check-ins" },
+  { num: 6, label: "Final Details" },
 ];
 
-type FD = Record<string, string | File | null>;
+type FD = Record<string, string | string[] | File | null>;
 
 const BLANK: FD = {
   firstName: "",
@@ -56,9 +59,9 @@ const BLANK: FD = {
   personalEmail: "",
   phone: "",
   school: "",
-  topPriority: "",
-  agentHandleFirst: "",
-  responseStyle: "",
+  topPriority: [],
+  agentHandleFirst: [],
+  responseStyle: [],
   checkinFrequency: "",
   anythingElse: "",
   resumeFile: null,
@@ -77,16 +80,31 @@ export default function OnboardPage() {
     setForm((f) => ({ ...f, [k]: v }));
   };
 
-  function missingRequired(keys: string[]) {
-    return keys.some((k) => !String(form[k] || "").trim());
+  function toggle(k: string, v: string, max?: number) {
+    setError("");
+    setForm((f) => {
+      const arr = (f[k] as string[]) || [];
+      if (arr.includes(v)) return { ...f, [k]: arr.filter((x) => x !== v) };
+      if (max !== undefined && arr.length >= max) return f;
+      return { ...f, [k]: [...arr, v] };
+    });
+  }
+
+  function isFilled(k: string) {
+    const v = form[k];
+    if (Array.isArray(v)) return v.length > 0;
+    return !!String(v || "").trim();
   }
 
   function validateStep(currentStep = step) {
     const requiredByStep: Record<number, string[]> = {
       1: ["firstName", "lastName", "schoolEmail", "phone", "school"],
-      2: ["topPriority", "agentHandleFirst", "responseStyle", "checkinFrequency"],
+      2: ["topPriority"],
+      3: ["agentHandleFirst"],
+      4: ["responseStyle"],
+      5: ["checkinFrequency"],
     };
-    if (missingRequired(requiredByStep[currentStep] || [])) {
+    if ((requiredByStep[currentStep] || []).some((k) => !isFilled(k))) {
       setError("Please complete the required fields before continuing.");
       return false;
     }
@@ -107,7 +125,7 @@ export default function OnboardPage() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!validateStep(1) || !validateStep(2)) return;
+    if (![1, 2, 3, 4, 5].every((n) => validateStep(n))) return;
     setLoading(true);
     setError("");
     try {
@@ -195,23 +213,38 @@ export default function OnboardPage() {
           )}
 
           {step === 2 && (
-            <Section title="What should your agent help with first?" sub="This is the important part. The rest can be learned later through normal conversation.">
-              <Field label="Your #1 priority this semester" required>
-                <RadioGrid options={PRIORITIES} name="topPriority" selected={form.topPriority as string} onSelect={(v) => set("topPriority", v)} cols={2} />
-              </Field>
-              <Field label="What should your agent handle first?" required>
-                <RadioGrid options={HANDLE_FIRST} name="agentHandleFirst" selected={form.agentHandleFirst as string} onSelect={(v) => set("agentHandleFirst", v)} cols={2} />
-              </Field>
-              <Field label="How do you want your agent to respond?" required>
-                <RadioGrid options={RESPONSE_STYLES} name="responseStyle" selected={form.responseStyle as string} onSelect={(v) => set("responseStyle", v)} cols={1} />
-              </Field>
-              <Field label="How often do you want check-ins?" required>
-                <RadioGrid options={CHECKIN_FREQ} name="checkinFrequency" selected={form.checkinFrequency as string} onSelect={(v) => set("checkinFrequency", v)} cols={1} />
+            <Section title="Your priorities this semester." sub="Pick up to 3 — these set the tone for everything your agent does for you.">
+              <Field label="Your priorities this semester (pick up to 3)" required>
+                <CheckGrid options={PRIORITIES} selected={form.topPriority as string[]} onToggle={(v) => toggle("topPriority", v, 3)} cols={2} max={3} />
               </Field>
             </Section>
           )}
 
           {step === 3 && (
+            <Section title="What should your agent handle first?" sub="Pick up to 3 — your agent can take on more once it knows you better.">
+              <Field label="Where your agent should jump in first (pick up to 3)" required>
+                <CheckGrid options={HANDLE_FIRST} selected={form.agentHandleFirst as string[]} onToggle={(v) => toggle("agentHandleFirst", v, 3)} cols={2} max={3} />
+              </Field>
+            </Section>
+          )}
+
+          {step === 4 && (
+            <Section title="How do you want your agent to respond?" sub="Pick up to 3 styles — it will mix and match based on context.">
+              <Field label="Preferred response styles (pick up to 3)" required>
+                <CheckGrid options={RESPONSE_STYLES} selected={form.responseStyle as string[]} onToggle={(v) => toggle("responseStyle", v, 3)} cols={1} max={3} />
+              </Field>
+            </Section>
+          )}
+
+          {step === 5 && (
+            <Section title="How often do you want check-ins?" sub="One cadence to start with — you can change it later from your dashboard.">
+              <Field label="Check-in cadence" required>
+                <RadioGrid options={CHECKIN_FREQ} name="checkinFrequency" selected={form.checkinFrequency as string} onSelect={(v) => set("checkinFrequency", v)} cols={1} />
+              </Field>
+            </Section>
+          )}
+
+          {step === 6 && (
             <Section title="Anything else before we build it?" sub="Optional, but useful if you want the first version to feel more personal.">
               <Field label="Upload your resume (optional, PDF preferred)">
                 <div
@@ -322,6 +355,30 @@ function RadioGrid({ options, name, selected, onSelect, cols = 2 }: {
           <span style={{ fontSize: 14, color: "var(--navy)", lineHeight: 1.4 }}>{o}</span>
         </label>
       ))}
+    </div>
+  );
+}
+
+function CheckGrid({ options, selected, onToggle, cols = 2, max }: {
+  options: string[]; selected: string[];
+  onToggle: (v: string) => void; cols?: number; max?: number;
+}) {
+  return (
+    <div className="onboard-radio-grid" style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: "8px 16px" }}>
+      {options.map((o) => {
+        const isChecked = selected.includes(o);
+        const atLimit = max !== undefined && selected.length >= max && !isChecked;
+        return (
+          <label key={o} style={{ display: "flex", alignItems: "center", gap: 10, cursor: atLimit ? "not-allowed" : "pointer", padding: "4px 0", opacity: atLimit ? 0.4 : 1 }}>
+            <input
+              type="checkbox" checked={isChecked} disabled={atLimit}
+              onChange={() => onToggle(o)}
+              style={{ width: 16, height: 16, accentColor: "var(--green)", flexShrink: 0, cursor: atLimit ? "not-allowed" : "pointer" }}
+            />
+            <span style={{ fontSize: 14, color: "var(--navy)", lineHeight: 1.4 }}>{o}</span>
+          </label>
+        );
+      })}
     </div>
   );
 }
