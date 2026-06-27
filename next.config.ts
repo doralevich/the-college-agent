@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
     // pass through intact.
     proxyClientMaxBodySize: "25mb",
   },
+  async redirects() {
+    return [
+      { source: "/affiliate", destination: "/ambassador", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -6,7 +6,7 @@ const NAV_LINKS = [
   { label: "How It Works", href: "#how-it-works" },
   { label: "Before & After", href: "#before-after" },
   { label: "Blog", href: "/blog" },
-  { label: "Ambassador", href: "/affiliate" },
+  { label: "Ambassador", href: "/ambassador" },
   { label: "FAQ", href: "#faq" },
 ];
 

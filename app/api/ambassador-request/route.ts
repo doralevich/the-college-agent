@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
           html: `
             <h2 style="font-family:sans-serif;color:#111;margin-bottom:8px">New Ambassador Request</h2>
             <p style="font-family:sans-serif;font-size:14px;color:#555;margin-top:0">
-              Someone requested to become a College Agent Ambassador from the affiliate page.
+              Someone requested to become a College Agent Ambassador from the ambassador page.
             </p>
             <table style="font-family:sans-serif;font-size:14px;border-collapse:collapse">
               ${row("Name", fullName)}
@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
               ${row("How They Would Share It", clean(data.referralPlan))}
             </table>
             <p style="margin-top:16px;font-family:sans-serif;font-size:13px;color:#888">
-              Source: thecollegeagent.ai/affiliate
+              Source: thecollegeagent.ai/ambassador
             </p>
           `,
         },

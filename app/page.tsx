@@ -259,7 +259,7 @@ export default function Home() {
             {[
               { label: "Book a Consultation", href: CALENDLY },
               { label: "Blog", href: "/blog" },
-              { label: "Ambassador Program", href: "/affiliate" },
+              { label: "Ambassador Program", href: "/ambassador" },
               { label: "Contact", href: "https://apolloclaw.ai/contact" },
               { label: "Apollo[Claw]", href: "https://apolloclaw.ai" },
               { label: "Privacy Policy", href: "/privacy" },
