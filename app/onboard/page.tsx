@@ -4,8 +4,6 @@ import Nav from "../components/Nav";
 
 // ─── Option lists ─────────────────────────────────────────────────────────────
 
-const YEARS = ["Freshman (1st Year)","Sophomore (2nd Year)","Junior (3rd Year)","Senior (4th Year)","Graduate Student","Other"];
-const TIMEZONES = ["Eastern Time (ET)","Central Time (CT)","Mountain Time (MT)","Pacific Time (PT)","Alaska Time (AKT)","Hawaii Time (HST)","London (GMT/BST)","Central Europe (CET)","India (IST)","Other"];
 const LMS_OPTIONS = ["Canvas","Blackboard","Moodle","D2L / Brightspace","Google Classroom","Other / None"];
 const ACADEMIC_CHALLENGES = ["Time management","Procrastination","Test anxiety","Writing papers","Math / quantitative work","Staying organized","Group projects","Heavy reading load","Balancing work & school","Participating in class"];
 const GPA_GOALS = ["3.8 – 4.0","3.5 – 3.7","3.0 – 3.4","2.5 – 2.9","Pass / No fail","Not focused on GPA right now"];
@@ -68,7 +66,7 @@ const STEPS = [
 type FD = Record<string, string | string[] | File | null>;
 
 const BLANK: FD = {
-  firstName:"", lastName:"", schoolEmail:"", phone:"", school:"", year:"", major:"", agentName:"", timezone:"",
+  firstName:"", lastName:"", schoolEmail:"", personalEmail:"", phone:"", school:"", agentName:"",
   currentClasses:"", professors:"", lmsType:"", classFormats:[], academicChallenges:[], gpaGoal:"",
   studyStyle:"", studyMethods:[], studyTime:"", studyLocation:"", studySessionLength:"",
   wakeTime:"", sleepTime:"", productiveTime:"", classDays:[], workStatus:"", weeklyHours:"",
@@ -174,31 +172,19 @@ export default function OnboardPage() {
                   <input type="text" placeholder="Smith" value={form.lastName as string} onChange={e => set("lastName", e.target.value)} required />
                 </Field>
               </TwoCol>
-              <Field label="School Email" required>
-                <input type="email" placeholder="jane@university.edu" value={form.schoolEmail as string} onChange={e => set("schoolEmail", e.target.value)} required />
-              </Field>
+              <TwoCol>
+                <Field label="School Email" required>
+                  <input type="email" placeholder="jane@university.edu" value={form.schoolEmail as string} onChange={e => set("schoolEmail", e.target.value)} required />
+                </Field>
+                <Field label="Personal Email">
+                  <input type="email" placeholder="jane@gmail.com" value={form.personalEmail as string} onChange={e => set("personalEmail", e.target.value)} />
+                </Field>
+              </TwoCol>
               <Field label="Phone Number" required>
                 <input type="tel" placeholder="+1 (___) ___-____" value={form.phone as string} onChange={e => set("phone", e.target.value)} required />
               </Field>
               <Field label="School" required>
                 <input type="text" placeholder="Enter your school name" value={form.school as string} onChange={e => set("school", e.target.value)} required />
-              </Field>
-              <TwoCol>
-                <Field label="Year" required>
-                  <select value={form.year as string} onChange={e => set("year", e.target.value)} required>
-                    <option value="">Select year...</option>
-                    {YEARS.map(y => <option key={y}>{y}</option>)}
-                  </select>
-                </Field>
-                <Field label="Timezone" required>
-                  <select value={form.timezone as string} onChange={e => set("timezone", e.target.value)} required>
-                    <option value="">Select timezone...</option>
-                    {TIMEZONES.map(t => <option key={t}>{t}</option>)}
-                  </select>
-                </Field>
-              </TwoCol>
-              <Field label="Major / Field of Study" required>
-                <input type="text" placeholder="e.g. Business, Pre-Med, Computer Science" value={form.major as string} onChange={e => set("major", e.target.value)} required />
               </Field>
               <Field label="What would you like to name your agent?">
                 <input type="text" placeholder="e.g. Nova, Atlas, Sage, Donna" value={form.agentName as string} onChange={e => set("agentName", e.target.value)} />
