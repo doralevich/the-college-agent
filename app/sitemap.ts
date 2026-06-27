@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 const baseUrl = "https://thecollegeagent.ai";
 
-const publicRoutes = ["", "/build", "/onboard", "/privacy", "/setup", "/terms"];
+const publicRoutes = ["", "/affiliate", "/build", "/onboard", "/privacy", "/setup", "/terms"];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
