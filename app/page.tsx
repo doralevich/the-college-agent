@@ -59,10 +59,13 @@ const jsonLd = {
       "@id": "https://thecollegeagent.ai/#service",
       name: "The College Agent",
       description:
-        "A named, personalized AI agent for college students, trained on your voice, schedule, and goals. Built on Apollo[Claw] infrastructure.",
+        "A personalized AI agent for college students that helps organize classes, notes, deadlines, study plans, professor emails, internships, and campus life.",
       provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
       url: "https://thecollegeagent.ai",
-      serviceType: "AI Automation for Students",
+      serviceType: "AI Agent for College Students",
+      category: "Education Technology",
+      keywords:
+        "AI agent for college students, AI for college students, AI study tool, AI note taker for students, student AI assistant, college productivity app, study guide generator",
       areaServed: "United States",
       offers: [
         { "@type": "Offer", name: "Hermes Starter", price: "999", priceCurrency: "USD" },
@@ -126,11 +129,11 @@ export default function Home() {
             Apollo[Claw] College Edition
           </div>
           <h1 className="hero-h1" style={{ color: "#fff" }}>
-            The edge that lasts four years.
+            AI personal agent for college students.
           </h1>
           <p className="hero-sub">
-            Your own AI personal agent. Named. Trained on your voice. Knows your schedule, your classes, your
-            deadlines, and your goals. Not ChatGPT. Not a shared tool. Yours.
+            Your own student AI assistant. Named. Trained on your voice. Built around your schedule, classes,
+            notes, deadlines, study plans, professor emails, internships, and goals. Not ChatGPT. Yours.
           </p>
           <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap", marginBottom: 28 }}>
             <a href="/build" className="btn-purple">Build My Agent</a>

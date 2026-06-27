@@ -11,9 +11,24 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "The College Agent | Your Personal AI. Named. Trained on You.",
+  title: "The College Agent | AI Agent for College Students",
   description:
-    "Your own AI agent. Named. Trained on your voice, your schedule, your classes, and your goals. Not ChatGPT. Yours. Built on Apollo[Claw] infrastructure.",
+    "A personal AI agent for college students that helps organize classes, notes, deadlines, study plans, professor emails, internships, and campus life.",
+  keywords: [
+    "AI agent for college students",
+    "AI for college students",
+    "AI study tool",
+    "AI note taker for students",
+    "college productivity app",
+    "student AI assistant",
+    "homework organizer",
+    "study guide generator",
+    "college schedule assistant",
+    "internship application assistant",
+    "The College Agent",
+  ],
+  applicationName: "The College Agent",
+  category: "Education",
   metadataBase: new URL("https://thecollegeagent.ai"),
   alternates: { canonical: "https://thecollegeagent.ai" },
   verification: {
@@ -29,9 +44,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: "https://thecollegeagent.ai",
-    title: "The College Agent | Your Personal AI. Named. Trained on You.",
+    title: "The College Agent | AI Agent for College Students",
     description:
-      "Your own AI agent. Named. Trained on your voice, your schedule, your classes, and your goals. Built on Apollo[Claw] infrastructure.",
+      "A personalized AI agent for college students: classes, notes, deadlines, study plans, professor emails, internships, and campus life in one system.",
     siteName: "The College Agent",
     images: [
       {
@@ -44,9 +59,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "The College Agent | Your Personal AI",
+    title: "The College Agent | AI Agent for College Students",
     description:
-      "Your own AI agent. Named. Trained on your voice, schedule, classes, and goals. Not ChatGPT. Yours.",
+      "A personalized student AI assistant for classes, notes, deadlines, study plans, professor emails, internships, and campus life.",
     images: ["/og-image.png"],
   },
 };
