@@ -74,7 +74,7 @@ function BlogStyles() {
       .blog-kicker {
         font-family: var(--font-mono); font-size: 11px; font-weight: 700;
         text-transform: uppercase; letter-spacing: .12em; color: rgba(61,139,61,.9);
-        display: block; margin-bottom: 18px;
+        display: block; margin-bottom: 30px;
       }
       .blog-index-title {
         max-width: 760px; color: #fff; font-size: clamp(36px, 5vw, 66px);

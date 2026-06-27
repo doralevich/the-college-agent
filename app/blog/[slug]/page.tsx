@@ -76,12 +76,6 @@ export default async function BlogPostPage({ params }: PageProps) {
             </div>
           </header>
 
-          {post.featuredImageUrl ? (
-            <section className="blog-featured-wrap">
-              <img src={post.featuredImageUrl} alt="" className="blog-featured-image" />
-            </section>
-          ) : null}
-
           <section className="blog-content-wrap">
             <div className="blog-content">
               <PortableText blocks={post.body || []} />
@@ -140,13 +134,6 @@ function PostStyles() {
       }
       .blog-post-hero p {
         max-width: 760px; color: rgba(255,255,255,.66); font-size: 18px; line-height: 1.72;
-      }
-      .blog-featured-wrap {
-        background: var(--cream2); padding: 42px 24px 0;
-      }
-      .blog-featured-image {
-        width: min(980px, 100%); margin: 0 auto; border-radius: 8px;
-        box-shadow: 0 20px 50px rgba(11,18,32,.13);
       }
       .blog-content-wrap { background: var(--cream2); padding: 54px 24px 86px; }
       .blog-content {
