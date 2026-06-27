@@ -139,7 +139,8 @@ export default function SetupPage() {
           <CredBlock num="02" label="Bring Your Own Model (optional)">
             <p style={{ fontSize: 14, color: "rgba(11,23,41,.65)", lineHeight: 1.65, marginBottom: 16 }}>
               Want your agent to run on your own model? Pick one or both — we&apos;ll show you how to
-              grab the key. Skip this and the plan&apos;s default model handles everything.
+              grab the key. Skip this and the plan&apos;s default model handles everything;
+              pay-as-you-go rates will be applied.
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
               <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", padding: "10px 14px", border: "1.5px solid", borderColor: providers.anthropic ? "var(--green)" : "rgba(11,23,41,.12)", borderRadius: 8, background: providers.anthropic ? "rgba(61,139,61,.04)" : "#fff", transition: "all .15s" }}>
