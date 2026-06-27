@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import Nav from "../components/Nav";
 
 const PRIORITIES = [
@@ -75,6 +75,10 @@ export default function OnboardPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // A submit-failed error must never follow students between steps — they read
+  // it as fresh on every page and bounce.
+  useEffect(() => { setError(""); }, [step]);
 
   const set = (k: string, v: string) => {
     setError("");
@@ -275,8 +279,8 @@ export default function OnboardPage() {
             </Section>
           )}
 
-          {error && <p style={{ color: "var(--red)", fontSize: 13, marginBottom: 16 }}>{error}</p>}
-          <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
+          {error && <p style={{ color: "var(--red)", fontSize: 13, marginBottom: 16, marginTop: 50 }}>{error}</p>}
+          <div style={{ display: "flex", gap: 12, marginTop: 50 }}>
             {step > 1 && (
               <button type="button" onClick={back} style={{ flexShrink: 0, padding: "14px 24px", borderRadius: 4, border: "1.5px solid rgba(11,23,41,.15)", background: "transparent", fontSize: 13, fontWeight: 700, fontFamily: "var(--font-mono)", letterSpacing: ".06em", color: "rgba(11,23,41,.6)", cursor: "pointer" }}>
                 Back
