@@ -77,10 +77,10 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId }: Props
           <Image
             src="/logo-college-agent.svg"
             alt="The College Agent"
-            width={183}
-            height={40}
+            width={366}
+            height={80}
             priority
-            className="h-[2.4rem] w-auto"
+            className="h-[4.8rem] w-auto"
           />
         </div>
 
