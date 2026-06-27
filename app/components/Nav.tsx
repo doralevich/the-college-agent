@@ -31,7 +31,7 @@ export default function Nav() {
 
   return (
     <>
-      <nav style={{
+      <nav className="site-nav" style={{
         position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
         background: "#fff", borderBottom: "1px solid rgba(11,23,41,.08)",
         boxShadow: "0 1px 4px rgba(11,23,41,.06)",
@@ -159,10 +159,19 @@ export default function Nav() {
           text-align: center; margin-top: 8px; padding: 10px 0;
         }
 
-        @media (max-width: 768px) {
+        /* iPad portrait + all mobile: use hamburger */
+        @media (max-width: 900px) {
           .nav-links-desktop { display: none; }
           .nav-cta-desktop { display: none; }
           .nav-hamburger { display: flex; }
+        }
+
+        /* Tablet landscape (901-1100px): tighten spacing so links don't crowd */
+        @media (min-width: 901px) and (max-width: 1100px) {
+          .site-nav > div { padding-left: 24px !important; padding-right: 24px !important; }
+          .nav-links-desktop { gap: 18px; }
+          .nav-cta-desktop { gap: 10px; }
+          .btn-purple { font-size: 11px !important; padding: 9px 16px !important; }
         }
       `}</style>
     </>
