@@ -63,6 +63,7 @@ const BLANK: FD = {
   agentHandleFirst: [],
   responseStyle: [],
   checkinFrequency: "",
+  currentClasses: "",
   anythingElse: "",
   resumeFile: null,
 };
@@ -103,6 +104,7 @@ export default function OnboardPage() {
       3: ["agentHandleFirst"],
       4: ["responseStyle"],
       5: ["checkinFrequency"],
+      6: ["currentClasses"],
     };
     if ((requiredByStep[currentStep] || []).some((k) => !isFilled(k))) {
       setError("Please complete the required fields before continuing.");
@@ -125,7 +127,7 @@ export default function OnboardPage() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (![1, 2, 3, 4, 5].every((n) => validateStep(n))) return;
+    if (![1, 2, 3, 4, 5, 6].every((n) => validateStep(n))) return;
     setLoading(true);
     setError("");
     try {
@@ -245,7 +247,10 @@ export default function OnboardPage() {
           )}
 
           {step === 6 && (
-            <Section title="Anything else before we build it?" sub="Optional, but useful if you want the first version to feel more personal.">
+            <Section title="A few last details." sub="Tell us what you're taking so the agent can track deadlines from day one.">
+              <Field label="Classes this semester" required>
+                <textarea rows={4} placeholder="Just dump them — format doesn't matter. e.g. Marketing 301, Stats II, Bio Lab Tues/Thu 2pm." value={form.currentClasses as string} onChange={(e) => set("currentClasses", e.target.value)} required />
+              </Field>
               <Field label="Upload your resume (optional, PDF preferred)">
                 <div
                   onClick={() => fileRef.current?.click()}
@@ -265,7 +270,7 @@ export default function OnboardPage() {
                 <input ref={fileRef} type="file" accept=".pdf,.doc,.docx" style={{ display: "none" }} onChange={(e) => { if (e.target.files?.[0]) setForm((f) => ({ ...f, resumeFile: e.target.files![0] })); }} />
               </Field>
               <Field label="Anything else your agent should know?">
-                <textarea rows={4} placeholder="Classes, goals, habits, pressure points, or anything you want your agent to remember from day one." value={form.anythingElse as string} onChange={(e) => set("anythingElse", e.target.value)} />
+                <textarea rows={4} placeholder="Goals, habits, pressure points, or anything you want your agent to remember from day one." value={form.anythingElse as string} onChange={(e) => set("anythingElse", e.target.value)} />
               </Field>
             </Section>
           )}
