@@ -12,12 +12,24 @@ interface CredForm {
 export default function SetupPage() {
   const [form, setForm] = useState<CredForm>({ telegramToken: "", telegramUserId: "", anthropicKey: "", openaiKey: "" });
   const [openSection, setOpenSection] = useState<string | null>("telegram");
+  const [providers, setProviders] = useState<{ anthropic: boolean; openai: boolean }>({ anthropic: false, openai: false });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const set = (k: keyof CredForm, v: string) => setForm(f => ({ ...f, [k]: v }));
   const toggle = (key: string) => setOpenSection(o => o === key ? null : key);
+  const toggleProvider = (key: "anthropic" | "openai") => {
+    setProviders(p => {
+      const next = { ...p, [key]: !p[key] };
+      if (!next[key]) {
+        // unchecking a provider clears the key field so nothing accidentally submits
+        if (key === "anthropic") setForm(f => ({ ...f, anthropicKey: "" }));
+        if (key === "openai") setForm(f => ({ ...f, openaiKey: "" }));
+      }
+      return next;
+    });
+  };
 
   // Everything here is optional (BYO-key): the agent runs on a model included with the plan
   // by default, so a student can connect Telegram, add their own keys, both, or neither.
@@ -71,9 +83,9 @@ export default function SetupPage() {
             <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: "rgba(255,255,255,.4)" }}>Technical Setup</span>
             <h1 style={{ fontSize: 30, fontWeight: 800, color: "#fff", marginTop: 10, marginBottom: 10 }}>Connect your agent</h1>
             <p style={{ fontSize: 15, color: "rgba(255,255,255,.55)", lineHeight: 1.7 }}>
-              Everything here is optional. Your agent runs on a model included with your plan, so you can
-              skip it all. Connect Telegram to chat with your agent, and add your own Anthropic or OpenAI
-              API key if you&apos;d like to use it.
+              Connect Telegram so you can chat with your agent like you&apos;d text a friend. If you want
+              your agent to run on your own model, add an Anthropic or OpenAI key below — otherwise the
+              plan&apos;s default model is fine.
             </p>
           </div>
         </div>
@@ -81,7 +93,18 @@ export default function SetupPage() {
         <form onSubmit={handleSubmit} style={{ maxWidth: 660, margin: "0 auto", padding: "40px 24px 80px" }}>
 
           {/* 01 — Telegram */}
-          <CredBlock num="01" label="Telegram Bot">
+          <CredBlock num="01" label="Connect Your Telegram Bot">
+            <p style={{ fontSize: 14, color: "rgba(11,23,41,.65)", lineHeight: 1.65, marginBottom: 16 }}>
+              Telegram is how you&apos;ll talk to your agent — like texting a friend. Install it on both
+              your <strong>phone</strong> and your <strong>desktop</strong> so you can switch between
+              devices without losing the thread.
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 24 }}>
+              <a href="https://telegram.org/dl" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 6, border: "1px solid rgba(11,23,41,.15)", fontSize: 12, fontWeight: 600, fontFamily: "var(--font-mono)", letterSpacing: ".04em", color: "var(--navy)", textDecoration: "none", background: "#fff" }}>
+                ↓ Download Telegram (phone + desktop)
+              </a>
+            </div>
+
             <Instructions
               label="How to create your Telegram bot"
               isOpen={openSection === "telegram"}
@@ -96,10 +119,7 @@ export default function SetupPage() {
             <CredField label="Telegram Bot Token" hint="Format: 123456789:ABCdef..." optional>
               <input type="password" placeholder="123456789:ABCdef..." value={form.telegramToken} onChange={e => set("telegramToken", e.target.value)} autoComplete="off" />
             </CredField>
-          </CredBlock>
 
-          {/* 02 — Telegram user id */}
-          <CredBlock num="02" label="Your Telegram User ID">
             <Instructions
               label="How to find your numeric Telegram user id"
               isOpen={openSection === "userid"}
@@ -110,41 +130,61 @@ export default function SetupPage() {
               <Step>It replies with your account info. Copy the numeric <strong>Id</strong> (e.g. <Code>123456789</Code>).</Step>
               <Step>This is how Hermes knows it&apos;s really you when you message your bot.</Step>
             </Instructions>
-            <CredField label="Telegram User ID" hint="Numbers only, e.g. 123456789" optional>
+            <CredField label="Your Telegram User ID" hint="Numbers only, e.g. 123456789" optional>
               <input type="text" inputMode="numeric" placeholder="123456789" value={form.telegramUserId} onChange={e => set("telegramUserId", e.target.value.replace(/[^0-9]/g, ""))} autoComplete="off" />
             </CredField>
           </CredBlock>
 
-          {/* 03 — Anthropic key (optional) */}
-          <CredBlock num="03" label="Anthropic API Key">
-            <Instructions
-              label="How to get an Anthropic API key"
-              isOpen={openSection === "anthropic"}
-              onToggle={() => toggle("anthropic")}
-            >
-              <Step>Go to <strong>console.anthropic.com</strong> and sign in (or create an account).</Step>
-              <Step>Open <strong>Settings → API Keys</strong> and click <strong>Create Key</strong>.</Step>
-              <Step>Copy the key (it starts with <Code>sk-ant-</Code>) and paste it below.</Step>
-            </Instructions>
-            <CredField label="Anthropic API Key" hint="Optional, starts with sk-ant-" optional>
-              <input type="password" placeholder="sk-ant-..." value={form.anthropicKey} onChange={e => set("anthropicKey", e.target.value)} autoComplete="off" />
-            </CredField>
-          </CredBlock>
+          {/* 02 — Bring-your-own model (optional) */}
+          <CredBlock num="02" label="Bring Your Own Model (optional)">
+            <p style={{ fontSize: 14, color: "rgba(11,23,41,.65)", lineHeight: 1.65, marginBottom: 16 }}>
+              Want your agent to run on your own model? Pick one or both — we&apos;ll show you how to
+              grab the key. Skip this and the plan&apos;s default model handles everything.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", padding: "10px 14px", border: "1.5px solid", borderColor: providers.anthropic ? "var(--green)" : "rgba(11,23,41,.12)", borderRadius: 8, background: providers.anthropic ? "rgba(61,139,61,.04)" : "#fff", transition: "all .15s" }}>
+                <input type="checkbox" checked={providers.anthropic} onChange={() => toggleProvider("anthropic")} style={{ width: 16, height: 16, accentColor: "var(--green)", cursor: "pointer" }} />
+                <span style={{ fontSize: 14, color: "var(--navy)" }}><strong>Anthropic</strong> — Claude (Opus, Sonnet, Haiku)</span>
+              </label>
+              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", padding: "10px 14px", border: "1.5px solid", borderColor: providers.openai ? "var(--green)" : "rgba(11,23,41,.12)", borderRadius: 8, background: providers.openai ? "rgba(61,139,61,.04)" : "#fff", transition: "all .15s" }}>
+                <input type="checkbox" checked={providers.openai} onChange={() => toggleProvider("openai")} style={{ width: 16, height: 16, accentColor: "var(--green)", cursor: "pointer" }} />
+                <span style={{ fontSize: 14, color: "var(--navy)" }}><strong>OpenAI</strong> — ChatGPT (GPT-5, GPT-4o)</span>
+              </label>
+            </div>
 
-          {/* 04 — OpenAI key (optional) */}
-          <CredBlock num="04" label="OpenAI API Key">
-            <Instructions
-              label="How to get an OpenAI API key"
-              isOpen={openSection === "openai"}
-              onToggle={() => toggle("openai")}
-            >
-              <Step>Go to <strong>platform.openai.com</strong> and sign in (or create an account).</Step>
-              <Step>Open <strong>API keys</strong> and click <strong>Create new secret key</strong>.</Step>
-              <Step>Copy the key (it starts with <Code>sk-</Code>) and paste it below.</Step>
-            </Instructions>
-            <CredField label="OpenAI API Key" hint="Optional, starts with sk-" optional>
-              <input type="password" placeholder="sk-..." value={form.openaiKey} onChange={e => set("openaiKey", e.target.value)} autoComplete="off" />
-            </CredField>
+            {providers.anthropic && (
+              <>
+                <Instructions
+                  label="How to get an Anthropic API key"
+                  isOpen={openSection === "anthropic"}
+                  onToggle={() => toggle("anthropic")}
+                >
+                  <Step>Go to <strong>console.anthropic.com</strong> and sign in (or create an account).</Step>
+                  <Step>Open <strong>Settings → API Keys</strong> and click <strong>Create Key</strong>.</Step>
+                  <Step>Copy the key (it starts with <Code>sk-ant-</Code>) and paste it below.</Step>
+                </Instructions>
+                <CredField label="Anthropic API Key" hint="Starts with sk-ant-">
+                  <input type="password" placeholder="sk-ant-..." value={form.anthropicKey} onChange={e => set("anthropicKey", e.target.value)} autoComplete="off" />
+                </CredField>
+              </>
+            )}
+
+            {providers.openai && (
+              <>
+                <Instructions
+                  label="How to get an OpenAI API key"
+                  isOpen={openSection === "openai"}
+                  onToggle={() => toggle("openai")}
+                >
+                  <Step>Go to <strong>platform.openai.com</strong> and sign in (or create an account).</Step>
+                  <Step>Open <strong>API keys</strong> and click <strong>Create new secret key</strong>.</Step>
+                  <Step>Copy the key (it starts with <Code>sk-</Code>) and paste it below.</Step>
+                </Instructions>
+                <CredField label="OpenAI API Key" hint="Starts with sk-">
+                  <input type="password" placeholder="sk-..." value={form.openaiKey} onChange={e => set("openaiKey", e.target.value)} autoComplete="off" />
+                </CredField>
+              </>
+            )}
           </CredBlock>
 
           {/* Security note */}
