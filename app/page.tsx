@@ -258,6 +258,7 @@ export default function Home() {
           <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
             {[
               { label: "Book a Consultation", href: CALENDLY },
+              { label: "Blog", href: "/blog" },
               { label: "Ambassador Program", href: "/affiliate" },
               { label: "Contact", href: "https://apolloclaw.ai/contact" },
               { label: "Apollo[Claw]", href: "https://apolloclaw.ai" },
