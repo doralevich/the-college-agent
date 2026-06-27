@@ -22,10 +22,10 @@ export function AdminShell({
           <Image
             src="/logo-college-agent.svg"
             alt="The College Agent"
-            width={183}
-            height={40}
+            width={366}
+            height={80}
             priority
-            className="h-8 w-auto md:h-9"
+            className="h-16 w-auto md:h-[4.5rem]"
           />
           <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
             Admin
