@@ -7,12 +7,12 @@ export const metadata: Metadata = {
   title: "College Agent Ambassador Program | The College Agent",
   description:
     "Apply to become a College Agent Ambassador and introduce a personal AI agent for college students to your campus, club, parent network, or student community.",
-  alternates: { canonical: "https://thecollegeagent.ai/affiliate" },
+  alternates: { canonical: "https://thecollegeagent.ai/ambassador" },
   openGraph: {
     title: "College Agent Ambassador Program",
     description:
       "Request to become a College Agent Ambassador and help students discover a personal AI agent for school, internships, and campus life.",
-    url: "https://thecollegeagent.ai/affiliate",
+    url: "https://thecollegeagent.ai/ambassador",
   },
   twitter: {
     title: "College Agent Ambassador Program",
@@ -34,7 +34,7 @@ const PROGRAM_POINTS = [
   "Best-fit partners may be invited into paid campus campaigns.",
 ];
 
-export default function AffiliatePage() {
+export default function AmbassadorPage() {
   return (
     <>
       <Nav />

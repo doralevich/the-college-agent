@@ -3,7 +3,7 @@ import { getCollegeAgentPosts } from "@/lib/sanity-blog";
 
 const baseUrl = "https://thecollegeagent.ai";
 
-const publicRoutes = ["", "/affiliate", "/blog", "/build", "/onboard", "/privacy", "/setup", "/terms"];
+const publicRoutes = ["", "/ambassador", "/blog", "/build", "/onboard", "/privacy", "/setup", "/terms"];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date();
