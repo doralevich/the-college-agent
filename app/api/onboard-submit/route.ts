@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
                 <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">School</td><td>${data.school}</td></tr>
                 <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Agent Name</td><td>${data.agentName || "N/A"}</td></tr>
                 <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Industry</td><td>${data.industryInterest || "N/A"}</td></tr>
-                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Top Priority</td><td>${data.topPriority || "N/A"}</td></tr>
+                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Top Priorities</td><td>${formatVal(data.topPriority) || "N/A"}</td></tr>
                 <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Resume</td><td>${resumeUrl ? `<a href="${resumeUrl}">Download</a>` : "Not uploaded"}</td></tr>
               </table>
               <p style="margin-top:16px;font-size:13px;color:#888">Full submission attached as a PDF and stored in Supabase → the-college-agent → onboard_submissions</p>
