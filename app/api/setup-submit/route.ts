@@ -3,8 +3,6 @@ import { getOptionalUserId } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { buildSummaryPdf, pdfAttachment } from "@/lib/email/pdf";
 
-const supabase = createAdminClient();
-
 // Treat empty / whitespace-only strings as "not provided" so optional fields store as NULL.
 const orNull = (v: unknown) => {
   const s = typeof v === "string" ? v.trim() : "";
@@ -13,6 +11,7 @@ const orNull = (v: unknown) => {
 
 export async function POST(req: NextRequest) {
   try {
+    const supabase = createAdminClient();
     const data = await req.json();
 
     // Tie the submission to the logged-in student (if any) so the dashboard checklist

@@ -4,8 +4,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { renameWorkspaceFromIntake } from "@/lib/workspaces";
 import { buildSummaryPdf, pdfAttachment, type PdfSection } from "@/lib/email/pdf";
 
-const supabase = createAdminClient();
-
 // The onboarding questionnaire, grouped to mirror the 8 wizard steps, so the admin PDF reads
 // like the form. Each entry maps a stored field key to a human label; values are pulled from
 // the submitted `data` blob and empty answers are skipped.
@@ -27,6 +25,7 @@ function formatVal(v: unknown): string {
 
 export async function POST(req: NextRequest) {
   try {
+    const supabase = createAdminClient();
     const formData = await req.formData();
     const raw = formData.get("data") as string;
     const data = JSON.parse(raw);
