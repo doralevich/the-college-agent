@@ -54,13 +54,17 @@ const AGENT_TOPICS = ["Upcoming deadlines","Internship / job opportunities","Una
 
 const STEPS = [
   { num: 1, label: "About You" },
-  { num: 2, label: "Academic Life" },
-  { num: 3, label: "Schedule & Routine" },
-  { num: 4, label: "Social & Campus Life" },
-  { num: 5, label: "Mental Health & Wellbeing" },
-  { num: 6, label: "Tools & Communication" },
-  { num: 7, label: "Goals & Career" },
-  { num: 8, label: "Your Agent" },
+  { num: 2, label: "Priorities" },
+  { num: 3, label: "Agent Focus" },
+  { num: 4, label: "Response Style" },
+  { num: 5, label: "Check-ins" },
+  { num: 6, label: "Academic Life" },
+  { num: 7, label: "Schedule & Routine" },
+  { num: 8, label: "Social & Campus Life" },
+  { num: 9, label: "Mental Health & Wellbeing" },
+  { num: 10, label: "Tools & Communication" },
+  { num: 11, label: "Goals & Career" },
+  { num: 12, label: "Your Agent" },
 ];
 
 type FD = Record<string, string | string[] | File | null>;
@@ -74,12 +78,12 @@ const BLANK: FD = {
   clubTypes:[], specificClubs:"", leadershipRole:"", clubTimeCommitment:"",
   volunteering:"", causeAreas:[], volunteerOrgs:"",
   sleepQuality:"", stressLevel:"", burnoutSignals:[], agentWellbeingFlag:"", wellbeingBoundaries:"",
-  commStyle:"", preferredChannels:[], responseStyle:"", emailResponseTime:"",
+  commStyle:"", preferredChannels:[], responseStyle:[], emailResponseTime:"",
   apps:[], devices:[], browser:"", noteTaking:[], calendarApp:"", taskManager:"",
-  topPriority:"", academicGoal:"", careerGoal:"", personalGoal:"", stopDoing:[], startDoing:[],
+  topPriority:[], academicGoal:"", careerGoal:"", personalGoal:"", stopDoing:[], startDoing:[],
   industryInterest:"", graduationYear:"", internshipStatus:"", resumeReady:"", jobSearchActivities:[], dreamCompany:"",
-  biggestStressors:[], fallsThrough:"", agentHandleFirst:"", anythingElse:"",
-  agentTone:"", checkinFrequency:"", agentTopics:[], agentOffLimits:"",
+  biggestStressors:[], fallsThrough:"", agentHandleFirst:[], anythingElse:"",
+  agentTone:"", checkinFrequency:[], agentTopics:[], agentOffLimits:"",
   resumeFile: null,
 };
 
@@ -192,8 +196,44 @@ export default function OnboardPage() {
             </Section>
           )}
 
-          {/* ── Step 2: Academic Life ── */}
+          {/* ── Step 2: Priorities ── */}
           {step === 2 && (
+            <Section title="What should your agent help with first?" sub="This is the important part. The rest can be learned later through normal conversation.">
+              <Field label="Your priorities this semester (pick up to 3)">
+                <CheckGrid options={PRIORITIES} selected={form.topPriority as string[]} onToggle={v => toggle("topPriority", v)} cols={2} max={3} />
+              </Field>
+            </Section>
+          )}
+
+          {/* ── Step 3: Agent Focus ── */}
+          {step === 3 && (
+            <Section title="What should your agent handle first?" sub="Pick up to 3 to start — you can add more later.">
+              <Field label="Where your agent should jump in first">
+                <CheckGrid options={HANDLE_FIRST} selected={form.agentHandleFirst as string[]} onToggle={v => toggle("agentHandleFirst", v)} cols={2} max={3} />
+              </Field>
+            </Section>
+          )}
+
+          {/* ── Step 4: Response Style ── */}
+          {step === 4 && (
+            <Section title="How do you want your agent to respond?" sub="Pick up to 3 styles you'd like it to default to.">
+              <Field label="Preferred response styles">
+                <CheckGrid options={RESPONSE_STYLES} selected={form.responseStyle as string[]} onToggle={v => toggle("responseStyle", v)} cols={1} max={3} />
+              </Field>
+            </Section>
+          )}
+
+          {/* ── Step 5: Check-ins ── */}
+          {step === 5 && (
+            <Section title="How often do you want check-ins?" sub="Pick up to 3 cadences — your agent can mix and match.">
+              <Field label="Check-in cadence">
+                <CheckGrid options={CHECKIN_FREQ} selected={form.checkinFrequency as string[]} onToggle={v => toggle("checkinFrequency", v)} cols={1} max={3} />
+              </Field>
+            </Section>
+          )}
+
+          {/* ── Step 6: Academic Life ── */}
+          {step === 6 && (
             <Section title="Academic life." sub="Your classes, study habits, and biggest challenges.">
               <Field label="What classes are you currently taking?">
                 <textarea rows={3} placeholder="e.g. Intro to Finance, Marketing 301, Statistics II..." value={form.currentClasses as string} onChange={e => set("currentClasses", e.target.value)} />
@@ -225,8 +265,8 @@ export default function OnboardPage() {
             </Section>
           )}
 
-          {/* ── Step 3: Schedule & Routine ── */}
-          {step === 3 && (
+          {/* ── Step 7: Schedule & Routine ── */}
+          {step === 7 && (
             <Section title="Schedule & routine." sub="Your weekly structure helps your agent plan around you.">
               <TwoCol>
                 <Field label="What time do you usually wake up?">
@@ -257,8 +297,8 @@ export default function OnboardPage() {
             </Section>
           )}
 
-          {/* ── Step 4: Social & Campus Life ── */}
-          {step === 4 && (
+          {/* ── Step 8: Social & Campus Life ── */}
+          {step === 8 && (
             <Section title="Social & campus life." sub="Your involvement helps your agent understand how you spend your time.">
               <Field label="Greek life?">
                 <RadioGrid options={GREEK} name="greekLife" selected={form.greekLife as string} onSelect={v => set("greekLife", v)} cols={2} />
@@ -300,8 +340,8 @@ export default function OnboardPage() {
             </Section>
           )}
 
-          {/* ── Step 5: Mental Health & Wellbeing ── */}
-          {step === 5 && (
+          {/* ── Step 9: Mental Health & Wellbeing ── */}
+          {step === 9 && (
             <Section title="Mental health & wellbeing." sub="Your agent will use this to look out for you, not judge you.">
               <Field label="How would you rate your sleep quality?">
                 <RadioGrid options={SLEEP_QUALITY} name="sleepQuality" selected={form.sleepQuality as string} onSelect={v => set("sleepQuality", v)} cols={1} />
@@ -321,8 +361,8 @@ export default function OnboardPage() {
             </Section>
           )}
 
-          {/* ── Step 6: Tools & Communication ── */}
-          {step === 6 && (
+          {/* ── Step 10: Tools & Communication ── */}
+          {step === 10 && (
             <Section title="Tools & communication." sub="This helps us connect your agent to the right apps and match your style.">
               <Field label="Apps you use regularly (check all that apply)">
                 <CheckGrid options={APPS_LIST} selected={form.apps as string[]} onToggle={v => toggle("apps", v)} cols={3} />
@@ -348,21 +388,15 @@ export default function OnboardPage() {
               <Field label="Channels you use most (check all that apply)">
                 <CheckGrid options={CHANNELS} selected={form.preferredChannels as string[]} onToggle={v => toggle("preferredChannels", v)} cols={3} />
               </Field>
-              <Field label="How do you want your agent to respond?">
-                <RadioGrid options={RESPONSE_STYLES} name="responseStyle" selected={form.responseStyle as string} onSelect={v => set("responseStyle", v)} cols={1} />
-              </Field>
               <Field label="Your typical email response time">
                 <RadioGrid options={EMAIL_RESPONSE} name="emailResponseTime" selected={form.emailResponseTime as string} onSelect={v => set("emailResponseTime", v)} cols={2} />
               </Field>
             </Section>
           )}
 
-          {/* ── Step 7: Goals & Career ── */}
-          {step === 7 && (
+          {/* ── Step 11: Goals & Career ── */}
+          {step === 11 && (
             <Section title="Goals & career." sub="What your agent should be working toward on your behalf.">
-              <Field label="Your #1 priority this semester">
-                <RadioGrid options={PRIORITIES} name="topPriority" selected={form.topPriority as string} onSelect={v => set("topPriority", v)} cols={2} />
-              </Field>
               <Field label="Academic goal this semester">
                 <input type="text" placeholder="e.g. Raise my GPA from 3.2 to 3.5" value={form.academicGoal as string} onChange={e => set("academicGoal", e.target.value)} />
               </Field>
@@ -405,9 +439,6 @@ export default function OnboardPage() {
               <Field label="What falls through the cracks most often for you?">
                 <RadioGrid options={FALLS_THROUGH} name="fallsThrough" selected={form.fallsThrough as string} onSelect={v => set("fallsThrough", v)} cols={2} />
               </Field>
-              <Field label="What do you want your agent to handle first?">
-                <RadioGrid options={HANDLE_FIRST} name="agentHandleFirst" selected={form.agentHandleFirst as string} onSelect={v => set("agentHandleFirst", v)} cols={2} />
-              </Field>
 
               {/* Resume Upload */}
               <Field label="Upload your resume (optional, PDF preferred)">
@@ -431,14 +462,11 @@ export default function OnboardPage() {
             </Section>
           )}
 
-          {/* ── Step 8: Your Agent ── */}
-          {step === 8 && (
+          {/* ── Step 12: Your Agent ── */}
+          {step === 12 && (
             <Section title="Your agent's personality." sub="The last step: how you want it to show up for you every day.">
               <Field label="How should your agent talk to you?">
                 <RadioGrid options={TONES} name="agentTone" selected={form.agentTone as string} onSelect={v => set("agentTone", v)} cols={1} />
-              </Field>
-              <Field label="How often do you want proactive check-ins?">
-                <RadioGrid options={CHECKIN_FREQ} name="checkinFrequency" selected={form.checkinFrequency as string} onSelect={v => set("checkinFrequency", v)} cols={1} />
               </Field>
               <Field label="What should your agent proactively surface? (check all that apply)">
                 <CheckGrid options={AGENT_TOPICS} selected={form.agentTopics as string[]} onToggle={v => toggle("agentTopics", v)} cols={2} />
@@ -545,22 +573,26 @@ function RadioGrid({ options, name, selected, onSelect, cols = 2 }: {
 
 // ─── Checkbox grid ────────────────────────────────────────────────────────────
 
-function CheckGrid({ options, selected, onToggle, cols = 2 }: {
+function CheckGrid({ options, selected, onToggle, cols = 2, max }: {
   options: string[]; selected: string[];
-  onToggle: (v: string) => void; cols?: number;
+  onToggle: (v: string) => void; cols?: number; max?: number;
 }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: "8px 16px" }}>
-      {options.map(o => (
-        <label key={o} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", padding: "4px 0" }}>
-          <input
-            type="checkbox" checked={selected.includes(o)}
-            onChange={() => onToggle(o)}
-            style={{ width: 16, height: 16, accentColor: "var(--green)", flexShrink: 0, cursor: "pointer" }}
-          />
-          <span style={{ fontSize: 14, color: "var(--navy)", lineHeight: 1.4 }}>{o}</span>
-        </label>
-      ))}
+      {options.map(o => {
+        const isChecked = selected.includes(o);
+        const atLimit = max !== undefined && selected.length >= max && !isChecked;
+        return (
+          <label key={o} style={{ display: "flex", alignItems: "center", gap: 10, cursor: atLimit ? "not-allowed" : "pointer", padding: "4px 0", opacity: atLimit ? 0.4 : 1 }}>
+            <input
+              type="checkbox" checked={isChecked} disabled={atLimit}
+              onChange={() => onToggle(o)}
+              style={{ width: 16, height: 16, accentColor: "var(--green)", flexShrink: 0, cursor: atLimit ? "not-allowed" : "pointer" }}
+            />
+            <span style={{ fontSize: 14, color: "var(--navy)", lineHeight: 1.4 }}>{o}</span>
+          </label>
+        );
+      })}
     </div>
   );
 }
