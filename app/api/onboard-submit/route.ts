@@ -10,7 +10,7 @@ const supabase = createAdminClient();
 // like the form. Each entry maps a stored field key to a human label; values are pulled from
 // the submitted `data` blob and empty answers are skipped.
 const ONBOARD_GROUPS: { heading: string; fields: Array<[string, string]> }[] = [
-  { heading: "About You", fields: [["schoolEmail", "School Email"], ["personalEmail", "Personal Email"], ["phone", "Phone"], ["school", "School"], ["year", "Year"], ["timezone", "Timezone"], ["major", "Major"], ["agentName", "Agent Name"]] },
+  { heading: "About You", fields: [["schoolEmail", "School Email"], ["personalEmail", "Personal Email"], ["phone", "Phone"], ["school", "School"], ["agentName", "Agent Name"]] },
   { heading: "Academic Life", fields: [["currentClasses", "Current Classes"], ["lmsType", "LMS"], ["gpaGoal", "GPA Goal"], ["academicChallenges", "Academic Challenges"], ["studyStyle", "Study Style"], ["studyMethods", "Study Methods"], ["studyTime", "Best Study Time"], ["studyLocation", "Study Location"], ["studySessionLength", "Session Length"]] },
   { heading: "Schedule & Routine", fields: [["wakeTime", "Wake Time"], ["sleepTime", "Sleep Time"], ["productiveTime", "Most Productive"], ["classDays", "Class Days"], ["workStatus", "Work Status"], ["weeklyHours", "Weekly Hours"]] },
   { heading: "Social & Campus Life", fields: [["greekLife", "Greek Life"], ["sportsTeams", "Sports Teams"], ["socialFrequency", "Social Frequency"], ["socialActivities", "Social Activities"], ["clubTypes", "Clubs & Orgs"], ["specificClubs", "Specific Clubs"], ["leadershipRole", "Leadership Role"], ["clubTimeCommitment", "Club Time/Week"], ["volunteering", "Volunteering"], ["causeAreas", "Cause Areas"], ["volunteerOrgs", "Volunteer Orgs"]] },
@@ -61,8 +61,6 @@ export async function POST(req: NextRequest) {
       personal_email: data.personalEmail || null,
       phone: data.phone,
       school: data.school,
-      year: data.year,
-      major: data.major,
       agent_name: data.agentName || null,
       // Full questionnaire fields stored as JSONB blob for flexibility
       questionnaire: data,
@@ -117,10 +115,9 @@ export async function POST(req: NextRequest) {
               <table style="font-family:sans-serif;font-size:14px;border-collapse:collapse">
                 <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Name</td><td>${fullName}</td></tr>
                 <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">School Email</td><td>${data.schoolEmail}</td></tr>
+                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Personal Email</td><td>${data.personalEmail || "N/A"}</td></tr>
                 <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Phone</td><td>${data.phone}</td></tr>
                 <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">School</td><td>${data.school}</td></tr>
-                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Year</td><td>${data.year}</td></tr>
-                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Major</td><td>${data.major}</td></tr>
                 <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Agent Name</td><td>${data.agentName || "N/A"}</td></tr>
                 <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Industry</td><td>${data.industryInterest || "N/A"}</td></tr>
                 <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Top Priority</td><td>${data.topPriority || "N/A"}</td></tr>

@@ -4,28 +4,6 @@ import Link from "next/link";
 import { useRef, useState, type FormEvent, type ReactNode } from "react";
 import Nav from "../components/Nav";
 
-const YEARS = [
-  "Freshman (1st Year)",
-  "Sophomore (2nd Year)",
-  "Junior (3rd Year)",
-  "Senior (4th Year)",
-  "Graduate Student",
-  "Other",
-];
-
-const TIMEZONES = [
-  "Eastern Time (ET)",
-  "Central Time (CT)",
-  "Mountain Time (MT)",
-  "Pacific Time (PT)",
-  "Alaska Time (AKT)",
-  "Hawaii Time (HST)",
-  "London (GMT/BST)",
-  "Central Europe (CET)",
-  "India (IST)",
-  "Other",
-];
-
 const PRIORITIES = [
   "Academic performance",
   "Career / internship search",
@@ -75,11 +53,9 @@ const BLANK: FD = {
   firstName: "",
   lastName: "",
   schoolEmail: "",
+  personalEmail: "",
   phone: "",
   school: "",
-  year: "",
-  timezone: "",
-  major: "",
   topPriority: "",
   agentHandleFirst: "",
   responseStyle: "",
@@ -107,7 +83,7 @@ export default function OnboardPage() {
 
   function validateStep(currentStep = step) {
     const requiredByStep: Record<number, string[]> = {
-      1: ["firstName", "lastName", "schoolEmail", "phone", "school", "year", "timezone", "major"],
+      1: ["firstName", "lastName", "schoolEmail", "phone", "school"],
       2: ["topPriority", "agentHandleFirst", "responseStyle", "checkinFrequency"],
     };
     if (missingRequired(requiredByStep[currentStep] || [])) {
@@ -201,31 +177,19 @@ export default function OnboardPage() {
                   <input type="text" placeholder="Smith" value={form.lastName as string} onChange={(e) => set("lastName", e.target.value)} required />
                 </Field>
               </TwoCol>
-              <Field label="School Email" required>
-                <input type="email" placeholder="jane@university.edu" value={form.schoolEmail as string} onChange={(e) => set("schoolEmail", e.target.value)} required />
-              </Field>
+              <TwoCol>
+                <Field label="School Email" required>
+                  <input type="email" placeholder="jane@university.edu" value={form.schoolEmail as string} onChange={(e) => set("schoolEmail", e.target.value)} required />
+                </Field>
+                <Field label="Personal Email">
+                  <input type="email" placeholder="jane@gmail.com" value={form.personalEmail as string} onChange={(e) => set("personalEmail", e.target.value)} />
+                </Field>
+              </TwoCol>
               <Field label="Phone Number" required>
                 <input type="tel" placeholder="+1 (___) ___-____" value={form.phone as string} onChange={(e) => set("phone", e.target.value)} required />
               </Field>
               <Field label="School" required>
                 <input type="text" placeholder="Enter your school name" value={form.school as string} onChange={(e) => set("school", e.target.value)} required />
-              </Field>
-              <TwoCol>
-                <Field label="Year" required>
-                  <select value={form.year as string} onChange={(e) => set("year", e.target.value)} required>
-                    <option value="">Select year...</option>
-                    {YEARS.map((y) => <option key={y}>{y}</option>)}
-                  </select>
-                </Field>
-                <Field label="Timezone" required>
-                  <select value={form.timezone as string} onChange={(e) => set("timezone", e.target.value)} required>
-                    <option value="">Select timezone...</option>
-                    {TIMEZONES.map((t) => <option key={t}>{t}</option>)}
-                  </select>
-                </Field>
-              </TwoCol>
-              <Field label="Major / Field of Study" required>
-                <input type="text" placeholder="e.g. Business, Pre-Med, Computer Science" value={form.major as string} onChange={(e) => set("major", e.target.value)} required />
               </Field>
             </Section>
           )}
