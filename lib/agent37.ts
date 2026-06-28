@@ -1,5 +1,5 @@
 import "server-only";
-import type { Agent, Budget, ModelsResponse, SessionDetail, SessionListResponse, Template, Usage } from "@/lib/types";
+import type { Agent, Budget, FileEntry, FileListResponse, ModelsResponse, SessionDetail, SessionListResponse, Template, Usage } from "@/lib/types";
 
 const BASE = (process.env.AGENT37_API_BASE_URL || "https://api.agent37.com").replace(/\/$/, "");
 
@@ -187,4 +187,20 @@ export const agent37 = {
       `/v1/responses/${encodeURIComponent(responseId)}/cancel`,
       { method: "POST" }
     ),
+
+  // ---- Per-instance file browser (Agents API /v1/files) — JSON surfaces only. The byte
+  // surfaces (GET/PUT /v1/files/content) stream and so go through instanceFetch in the route. ----
+  // List one directory level. Omit `path` for the agent's default workspace dir. Upstream
+  // typed errors (e.g. not_a_directory) ride back as Agent37Error and keep their code/status.
+  listFiles: (id: string, path?: string) =>
+    instanceCall<FileListResponse>(id, `/v1/files${path ? `?path=${encodeURIComponent(path)}` : ""}`),
+  // Recursive force delete (rm -rf, no guards); removes a symlink itself rather than following it.
+  deleteFile: (id: string, path: string) =>
+    instanceCall<{ ok: boolean }>(id, `/v1/files?path=${encodeURIComponent(path)}`, { method: "DELETE" }),
+  // Rename/move via fs.rename; returns the resolved FileEntry of the new path.
+  moveFile: (id: string, from: string, to: string) =>
+    instanceCall<FileEntry>(id, "/v1/files", { method: "PATCH", body: JSON.stringify({ from, to }) }),
+  // mkdir -p (recursive, idempotent); returns the resolved FileEntry of the directory.
+  makeDir: (id: string, path: string) =>
+    instanceCall<FileEntry>(id, `/v1/files/dir?path=${encodeURIComponent(path)}`, { method: "POST" }),
 };

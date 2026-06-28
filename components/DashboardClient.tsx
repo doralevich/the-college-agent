@@ -4,7 +4,7 @@ import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Bot, Check, CreditCard, Loader2, LogOut, MessageSquare, RotateCcw, Settings2 } from "lucide-react";
+import { Bot, Check, CreditCard, FolderOpen, Loader2, LogOut, MessageSquare, RotateCcw, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "@/lib/supabase/client";
 import { useWorkspace } from "@/components/WorkspaceProvider";
@@ -17,6 +17,7 @@ import { BillingView } from "@/components/BillingView";
 import { ChatProvider, useChatContext } from "@/components/chat/ChatProvider";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { ChatView } from "@/components/chat/ChatView";
+import { FilesView } from "@/components/files/FilesView";
 
 type Props = {
   paid: boolean;
@@ -26,7 +27,7 @@ type Props = {
   agentId: string | null;
 };
 
-type TabId = "chat" | "agents" | "agent" | "settings" | "billing";
+type TabId = "chat" | "files" | "agents" | "agent" | "settings" | "billing";
 
 export function DashboardClient({ paid, onboardDone, setupDone, agentId }: Props) {
   const hasAgent = !!agentId;
@@ -56,7 +57,12 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId }: Props
   // the build CTA when unpaid, the setup checklist once paid) → "Your Agent". Billing appears
   // once they've paid (there's a subscription to show / manage).
   const tabs: { id: TabId; label: string; icon: typeof Bot }[] = [
-    ...(hasAgent ? [{ id: "chat" as TabId, label: "Chat", icon: MessageSquare }] : []),
+    ...(hasAgent
+      ? [
+          { id: "chat" as TabId, label: "Chat", icon: MessageSquare },
+          { id: "files" as TabId, label: "Files", icon: FolderOpen },
+        ]
+      : []),
     hasAgent
       ? { id: "agent", label: "Your Agent", icon: Bot }
       : { id: "agents", label: "Agents", icon: Bot },
@@ -66,9 +72,10 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId }: Props
 
   const [active, setActive] = useState<TabId>(hasAgent ? "chat" : "agents");
 
-  // `active` can only reach "chat" when there's an agent (the tab and its triggers are gated on
-  // hasAgent), so this implies hasAgent.
+  // `active` can only reach "chat"/"files" when there's an agent (the tabs and their triggers are
+  // gated on hasAgent), so these imply hasAgent.
   const isChat = active === "chat";
+  const isFiles = active === "files";
 
   const shell = (
     <div className="flex h-screen">
@@ -131,7 +138,14 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId }: Props
             <ChatView />
           </div>
         )}
-        {!isChat && (
+        {/* Files mirrors Chat: full-height, kept MOUNTED (just hidden) so the current directory,
+            scroll position, and any open dialog survive leaving and returning to the tab. */}
+        {agentId && (
+          <div className={cn("h-full", !isFiles && "hidden")}>
+            <FilesView agentId={agentId} />
+          </div>
+        )}
+        {!isChat && !isFiles && (
           <div className="h-full overflow-y-auto">
             <div className="mx-auto w-full max-w-6xl p-6 md:px-10 md:py-8">
               {active === "settings" ? (

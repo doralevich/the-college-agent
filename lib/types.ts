@@ -175,6 +175,29 @@ export interface SessionListResponse {
   data: SessionSummary[];
 }
 
+// ---- Agent37 Agents API file browser (per-instance /v1/files) ----
+
+// One entry in a directory listing, also returned by every write (PUT/PATCH/POST dir). The
+// `path` is the resolved ABSOLUTE path and is the identity used by every other call. `modified`
+// is mtime in EPOCH MILLISECONDS (Agent API convention); `size` is null for directories.
+export interface FileEntry {
+  name: string;
+  path: string;
+  type: "file" | "directory" | "symlink" | "other";
+  size: number | null;
+  modified: number;
+  hidden: boolean;
+}
+
+// GET /v1/files?path= — one directory level. `parentPath` is null at the filesystem root.
+// `truncated` is true when the directory held more than the 1000-entry cap.
+export interface FileListResponse {
+  path: string;
+  parentPath: string | null;
+  entries: FileEntry[];
+  truncated: boolean;
+}
+
 // ---- Platform admin god-view (/admin) ----
 
 // One row in the all-workspaces table. Counts are computed server-side across every
