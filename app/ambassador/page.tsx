@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { CalendarCheck2, FileText, ListChecks, TrendingUp, BookOpen } from "lucide-react";
+import { CalendarCheck2, FileText, LifeBuoy, ListChecks, TrendingUp, BookOpen } from "lucide-react";
 import Nav from "../components/Nav";
 
 export const metadata: Metadata = {
@@ -27,6 +27,7 @@ const STUDENT_USES = [
   { icon: CalendarCheck2, title: "Manage your Workload", desc: "Build study plans around exams, projects, work, and activities." },
   { icon: FileText,       title: "Writing & Research",  desc: "Organize sources, format citations, and keep papers on track." },
   { icon: TrendingUp,     title: "Track your Progress", desc: "Monitor grades, calculate averages, and identify areas to improve." },
+  { icon: LifeBuoy,       title: "Academic Support",    desc: "Ask anything, anytime — clear explanations when you're stuck on a concept." },
 ];
 
 const LOOKING_FOR = [
@@ -615,9 +616,14 @@ export default function AmbassadorPage() {
           margin: 0 0 20px;
         }
         .why-use-list {
-          display: flex;
-          flex-direction: column;
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
           gap: 12px;
+        }
+        @media (max-width: 600px) {
+          .why-use-list {
+            grid-template-columns: 1fr;
+          }
         }
         .why-use-card {
           display: flex;
