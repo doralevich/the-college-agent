@@ -33,9 +33,9 @@ export default function AmbassadorApplyPage() {
             <div className="apply-hero-copy">
               <div className="hero-badge">
                 <span style={{ color: "var(--green)", fontSize: 14 }}>&#9670;</span>
-                Ambassador Application
+                Campus Ambassador Application
               </div>
-              <h1>Apply to become a College Agent Ambassador.</h1>
+              <h1>Apply to become a College Agent Campus Ambassador.</h1>
               <p>
                 Tell us about you, your university, and your network. We&apos;ll review and reach out
                 with next steps if the program is a match.

@@ -1,32 +1,31 @@
 import type { Metadata } from "next";
-import { BookOpen, CalendarCheck2, GraduationCap, Mail, MessagesSquare, Search, Sparkles } from "lucide-react";
+import { CalendarCheck2, FileText, ListChecks, Sparkles, TrendingUp, BookOpen } from "lucide-react";
 import Nav from "../components/Nav";
 
 export const metadata: Metadata = {
-  title: "Become a College Agent Ambassador | The College Agent",
+  title: "Become a College Agent Campus Ambassador | The College Agent",
   description:
-    "Apply to become a College Agent Ambassador. Help students succeed, build your resume, gain leadership experience, and earn commissions representing one of the first AI platforms built for college students.",
+    "Apply to become a College Agent Campus Ambassador. Help students succeed, build your resume, gain leadership experience, and earn commissions representing one of the first AI platforms built for college students.",
   alternates: { canonical: "https://thecollegeagent.ai/ambassador" },
   openGraph: {
-    title: "Become a College Agent Ambassador",
+    title: "Become a College Agent Campus Ambassador",
     description:
       "Represent one of the first AI platforms built for college students. Build your resume, gain real-world experience, and earn commissions.",
     url: "https://thecollegeagent.ai/ambassador",
   },
   twitter: {
-    title: "Become a College Agent Ambassador",
+    title: "Become a College Agent Campus Ambassador",
     description:
       "Help students succeed. Build your resume. Earn commissions.",
   },
 };
 
 const STUDENT_USES = [
-  { icon: CalendarCheck2, text: "Stay organized" },
-  { icon: BookOpen,       text: "Manage coursework" },
-  { icon: GraduationCap,  text: "Prepare for exams" },
-  { icon: Search,         text: "Organize research" },
-  { icon: Mail,           text: "Draft professional emails" },
-  { icon: MessagesSquare, text: "Get academic support" },
+  { icon: ListChecks,     title: "Stay Organized",      desc: "Assignments, deadlines, notes, and syllabi — all in one place." },
+  { icon: BookOpen,       title: "Study Smarter",       desc: "Turn class notes into study guides, flashcards, quizzes, and review tools." },
+  { icon: CalendarCheck2, title: "Manage your Workload", desc: "Build study plans around exams, projects, work, and activities." },
+  { icon: FileText,       title: "Writing & Research",  desc: "Organize sources, format citations, and keep papers on track." },
+  { icon: TrendingUp,     title: "Track your Progress", desc: "Monitor grades, calculate averages, and identify areas to improve." },
 ];
 
 const LOOKING_FOR = [
@@ -75,14 +74,14 @@ export default function AmbassadorPage() {
             <div className="affiliate-copy">
               <div className="hero-badge">
                 <span style={{ color: "var(--green)", fontSize: 14 }}>&#9670;</span>
-                Ambassador Program
+                Campus Ambassador Program
               </div>
-              <h1>Become a College Agent Ambassador.</h1>
+              <h1>Become a College Agent Campus Ambassador.</h1>
               <p className="hero-tagline">Help students succeed. Build your resume. Earn commissions.</p>
               <p>
-                Represent an innovative AI platform built specifically for college students. Gain real-world
-                experience while introducing fellow students to a smarter way to stay organized, manage
-                coursework, and navigate college life.
+                Our AI Virtual Agent sets students up for success by providing personalized support
+                that reduces academic stress and helps students thrive. Represent it on your campus,
+                gain real-world experience, and turn your network into opportunity.
               </p>
               <div className="affiliate-actions">
                 <a href="/ambassador/apply" className="btn-purple">Apply Now</a>
@@ -108,19 +107,19 @@ export default function AmbassadorPage() {
         <section className="affiliate-section">
           <div className="affiliate-shell">
             <div className="section-heading">
-              <span className="mono-label">What is The College Agent?</span>
+              <span className="mono-label">Why Students Use The College Agent</span>
               <h2>A 24/7 AI-powered academic assistant built for college students.</h2>
               <p>
-                Personalized for each student, The College Agent helps manage coursework, stay organized,
-                reduce academic stress, and simplify the day-to-day demands of college — not a general
-                chatbot, an agent that knows your classes, your schedule, and your goals.
+                Personalized for each student — not a general chatbot. An agent that knows your
+                classes, your schedule, and your goals.
               </p>
             </div>
             <div className="fit-grid uses-grid">
-              {STUDENT_USES.map(({ icon: Icon, text }) => (
-                <div key={text} className="fit-card use-card">
+              {STUDENT_USES.map(({ icon: Icon, title, desc }) => (
+                <div key={title} className="fit-card use-card">
                   <div className="fit-icon"><Icon size={23} strokeWidth={1.9} /></div>
-                  <h3>{text}</h3>
+                  <h3>{title}</h3>
+                  <p>{desc}</p>
                 </div>
               ))}
             </div>
@@ -207,11 +206,10 @@ export default function AmbassadorPage() {
         <section className="affiliate-section final-cta-section">
           <div className="affiliate-shell">
             <div className="final-cta-card">
-              <span className="mono-label">Ready to Get Started?</span>
-              <h2>Join a select group of College Agent Ambassadors.</h2>
+              <span className="mono-label">Ready to Apply?</span>
+              <h2>Apply to Become a Campus Ambassador!</h2>
               <p>
-                Representing an innovative AI platform built specifically for college students. Build
-                your resume. Gain real-world experience. Earn commissions.
+                Make an impact. Help students. Grow with College Agent.
               </p>
               <p className="applications-note">Applications are now open.</p>
               <a href="/ambassador/apply" className="btn-purple final-cta-btn">Apply Now</a>
@@ -528,12 +526,18 @@ export default function AmbassadorPage() {
         }
         .uses-grid {
           grid-template-columns: repeat(3, 1fr);
-          gap: 14px;
+          gap: 16px;
         }
         .use-card {
-          padding: 24px 22px;
+          padding: 26px 22px 24px;
         }
         .use-card h3 {
+          margin: 0 0 8px;
+        }
+        .use-card p {
+          font-size: 14px;
+          color: rgba(11,23,41,.6);
+          line-height: 1.55;
           margin: 0;
         }
         .two-col-section {
