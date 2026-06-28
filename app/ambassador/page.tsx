@@ -159,11 +159,6 @@ export default function AmbassadorPage() {
           <div className="affiliate-shell who-shell">
             <div className="who-left">
               <h4>We&apos;re looking for students who:</h4>
-              <p className="who-intro">
-                Our ambassadors are students other students already trust — the natural connectors
-                who shape what gets noticed on campus. The role doubles as real-world experience:
-                leadership, communication, and AI fluency on your resume by graduation.
-              </p>
               <ul className="bullet-list who-bullets">
                 {LOOKING_FOR.map((item) => <li key={item}>{item}</li>)}
               </ul>
@@ -747,11 +742,12 @@ export default function AmbassadorPage() {
           align-items: start;
         }
         .who-section {
-          padding-top: 22px;
+          padding-top: 0;
+          margin-top: -28px;
         }
         .who-left h4 {
-          font-size: 24px;
-          font-weight: 600;
+          font-size: 20px;
+          font-weight: 700;
           color: var(--navy);
           line-height: 1.3;
           margin: 0 0 18px;
@@ -777,12 +773,6 @@ export default function AmbassadorPage() {
         }
         .program-banner p + p {
           margin-top: 14px;
-        }
-        .who-intro {
-          font-size: 15.5px;
-          color: rgba(11,23,41,.7);
-          line-height: 1.7;
-          margin: 0 0 18px;
         }
         .who-bullets {
           padding-left: 24px;
