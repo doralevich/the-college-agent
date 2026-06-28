@@ -53,12 +53,6 @@ const GAINED = [
   "The opportunity to earn commissions",
 ];
 
-const HOW_IT_WORKS = [
-  { num: "01", title: "Apply",  text: "Submit a short application." },
-  { num: "02", title: "Launch", text: "Receive your personalized College Agent, referral link, and Ambassador Toolkit." },
-  { num: "03", title: "Lead",   text: "Share The College Agent with your network, help fellow students succeed, and earn commissions for every qualified purchase." },
-];
-
 export default function AmbassadorPage() {
   return (
     <>
@@ -172,24 +166,6 @@ export default function AmbassadorPage() {
                   {GAINED.map((item) => <li key={item}>{item}</li>)}
                 </ul>
               </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="affiliate-section how-section">
-          <div className="affiliate-shell">
-            <div className="section-heading">
-              <span className="mono-label">How It Works</span>
-              <h2>Three steps.</h2>
-            </div>
-            <div className="how-grid">
-              {HOW_IT_WORKS.map(({ num, title, text }) => (
-                <div key={num} className="how-card">
-                  <span className="how-num">{num}</span>
-                  <h3>{title}</h3>
-                  <p>{text}</p>
-                </div>
-              ))}
             </div>
           </div>
         </section>
@@ -877,47 +853,13 @@ export default function AmbassadorPage() {
           color: var(--green);
           line-height: 1;
         }
-        .how-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 16px;
-          margin-top: 32px;
-        }
-        .how-card {
-          background: #fff;
-          border: 1px solid rgba(11,23,41,.08);
-          border-radius: 12px;
-          padding: 28px 24px;
-        }
-        .how-num {
-          display: inline-block;
-          font-family: var(--font-mono);
-          font-size: 12px;
-          font-weight: 700;
-          letter-spacing: .12em;
-          color: var(--green);
-          margin-bottom: 14px;
-        }
-        .how-card h3 {
-          font-size: 20px;
-          font-weight: 800;
-          color: var(--navy);
-          margin: 0 0 10px;
-        }
-        .how-card p {
-          font-size: 14.5px;
-          color: rgba(11,23,41,.65);
-          line-height: 1.55;
-          margin: 0;
-        }
         @media (max-width: 720px) {
           .two-col-section {
             grid-template-columns: 1fr;
             gap: 32px;
           }
           .uses-grid,
-          .tier-grid,
-          .how-grid {
+          .tier-grid {
             grid-template-columns: 1fr;
           }
         }
