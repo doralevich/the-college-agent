@@ -150,8 +150,8 @@ export default function AmbassadorPage() {
               <h4>We&apos;re looking for students who:</h4>
               <p className="who-intro">
                 Our ambassadors are students other students already trust — the natural connectors
-                who shape what gets noticed on campus. If you&apos;re curious about AI and excited
-                to help fellow students succeed, this is for you.
+                who shape what gets noticed on campus. The role doubles as real-world experience:
+                leadership, communication, and AI fluency on your resume by graduation.
               </p>
               <ul className="bullet-list who-bullets">
                 {LOOKING_FOR.map((item) => <li key={item}>{item}</li>)}
