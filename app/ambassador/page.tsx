@@ -1,37 +1,68 @@
 import type { Metadata } from "next";
-import { BadgeDollarSign, Megaphone, School, ShieldCheck, Sparkles, Users } from "lucide-react";
+import { BookOpen, CalendarCheck2, FileText, GraduationCap, Mail, MessagesSquare, Search, Sparkles } from "lucide-react";
 import Nav from "../components/Nav";
 import AmbassadorForm from "./AmbassadorForm";
 
 export const metadata: Metadata = {
-  title: "College Agent Ambassador Program | The College Agent",
+  title: "Become a College Agent Ambassador | The College Agent",
   description:
-    "Apply to become a College Agent Ambassador and introduce a personal AI agent for college students to your campus, club, parent network, or student community.",
+    "Apply to become a College Agent Ambassador. Help students succeed, build your resume, gain leadership experience, and earn commissions representing one of the first AI platforms built for college students.",
   alternates: { canonical: "https://thecollegeagent.ai/ambassador" },
   openGraph: {
-    title: "College Agent Ambassador Program",
+    title: "Become a College Agent Ambassador",
     description:
-      "Request to become a College Agent Ambassador and help students discover a personal AI agent for school, internships, and campus life.",
+      "Represent one of the first AI platforms built for college students. Build your resume, gain real-world experience, and earn commissions.",
     url: "https://thecollegeagent.ai/ambassador",
   },
   twitter: {
-    title: "College Agent Ambassador Program",
+    title: "Become a College Agent Ambassador",
     description:
-      "Apply to introduce College Agent to students, parents, clubs, and campus communities.",
+      "Help students succeed. Build your resume. Earn commissions.",
   },
 };
 
-const FIT_POINTS = [
-  { icon: School, title: "Campus reach", text: "Students, clubs, athletics, Greek life, residence halls, or major-specific groups." },
-  { icon: Users, title: "Parent networks", text: "Families looking for a smarter way to support students without managing every deadline." },
-  { icon: Megaphone, title: "Real influence", text: "Short videos, demos, group chats, newsletters, or in-person introductions that move people." },
+const STUDENT_USES = [
+  { icon: CalendarCheck2, text: "Stay organized" },
+  { icon: BookOpen,       text: "Manage coursework" },
+  { icon: GraduationCap,  text: "Prepare for exams" },
+  { icon: Search,         text: "Organize research" },
+  { icon: Mail,           text: "Draft professional emails" },
+  { icon: MessagesSquare, text: "Get academic support" },
 ];
 
-const PROGRAM_POINTS = [
-  "Ambassador applications are reviewed before approval.",
-  "Approved Ambassadors receive referral details and launch assets.",
-  "Every promotion must be honest and clearly disclosed.",
-  "Best-fit partners may be invited into paid campus campaigns.",
+const LOOKING_FOR = [
+  "Are respected and well-connected within their university community",
+  "Demonstrate strong communication and relationship-building skills",
+  "Are passionate about helping fellow students succeed",
+  "Have an interest in AI, innovation, and emerging technology",
+  "Want to gain meaningful leadership and professional experience",
+];
+
+const INCLUDED = [
+  "Your own custom College Agent — built specifically for your success",
+  "Ambassador Toolkit",
+  "Onboarding & training",
+  "Direct access to the College Agent team",
+];
+
+const GAINED = [
+  "Leadership experience",
+  "Resume-building experience",
+  "Hands-on exposure to AI and emerging technology",
+  "Communication and professional networking skills",
+  "The opportunity to earn commissions",
+];
+
+const COMMISSION_TIERS = [
+  { qty: 10, bonus: 250 },
+  { qty: 25, bonus: 750 },
+  { qty: 50, bonus: 1800 },
+];
+
+const HOW_IT_WORKS = [
+  { num: "01", title: "Apply",  text: "Submit a short application." },
+  { num: "02", title: "Launch", text: "Receive your personalized College Agent, referral link, and Ambassador Toolkit." },
+  { num: "03", title: "Lead",   text: "Share The College Agent with your network, help fellow students succeed, and earn commissions for every qualified purchase." },
 ];
 
 export default function AmbassadorPage() {
@@ -47,27 +78,29 @@ export default function AmbassadorPage() {
                 <span style={{ color: "var(--green)", fontSize: 14 }}>&#9670;</span>
                 Ambassador Program
               </div>
-              <h1>Bring College Agent <br />to your campus.</h1>
+              <h1>Become a College Agent Ambassador.</h1>
+              <p className="hero-tagline">Help students succeed. Build your resume. Earn commissions.</p>
               <p>
-                We are looking for students, parents, and campus connectors who can introduce College Agent
-                to the people who need a smarter way to handle school, deadlines, internships, and daily life.
+                Represent an innovative AI platform built specifically for college students. Gain real-world
+                experience while introducing fellow students to a smarter way to stay organized, manage
+                coursework, and navigate college life.
               </p>
               <div className="affiliate-actions">
-                <a href="#request" className="btn-purple">Apply as Ambassador</a>
+                <a href="#request" className="btn-purple">Apply Now</a>
                 <a href="/build" className="btn-outline">See the Agent</a>
               </div>
             </div>
-            <div className="affiliate-panel" aria-label="Ambassador program summary">
+            <div className="affiliate-panel" aria-label="Ambassador program highlights">
               <div className="panel-icon"><Sparkles size={26} strokeWidth={1.9} /></div>
-              <h2>Who this is for</h2>
+              <h2>Why join</h2>
               <p>
-                Students with campus reach, parents with family networks, and connectors who can introduce
-                College Agent to the right people.
+                Gain real-world experience, strengthen your resume, and earn commissions while
+                making a meaningful impact on campus.
               </p>
               <div className="mini-stat-grid">
-                <div><strong>Campus</strong><span>students</span></div>
-                <div><strong>Parent</strong><span>networks</span></div>
-                <div><strong>Club</strong><span>leaders</span></div>
+                <div><strong>$75</strong><span>per qualified purchase</span></div>
+                <div><strong>+$1800</strong><span>at 50 qualified purchases</span></div>
+                <div><strong>1:1</strong><span>access to the team</span></div>
               </div>
             </div>
           </div>
@@ -76,19 +109,19 @@ export default function AmbassadorPage() {
         <section className="affiliate-section">
           <div className="affiliate-shell">
             <div className="section-heading">
-              <span className="mono-label">Good Fit</span>
-              <h2>Trust comes first.</h2>
+              <span className="mono-label">What is The College Agent?</span>
+              <h2>A 24/7 AI-powered academic assistant built for college students.</h2>
               <p>
-                This is not a mass affiliate signup page. We want people who can explain the product clearly,
-                reach real students or parents, and represent the brand responsibly.
+                Personalized for each student, The College Agent helps manage coursework, stay organized,
+                reduce academic stress, and simplify the day-to-day demands of college — not a general
+                chatbot, an agent that knows your classes, your schedule, and your goals.
               </p>
             </div>
-            <div className="fit-grid">
-              {FIT_POINTS.map(({ icon: Icon, title, text }) => (
-                <div key={title} className="fit-card">
+            <div className="fit-grid uses-grid">
+              {STUDENT_USES.map(({ icon: Icon, text }) => (
+                <div key={text} className="fit-card use-card">
                   <div className="fit-icon"><Icon size={23} strokeWidth={1.9} /></div>
-                  <h3>{title}</h3>
-                  <p>{text}</p>
+                  <h3>{text}</h3>
                 </div>
               ))}
             </div>
@@ -96,16 +129,76 @@ export default function AmbassadorPage() {
         </section>
 
         <section className="affiliate-section program-band">
-          <div className="affiliate-shell program-grid">
-            <div>
-              <span className="mono-label">How It Works</span>
-              <h2>Request access first. We approve the right partners.</h2>
+          <div className="affiliate-shell">
+            <div className="section-heading">
+              <span className="mono-label">Why Become an Ambassador?</span>
+              <h2>This is more than a referral program.</h2>
+              <p>
+                As a College Agent Ambassador, you&apos;ll represent an emerging AI platform while gaining
+                practical experience that can strengthen your resume and prepare you for internships and
+                future careers.
+              </p>
             </div>
-            <div className="program-list">
-              {PROGRAM_POINTS.map((point) => (
-                <div key={point} className="program-item">
-                  <ShieldCheck size={18} strokeWidth={2.1} />
-                  <span>{point}</span>
+          </div>
+        </section>
+
+        <section className="affiliate-section">
+          <div className="affiliate-shell two-col-section">
+            <div>
+              <span className="mono-label">Who We&apos;re Looking For</span>
+              <h2>We&apos;re looking for students who:</h2>
+              <ul className="bullet-list">
+                {LOOKING_FOR.map((item) => <li key={item}>{item}</li>)}
+              </ul>
+            </div>
+            <div className="two-col-cards">
+              <div className="info-card">
+                <span className="mono-label">What&apos;s Included</span>
+                <ul className="bullet-list">
+                  {INCLUDED.map((item) => <li key={item}>{item}</li>)}
+                </ul>
+              </div>
+              <div className="info-card">
+                <span className="mono-label">What You&apos;ll Gain</span>
+                <ul className="bullet-list">
+                  {GAINED.map((item) => <li key={item}>{item}</li>)}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="affiliate-section commissions-section">
+          <div className="affiliate-shell">
+            <div className="section-heading">
+              <span className="mono-label">Commissions</span>
+              <h2>Earn $75 for every qualified purchase — plus growth incentives.</h2>
+            </div>
+            <div className="tier-grid">
+              {COMMISSION_TIERS.map(({ qty, bonus }) => (
+                <div key={qty} className="tier-card">
+                  <span className="tier-qty">{qty}</span>
+                  <span className="tier-label">Qualified Purchases</span>
+                  <span className="tier-arrow">&rarr;</span>
+                  <span className="tier-bonus">+${bonus.toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="affiliate-section how-section">
+          <div className="affiliate-shell">
+            <div className="section-heading">
+              <span className="mono-label">How It Works</span>
+              <h2>Three steps.</h2>
+            </div>
+            <div className="how-grid">
+              {HOW_IT_WORKS.map(({ num, title, text }) => (
+                <div key={num} className="how-card">
+                  <span className="how-num">{num}</span>
+                  <h3>{title}</h3>
+                  <p>{text}</p>
                 </div>
               ))}
             </div>
@@ -115,16 +208,13 @@ export default function AmbassadorPage() {
         <section id="request" className="affiliate-section request-section">
           <div className="affiliate-shell request-grid">
             <div className="request-copy">
-              <span className="mono-label">Submit Your Request</span>
-              <h2>Tell us why you would make a strong College Agent Ambassador.</h2>
+              <span className="mono-label">Ready to Get Started?</span>
+              <h2>Join a select group of College Agent Ambassadors.</h2>
               <p>
-                Your request goes directly to David and Jill for review. Include your school, network,
-                audience, and the way you would introduce College Agent.
+                Representing an innovative AI platform built specifically for college students. Build
+                your resume. Gain real-world experience. Earn commissions.
               </p>
-              <div className="review-note">
-                <BadgeDollarSign size={20} strokeWidth={2} />
-                <span>Referral and campaign details are shared after approval.</span>
-              </div>
+              <p className="applications-note">Applications are now open.</p>
             </div>
             <AmbassadorForm />
           </div>
@@ -384,6 +474,175 @@ export default function AmbassadorPage() {
         .review-note svg {
           color: var(--green);
           flex: 0 0 auto;
+        }
+        .hero-tagline {
+          font-size: 18px;
+          font-weight: 600;
+          color: #fff;
+          margin-bottom: 14px !important;
+          line-height: 1.45;
+        }
+        .applications-note {
+          font-family: var(--font-mono);
+          font-size: 12px;
+          font-weight: 700;
+          letter-spacing: .08em;
+          text-transform: uppercase;
+          color: var(--green);
+          margin-top: 12px !important;
+        }
+        .uses-grid {
+          grid-template-columns: repeat(3, 1fr);
+          gap: 14px;
+        }
+        .use-card {
+          padding: 24px 22px;
+        }
+        .use-card h3 {
+          margin: 0;
+        }
+        .two-col-section {
+          display: grid;
+          grid-template-columns: 1fr 1.1fr;
+          gap: 56px;
+          align-items: start;
+        }
+        .two-col-section h2 {
+          font-size: clamp(22px, 2.2vw, 28px);
+          font-weight: 800;
+          color: var(--navy);
+          margin: 12px 0 18px;
+          line-height: 1.25;
+        }
+        .two-col-cards {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        .info-card {
+          background: #fff;
+          border: 1px solid rgba(11,23,41,.08);
+          border-radius: 12px;
+          padding: 24px 24px 20px;
+        }
+        .info-card .mono-label {
+          margin-bottom: 12px;
+          display: block;
+        }
+        .bullet-list {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .bullet-list li {
+          position: relative;
+          padding-left: 22px;
+          font-size: 14.5px;
+          color: rgba(11,23,41,.72);
+          line-height: 1.55;
+        }
+        .bullet-list li::before {
+          content: "";
+          position: absolute;
+          left: 0;
+          top: 9px;
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: var(--green);
+        }
+        .commissions-section {
+          background: rgba(61,139,61,.04);
+        }
+        .tier-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 16px;
+          margin-top: 32px;
+        }
+        .tier-card {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          padding: 28px 20px;
+          background: #fff;
+          border: 1px solid rgba(11,23,41,.08);
+          border-radius: 12px;
+          text-align: center;
+        }
+        .tier-qty {
+          font-size: 42px;
+          font-weight: 800;
+          color: var(--navy);
+          line-height: 1;
+        }
+        .tier-label {
+          font-family: var(--font-mono);
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: .08em;
+          text-transform: uppercase;
+          color: rgba(11,23,41,.5);
+        }
+        .tier-arrow {
+          font-size: 18px;
+          color: rgba(11,23,41,.3);
+          margin: 2px 0;
+        }
+        .tier-bonus {
+          font-size: 26px;
+          font-weight: 800;
+          color: var(--green);
+          line-height: 1;
+        }
+        .how-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 16px;
+          margin-top: 32px;
+        }
+        .how-card {
+          background: #fff;
+          border: 1px solid rgba(11,23,41,.08);
+          border-radius: 12px;
+          padding: 28px 24px;
+        }
+        .how-num {
+          display: inline-block;
+          font-family: var(--font-mono);
+          font-size: 12px;
+          font-weight: 700;
+          letter-spacing: .12em;
+          color: var(--green);
+          margin-bottom: 14px;
+        }
+        .how-card h3 {
+          font-size: 20px;
+          font-weight: 800;
+          color: var(--navy);
+          margin: 0 0 10px;
+        }
+        .how-card p {
+          font-size: 14.5px;
+          color: rgba(11,23,41,.65);
+          line-height: 1.55;
+          margin: 0;
+        }
+        @media (max-width: 720px) {
+          .two-col-section {
+            grid-template-columns: 1fr;
+            gap: 32px;
+          }
+          .uses-grid,
+          .tier-grid,
+          .how-grid {
+            grid-template-columns: 1fr;
+          }
         }
         .ambassador-form,
         .ambassador-success {
