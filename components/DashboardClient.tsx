@@ -54,20 +54,19 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId }: Props
 
   // Sidebar nav. Settings is always present — every account has a workspace (name/ID/delete
   // don't need an agent or a paid plan). "Chat" leads once there's an agent to talk to (and is
-  // the default landing then). The next item swaps with the funnel stage: "Agents" (which hosts
-  // the build CTA when unpaid, the setup checklist once paid) → "Your Agent". Billing appears
-  // once they've paid (there's a subscription to show / manage).
+  // the default landing then), with "Your Agent" right beneath it; Files and Integrations follow.
+  // Before there's an agent that whole block collapses to a single "Agents" item (which hosts the
+  // build CTA when unpaid, the setup checklist once paid). Billing appears once they've paid
+  // (there's a subscription to show / manage).
   const tabs: { id: DashboardTabId; label: string; icon: typeof Bot }[] = [
     ...(hasAgent
       ? [
           { id: "chat" as DashboardTabId, label: "Chat", icon: MessageSquare },
+          { id: "agent" as DashboardTabId, label: "Your Agent", icon: Bot },
           { id: "files" as DashboardTabId, label: "Files", icon: FolderOpen },
           { id: "integrations" as DashboardTabId, label: "Integrations", icon: Blocks },
         ]
-      : []),
-    hasAgent
-      ? { id: "agent", label: "Your Agent", icon: Bot }
-      : { id: "agents", label: "Agents", icon: Bot },
+      : [{ id: "agents" as DashboardTabId, label: "Agents", icon: Bot }]),
     ...(paid ? [{ id: "billing" as DashboardTabId, label: "Billing", icon: CreditCard }] : []),
     { id: "settings", label: "Settings", icon: Settings2 },
   ];
@@ -99,19 +98,19 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId }: Props
   const shell = (
     <div className="flex h-screen">
       <aside className="flex w-64 shrink-0 flex-col border-r bg-card p-4">
-        <div className="flex items-center px-2 py-1">
+        <div className="px-1 py-1">
           <Image
             src="/logo-college-agent.svg"
             alt="The College Agent"
-            width={366}
-            height={80}
+            width={310}
+            height={30}
             priority
-            className="h-[4.8rem] w-auto"
+            className="h-auto w-full"
           />
         </div>
 
         {tabs.length > 0 && (
-          <nav className="mt-6 flex flex-col gap-1">
+          <nav className="mt-5 flex flex-col gap-1">
             {tabs.map((t) => {
               const Icon = t.icon;
               const isActive = active === t.id;

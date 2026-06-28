@@ -1,3 +1,6 @@
+import Image from "next/image";
+import Link from "next/link";
+
 export default function BuildNav() {
   return (
     <nav style={{
@@ -9,13 +12,16 @@ export default function BuildNav() {
         display: "flex", alignItems: "center", justifyContent: "center",
         height: 72, maxWidth: 1400, margin: "0 auto", padding: "0 48px",
       }}>
-        <a href="/">
-          <img
+        <Link href="/">
+          <Image
             src="/logo-college-agent.svg"
             alt="The College [Agent]"
-            style={{ height: 72, width: "auto", display: "block" }}
+            width={310}
+            height={30}
+            priority
+            style={{ width: "min(240px, calc(100vw - 96px))", height: "auto", display: "block" }}
           />
-        </a>
+        </Link>
       </div>
     </nav>
   );

@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 const NAV_LINKS = [
@@ -41,13 +43,16 @@ export default function Nav() {
           height: 72, maxWidth: 1400, margin: "0 auto", padding: "0 48px",
         }}>
           {/* Logo */}
-          <a href="/">
-            <img
+          <Link href="/">
+            <Image
               src="/logo-college-agent.svg"
               alt="The College [Agent]"
-              style={{ height: 72, width: "auto", display: "block" }}
+              width={310}
+              height={30}
+              priority
+              style={{ width: "clamp(170px, 18vw, 240px)", height: "auto", display: "block" }}
             />
-          </a>
+          </Link>
 
           {/* Desktop links */}
           <div className="nav-links-desktop">
