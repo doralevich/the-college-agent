@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CalendarCheck2, FileText, ListChecks, Sparkles, TrendingUp, BookOpen } from "lucide-react";
+import { CalendarCheck2, FileText, ListChecks, TrendingUp, BookOpen } from "lucide-react";
 import Nav from "../components/Nav";
 
 export const metadata: Metadata = {
@@ -70,7 +70,7 @@ export default function AmbassadorPage() {
       <main style={{ paddingTop: 72, minHeight: "100vh", background: "var(--cream2)" }}>
         <section className="affiliate-hero dark-section">
           <div className="affiliate-glow" />
-          <div className="affiliate-shell hero-shell">
+          <div className="affiliate-shell hero-shell hero-centered">
             <div className="affiliate-copy">
               <div className="hero-badge">
                 <span style={{ color: "var(--green)", fontSize: 14 }}>&#9670;</span>
@@ -79,26 +79,13 @@ export default function AmbassadorPage() {
               <h1>Become a College Agent Campus Ambassador.</h1>
               <p className="hero-tagline">Help students succeed. Build your resume. Earn commissions.</p>
               <p>
-                Our AI Virtual Agent sets students up for success by providing personalized support
-                that reduces academic stress and helps students thrive. Represent it on your campus,
-                gain real-world experience, and turn your network into opportunity.
+                Join a select group of student ambassadors representing one of the first AI platforms
+                built specifically for college students. Gain real-world experience, strengthen your
+                resume, and earn commissions while making a meaningful impact on campus.
               </p>
               <div className="affiliate-actions">
                 <a href="/ambassador/apply" className="btn-purple">Apply Now</a>
                 <a href="/build" className="btn-outline">See the Agent</a>
-              </div>
-            </div>
-            <div className="affiliate-panel" aria-label="Ambassador program highlights">
-              <div className="panel-icon"><Sparkles size={26} strokeWidth={1.9} /></div>
-              <h2>Why join</h2>
-              <p>
-                Gain real-world experience, strengthen your resume, and earn commissions while
-                making a meaningful impact on campus.
-              </p>
-              <div className="mini-stat-grid">
-                <div><strong>$75</strong><span>per qualified purchase</span></div>
-                <div><strong>+$1800</strong><span>at 50 qualified purchases</span></div>
-                <div><strong>1:1</strong><span>access to the team</span></div>
               </div>
             </div>
           </div>
@@ -287,6 +274,20 @@ export default function AmbassadorPage() {
           grid-template-columns: minmax(0, 1.1fr) minmax(320px, .9fr);
           gap: 48px;
           align-items: center;
+        }
+        .hero-shell.hero-centered {
+          display: block;
+          text-align: center;
+          max-width: 820px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+        .hero-centered .affiliate-copy p {
+          margin-left: auto;
+          margin-right: auto;
+        }
+        .hero-centered .affiliate-actions {
+          justify-content: center;
         }
         .affiliate-copy,
         .affiliate-panel,
