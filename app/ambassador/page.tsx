@@ -119,7 +119,7 @@ export default function AmbassadorPage() {
 
         <section className="affiliate-section dark-section why-become-section">
           <div className="affiliate-glow why-become-glow" />
-          <div className="affiliate-shell">
+          <div className="affiliate-shell why-become-shell">
             <div className="why-become">
               <h2>Why Become An Ambassador</h2>
               <h4>This is more than a referral program.</h4>
@@ -128,6 +128,15 @@ export default function AmbassadorPage() {
                 gaining practical experience that can strengthen your resume and prepare you for
                 internships and future careers.
               </p>
+              <a href="/ambassador/apply" className="btn-purple why-become-cta">Apply Now</a>
+            </div>
+            <div className="why-become-bot">
+              <Image
+                src="/thecollegeagent.png"
+                alt="The College Agent"
+                width={1128}
+                height={1220}
+              />
             </div>
           </div>
         </section>
@@ -654,10 +663,44 @@ export default function AmbassadorPage() {
           width: 520px;
           height: 520px;
         }
-        .why-become {
+        .why-become-shell {
           position: relative;
           z-index: 1;
-          max-width: 760px;
+          display: grid;
+          grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr);
+          gap: 48px;
+          align-items: center;
+        }
+        .why-become {
+          min-width: 0;
+        }
+        .why-become-bot {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .why-become-bot img {
+          width: 100%;
+          max-width: 360px;
+          height: auto;
+          display: block;
+          filter: drop-shadow(0 30px 60px rgba(0,0,0,.35));
+        }
+        .why-become-cta {
+          display: inline-block;
+          margin-top: 28px;
+          font-size: 14px;
+          padding: 14px 32px;
+        }
+        @media (max-width: 820px) {
+          .why-become-shell {
+            grid-template-columns: 1fr;
+            justify-items: center;
+            text-align: center;
+          }
+          .why-become-bot img {
+            max-width: 240px;
+          }
         }
         .why-become h2 {
           font-size: 36px;
