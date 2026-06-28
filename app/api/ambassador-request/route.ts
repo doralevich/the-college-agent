@@ -1,15 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
 
 type AmbassadorRequest = {
+  // Personal Information
   fullName?: string;
+  university?: string;
+  graduationYear?: string;
+  major?: string;
   email?: string;
-  phone?: string;
-  school?: string;
-  year?: string;
-  channels?: string[];
-  audienceSize?: string;
-  why?: string;
-  referralPlan?: string;
+  mobile?: string;
+
+  // About You
+  whyInterested?: string;
+  whyAI?: string;
+  whyGreat?: string;
+
+  // Your Network
+  involvements?: string[];
+
+  // Social handles
+  instagram?: string;
+  tiktok?: string;
+  linkedin?: string;
+  snapchat?: string;
+  facebook?: string;
+  x?: string;
+  socialOther?: string;
+
+  // Tell us more
+  anythingElse?: string;
+
+  // Agreements
+  agreeIndependent?: boolean;
+  agreeCommissions?: boolean;
+  agreeProfessional?: boolean;
 };
 
 const RECIPIENTS = [
@@ -33,8 +56,18 @@ function escapeHtml(value: string) {
 function row(label: string, value: string) {
   return `
     <tr>
-      <td style="padding:7px 18px 7px 0;font-weight:700;color:#555;vertical-align:top">${escapeHtml(label)}</td>
-      <td style="padding:7px 0;color:#111;vertical-align:top">${escapeHtml(value || "N/A").replace(/\n/g, "<br />")}</td>
+      <td style="padding:7px 18px 7px 0;font-weight:700;color:#555;vertical-align:top;width:32%">${escapeHtml(label)}</td>
+      <td style="padding:7px 0;color:#111;vertical-align:top">${escapeHtml(value || "—").replace(/\n/g, "<br />")}</td>
+    </tr>
+  `;
+}
+
+function sectionHeading(label: string) {
+  return `
+    <tr>
+      <td colspan="2" style="padding:18px 0 4px;font-family:sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#3d8b3d;border-bottom:1px solid #eee">
+        ${escapeHtml(label)}
+      </td>
     </tr>
   `;
 }
@@ -43,14 +76,24 @@ export async function POST(req: NextRequest) {
   try {
     const data = (await req.json()) as AmbassadorRequest;
 
+    // Required fields per the application spec.
     const fullName = clean(data.fullName);
+    const university = clean(data.university);
+    const graduationYear = clean(data.graduationYear);
+    const major = clean(data.major);
     const email = clean(data.email);
-    const school = clean(data.school);
-    const year = clean(data.year);
-    const why = clean(data.why);
+    const mobile = clean(data.mobile);
+    const whyInterested = clean(data.whyInterested);
+    const whyAI = clean(data.whyAI);
+    const whyGreat = clean(data.whyGreat);
 
-    if (!fullName || !email || !school || !year || !why) {
+    if (!fullName || !university || !graduationYear || !major || !email || !mobile || !whyInterested || !whyAI || !whyGreat) {
       return NextResponse.json({ error: "Please complete the required fields." }, { status: 400 });
+    }
+
+    // All three agreements must be checked — the program terms hinge on them.
+    if (!data.agreeIndependent || !data.agreeCommissions || !data.agreeProfessional) {
+      return NextResponse.json({ error: "Please confirm all three agreements." }, { status: 400 });
     }
 
     const mandrillKey = process.env.MANDRILL_API_KEY;
@@ -58,9 +101,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Email is not configured yet." }, { status: 503 });
     }
 
-    const channels = Array.isArray(data.channels)
-      ? data.channels.map(clean).filter(Boolean).join(", ")
+    const involvements = Array.isArray(data.involvements)
+      ? data.involvements.map(clean).filter(Boolean).join(", ")
       : "";
+
+    const socials: [string, string][] = [
+      ["Instagram", clean(data.instagram)],
+      ["TikTok", clean(data.tiktok)],
+      ["LinkedIn", clean(data.linkedin)],
+      ["Snapchat", clean(data.snapchat)],
+      ["Facebook", clean(data.facebook)],
+      ["X (Twitter)", clean(data.x)],
+      ["Other", clean(data.socialOther)],
+    ];
+    const socialRows = socials.filter(([, v]) => v).map(([label, v]) => row(label, v)).join("");
 
     await fetch("https://mandrillapp.com/api/1.0/messages/send", {
       method: "POST",
@@ -72,22 +126,37 @@ export async function POST(req: NextRequest) {
           from_name: "The College Agent",
           to: RECIPIENTS,
           headers: { "Reply-To": email },
-          subject: `College Agent Ambassador Request: ${fullName} (${school})`,
+          subject: `College Agent Ambassador Application: ${fullName} (${university})`,
           html: `
-            <h2 style="font-family:sans-serif;color:#111;margin-bottom:8px">New Ambassador Request</h2>
+            <h2 style="font-family:sans-serif;color:#111;margin-bottom:8px">New Ambassador Application</h2>
             <p style="font-family:sans-serif;font-size:14px;color:#555;margin-top:0">
-              Someone requested to become a College Agent Ambassador from the ambassador page.
+              Submitted from the ambassador application page.
             </p>
-            <table style="font-family:sans-serif;font-size:14px;border-collapse:collapse">
-              ${row("Name", fullName)}
+            <table style="font-family:sans-serif;font-size:14px;border-collapse:collapse;width:100%;max-width:640px">
+              ${sectionHeading("Personal Information")}
+              ${row("Full Name", fullName)}
+              ${row("University", university)}
+              ${row("Graduation Year", graduationYear)}
+              ${row("Major", major)}
               ${row("Email", email)}
-              ${row("Phone", clean(data.phone))}
-              ${row("School / Network", school)}
-              ${row("Year / Role", year)}
-              ${row("Channels", channels)}
-              ${row("Audience Size", clean(data.audienceSize))}
-              ${row("Why They Are a Fit", why)}
-              ${row("How They Would Share It", clean(data.referralPlan))}
+              ${row("Mobile", mobile)}
+
+              ${sectionHeading("About You")}
+              ${row("Why they're interested", whyInterested)}
+              ${row("What interests them about AI", whyAI)}
+              ${row("Why they'd be great", whyGreat)}
+
+              ${sectionHeading("Your Network")}
+              ${row("Campus involvements", involvements)}
+              ${socialRows || row("Social handles", "")}
+
+              ${sectionHeading("Tell Us More")}
+              ${row("Anything else", clean(data.anythingElse))}
+
+              ${sectionHeading("Agreements")}
+              ${row("Independent opportunity", "Confirmed")}
+              ${row("Commission terms", "Confirmed")}
+              ${row("Represent professionally", "Confirmed")}
             </table>
             <p style="margin-top:16px;font-family:sans-serif;font-size:13px;color:#888">
               Source: thecollegeagent.ai/ambassador

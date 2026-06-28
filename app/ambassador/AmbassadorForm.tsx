@@ -3,50 +3,73 @@
 import { useState, type FormEvent } from "react";
 import { Send } from "lucide-react";
 
-const YEAR_OPTIONS = [
-  "Freshman",
-  "Sophomore",
-  "Junior",
-  "Senior",
-  "Graduate student",
-  "Parent",
+const GRAD_YEARS = ["2026", "2027", "2028", "2029", "2030", "2031+"];
+
+const INVOLVEMENTS = [
+  "Student Organization Leader",
+  "Greek Life",
+  "Athletics",
+  "Club Member",
+  "Resident Assistant",
+  "Student Government",
   "Other",
 ];
 
-const CHANNEL_OPTIONS = [
-  "TikTok",
-  "Instagram",
-  "LinkedIn",
-  "Campus clubs",
-  "Greek life",
-  "Athletics",
-  "Residence life",
-  "Parent network",
-  "Other",
+const SOCIALS: { key: keyof Pick<AmbassadorFormState,
+  "instagram" | "tiktok" | "linkedin" | "snapchat" | "facebook" | "x" | "socialOther">;
+  label: string; placeholder: string;
+}[] = [
+  { key: "instagram",   label: "Instagram",  placeholder: "@handle" },
+  { key: "tiktok",      label: "TikTok",     placeholder: "@handle" },
+  { key: "linkedin",    label: "LinkedIn",   placeholder: "linkedin.com/in/..." },
+  { key: "snapchat",    label: "Snapchat",   placeholder: "@handle" },
+  { key: "facebook",    label: "Facebook",   placeholder: "facebook.com/..." },
+  { key: "x",           label: "X (Twitter)",placeholder: "@handle" },
+  { key: "socialOther", label: "Other",      placeholder: "Platform + handle" },
 ];
 
 type AmbassadorFormState = {
+  // Personal Information
   fullName: string;
+  university: string;
+  graduationYear: string;
+  major: string;
   email: string;
-  phone: string;
-  school: string;
-  year: string;
-  channels: string[];
-  audienceSize: string;
-  why: string;
-  referralPlan: string;
+  mobile: string;
+
+  // About You
+  whyInterested: string;
+  whyAI: string;
+  whyGreat: string;
+
+  // Your Network
+  involvements: string[];
+
+  // Social handles
+  instagram: string;
+  tiktok: string;
+  linkedin: string;
+  snapchat: string;
+  facebook: string;
+  x: string;
+  socialOther: string;
+
+  // Tell us more
+  anythingElse: string;
+
+  // Agreements (all required)
+  agreeIndependent: boolean;
+  agreeCommissions: boolean;
+  agreeProfessional: boolean;
 };
 
 const EMPTY_FORM: AmbassadorFormState = {
-  fullName: "",
-  email: "",
-  phone: "",
-  school: "",
-  year: "",
-  channels: [],
-  audienceSize: "",
-  why: "",
-  referralPlan: "",
+  fullName: "", university: "", graduationYear: "", major: "", email: "", mobile: "",
+  whyInterested: "", whyAI: "", whyGreat: "",
+  involvements: [],
+  instagram: "", tiktok: "", linkedin: "", snapchat: "", facebook: "", x: "", socialOther: "",
+  anythingElse: "",
+  agreeIndependent: false, agreeCommissions: false, agreeProfessional: false,
 };
 
 export default function AmbassadorForm() {
@@ -60,15 +83,21 @@ export default function AmbassadorForm() {
     setForm((current) => ({ ...current, [key]: value }));
   }
 
-  function toggleChannel(channel: string) {
-    const next = form.channels.includes(channel)
-      ? form.channels.filter((item) => item !== channel)
-      : [...form.channels, channel];
-    setField("channels", next);
+  function toggleInvolvement(item: string) {
+    const next = form.involvements.includes(item)
+      ? form.involvements.filter((x) => x !== item)
+      : [...form.involvements, item];
+    setField("involvements", next);
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (!form.agreeIndependent || !form.agreeCommissions || !form.agreeProfessional) {
+      setError("Please confirm all three agreements before submitting.");
+      return;
+    }
+
     setStatus("loading");
     setError("");
 
@@ -102,9 +131,9 @@ export default function AmbassadorForm() {
     return (
       <div className="ambassador-success" role="status">
         <div className="success-mark">✓</div>
-        <h2>Request received.</h2>
+        <h2>Application received.</h2>
         <p>
-          We will review your campus fit and reach out with next steps if the Ambassador program is a match.
+          We will review your application and reach out with next steps if the Ambassador program is a match.
         </p>
       </div>
     );
@@ -112,46 +141,22 @@ export default function AmbassadorForm() {
 
   return (
     <form className="ambassador-form" onSubmit={handleSubmit}>
+      <SectionHeader>Personal Information</SectionHeader>
+
       <div className="form-grid two">
         <label>
-          <span>Full name *</span>
+          <span>Full Name *</span>
           <input
-            required
-            type="text"
-            value={form.fullName}
-            onChange={(event) => setField("fullName", event.target.value)}
+            required type="text" value={form.fullName}
+            onChange={(e) => setField("fullName", e.target.value)}
             placeholder="Jane Smith"
           />
         </label>
         <label>
-          <span>Email *</span>
+          <span>University *</span>
           <input
-            required
-            type="email"
-            value={form.email}
-            onChange={(event) => setField("email", event.target.value)}
-            placeholder="jane@school.edu"
-          />
-        </label>
-      </div>
-
-      <div className="form-grid two">
-        <label>
-          <span>Phone</span>
-          <input
-            type="tel"
-            value={form.phone}
-            onChange={(event) => setField("phone", event.target.value)}
-            placeholder="(917) 555-0123"
-          />
-        </label>
-        <label>
-          <span>School or network *</span>
-          <input
-            required
-            type="text"
-            value={form.school}
-            onChange={(event) => setField("school", event.target.value)}
+            required type="text" value={form.university}
+            onChange={(e) => setField("university", e.target.value)}
             placeholder="Tulane University"
           />
         </label>
@@ -159,70 +164,165 @@ export default function AmbassadorForm() {
 
       <div className="form-grid two">
         <label>
-          <span>Year or role *</span>
-          <select required value={form.year} onChange={(event) => setField("year", event.target.value)}>
-            <option value="">Select one...</option>
-            {YEAR_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
+          <span>Graduation Year *</span>
+          <select required value={form.graduationYear} onChange={(e) => setField("graduationYear", e.target.value)}>
+            <option value="">Select year...</option>
+            {GRAD_YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
           </select>
         </label>
         <label>
-          <span>Audience size</span>
+          <span>Major *</span>
           <input
-            type="text"
-            value={form.audienceSize}
-            onChange={(event) => setField("audienceSize", event.target.value)}
-            placeholder="Followers, club size, email list, etc."
+            required type="text" value={form.major}
+            onChange={(e) => setField("major", e.target.value)}
+            placeholder="e.g. Marketing, Pre-Med, Computer Science"
           />
         </label>
       </div>
 
+      <div className="form-grid two">
+        <label>
+          <span>Email Address *</span>
+          <input
+            required type="email" value={form.email}
+            onChange={(e) => setField("email", e.target.value)}
+            placeholder="jane@school.edu"
+          />
+        </label>
+        <label>
+          <span>Mobile Number *</span>
+          <input
+            required type="tel" value={form.mobile}
+            onChange={(e) => setField("mobile", e.target.value)}
+            placeholder="(917) 555-0123"
+          />
+        </label>
+      </div>
+
+      <SectionHeader>About You</SectionHeader>
+
+      <label>
+        <span>Why are you interested in becoming a College Agent Ambassador? *</span>
+        <textarea required rows={4} value={form.whyInterested}
+          onChange={(e) => setField("whyInterested", e.target.value)}
+          placeholder="Share what drew you to the program."
+        />
+      </label>
+
+      <label>
+        <span>What interests you most about AI and emerging technology? *</span>
+        <textarea required rows={4} value={form.whyAI}
+          onChange={(e) => setField("whyAI", e.target.value)}
+          placeholder="Tell us where AI shows up in your life or what you'd build with it."
+        />
+      </label>
+
+      <label>
+        <span>Why would you be a great College Agent Ambassador? *</span>
+        <textarea required rows={4} value={form.whyGreat}
+          onChange={(e) => setField("whyGreat", e.target.value)}
+          placeholder="Your network, your communication style, why students would trust your recommendation."
+        />
+      </label>
+
+      <SectionHeader>Your Network</SectionHeader>
+
       <fieldset>
-        <legend>Where can you introduce College Agent?</legend>
+        <legend>What campus organizations, clubs, athletics, Greek life, or activities are you involved in?</legend>
         <div className="channel-grid">
-          {CHANNEL_OPTIONS.map((channel) => (
-            <label key={channel} className="channel-option">
+          {INVOLVEMENTS.map((item) => (
+            <label key={item} className="channel-option">
               <input
                 type="checkbox"
-                checked={form.channels.includes(channel)}
-                onChange={() => toggleChannel(channel)}
+                checked={form.involvements.includes(item)}
+                onChange={() => toggleInvolvement(item)}
               />
-              <span>{channel}</span>
+              <span>{item}</span>
             </label>
           ))}
         </div>
       </fieldset>
 
+      <fieldset>
+        <legend>Which social media platforms do you actively use? (include handles)</legend>
+        <div className="form-grid two">
+          {SOCIALS.map(({ key, label, placeholder }) => (
+            <label key={key}>
+              <span>{label}</span>
+              <input
+                type="text" value={form[key]}
+                onChange={(e) => setField(key, e.target.value)}
+                placeholder={placeholder}
+              />
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <SectionHeader>Tell Us More</SectionHeader>
+
       <label>
-        <span>Why would you be a strong Ambassador? *</span>
-        <textarea
-          required
-          rows={4}
-          value={form.why}
-          onChange={(event) => setField("why", event.target.value)}
-          placeholder="Tell us about your campus, your network, and why students would trust your recommendation."
+        <span>Is there anything else you&apos;d like us to know? (optional)</span>
+        <textarea rows={4} value={form.anythingElse}
+          onChange={(e) => setField("anythingElse", e.target.value)}
+          placeholder="Anything that didn't fit above."
         />
       </label>
 
-      <label>
-        <span>How would you share it?</span>
-        <textarea
-          rows={4}
-          value={form.referralPlan}
-          onChange={(event) => setField("referralPlan", event.target.value)}
-          placeholder="Social posts, dorm demos, parent groups, club presentations, newsletter mentions, or another path."
+      <SectionHeader>Agreement</SectionHeader>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: -4 }}>
+        <AgreeCheckbox
+          checked={form.agreeIndependent}
+          onChange={(v) => setField("agreeIndependent", v)}
+          label="I understand this is an independent ambassador opportunity."
         />
-      </label>
+        <AgreeCheckbox
+          checked={form.agreeCommissions}
+          onChange={(v) => setField("agreeCommissions", v)}
+          label="I understand commissions are earned for qualified purchases made through my personalized referral link."
+        />
+        <AgreeCheckbox
+          checked={form.agreeProfessional}
+          onChange={(v) => setField("agreeProfessional", v)}
+          label="I agree to represent College Agent professionally."
+        />
+      </div>
 
       {error && <p className="form-error">{error}</p>}
 
       <button type="submit" className="btn-purple ambassador-submit" disabled={status === "loading"}>
         <Send size={16} strokeWidth={2.2} />
-        {status === "loading" ? "Submitting..." : "Submit Ambassador Request"}
+        {status === "loading" ? "Submitting..." : "Submit Application"}
       </button>
     </form>
+  );
+}
+
+function SectionHeader({ children }: { children: React.ReactNode }) {
+  return (
+    <h3 style={{
+      fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700,
+      letterSpacing: ".12em", textTransform: "uppercase", color: "var(--green)",
+      marginTop: 12, marginBottom: 4, paddingTop: 16,
+      borderTop: "1px solid rgba(11,23,41,.1)",
+    }}>
+      {children}
+    </h3>
+  );
+}
+
+function AgreeCheckbox({ checked, onChange, label }: {
+  checked: boolean; onChange: (v: boolean) => void; label: string;
+}) {
+  return (
+    <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", padding: "4px 0" }}>
+      <input
+        type="checkbox" checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        style={{ width: 16, height: 16, accentColor: "var(--green)", flexShrink: 0, marginTop: 2, cursor: "pointer" }}
+      />
+      <span style={{ fontSize: 14, color: "var(--navy)", lineHeight: 1.5 }}>{label}</span>
+    </label>
   );
 }
