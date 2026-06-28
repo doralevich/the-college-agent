@@ -16,7 +16,7 @@ export function useFileBrowser(agentId: string) {
   const [truncated, setTruncated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showHidden, setShowHidden] = useState(false);
+  const [showHidden, setShowHidden] = useState(true);
   const [uploading, setUploading] = useState(0); // count of in-flight uploads
   const [dragOver, setDragOver] = useState(false);
 
