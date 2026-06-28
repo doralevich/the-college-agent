@@ -111,6 +111,7 @@ export default function AmbassadorPage() {
                 for each student to help stay organized, reduce academic stress, and simplify the
                 day-to-day demands of college.
               </p>
+              <a href="/ambassador/apply" className="btn-purple what-is-cta">Apply Now</a>
             </div>
             <div className="what-is-right">
               <h3 className="why-use-title">Why Students Use The College Agent</h3>
@@ -600,6 +601,12 @@ export default function AmbassadorPage() {
           color: rgba(11,23,41,.65);
           line-height: 1.7;
           margin: 0;
+        }
+        .what-is-cta {
+          display: inline-block;
+          margin-top: 28px;
+          font-size: 14px;
+          padding: 14px 32px;
         }
         .why-use-title {
           font-size: 20px;
