@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { Check, Loader2, Plug, Plus, Search, Unplug } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Check, ExternalLink, Loader2, Plug, Plus, Search, Unplug } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { DEFAULT_INTEGRATION_TOOLKITS } from "@/lib/integration-catalog";
@@ -9,7 +9,6 @@ import { cn } from "@/lib/utils";
 import type {
   IntegrationConnection,
   IntegrationConnectionsResult,
-  IntegrationConnectResult,
   IntegrationToolkit,
   IntegrationToolkitsResult,
 } from "@/lib/types";
@@ -21,9 +20,17 @@ const SEARCH_DEBOUNCE_MS = 250;
 const MIN_SEARCH = 3; // the v1 toolkits route 400s a non-empty query shorter than this
 const BROWSE_LIMIT = 24; // the v1 route clamps to 24; ask for a full page so Browse feels real
 const POLL_INTERVAL_MS = 2000;
-const POLL_MAX_ATTEMPTS = 22; // give up confirming the connection after ~45s
+const POLL_MAX_ATTEMPTS = 22; // give up polling for the connect to land after ~45s
 
 type SubTab = "browse" | "connected";
+
+function toolkitKey(slug: string): string {
+  return slug.toLowerCase();
+}
+
+function connectRedirectHref(agentId: string, slug: string): string {
+  return `/api/agents/${encodeURIComponent(agentId)}/integrations/connect/redirect?toolkit=${encodeURIComponent(slug)}`;
+}
 
 function connToolkitSlug(c: IntegrationConnection): string {
   return (c.toolkitSlug || "").toLowerCase();
@@ -39,8 +46,7 @@ function isToolkitConnected(conns: IntegrationConnection[], slug: string): boole
 
 // The Integrations tab: connect third-party apps (Gmail, GitHub, Slack…) to the student's agent.
 // Browse searches the catalog (popular apps by default); Connected manages the linked accounts.
-// Connecting redirects this tab to the app's OAuth; the connect route sets a callbackUrl that
-// returns the student here (?composioConnect=1&toolkit=…), where we confirm the new connection.
+// Connecting opens a same-origin redirect route in a new tab; that route starts OAuth server-side.
 export function IntegrationsView({ agentId }: { agentId: string }) {
   const [tab, setTab] = useState<SubTab>("browse");
   const [search, setSearch] = useState("");
@@ -48,9 +54,10 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
   const [loadingToolkits, setLoadingToolkits] = useState(false);
   const [connections, setConnections] = useState<IntegrationConnection[]>([]);
   const [loadingConns, setLoadingConns] = useState(true);
-  const [connecting, setConnecting] = useState<string | null>(null);
-  const [finishingToolkit, setFinishingToolkit] = useState<string | null>(null);
+  const [pendingSlug, setPendingSlug] = useState<string | null>(null);
   const [disconnecting, setDisconnecting] = useState<string | null>(null);
+
+  const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchConnections = useCallback(async () => {
     const { connections: conns } = await apiFetch<IntegrationConnectionsResult>(
@@ -60,8 +67,16 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
     return conns;
   }, [agentId]);
 
-  // Load connections on mount. setState lands only in promise callbacks, so the effect body does
-  // no synchronous state update (react-hooks/set-state-in-effect).
+  const stopPolling = useCallback(() => {
+    if (pollTimer.current) {
+      clearInterval(pollTimer.current);
+      pollTimer.current = null;
+    }
+    setPendingSlug(null);
+  }, []);
+
+  // Load connections on mount; stop any poll on unmount (the tab unmounts on switch away). Every
+  // setState lands in a promise callback, so the effect body does no synchronous state update.
   useEffect(() => {
     let cancelled = false;
     apiFetch<IntegrationConnectionsResult>(`/api/agents/${agentId}/integrations/connections`)
@@ -74,55 +89,9 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
       });
     return () => {
       cancelled = true;
+      stopPolling();
     };
-  }, [agentId]);
-
-  // Return handler: Composio bounces the student back to ?composioConnect=1&toolkit=… after the
-  // OAuth. Land on Connected, then poll until the account shows ACTIVE (the finalize can lag the
-  // redirect by a beat). The initial tab/finishing switch is deferred to a microtask so it isn't a
-  // synchronous in-effect setState; the rest lands in the interval callback.
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("composioConnect") !== "1") return;
-    const tk = (params.get("toolkit") || "").toLowerCase();
-    // Drop the one-shot params so a refresh doesn't replay this.
-    window.history.replaceState({}, "", window.location.pathname);
-    if (!tk) return;
-
-    let cancelled = false;
-    Promise.resolve().then(() => {
-      if (cancelled) return;
-      setTab("connected");
-      setFinishingToolkit(tk);
-    });
-
-    let attempts = 0;
-    const timer = setInterval(async () => {
-      attempts += 1;
-      try {
-        const conns = await fetchConnections();
-        if (isToolkitConnected(conns, tk)) {
-          clearInterval(timer);
-          if (!cancelled) {
-            setFinishingToolkit(null);
-            toast.success("Connected");
-          }
-          return;
-        }
-      } catch {
-        // transient; keep polling until the attempt cap
-      }
-      if (attempts >= POLL_MAX_ATTEMPTS) {
-        clearInterval(timer);
-        if (!cancelled) setFinishingToolkit(null);
-      }
-    }, POLL_INTERVAL_MS);
-
-    return () => {
-      cancelled = true;
-      clearInterval(timer);
-    };
-  }, [fetchConnections]);
+  }, [agentId, stopPolling]);
 
   // Debounced live search. Empty query uses the static default catalog above so Browse does not
   // wait on Agent37/Composio; a query of 3+ chars searches live; 1-2 chars wait (the server 400s).
@@ -151,20 +120,27 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
     };
   }, [search, agentId]);
 
-  async function connect(slug: string) {
-    setConnecting(slug);
-    try {
-      const { redirectUrl } = await apiFetch<IntegrationConnectResult>(
-        `/api/agents/${agentId}/integrations/connect`,
-        { method: "POST", body: JSON.stringify({ toolkit: slug }) }
-      );
-      // Same-tab redirect into the app's OAuth — no popup, so nothing to block. The page unloads
-      // here; we pick the flow back up via the return handler, so don't clear `connecting`.
-      window.location.assign(redirectUrl);
-    } catch (e) {
-      toast.error((e as Error).message);
-      setConnecting(null);
-    }
+  // Called from the connect handler (not render): poll connections until the toolkit shows ACTIVE
+  // or we give up after POLL_MAX_ATTEMPTS. Stored lowercased so the per-card pending check matches
+  // even if the catalog returns a mixed-case slug.
+  function startPolling(slug: string) {
+    setPendingSlug(toolkitKey(slug));
+    let attempts = 0;
+    if (pollTimer.current) clearInterval(pollTimer.current);
+    pollTimer.current = setInterval(async () => {
+      attempts += 1;
+      try {
+        const conns = await fetchConnections();
+        if (isToolkitConnected(conns, slug)) {
+          stopPolling();
+          toast.success("Connected");
+          return;
+        }
+      } catch {
+        // transient; keep polling until the attempt cap
+      }
+      if (attempts >= POLL_MAX_ATTEMPTS) stopPolling();
+    }, POLL_INTERVAL_MS);
   }
 
   async function disconnect(connectedAccountId: string) {
@@ -238,7 +214,8 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {visibleToolkits.map((t) => {
                     const connected = isToolkitConnected(connections, t.slug);
-                    const busy = connecting === t.slug;
+                    const key = toolkitKey(t.slug);
+                    const isPending = pendingSlug === key;
                     return (
                       <div
                         key={t.slug}
@@ -256,19 +233,22 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
                             <Check className="h-3 w-3" />
                             Added
                           </Badge>
+                        ) : isPending ? (
+                          <Button size="sm" variant="outline" className="h-8 shrink-0 px-3 text-xs" disabled>
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            Waiting
+                          </Button>
                         ) : (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 shrink-0 px-3 text-xs"
-                            disabled={busy}
-                            onClick={() => connect(t.slug)}
-                          >
-                            {busy ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            ) : (
-                              "Connect"
-                            )}
+                          <Button asChild size="sm" variant="outline" className="h-8 shrink-0 px-3 text-xs">
+                            <a
+                              href={connectRedirectHref(agentId, t.slug)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={() => startPolling(t.slug)}
+                            >
+                              Connect
+                              <ExternalLink className="h-3.5 w-3.5" />
+                            </a>
                           </Button>
                         )}
                       </div>
@@ -278,75 +258,97 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
               )}
             </div>
           )}
+
+          {pendingSlug && (
+            <p className="px-1 text-xs text-muted-foreground">
+              Waiting for you to finish connecting in the other tab…
+            </p>
+          )}
         </div>
       ) : (
         <div className="space-y-3">
-          {finishingToolkit && (
-            <div className="flex items-center gap-2 rounded-xl border bg-secondary/40 px-4 py-3 text-sm">
-              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-              <span>Finishing your {finishingToolkit} connection…</span>
-            </div>
-          )}
           {loadingConns ? (
             <p className="py-2 text-sm text-muted-foreground">Loading…</p>
           ) : activeConnections.length === 0 ? (
-            !finishingToolkit && (
-              <div className="rounded-xl border border-dashed px-6 py-12 text-center">
-                <Plug className="mx-auto h-6 w-6 text-muted-foreground" />
-                <p className="mt-3 text-sm text-muted-foreground">No apps connected yet.</p>
-                <Button variant="outline" size="sm" className="mt-4" onClick={() => setTab("browse")}>
-                  Browse apps
-                </Button>
-              </div>
-            )
+            <div className="rounded-xl border border-dashed px-6 py-12 text-center">
+              <Plug className="mx-auto h-6 w-6 text-muted-foreground" />
+              <p className="mt-3 text-sm text-muted-foreground">No apps connected yet.</p>
+              <Button variant="outline" size="sm" className="mt-4" onClick={() => setTab("browse")}>
+                Browse apps
+              </Button>
+            </div>
           ) : (
             <div className="overflow-hidden rounded-xl border">
-              {activeConnections.map((c, i) => (
-                <div
-                  key={c.id}
-                  className={cn(
-                    "flex items-center justify-between gap-3 px-4 py-3 text-sm",
-                    i === activeConnections.length - 1 ? "" : "border-b"
-                  )}
-                >
-                  <div className="flex min-w-0 items-center gap-2">
-                    <span className="truncate font-medium">
-                      {c.toolkitName || c.toolkitSlug || connToolkitSlug(c) || "Unknown app"}
-                    </span>
-                    {isActive(c) ? (
-                      <Badge variant="success">Connected</Badge>
-                    ) : (
-                      <Badge variant="warning">{c.status || "Pending"}</Badge>
+              {activeConnections.map((c, i) => {
+                const slug = connToolkitSlug(c);
+                const key = toolkitKey(slug);
+                const isPending = pendingSlug === key;
+
+                return (
+                  <div
+                    key={c.id}
+                    className={cn(
+                      "flex items-center justify-between gap-3 px-4 py-3 text-sm",
+                      i === activeConnections.length - 1 ? "" : "border-b"
                     )}
-                  </div>
-                  <div className="flex shrink-0 items-center gap-1.5">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 gap-1 px-2 text-xs"
-                      disabled={connecting === connToolkitSlug(c)}
-                      onClick={() => connect(connToolkitSlug(c))}
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                      Add another
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 gap-1 px-2 text-xs text-destructive hover:text-destructive"
-                      disabled={disconnecting === c.id}
-                      onClick={() => disconnect(c.id)}
-                    >
-                      {disconnecting === c.id ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  >
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="truncate font-medium">
+                        {c.toolkitName || c.toolkitSlug || slug || "Unknown app"}
+                      </span>
+                      {isActive(c) ? (
+                        <Badge variant="success">Connected</Badge>
                       ) : (
-                        <Unplug className="h-3.5 w-3.5" />
+                        <Badge variant="warning">{c.status || "Pending"}</Badge>
                       )}
-                      Disconnect
-                    </Button>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      {isPending ? (
+                        <Button variant="ghost" size="sm" className="h-8 gap-1 px-2 text-xs" disabled>
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          Waiting
+                        </Button>
+                      ) : (
+                        <>
+                          {slug ? (
+                            <Button asChild variant="ghost" size="sm" className="h-8 gap-1 px-2 text-xs">
+                              <a
+                                href={connectRedirectHref(agentId, slug)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={() => startPolling(slug)}
+                              >
+                                <Plus className="h-3.5 w-3.5" />
+                                Add another
+                                <ExternalLink className="h-3.5 w-3.5" />
+                              </a>
+                            </Button>
+                          ) : (
+                            <Button variant="ghost" size="sm" className="h-8 gap-1 px-2 text-xs" disabled>
+                              <Plus className="h-3.5 w-3.5" />
+                              Add another
+                            </Button>
+                          )}
+                        </>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 gap-1 px-2 text-xs text-destructive hover:text-destructive"
+                        disabled={disconnecting === c.id}
+                        onClick={() => disconnect(c.id)}
+                      >
+                        {disconnecting === c.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Unplug className="h-3.5 w-3.5" />
+                        )}
+                        Disconnect
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
