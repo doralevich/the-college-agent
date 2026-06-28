@@ -178,9 +178,9 @@ export default function AmbassadorPage() {
 
         <section className="affiliate-section how-section">
           <div className="affiliate-shell">
-            <div className="section-heading">
-              <span className="mono-label">How It Works</span>
-              <h2>Three steps.</h2>
+            <div className="how-heading">
+              <h2>How It Works</h2>
+              <h4>Three steps.</h4>
             </div>
             <div className="how-grid">
               {HOW_IT_WORKS.map(({ num, title, text }) => (
@@ -877,6 +877,23 @@ export default function AmbassadorPage() {
           color: var(--green);
           line-height: 1;
         }
+        .how-section {
+          background: #fff;
+        }
+        .how-heading h2 {
+          font-size: 36px;
+          font-weight: 800;
+          color: var(--navy);
+          line-height: 1.15;
+          margin: 0 0 12px;
+        }
+        .how-heading h4 {
+          font-size: 24px;
+          font-weight: 600;
+          color: var(--navy);
+          line-height: 1.3;
+          margin: 0 0 28px;
+        }
         .how-grid {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
@@ -886,6 +903,7 @@ export default function AmbassadorPage() {
         .how-card {
           background: #fff;
           border: 1px solid rgba(11,23,41,.08);
+          border-top: 2px solid var(--green);
           border-radius: 12px;
           padding: 28px 24px;
         }
