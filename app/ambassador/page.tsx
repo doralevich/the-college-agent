@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { BookOpen, CalendarCheck2, FileText, GraduationCap, Mail, MessagesSquare, Search, Sparkles } from "lucide-react";
+import { BookOpen, CalendarCheck2, GraduationCap, Mail, MessagesSquare, Search, Sparkles } from "lucide-react";
 import Nav from "../components/Nav";
-import AmbassadorForm from "./AmbassadorForm";
 
 export const metadata: Metadata = {
   title: "Become a College Agent Ambassador | The College Agent",
@@ -86,7 +85,7 @@ export default function AmbassadorPage() {
                 coursework, and navigate college life.
               </p>
               <div className="affiliate-actions">
-                <a href="#request" className="btn-purple">Apply Now</a>
+                <a href="/ambassador/apply" className="btn-purple">Apply Now</a>
                 <a href="/build" className="btn-outline">See the Agent</a>
               </div>
             </div>
@@ -205,9 +204,9 @@ export default function AmbassadorPage() {
           </div>
         </section>
 
-        <section id="request" className="affiliate-section request-section">
-          <div className="affiliate-shell request-grid">
-            <div className="request-copy">
+        <section className="affiliate-section final-cta-section">
+          <div className="affiliate-shell">
+            <div className="final-cta-card">
               <span className="mono-label">Ready to Get Started?</span>
               <h2>Join a select group of College Agent Ambassadors.</h2>
               <p>
@@ -215,8 +214,8 @@ export default function AmbassadorPage() {
                 your resume. Gain real-world experience. Earn commissions.
               </p>
               <p className="applications-note">Applications are now open.</p>
+              <a href="/ambassador/apply" className="btn-purple final-cta-btn">Apply Now</a>
             </div>
-            <AmbassadorForm />
           </div>
         </section>
       </main>
@@ -490,6 +489,42 @@ export default function AmbassadorPage() {
           text-transform: uppercase;
           color: var(--green);
           margin-top: 12px !important;
+        }
+        .final-cta-section {
+          padding-bottom: 100px;
+        }
+        .final-cta-card {
+          background: #fff;
+          border: 1px solid rgba(11,23,41,.08);
+          border-radius: 16px;
+          padding: 48px 40px;
+          text-align: center;
+          max-width: 720px;
+          margin: 0 auto;
+          box-shadow: 0 22px 70px rgba(11,23,41,.06);
+        }
+        .final-cta-card h2 {
+          font-size: clamp(24px, 2.4vw, 30px);
+          font-weight: 800;
+          color: var(--navy);
+          margin: 14px 0 14px;
+          line-height: 1.25;
+        }
+        .final-cta-card p {
+          font-size: 15.5px;
+          color: rgba(11,23,41,.65);
+          line-height: 1.6;
+          max-width: 520px;
+          margin: 0 auto;
+        }
+        .final-cta-card .applications-note {
+          margin-top: 18px !important;
+        }
+        .final-cta-btn {
+          display: inline-block;
+          margin-top: 28px;
+          font-size: 14px;
+          padding: 14px 36px;
         }
         .uses-grid {
           grid-template-columns: repeat(3, 1fr);
