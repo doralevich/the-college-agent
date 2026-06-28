@@ -146,8 +146,8 @@ export default function AmbassadorPage() {
         <section className="affiliate-section">
           <div className="affiliate-shell who-shell">
             <div className="who-left">
-              <span className="mono-label">Who We&apos;re Looking For</span>
-              <h2>We&apos;re looking for students who:</h2>
+              <h2>Who We&apos;re Looking For</h2>
+              <h4>We&apos;re looking for students who:</h4>
               <ul className="bullet-list who-bullets">
                 {LOOKING_FOR.map((item) => <li key={item}>{item}</li>)}
               </ul>
@@ -173,10 +173,13 @@ export default function AmbassadorPage() {
         <section className="affiliate-section final-cta-section">
           <div className="affiliate-shell">
             <div className="final-cta-card">
-              <span className="mono-label">Ready to Apply?</span>
-              <h2>Apply to Become a Campus Ambassador!</h2>
+              <h2>Ready to Get Started</h2>
               <p>
-                Make an impact. Help students. Grow with College Agent.
+                Join a select group of College Agent Ambassadors representing an innovative AI
+                platform built specifically for college students.
+              </p>
+              <p className="final-cta-tagline">
+                Earn commissions. Build your resume. Gain real-world experience.
               </p>
               <p className="applications-note">Applications are now open.</p>
               <a href="/ambassador/apply" className="btn-purple final-cta-btn">Apply Now</a>
@@ -512,18 +515,25 @@ export default function AmbassadorPage() {
           box-shadow: 0 22px 70px rgba(11,23,41,.06);
         }
         .final-cta-card h2 {
-          font-size: clamp(24px, 2.4vw, 30px);
+          font-size: 36px;
           font-weight: 800;
           color: var(--navy);
-          margin: 14px 0 14px;
-          line-height: 1.25;
+          margin: 0 0 18px;
+          line-height: 1.15;
         }
         .final-cta-card p {
           font-size: 15.5px;
           color: rgba(11,23,41,.65);
           line-height: 1.6;
-          max-width: 520px;
+          max-width: 560px;
           margin: 0 auto;
+        }
+        .final-cta-card p + p {
+          margin-top: 14px;
+        }
+        .final-cta-tagline {
+          font-weight: 700 !important;
+          color: var(--navy) !important;
         }
         .final-cta-card .applications-note {
           margin-top: 18px !important;
@@ -720,22 +730,27 @@ export default function AmbassadorPage() {
           gap: 48px;
           align-items: start;
         }
-        .who-left .mono-label {
-          margin-bottom: 12px;
-          display: block;
-        }
         .who-left h2 {
-          font-size: clamp(24px, 2.4vw, 30px);
+          font-size: 36px;
           font-weight: 800;
           color: var(--navy);
-          line-height: 1.2;
-          margin: 0 0 20px;
+          line-height: 1.15;
+          margin: 0 0 12px;
+        }
+        .who-left h4 {
+          font-size: 24px;
+          font-weight: 600;
+          color: var(--navy);
+          line-height: 1.3;
+          margin: 0 0 18px;
         }
         .who-bullets {
-          margin-bottom: 28px;
+          padding-left: 24px;
+          margin-bottom: 0;
         }
         .who-cta {
           display: inline-block;
+          margin-top: 40px;
           font-size: 14px;
           padding: 14px 32px;
         }
