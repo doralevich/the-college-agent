@@ -148,6 +148,11 @@ export default function AmbassadorPage() {
             <div className="who-left">
               <h2>Who We&apos;re Looking For</h2>
               <h4>We&apos;re looking for students who:</h4>
+              <p className="who-intro">
+                Our ambassadors are students other students already trust — the natural connectors
+                who shape what gets noticed on campus. If you&apos;re curious about AI and excited
+                to help fellow students succeed, this is for you.
+              </p>
               <ul className="bullet-list who-bullets">
                 {LOOKING_FOR.map((item) => <li key={item}>{item}</li>)}
               </ul>
@@ -742,6 +747,12 @@ export default function AmbassadorPage() {
           font-weight: 600;
           color: var(--navy);
           line-height: 1.3;
+          margin: 0 0 18px;
+        }
+        .who-intro {
+          font-size: 15.5px;
+          color: rgba(11,23,41,.7);
+          line-height: 1.7;
           margin: 0 0 18px;
         }
         .who-bullets {
