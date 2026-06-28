@@ -221,3 +221,52 @@ export interface AdminAgentDetail extends MergedAgent {
   budget: Budget | null;
   usage: Usage | null;
 }
+
+// ---- App integrations (managed Composio, per-instance) ----
+// Shapes for the Integrations tab, mirroring the v1 control-plane responses under
+// /instances/{id}/integrations/* (toolkits search, OAuth connect link, connected accounts).
+
+// One app in the searchable catalog (a Composio "toolkit").
+export interface IntegrationToolkit {
+  slug: string;
+  name: string;
+  description: string | null;
+  logo: string | null;
+  enabled: boolean;
+  isNoAuth: boolean;
+  authSchemes: string[];
+}
+
+// `nextCursor`/`totalItems` are paging metadata; the tab only renders the first page of `items`.
+export interface IntegrationToolkitsResult {
+  items: IntegrationToolkit[];
+  nextCursor: string | null;
+  totalItems: number;
+}
+
+// Composio's connected-account shape. `status` is "ACTIVE" once the OAuth handshake completes;
+// `isDisabled` marks a revoked link. Every field is present but values may be null.
+export interface IntegrationConnection {
+  id: string;
+  status: string;
+  userId: string | null;
+  toolkitSlug: string | null;
+  toolkitName: string | null;
+  authConfigId: string | null;
+  authScheme: string | null;
+  isDisabled: boolean;
+  createdAt: number | null;
+  updatedAt: number | null;
+}
+
+export interface IntegrationConnectionsResult {
+  connections: IntegrationConnection[];
+}
+
+// POST /integrations/connect — `redirectUrl` is the app's OAuth sign-in to open in a new tab;
+// the connection flips to ACTIVE once the student finishes there (we poll connections for it).
+export interface IntegrationConnectResult {
+  toolkit: string;
+  connectedAccountId: string;
+  redirectUrl: string;
+}

@@ -1,5 +1,5 @@
 import "server-only";
-import type { Agent, Budget, FileEntry, FileListResponse, ModelsResponse, SessionDetail, SessionListResponse, Template, Usage } from "@/lib/types";
+import type { Agent, Budget, FileEntry, FileListResponse, IntegrationConnectionsResult, IntegrationConnectResult, IntegrationToolkitsResult, ModelsResponse, SessionDetail, SessionListResponse, Template, Usage } from "@/lib/types";
 
 const BASE = (process.env.AGENT37_API_BASE_URL || "https://api.agent37.com").replace(/\/$/, "");
 
@@ -212,4 +212,32 @@ export const agent37 = {
   // mkdir -p (recursive, idempotent); returns the resolved FileEntry of the directory.
   makeDir: (id: string, path: string) =>
     instanceCall<FileEntry>(id, `/v1/files/dir?path=${encodeURIComponent(path)}`, { method: "POST" }),
+
+  // ---- App integrations (managed Composio) — CONTROL PLANE (`call`), not the instance host:
+  // one Composio entity per instance. Management only; connecting an app is free (the agent's
+  // later tool calls bill as usage). ----
+  // Search or browse the app catalog. Omit `search` for the default popularity-ranked page; a
+  // `search` must be >= 3 chars (the v1 route 400s a shorter query) and `limit` clamps to 24.
+  listIntegrationToolkits: (id: string, opts: { search?: string; limit?: number } = {}) => {
+    const params = new URLSearchParams();
+    if (opts.search) params.set("search", opts.search);
+    if (opts.limit) params.set("limit", String(opts.limit));
+    const qs = params.toString();
+    return call<IntegrationToolkitsResult>(`/instances/${id}/integrations/toolkits${qs ? `?${qs}` : ""}`);
+  },
+  // Start an OAuth connection; returns a `redirectUrl` to open for the student to authorize.
+  connectIntegration: (id: string, body: { toolkit: string }) =>
+    call<IntegrationConnectResult>(`/instances/${id}/integrations/connect`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  // The agent's connected accounts — drives the Connected list and the per-toolkit badges.
+  listIntegrationConnections: (id: string) =>
+    call<IntegrationConnectionsResult>(`/instances/${id}/integrations/connections`),
+  // Revoke one connected account; the v1 endpoint verifies it belongs to this instance first.
+  disconnectIntegration: (id: string, connectedAccountId: string) =>
+    call<{ id: string; deleted: boolean }>(
+      `/instances/${id}/integrations/connections/${encodeURIComponent(connectedAccountId)}`,
+      { method: "DELETE" }
+    ),
 };
