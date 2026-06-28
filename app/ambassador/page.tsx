@@ -30,6 +30,14 @@ const STUDENT_USES = [
   { icon: LifeBuoy,       title: "Academic Support",    desc: "Ask anything, anytime — clear explanations when you're stuck on a concept." },
 ];
 
+const LOOKING_FOR = [
+  "Are respected and well-connected within their university community",
+  "Demonstrate strong communication and relationship-building skills",
+  "Are passionate about helping fellow students succeed",
+  "Have an interest in AI, innovation, and emerging technology",
+  "Want to gain meaningful leadership and professional experience",
+];
+
 const INCLUDED = [
   "Your own custom College Agent built specifically for your success",
   "Ambassador Toolkit",
@@ -142,8 +150,16 @@ export default function AmbassadorPage() {
         </section>
 
         <section className="affiliate-section">
-          <div className="affiliate-shell">
-            <div className="included-gained-grid">
+          <div className="affiliate-shell who-shell">
+            <div className="who-left">
+              <span className="mono-label">Who We&apos;re Looking For</span>
+              <h2>We&apos;re looking for students who:</h2>
+              <ul className="bullet-list who-bullets">
+                {LOOKING_FOR.map((item) => <li key={item}>{item}</li>)}
+              </ul>
+              <a href="/ambassador/apply" className="btn-purple who-cta">Apply Now</a>
+            </div>
+            <div className="who-right">
               <div className="info-card">
                 <h3 className="info-card-title">What&apos;s Included</h3>
                 <ul className="bullet-list">
@@ -722,16 +738,40 @@ export default function AmbassadorPage() {
           line-height: 1.7;
           margin: 0;
         }
-        .included-gained-grid {
+        .who-shell {
           display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 24px;
-          max-width: 920px;
-          margin: 0 auto;
+          grid-template-columns: minmax(0, 1fr) minmax(320px, 1fr);
+          gap: 48px;
+          align-items: start;
         }
-        @media (max-width: 640px) {
-          .included-gained-grid {
+        .who-left .mono-label {
+          margin-bottom: 12px;
+          display: block;
+        }
+        .who-left h2 {
+          font-size: clamp(24px, 2.4vw, 30px);
+          font-weight: 800;
+          color: var(--navy);
+          line-height: 1.2;
+          margin: 0 0 20px;
+        }
+        .who-bullets {
+          margin-bottom: 28px;
+        }
+        .who-cta {
+          display: inline-block;
+          font-size: 14px;
+          padding: 14px 32px;
+        }
+        .who-right {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+        @media (max-width: 820px) {
+          .who-shell {
             grid-template-columns: 1fr;
+            gap: 32px;
           }
         }
         .two-col-section {
