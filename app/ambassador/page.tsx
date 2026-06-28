@@ -155,10 +155,9 @@ export default function AmbassadorPage() {
           </div>
         </section>
 
-        <section className="affiliate-section">
+        <section className="affiliate-section who-section">
           <div className="affiliate-shell who-shell">
             <div className="who-left">
-              <h2>Who We&apos;re Looking For</h2>
               <h4>We&apos;re looking for students who:</h4>
               <p className="who-intro">
                 Our ambassadors are students other students already trust — the natural connectors
@@ -747,12 +746,8 @@ export default function AmbassadorPage() {
           gap: 48px;
           align-items: start;
         }
-        .who-left h2 {
-          font-size: 36px;
-          font-weight: 800;
-          color: var(--navy);
-          line-height: 1.15;
-          margin: 0 0 12px;
+        .who-section {
+          padding-top: 22px;
         }
         .who-left h4 {
           font-size: 24px;
