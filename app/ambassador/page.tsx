@@ -90,10 +90,10 @@ export default function AmbassadorPage() {
             </div>
             <div className="hero-bot">
               <Image
-                src="/The Collee Agent Bot.png"
+                src="/thecollegeagent.png"
                 alt="The College Agent"
-                width={1000}
-                height={1000}
+                width={1128}
+                height={1220}
                 priority
               />
             </div>
