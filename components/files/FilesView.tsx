@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent as ReactMouseEvent, type ReactNode } from "react";
 import {
   ArrowUp,
+  ChevronDown,
   ChevronRight,
   Download,
   Eye,
@@ -11,7 +12,9 @@ import {
   Folder,
   FolderPlus,
   FolderUp,
+  Grid2X2,
   Link2,
+  List,
   Loader2,
   Pencil,
   RefreshCw,
@@ -22,12 +25,15 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { DropOverlay } from "@/components/chat/Attachments";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useAsyncAction } from "@/lib/useAsyncAction";
 import { FilePreview } from "./FilePreview";
 import { useFileBrowser } from "./useFileBrowser";
 import { archiveUrl, breadcrumbs, contentUrl, formatBytes, formatMtime, isDir, type FileEntry } from "./types";
+
+type ViewMode = "list" | "grid";
 
 // The Files pane, rendered full-height in the dashboard main when the Files tab is active (kept
 // mounted/hidden across tab switches, like ChatView, so the current directory survives). The whole
@@ -38,6 +44,8 @@ export function FilesView({ agentId }: { agentId: string }) {
   const [preview, setPreview] = useState<FileEntry | null>(null);
   const [pendingDelete, setPendingDelete] = useState<FileEntry | null>(null);
   const [newFolderOpen, setNewFolderOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const uploadRef = useRef<HTMLInputElement>(null);
   const folderUploadRef = useRef<HTMLInputElement>(null);
 
@@ -51,14 +59,16 @@ export function FilesView({ agentId }: { agentId: string }) {
   // the chat thread rail). `skipBlur` suppresses the commit the Escape-triggered blur would fire.
   const [editingPath, setEditingPath] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
-  const skipBlur = useRef(false);
+  const skipBlurRef = useRef(false);
 
   function startRename(entry: FileEntry) {
+    setSelectedPath(entry.path);
     setEditingPath(entry.path);
     setDraft(entry.name);
   }
   function commitRename(entry: FileEntry) {
     setEditingPath(null);
+    setSelectedPath(null);
     fb.rename(entry, draft);
   }
   function onRenameKeyDown(e: KeyboardEvent<HTMLInputElement>, entry: FileEntry) {
@@ -67,97 +77,202 @@ export function FilesView({ agentId }: { agentId: string }) {
       commitRename(entry);
     } else if (e.key === "Escape") {
       e.preventDefault();
-      skipBlur.current = true;
+      skipBlurRef.current = true;
       setEditingPath(null);
     }
   }
 
-  function onActivate(entry: FileEntry) {
-    if (isDir(entry)) fb.openEntry(entry);
-    else setPreview(entry);
+  function openEntry(entry: FileEntry) {
+    if (isDir(entry)) {
+      setSelectedPath(null);
+      fb.openEntry(entry);
+    } else {
+      setSelectedPath(entry.path);
+      setPreview(entry);
+    }
+  }
+
+  function selectEntry(entry: FileEntry) {
+    setSelectedPath(entry.path);
+  }
+
+  function onEntryKeyDown(e: KeyboardEvent<HTMLElement>, entry: FileEntry) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      openEntry(entry);
+    } else if (e.key === " ") {
+      e.preventDefault();
+      selectEntry(entry);
+    }
+  }
+
+  // Selection is anchored to the listing, so clear it (and any in-progress rename) whenever the
+  // directory changes out from under it.
+  function resetSelection() {
+    setSelectedPath(null);
+    setEditingPath(null);
+  }
+
+  function navigate(path: string) {
+    resetSelection();
+    fb.navigate(path);
+  }
+
+  function goUp() {
+    resetSelection();
+    fb.goUp();
+  }
+
+  function selectForDelete(entry: FileEntry) {
+    setSelectedPath(entry.path);
+    setPendingDelete(entry);
+  }
+
+  function clearSelection() {
+    if (!editingPath) setSelectedPath(null);
+  }
+
+  // Shared row/card interaction: click selects, double-click opens, Space/Enter from the keyboard.
+  // `stopPropagation` keeps the click from bubbling to the container's clear-selection handler.
+  function entryHandlers(entry: FileEntry) {
+    return {
+      tabIndex: 0,
+      onClick: (e: ReactMouseEvent<HTMLElement>) => {
+        e.stopPropagation();
+        selectEntry(entry);
+      },
+      onDoubleClick: (e: ReactMouseEvent<HTMLElement>) => {
+        e.stopPropagation();
+        openEntry(entry);
+      },
+      onKeyDown: (e: KeyboardEvent<HTMLElement>) => onEntryKeyDown(e, entry),
+    };
   }
 
   const crumbs = fb.path ? breadcrumbs(fb.path) : [];
+  const selectedEntry = useMemo(
+    () => (selectedPath == null ? null : fb.visibleEntries.find((entry) => entry.path === selectedPath) ?? null),
+    [fb.visibleEntries, selectedPath]
+  );
 
   return (
     <div className="relative flex h-full min-h-0 flex-col" {...fb.dragHandlers}>
       {fb.dragOver && <DropOverlay label="Drop files to upload here" />}
 
-      <header className="flex h-16 shrink-0 items-center justify-between gap-3 border-b bg-background px-6 md:px-10">
-        <div className="flex min-w-0 items-center gap-2">
-          <button
-            type="button"
-            onClick={fb.goUp}
-            disabled={!fb.parentPath}
-            aria-label="Up one folder"
-            title="Up one folder"
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-40"
-          >
-            <ArrowUp className="h-4 w-4" />
-          </button>
-          <nav className="flex min-w-0 items-center gap-0.5 overflow-x-auto text-sm">
-            {crumbs.map((c, i) => (
-              <span key={c.path} className="flex shrink-0 items-center">
-                {i > 0 && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
-                <button
-                  type="button"
-                  onClick={() => fb.navigate(c.path)}
-                  className={cn(
-                    "max-w-[12rem] truncate rounded px-1.5 py-0.5 transition-colors hover:bg-secondary",
-                    i === crumbs.length - 1 ? "font-medium text-foreground" : "text-muted-foreground"
-                  )}
-                >
-                  {c.label}
-                </button>
-              </span>
-            ))}
-          </nav>
-        </div>
+      <header className="shrink-0 border-b bg-background px-4 py-3 md:px-6 lg:px-8">
+        <div className="flex flex-col gap-2 xl:flex-row xl:items-center">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={goUp}
+              disabled={!fb.parentPath}
+              aria-label="Up one folder"
+              title="Up one folder"
+              className="h-10 shrink-0"
+            >
+              <ArrowUp className="h-4 w-4" />
+              Up
+            </Button>
+            <div className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-md border bg-card px-3 shadow-sm">
+              <Folder className="h-4 w-4 shrink-0 text-primary" />
+              <nav className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto text-sm" aria-label="Folder path">
+                {crumbs.length === 0 ? (
+                  <span className="text-muted-foreground">Loading folder</span>
+                ) : (
+                  crumbs.map((c, i) => (
+                    <span key={c.path} className="flex shrink-0 items-center">
+                      {i > 0 && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
+                      <button
+                        type="button"
+                        onClick={() => navigate(c.path)}
+                        aria-current={i === crumbs.length - 1 ? "page" : undefined}
+                        className={cn(
+                          "max-w-[11rem] truncate rounded px-1.5 py-0.5 transition-colors hover:bg-secondary",
+                          i === crumbs.length - 1 ? "font-medium text-foreground" : "text-muted-foreground"
+                        )}
+                      >
+                        {c.label}
+                      </button>
+                    </span>
+                  ))
+                )}
+              </nav>
+            </div>
+          </div>
 
-        <div className="flex shrink-0 items-center gap-1">
-          <IconButton
-            onClick={() => fb.setShowHidden((v) => !v)}
-            label={fb.showHidden ? "Hide hidden files" : "Show hidden files"}
-          >
-            {fb.showHidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          </IconButton>
-          <IconButton onClick={fb.refresh} label="Refresh">
-            <RefreshCw className={cn("h-4 w-4", fb.loading && "animate-spin")} />
-          </IconButton>
-          <IconButton onClick={() => setNewFolderOpen(true)} label="New folder" disabled={!fb.path}>
-            <FolderPlus className="h-4 w-4" />
-          </IconButton>
-          <IconButton
-            onClick={() => folderUploadRef.current?.click()}
-            label="Upload folder"
-            disabled={!fb.path || fb.uploading}
-          >
-            <FolderUp className="h-4 w-4" />
-          </IconButton>
-          <Button size="sm" onClick={() => uploadRef.current?.click()} disabled={!fb.path || fb.uploading}>
-            {fb.uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-            Upload
-          </Button>
-          <input
-            ref={uploadRef}
-            type="file"
-            multiple
-            hidden
-            onChange={(e) => {
-              if (e.target.files?.length) fb.uploadFiles(e.target.files);
-              e.target.value = "";
-            }}
-          />
-          <input
-            ref={folderUploadRef}
-            type="file"
-            multiple
-            hidden
-            onChange={(e) => {
-              if (e.target.files?.length) fb.uploadFolder(e.target.files);
-              e.target.value = "";
-            }}
-          />
+          <div className="flex shrink-0 flex-wrap items-center gap-1 xl:ml-auto">
+            {selectedEntry && (
+              <SelectedActions
+                agentId={agentId}
+                entry={selectedEntry}
+                onRename={startRename}
+                onDelete={selectForDelete}
+              />
+            )}
+            <ViewToggle value={viewMode} onChange={setViewMode} />
+            <ToolbarIconButton
+              onClick={() => fb.setShowHidden((v) => !v)}
+              label={fb.showHidden ? "Hide hidden files" : "Show hidden files"}
+            >
+              {fb.showHidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </ToolbarIconButton>
+            <ToolbarIconButton onClick={fb.refresh} label="Refresh">
+              <RefreshCw className={cn("h-4 w-4", fb.loading && "animate-spin")} />
+            </ToolbarIconButton>
+            <span className="mx-1 hidden h-6 w-px bg-border sm:block" />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setNewFolderOpen(true)}
+              disabled={!fb.path}
+              className="h-9"
+            >
+              <FolderPlus className="h-4 w-4" />
+              New folder
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" disabled={!fb.path || fb.uploading} className="h-9">
+                  {fb.uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                  Upload
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={() => uploadRef.current?.click()}>
+                  <Upload className="h-4 w-4" />
+                  Files
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => folderUploadRef.current?.click()}>
+                  <FolderUp className="h-4 w-4" />
+                  Folder
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <input
+              ref={uploadRef}
+              type="file"
+              multiple
+              hidden
+              onChange={(e) => {
+                if (e.target.files?.length) fb.uploadFiles(e.target.files);
+                e.target.value = "";
+              }}
+            />
+            <input
+              ref={folderUploadRef}
+              type="file"
+              multiple
+              hidden
+              onChange={(e) => {
+                if (e.target.files?.length) fb.uploadFolder(e.target.files);
+                e.target.value = "";
+              }}
+            />
+          </div>
         </div>
       </header>
 
@@ -171,119 +286,107 @@ export function FilesView({ agentId }: { agentId: string }) {
             <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{fb.error}</p>
           </div>
         ) : (
-          <div className="mx-auto w-full max-w-5xl p-4 md:px-10 md:py-6">
-            <table className="w-full text-sm">
-              <thead className="text-left text-xs text-muted-foreground">
-                <tr className="border-b">
-                  <th className="px-3 py-2 font-medium">Name</th>
-                  <th className="hidden px-3 py-2 font-medium sm:table-cell">Modified</th>
-                  <th className="px-3 py-2 text-right font-medium">Size</th>
-                  <th className="w-px px-3 py-2" />
-                </tr>
-              </thead>
-              <tbody>
-                {fb.visibleEntries.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="px-3 py-10 text-center text-sm text-muted-foreground">
-                      This folder is empty.
-                    </td>
-                  </tr>
-                ) : (
-                  fb.visibleEntries.map((entry) => {
-                    const dir = isDir(entry);
-                    const editing = editingPath === entry.path;
-                    return (
-                      <tr
-                        key={entry.path}
-                        className="group border-b border-border/60 last:border-0 hover:bg-secondary/40"
-                        onDoubleClick={() => dir && fb.openEntry(entry)}
-                      >
-                        <td className="px-3 py-2">
-                          {editing ? (
-                            <input
-                              autoFocus
-                              value={draft}
-                              onChange={(e) => setDraft(e.target.value)}
-                              onFocus={(e) => e.currentTarget.select()}
-                              onKeyDown={(e) => onRenameKeyDown(e, entry)}
-                              onBlur={() => {
-                                if (skipBlur.current) {
-                                  skipBlur.current = false;
-                                  return;
-                                }
-                                commitRename(entry);
-                              }}
-                              aria-label="File name"
-                              className="w-full max-w-xs rounded-md bg-background px-2 py-1 text-sm text-foreground outline-none ring-1 ring-ring"
-                            />
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => onActivate(entry)}
-                              className="flex items-center gap-2 text-left"
-                            >
-                              {dir ? (
-                                <Folder className="h-4 w-4 shrink-0 text-primary" />
-                              ) : entry.type === "symlink" ? (
-                                <Link2 className="h-4 w-4 shrink-0 text-muted-foreground" />
-                              ) : (
-                                <FileIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                              )}
-                              <span
-                                className={cn(
-                                  "truncate",
-                                  dir ? "font-medium text-foreground" : "text-foreground",
-                                  entry.hidden && "text-muted-foreground"
-                                )}
-                              >
-                                {entry.name}
-                              </span>
-                            </button>
+          <div className="w-full p-4 md:p-6 lg:p-8" onClick={clearSelection}>
+            {fb.visibleEntries.length === 0 ? (
+              <EmptyFolder
+                canCreate={!!fb.path}
+                uploading={fb.uploading}
+                onNewFolder={() => setNewFolderOpen(true)}
+                onUpload={() => uploadRef.current?.click()}
+              />
+            ) : viewMode === "list" ? (
+              <div className="overflow-x-auto rounded-lg border bg-card">
+                <table className="w-full min-w-[700px] table-fixed text-sm">
+                  <colgroup>
+                    <col />
+                    <col className="w-28" />
+                    <col className="w-56" />
+                  </colgroup>
+                  <thead className="bg-secondary/50 text-left text-xs text-muted-foreground">
+                    <tr className="border-b">
+                      <th className="px-4 py-3 font-medium">Name</th>
+                      <th className="px-4 py-3 text-right font-medium">Size</th>
+                      <th className="px-4 py-3 font-medium">Last modified</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {fb.visibleEntries.map((entry) => {
+                      const editing = editingPath === entry.path;
+                      const selected = selectedEntry?.path === entry.path;
+                      return (
+                        <tr
+                          key={entry.path}
+                          aria-selected={selected}
+                          className={cn(
+                            "cursor-default select-none border-b border-border/70 outline-none last:border-0 hover:bg-secondary/35 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                            selected && "bg-primary/10 text-foreground hover:bg-primary/10"
                           )}
-                        </td>
-                        <td className="hidden whitespace-nowrap px-3 py-2 text-muted-foreground sm:table-cell">
-                          {formatMtime(entry.modified)}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-2 text-right text-muted-foreground">
-                          {formatBytes(entry.size)}
-                        </td>
-                        <td className="px-3 py-2">
-                          <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                            <a
-                              href={dir ? archiveUrl(agentId, entry.path) : contentUrl(agentId, entry.path, "attachment")}
-                              download={dir ? `${entry.name}.tar.gz` : entry.name}
-                              aria-label={dir ? `Download ${entry.name} as a .tar.gz archive` : `Download ${entry.name}`}
-                              title={dir ? "Download as .tar.gz" : "Download"}
-                              className="rounded p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                            >
-                              <Download className="h-3.5 w-3.5" />
-                            </a>
-                            <button
-                              type="button"
-                              onClick={() => startRename(entry)}
-                              aria-label={`Rename ${entry.name}`}
-                              title="Rename"
-                              className="rounded p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                            >
-                              <Pencil className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setPendingDelete(entry)}
-                              aria-label={`Delete ${entry.name}`}
-                              title="Delete"
-                              className="rounded p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                          {...entryHandlers(entry)}
+                        >
+                          <td className="min-w-0 px-4 py-3">
+                            {editing ? (
+                              <RenameInput
+                                entry={entry}
+                                draft={draft}
+                                setDraft={setDraft}
+                                onRenameKeyDown={onRenameKeyDown}
+                                commitRename={commitRename}
+                                skipBlurRef={skipBlurRef}
+                              />
+                            ) : (
+                              <EntryName entry={entry} selected={selected} />
+                            )}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3 text-right text-muted-foreground">
+                            {formatBytes(entry.size)}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
+                            {formatMtime(entry.modified)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-3">
+                {fb.visibleEntries.map((entry) => {
+                  const editing = editingPath === entry.path;
+                  const selected = selectedEntry?.path === entry.path;
+                  return (
+                    <div
+                      key={entry.path}
+                      aria-selected={selected}
+                      className={cn(
+                        "group flex min-h-44 cursor-default select-none flex-col rounded-lg border bg-card p-3 outline-none transition-colors hover:border-primary/35 hover:bg-secondary/25 focus-visible:ring-2 focus-visible:ring-ring",
+                        selected && "border-primary/35 bg-primary/10 hover:border-primary/35 hover:bg-primary/10"
+                      )}
+                      {...entryHandlers(entry)}
+                    >
+                      <div className="min-w-0 flex-1">
+                        {editing ? (
+                          <RenameInput
+                            entry={entry}
+                            draft={draft}
+                            setDraft={setDraft}
+                            onRenameKeyDown={onRenameKeyDown}
+                            commitRename={commitRename}
+                            skipBlurRef={skipBlurRef}
+                          />
+                        ) : (
+                          <EntryName entry={entry} layout="grid" selected={selected} />
+                        )}
+                      </div>
+                      <div className="mt-3 space-y-1 text-xs text-muted-foreground">
+                        <div className="truncate">{formatMtime(entry.modified) || "No modified date"}</div>
+                        <div>{isDir(entry) ? "Folder" : formatBytes(entry.size) || "Unknown size"}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             {fb.truncated && (
               <p className="mt-3 px-3 text-xs text-muted-foreground">
@@ -330,7 +433,40 @@ export function FilesView({ agentId }: { agentId: string }) {
   );
 }
 
-function IconButton({
+function ViewToggle({ value, onChange }: { value: ViewMode; onChange: (value: ViewMode) => void }) {
+  return (
+    <div className="inline-flex h-9 rounded-md border bg-background p-0.5" role="group" aria-label="File view">
+      <button
+        type="button"
+        aria-pressed={value === "list"}
+        aria-label="List view"
+        title="List view"
+        onClick={() => onChange("list")}
+        className={cn(
+          "inline-flex size-8 items-center justify-center rounded transition-colors",
+          value === "list" ? "bg-secondary text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+        )}
+      >
+        <List className="h-4 w-4" />
+      </button>
+      <button
+        type="button"
+        aria-pressed={value === "grid"}
+        aria-label="Grid view"
+        title="Grid view"
+        onClick={() => onChange("grid")}
+        className={cn(
+          "inline-flex size-8 items-center justify-center rounded transition-colors",
+          value === "grid" ? "bg-secondary text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+        )}
+      >
+        <Grid2X2 className="h-4 w-4" />
+      </button>
+    </div>
+  );
+}
+
+function ToolbarIconButton({
   onClick,
   label,
   disabled,
@@ -342,16 +478,196 @@ function IconButton({
   children: ReactNode;
 }) {
   return (
-    <button
+    <Button
       type="button"
+      variant="outline"
+      size="icon"
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
       title={label}
-      className="inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-40"
+      className="text-muted-foreground hover:text-foreground"
     >
       {children}
-    </button>
+    </Button>
+  );
+}
+
+function SelectedActions({
+  agentId,
+  entry,
+  onRename,
+  onDelete,
+}: {
+  agentId: string;
+  entry: FileEntry;
+  onRename: (entry: FileEntry) => void;
+  onDelete: (entry: FileEntry) => void;
+}) {
+  return (
+    <div className="mr-1 flex items-center gap-1 border-r pr-2">
+      <Button asChild variant="outline" size="icon" className="size-9" title="Download">
+        <a
+          href={isDir(entry) ? archiveUrl(agentId, entry.path) : contentUrl(agentId, entry.path, "attachment")}
+          download={isDir(entry) ? `${entry.name}.tar.gz` : entry.name}
+          aria-label={isDir(entry) ? `Download ${entry.name} as a .tar.gz archive` : `Download ${entry.name}`}
+        >
+          <Download className="h-4 w-4" />
+        </a>
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        onClick={() => onRename(entry)}
+        className="size-9"
+        aria-label={`Rename ${entry.name}`}
+        title="Rename"
+      >
+        <Pencil className="h-4 w-4" />
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        onClick={() => onDelete(entry)}
+        className="size-9 hover:bg-destructive/10 hover:text-destructive"
+        aria-label={`Delete ${entry.name}`}
+        title="Delete"
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
+
+function EntryName({
+  entry,
+  layout = "list",
+  selected,
+}: {
+  entry: FileEntry;
+  layout?: ViewMode;
+  selected: boolean;
+}) {
+  const dir = isDir(entry);
+
+  return (
+    <div
+      className={cn(
+        "min-w-0 text-left",
+        layout === "grid"
+          ? "flex w-full flex-col items-start gap-3"
+          : "grid w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-3"
+      )}
+    >
+      <EntryGlyph entry={entry} large={layout === "grid"} selected={selected} />
+      <span
+        className={cn(
+          "min-w-0 truncate",
+          layout === "grid" ? "w-full text-sm" : "text-sm",
+          dir ? "font-medium text-foreground" : "text-foreground",
+          entry.hidden && "text-muted-foreground"
+        )}
+      >
+        {entry.name}
+      </span>
+    </div>
+  );
+}
+
+function EntryGlyph({ entry, large = false, selected = false }: { entry: FileEntry; large?: boolean; selected?: boolean }) {
+  const dir = isDir(entry);
+  const iconClassName = cn(large ? "h-7 w-7" : "h-4 w-4", "shrink-0");
+
+  return (
+    <span
+      className={cn(
+        "inline-flex shrink-0 items-center justify-center rounded-md",
+        large ? "size-12" : "size-7",
+        dir ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground",
+        selected && "bg-background text-primary"
+      )}
+    >
+      {dir ? (
+        <Folder className={iconClassName} />
+      ) : entry.type === "symlink" ? (
+        <Link2 className={iconClassName} />
+      ) : (
+        <FileIcon className={iconClassName} />
+      )}
+    </span>
+  );
+}
+
+function RenameInput({
+  entry,
+  draft,
+  setDraft,
+  onRenameKeyDown,
+  commitRename,
+  skipBlurRef,
+}: {
+  entry: FileEntry;
+  draft: string;
+  setDraft: (draft: string) => void;
+  onRenameKeyDown: (e: KeyboardEvent<HTMLInputElement>, entry: FileEntry) => void;
+  commitRename: (entry: FileEntry) => void;
+  skipBlurRef: { current: boolean };
+}) {
+  return (
+    <input
+      autoFocus
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onClick={(e) => e.stopPropagation()}
+      onDoubleClick={(e) => e.stopPropagation()}
+      onFocus={(e) => e.currentTarget.select()}
+      onKeyDown={(e) => {
+        e.stopPropagation();
+        onRenameKeyDown(e, entry);
+      }}
+      onBlur={() => {
+        if (skipBlurRef.current) {
+          skipBlurRef.current = false;
+          return;
+        }
+        commitRename(entry);
+      }}
+      aria-label="File name"
+      className="w-full rounded-md bg-background px-2 py-1.5 text-sm text-foreground outline-none ring-1 ring-ring"
+    />
+  );
+}
+
+function EmptyFolder({
+  canCreate,
+  uploading,
+  onNewFolder,
+  onUpload,
+}: {
+  canCreate: boolean;
+  uploading: boolean;
+  onNewFolder: () => void;
+  onUpload: () => void;
+}) {
+  return (
+    <div className="flex min-h-[20rem] flex-col items-center justify-center rounded-lg border border-dashed bg-secondary/20 p-8 text-center">
+      <span className="mb-4 inline-flex size-12 items-center justify-center rounded-md bg-background text-primary shadow-sm">
+        <Folder className="h-7 w-7" />
+      </span>
+      <p className="text-sm font-medium text-foreground">This folder is empty.</p>
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+        <Button size="sm" onClick={onUpload} disabled={!canCreate || uploading}>
+          {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+          Upload files
+        </Button>
+        <Button variant="outline" size="sm" onClick={onNewFolder} disabled={!canCreate}>
+          <FolderPlus className="h-4 w-4" />
+          New folder
+        </Button>
+      </div>
+    </div>
   );
 }
 

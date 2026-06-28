@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Blocks, Bot, Check, CreditCard, FolderOpen, Loader2, LogOut, MessageSquare, RotateCcw, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "@/lib/supabase/client";
-import { dashboardPath, isDashboardTabId, type DashboardTabId } from "@/lib/dashboard-tabs";
+import { dashboardPath, parseDashboardRoute, type DashboardTabId } from "@/lib/dashboard-tabs";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -71,27 +71,44 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId }: Props
     { id: "settings", label: "Settings", icon: Settings2 },
   ];
 
-  const requestedTab = requestedDashboardTab(pathname);
-  const active = normalizeDashboardTab(requestedTab, tabs, hasAgent);
+  // One parse of the URL into { tab, chatSessionId }. The open chat thread rides the URL as a third
+  // segment (/dashboard/chat/<sessionId>); null means a new chat. `dashboardPath` keeps that thread
+  // id on the canonical path so the normalizer below doesn't strip it back to /dashboard/chat.
+  const segments = pathname.split("/").filter(Boolean);
+  const route = segments[0] === "dashboard" ? parseDashboardRoute(segments.slice(1)) : null;
+  const active = normalizeDashboardTab(route?.tab ?? null, tabs, hasAgent);
+  const chatSessionId = route?.chatSessionId ?? null;
+  const activePath = dashboardPath(active, chatSessionId);
 
   useEffect(() => {
-    const activePath = dashboardPath(active);
     if (pathname !== activePath) updateDashboardHistory(activePath, "replace");
-  }, [active, pathname]);
+  }, [activePath, pathname]);
 
   function openDashboardTab(tab: DashboardTabId) {
     updateDashboardHistory(dashboardPath(tab), "push");
   }
+
+  // Selecting / creating / clearing a chat is a URL navigation; activeSessionId then follows the
+  // URL inside ChatProvider. Stable (history writes don't read render state) so it can live in the
+  // chat context without re-creating its callbacks each render.
+  const navigateToSession = useCallback(
+    (sessionId: string | null, mode: "push" | "replace" = "push") => {
+      updateDashboardHistory(dashboardPath("chat", sessionId), mode);
+    },
+    []
+  );
 
   // `active` can only reach "chat"/"files" when there's an agent (the tabs and their triggers are
   // gated on hasAgent), so these imply hasAgent.
   const isChat = active === "chat";
   const isFiles = active === "files";
 
-  // Files mounts lazily on first open, then stays mounted (just hidden) so its current directory
-  // and scroll survive tab switches — without paying its initial directory listing on dashboards
-  // where the student never opens it. (Chat is the default tab, so it always mounts.) Latched
-  // during render rather than in an effect, so the mount lands in the same pass as the switch.
+  // Chat/Files mount lazily on first open, then stay mounted (just hidden) so drafts, streams,
+  // current directories, and scroll survive tab switches without paying their initial fetches on
+  // dashboards where the student never opens them. Latched during render rather than in an effect,
+  // so the mount lands in the same pass as the switch.
+  const [chatOpened, setChatOpened] = useState(isChat);
+  if (isChat && !chatOpened) setChatOpened(true);
   const [filesOpened, setFilesOpened] = useState(false);
   if (isFiles && !filesOpened) setFilesOpened(true);
 
@@ -136,7 +153,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId }: Props
         )}
 
         {/* Keep the thread rail visible across dashboard tabs; selecting a thread returns to Chat. */}
-        {hasAgent && <ChatSidebar onOpenChat={() => openDashboardTab("chat")} />}
+        {hasAgent && <ChatSidebar />}
 
         <div className="mt-auto space-y-2 pt-4">
           <div className="truncate px-3 text-xs text-muted-foreground">{userEmail}</div>
@@ -151,7 +168,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId }: Props
         {/* Chat owns its full height (scrolling messages + pinned composer) — no page padding.
             It stays MOUNTED (just hidden) across tab switches so an in-flight first turn, the
             composer draft, and the model selection survive leaving and returning to the tab. */}
-        {hasAgent && (
+        {hasAgent && chatOpened && (
           <div className={cn("h-full", !isChat && "hidden")}>
             <ChatView />
           </div>
@@ -191,7 +208,18 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId }: Props
   // The chat thread rail (aside) and conversation (main) share one provider. Only mount it
   // when there's an agent to talk to — otherwise the Chat tab doesn't exist. (Keying off
   // `agentId` rather than `hasAgent` narrows it to a non-null string for the provider.)
-  return agentId ? <ChatProvider agentId={agentId}>{shell}</ChatProvider> : shell;
+  return agentId ? (
+    <ChatProvider
+      agentId={agentId}
+      urlSessionId={chatSessionId}
+      onChatTab={isChat}
+      navigateToSession={navigateToSession}
+    >
+      {shell}
+    </ChatProvider>
+  ) : (
+    shell
+  );
 }
 
 function ChatTabButton({
@@ -213,9 +241,7 @@ function ChatTabButton({
       label={label}
       isActive={isActive}
       href={href}
-      onClick={() => {
-        startNewChat();
-      }}
+      onClick={startNewChat}
     />
   );
 }
@@ -259,12 +285,6 @@ function updateDashboardHistory(path: string, mode: "push" | "replace") {
   if (typeof window === "undefined" || window.location.pathname === path) return;
   if (mode === "replace") window.history.replaceState(null, "", path);
   else window.history.pushState(null, "", path);
-}
-
-function requestedDashboardTab(pathname: string): DashboardTabId | null {
-  const parts = pathname.split("/").filter(Boolean);
-  if (parts[0] !== "dashboard" || parts.length !== 2) return null;
-  return isDashboardTabId(parts[1]) ? parts[1] : null;
 }
 
 function normalizeDashboardTab(

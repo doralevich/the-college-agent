@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useRef } from "react";
 import createGlobe from "cobe";
+import { composioLogoUrl } from "@/lib/integration-catalog";
 
 const FEATURED_LOGOS = [
   { slug: "gmail", label: "Gmail", size: "lg", left: "2%", top: "26%" },
@@ -84,10 +85,6 @@ const MARQUEE_LOGOS = [
   { slug: "perplexityai", label: "Perplexity" },
   { slug: "googletasks", label: "Google Tasks" },
 ];
-
-function logoUrl(slug: string) {
-  return `https://logos.composio.dev/api/${slug}`;
-}
 
 export default function IntegrationGlobe() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -175,7 +172,7 @@ export default function IntegrationGlobe() {
             key={`${logo.slug}-${index}`}
             style={{ left: logo.left, top: logo.top }}
           >
-            <img src={logoUrl(logo.slug)} alt={logo.label} loading="lazy" />
+            <img src={composioLogoUrl(logo.slug)} alt={logo.label} loading="lazy" />
           </div>
         ))}
       </div>
@@ -184,7 +181,7 @@ export default function IntegrationGlobe() {
         <div className="integration-marquee-track">
           {marqueeItems.map((logo, index) => (
             <div className="integration-marquee-item" key={`${logo.slug}-${index}`}>
-              <img src={logoUrl(logo.slug)} alt="" loading="lazy" aria-hidden="true" />
+              <img src={composioLogoUrl(logo.slug)} alt="" loading="lazy" aria-hidden="true" />
               <span>{logo.label}</span>
             </div>
           ))}

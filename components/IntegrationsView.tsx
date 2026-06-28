@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Check, Loader2, Plug, Plus, Search, Unplug } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
+import { DEFAULT_INTEGRATION_TOOLKITS } from "@/lib/integration-catalog";
 import { cn } from "@/lib/utils";
 import type {
   IntegrationConnection,
@@ -44,7 +45,7 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
   const [tab, setTab] = useState<SubTab>("browse");
   const [search, setSearch] = useState("");
   const [toolkits, setToolkits] = useState<IntegrationToolkit[]>([]);
-  const [loadingToolkits, setLoadingToolkits] = useState(true);
+  const [loadingToolkits, setLoadingToolkits] = useState(false);
   const [connections, setConnections] = useState<IntegrationConnection[]>([]);
   const [loadingConns, setLoadingConns] = useState(true);
   const [connecting, setConnecting] = useState<string | null>(null);
@@ -123,24 +124,16 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
     };
   }, [fetchConnections]);
 
-  // Debounced catalog load. Empty query → the default popularity-ranked page (Browse). A query of
-  // 3+ chars → search. 1–2 chars → wait (the server would 400). Every state update happens inside
-  // the timer callback, and `cancelled` drops a stale in-flight response so a slow earlier query
-  // ("git") can't clobber a newer one ("github").
+  // Debounced live search. Empty query uses the static default catalog above so Browse does not
+  // wait on Agent37/Composio; a query of 3+ chars searches live; 1-2 chars wait (the server 400s).
   useEffect(() => {
     const q = search.trim();
+    if (q.length < MIN_SEARCH) return;
     let cancelled = false;
+
     const handle = setTimeout(() => {
-      if (q.length > 0 && q.length < MIN_SEARCH) {
-        setToolkits([]);
-        setLoadingToolkits(false);
-        return;
-      }
       setLoadingToolkits(true);
-      const qs =
-        q.length >= MIN_SEARCH
-          ? `?search=${encodeURIComponent(q)}&limit=${BROWSE_LIMIT}`
-          : `?limit=${BROWSE_LIMIT}`;
+      const qs = `?search=${encodeURIComponent(q)}&limit=${BROWSE_LIMIT}`;
       apiFetch<IntegrationToolkitsResult>(`/api/agents/${agentId}/integrations/toolkits${qs}`)
         .then((res) => {
           if (!cancelled) setToolkits(res.items);
@@ -192,6 +185,8 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
   const activeConnections = connections.filter((c) => !c.isDisabled);
   const q = search.trim();
   const tooShort = q.length > 0 && q.length < MIN_SEARCH;
+  const visibleToolkits = q.length === 0 ? DEFAULT_INTEGRATION_TOOLKITS : toolkits;
+  const showLoadingToolkits = q.length >= MIN_SEARCH && loadingToolkits;
 
   return (
     <div className="max-w-5xl space-y-6">
@@ -217,59 +212,70 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search apps (e.g. github, gmail, calendar)"
+              placeholder="Search 1,000+ apps (e.g. github, gmail, calendar)"
               className="h-11 pl-9"
             />
           </div>
 
           {tooShort ? (
             <p className="px-1 text-sm text-muted-foreground">Type at least {MIN_SEARCH} characters to search.</p>
-          ) : loadingToolkits ? (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-[68px] animate-pulse rounded-xl border bg-muted/40" />
-              ))}
-            </div>
-          ) : toolkits.length === 0 ? (
-            <p className="px-1 py-8 text-center text-sm text-muted-foreground">
-              No apps found for “{q}”.
-            </p>
           ) : (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {toolkits.map((t) => {
-                const connected = isToolkitConnected(connections, t.slug);
-                const busy = connecting === t.slug;
-                return (
-                  <div
-                    key={t.slug}
-                    className="flex items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-secondary/40"
-                  >
-                    <ToolkitLogo logo={t.logo} name={t.name} />
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium">{t.name}</div>
-                      {t.description && (
-                        <div className="truncate text-xs text-muted-foreground">{t.description}</div>
-                      )}
-                    </div>
-                    {connected ? (
-                      <Badge variant="success" className="shrink-0 gap-1">
-                        <Check className="h-3 w-3" />
-                        Added
-                      </Badge>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 shrink-0 px-3 text-xs"
-                        disabled={busy}
-                        onClick={() => connect(t.slug)}
+            <div className="space-y-2">
+              <div className="px-1 text-xs font-medium text-muted-foreground">
+                {q.length === 0 ? "Popular integrations" : "Search results"}
+              </div>
+              {showLoadingToolkits ? (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="h-[68px] animate-pulse rounded-xl border bg-muted/40" />
+                  ))}
+                </div>
+              ) : visibleToolkits.length === 0 ? (
+                <p className="px-1 py-8 text-center text-sm text-muted-foreground">
+                  No apps found for “{q}”.
+                </p>
+              ) : (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {visibleToolkits.map((t) => {
+                    const connected = isToolkitConnected(connections, t.slug);
+                    const busy = connecting === t.slug;
+                    return (
+                      <div
+                        key={t.slug}
+                        className="flex items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-secondary/40"
                       >
-                        {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Connect"}
-                      </Button>
-                    )}
-                  </div>
-                );
-              })}
+                        <ToolkitLogo logo={t.logo} name={t.name} />
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-sm font-medium">{t.name}</div>
+                          {t.description && (
+                            <div className="truncate text-xs text-muted-foreground">{t.description}</div>
+                          )}
+                        </div>
+                        {connected ? (
+                          <Badge variant="success" className="shrink-0 gap-1">
+                            <Check className="h-3 w-3" />
+                            Added
+                          </Badge>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 shrink-0 px-3 text-xs"
+                            disabled={busy}
+                            onClick={() => connect(t.slug)}
+                          >
+                            {busy ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              "Connect"
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -376,7 +382,7 @@ function SubTabButton({
 function ToolkitLogo({ logo, name }: { logo: string | null; name: string }) {
   if (logo) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={logo} alt="" className="h-8 w-8 shrink-0 rounded-md object-contain" />;
+    return <img src={logo} alt="" loading="lazy" decoding="async" className="h-8 w-8 shrink-0 rounded-md object-contain" />;
   }
   return (
     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-xs font-semibold text-muted-foreground">

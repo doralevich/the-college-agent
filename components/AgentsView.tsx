@@ -56,8 +56,7 @@ export function AgentsView({ onOpenChat }: { onOpenChat: () => void }) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">My Agents</h1>
-        <p className="text-sm text-muted-foreground">{current.name}</p>
+        <h1 className="text-2xl font-semibold tracking-tight">Your Agent</h1>
       </div>
 
       {loading ? (

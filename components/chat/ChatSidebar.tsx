@@ -6,10 +6,14 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { cn } from "@/lib/utils";
 import { useChatContext } from "./ChatProvider";
 
-// The "Chats" thread rail, rendered inside the dashboard aside below the nav.
-export function ChatSidebar({ onOpenChat }: { onOpenChat?: () => void }) {
-  const { sessions, activeSessionId, loadingSessions, selectSession, startNewChat, deleteSession, renameSession } =
+// The "Chats" thread rail, rendered inside the dashboard aside below the nav. Selecting or starting
+// a thread navigates to its URL, which switches to the Chat tab on its own — no explicit tab hop.
+export function ChatSidebar() {
+  const { sessions, activeSessionId, onChatTab, loadingSessions, selectSession, startNewChat, deleteSession, renameSession } =
     useChatContext();
+  // The open thread stays "active" even when you're on another tab (so its stream isn't cancelled),
+  // but it should only look selected in the rail while the Chat tab is actually showing.
+  const highlightedSessionId = onChatTab ? activeSessionId : null;
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const pendingDelete = sessions.find((s) => s.session_id === pendingDeleteId) ?? null;
 
@@ -41,16 +45,6 @@ export function ChatSidebar({ onOpenChat }: { onOpenChat?: () => void }) {
     }
   }
 
-  function handleStartNewChat() {
-    startNewChat();
-    onOpenChat?.();
-  }
-
-  function handleSelectSession(sessionId: string) {
-    selectSession(sessionId);
-    onOpenChat?.();
-  }
-
   return (
     <>
       <div className="mt-6 flex min-h-0 flex-1 flex-col">
@@ -58,7 +52,7 @@ export function ChatSidebar({ onOpenChat }: { onOpenChat?: () => void }) {
           <span className="text-xs font-medium text-muted-foreground">Chats</span>
           <button
             type="button"
-            onClick={handleStartNewChat}
+            onClick={startNewChat}
             aria-label="New chat"
             title="New chat"
             className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
@@ -101,11 +95,11 @@ export function ChatSidebar({ onOpenChat }: { onOpenChat?: () => void }) {
                       <>
                         <button
                           type="button"
-                          onClick={() => handleSelectSession(s.session_id)}
+                          onClick={() => selectSession(s.session_id)}
                           onDoubleClick={() => startRename(s.session_id, s.title)}
                           className={cn(
                             "flex w-full select-none items-center gap-2 rounded-md px-3 py-1.5 pr-14 text-left text-sm transition-colors",
-                            activeSessionId === s.session_id
+                            highlightedSessionId === s.session_id
                               ? "bg-secondary text-foreground"
                               : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
                           )}
