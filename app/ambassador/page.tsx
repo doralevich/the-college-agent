@@ -30,14 +30,6 @@ const STUDENT_USES = [
   { icon: LifeBuoy,       title: "Academic Support",    desc: "Ask anything, anytime — clear explanations when you're stuck on a concept." },
 ];
 
-const LOOKING_FOR = [
-  "Are respected and well-connected within their university community",
-  "Demonstrate strong communication and relationship-building skills",
-  "Are passionate about helping fellow students succeed",
-  "Have an interest in AI, innovation, and emerging technology",
-  "Want to gain meaningful leadership and professional experience",
-];
-
 const INCLUDED = [
   "Your own custom College Agent — built specifically for your success",
   "Ambassador Toolkit",
@@ -51,12 +43,6 @@ const GAINED = [
   "Hands-on exposure to AI and emerging technology",
   "Communication and professional networking skills",
   "The opportunity to earn commissions",
-];
-
-const COMMISSION_TIERS = [
-  { qty: 10, bonus: 250 },
-  { qty: 25, bonus: 750 },
-  { qty: 50, bonus: 1800 },
 ];
 
 const HOW_IT_WORKS = [
@@ -131,30 +117,24 @@ export default function AmbassadorPage() {
           </div>
         </section>
 
-        <section className="affiliate-section program-band">
+        <section className="affiliate-section dark-section why-become-section">
+          <div className="affiliate-glow why-become-glow" />
           <div className="affiliate-shell">
-            <div className="section-heading">
-              <span className="mono-label">Why Become an Ambassador?</span>
-              <h2>This is more than a referral program.</h2>
+            <div className="why-become">
+              <h2>Why Become An Ambassador</h2>
+              <h4>This is more than a referral program.</h4>
               <p>
-                As a College Agent Ambassador, you&apos;ll represent an emerging AI platform while gaining
-                practical experience that can strengthen your resume and prepare you for internships and
-                future careers.
+                As a College Agent Ambassador, you&apos;ll represent an emerging AI platform while
+                gaining practical experience that can strengthen your resume and prepare you for
+                internships and future careers.
               </p>
             </div>
           </div>
         </section>
 
         <section className="affiliate-section">
-          <div className="affiliate-shell two-col-section">
-            <div>
-              <span className="mono-label">Who We&apos;re Looking For</span>
-              <h2>We&apos;re looking for students who:</h2>
-              <ul className="bullet-list">
-                {LOOKING_FOR.map((item) => <li key={item}>{item}</li>)}
-              </ul>
-            </div>
-            <div className="two-col-cards">
+          <div className="affiliate-shell">
+            <div className="included-gained-grid">
               <div className="info-card">
                 <span className="mono-label">What&apos;s Included</span>
                 <ul className="bullet-list">
@@ -167,25 +147,6 @@ export default function AmbassadorPage() {
                   {GAINED.map((item) => <li key={item}>{item}</li>)}
                 </ul>
               </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="affiliate-section commissions-section">
-          <div className="affiliate-shell">
-            <div className="section-heading">
-              <span className="mono-label">Commissions</span>
-              <h2>Earn $75 for every qualified purchase — plus growth incentives.</h2>
-            </div>
-            <div className="tier-grid">
-              {COMMISSION_TIERS.map(({ qty, bonus }) => (
-                <div key={qty} className="tier-card">
-                  <span className="tier-qty">{qty}</span>
-                  <span className="tier-label">Qualified Purchases</span>
-                  <span className="tier-arrow">&rarr;</span>
-                  <span className="tier-bonus">+${bonus.toLocaleString()}</span>
-                </div>
-              ))}
             </div>
           </div>
         </section>
@@ -681,6 +642,54 @@ export default function AmbassadorPage() {
           color: rgba(11,23,41,.6);
           line-height: 1.55;
           margin: 0;
+        }
+        .why-become-section {
+          position: relative;
+          overflow: hidden;
+        }
+        .why-become-glow {
+          left: auto;
+          right: -120px;
+          top: -120px;
+          width: 520px;
+          height: 520px;
+        }
+        .why-become {
+          position: relative;
+          z-index: 1;
+          max-width: 760px;
+        }
+        .why-become h2 {
+          font-size: 36px;
+          font-weight: 800;
+          color: #fff;
+          line-height: 1.15;
+          margin: 0 0 12px;
+        }
+        .why-become h4 {
+          font-size: 24px;
+          font-weight: 600;
+          color: rgba(255,255,255,.85);
+          line-height: 1.3;
+          margin: 0 0 16px;
+        }
+        .why-become p {
+          font-size: 15.5px;
+          color: rgba(255,255,255,.65);
+          line-height: 1.7;
+          margin: 0;
+        }
+        .included-gained-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 24px;
+          max-width: 920px;
+          margin: 0 auto;
+        }
+        @media (max-width: 640px) {
+          .included-gained-grid {
+            grid-template-columns: 1fr;
+          }
         }
         .two-col-section {
           display: grid;
