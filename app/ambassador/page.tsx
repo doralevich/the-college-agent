@@ -148,8 +148,9 @@ export default function AmbassadorPage() {
             <div className="program-banner">
               <h2 className="program-banner-title">The Ambassador Program</h2>
               <p>
-                We are building a community of student leaders who are passionate about innovation,
-                excited by AI, and committed to helping fellow students succeed.
+                The College Agent Ambassador Program combines leadership, innovation, and
+                opportunity — giving students the chance to represent an emerging AI platform
+                while developing valuable professional skills.
               </p>
             </div>
           </div>
