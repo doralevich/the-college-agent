@@ -31,7 +31,7 @@ const STUDENT_USES = [
 ];
 
 const INCLUDED = [
-  "Your own custom College Agent — built specifically for your success",
+  "Your own custom College Agent built specifically for your success",
   "Ambassador Toolkit",
   "Onboarding & training",
   "Direct access to the College Agent team",
@@ -755,8 +755,13 @@ export default function AmbassadorPage() {
         .info-card {
           background: #fff;
           border: 1px solid rgba(11,23,41,.08);
+          border-top: 2px solid var(--green);
           border-radius: 12px;
           padding: 24px 24px 20px;
+        }
+        .info-card .bullet-list li {
+          font-weight: 700;
+          color: var(--navy);
         }
         .info-card .mono-label {
           margin-bottom: 12px;
