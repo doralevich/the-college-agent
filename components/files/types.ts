@@ -75,3 +75,9 @@ export function previewKind(name: string): PreviewKind {
 export function contentUrl(agentId: string, path: string, disposition: "inline" | "attachment"): string {
   return `/api/agents/${agentId}/files/content?path=${encodeURIComponent(path)}&disposition=${disposition}`;
 }
+
+// Folder download → the BFF archive route streams a .tar.gz of the directory (key attached
+// server-side), so an <a download> can point straight at it, like contentUrl for single files.
+export function archiveUrl(agentId: string, path: string): string {
+  return `/api/agents/${agentId}/files/archive?path=${encodeURIComponent(path)}`;
+}

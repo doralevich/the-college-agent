@@ -81,13 +81,22 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
 // so callers can stream SSE, upload multipart, or stream a download — things the JSON-parsing
 // `call` helper above can't. Only throws for missing server config; HTTP status is the
 // caller's to handle (e.g. a 409 session_busy is surfaced, not thrown here).
+//
+// A ReadableStream request body is buffered to an ArrayBuffer first: a stream has no known length,
+// so undici would send `Transfer-Encoding: chunked`, and the instance-host proxy in front of the
+// gateway drops chunked request bodies — the write would land as a 0-byte file. Buffering gives it a
+// known length so undici sets Content-Length and the proxy frames it correctly. Sized bodies
+// (Blob/string/ArrayBuffer) already carry a length and pass straight through. Forwarded uploads are
+// bounded by the edge's upload envelope, so the buffer stays small.
 export async function instanceFetch(id: string, path: string, init?: RequestInit): Promise<Response> {
   const key = process.env.AGENT37_API_KEY;
   if (!key) {
     throw new Agent37Error(500, "config_error", "AGENT37_API_KEY is not set on the server");
   }
+  const body = init?.body instanceof ReadableStream ? await new Response(init.body).arrayBuffer() : init?.body;
   return fetch(`${instanceBaseUrl(id)}${path}`, {
     ...init,
+    body,
     headers: { Authorization: `Bearer ${key}`, ...(init?.headers || {}) },
     cache: "no-store",
   });

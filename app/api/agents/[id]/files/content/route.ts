@@ -38,11 +38,12 @@ export const GET = route(async (request: Request, { params }: Ctx) => {
   return new Response(upstream.body, { status: 200, headers });
 });
 
-// Write raw bytes to a path (create / overwrite / upload). The request body is streamed straight
-// through to the Agents API PUT /v1/files/content; `overwrite` and the optional X-Expected-Mtime
-// (epoch ms, optimistic-concurrency) header pass through. Returns the resolved FileEntry. The
-// upstream HTTP status is preserved, so overwrite=false collisions (409) and stale-mtime writes
-// (412) reach the client with the right status.
+// Write raw bytes to a path (create / overwrite / upload). The request body is forwarded to the
+// Agents API PUT /v1/files/content; `overwrite` and the optional X-Expected-Mtime (epoch ms,
+// optimistic-concurrency) header pass through. Returns the resolved FileEntry. The upstream HTTP
+// status is preserved, so overwrite=false collisions (409) and stale-mtime writes (412) reach the
+// client with the right status. instanceFetch buffers the streamed body to a known length so the
+// instance-host proxy frames it correctly (it drops chunked request bodies — see instanceFetch).
 export const PUT = route(async (request: Request, { params }: Ctx) => {
   const { id } = await params;
   await requireAgentAccess(id, "member");
@@ -64,9 +65,7 @@ export const PUT = route(async (request: Request, { params }: Ctx) => {
     method: "PUT",
     headers,
     body: request.body,
-    // Streaming a request body through undici/fetch requires the half-duplex opt-in.
-    duplex: "half",
-  } as RequestInit & { duplex: "half" });
+  });
 
   await assertUpstreamOk(upstream, "files/content", "Save failed", "save_error");
   const text = await upstream.text().catch(() => "");

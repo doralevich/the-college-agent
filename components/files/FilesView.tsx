@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import {
   ArrowUp,
   ChevronRight,
@@ -10,6 +10,7 @@ import {
   File as FileIcon,
   Folder,
   FolderPlus,
+  FolderUp,
   Link2,
   Loader2,
   Pencil,
@@ -26,7 +27,7 @@ import { cn } from "@/lib/utils";
 import { useAsyncAction } from "@/lib/useAsyncAction";
 import { FilePreview } from "./FilePreview";
 import { useFileBrowser } from "./useFileBrowser";
-import { breadcrumbs, contentUrl, formatBytes, formatMtime, isDir, type FileEntry } from "./types";
+import { archiveUrl, breadcrumbs, contentUrl, formatBytes, formatMtime, isDir, type FileEntry } from "./types";
 
 // The Files pane, rendered full-height in the dashboard main when the Files tab is active (kept
 // mounted/hidden across tab switches, like ChatView, so the current directory survives). The whole
@@ -38,6 +39,13 @@ export function FilesView({ agentId }: { agentId: string }) {
   const [pendingDelete, setPendingDelete] = useState<FileEntry | null>(null);
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const uploadRef = useRef<HTMLInputElement>(null);
+  const folderUploadRef = useRef<HTMLInputElement>(null);
+
+  // `webkitdirectory` isn't in React's input typings, so set it on the DOM node directly. It makes
+  // the picker select a whole folder; each file then reports its path under it via webkitRelativePath.
+  useEffect(() => {
+    folderUploadRef.current?.setAttribute("webkitdirectory", "");
+  }, []);
 
   // Inline rename — the row's name swaps to an input (same Enter-commits / Escape-cancels dance as
   // the chat thread rail). `skipBlur` suppresses the commit the Escape-triggered blur would fire.
@@ -119,6 +127,13 @@ export function FilesView({ agentId }: { agentId: string }) {
           <IconButton onClick={() => setNewFolderOpen(true)} label="New folder" disabled={!fb.path}>
             <FolderPlus className="h-4 w-4" />
           </IconButton>
+          <IconButton
+            onClick={() => folderUploadRef.current?.click()}
+            label="Upload folder"
+            disabled={!fb.path || fb.uploading}
+          >
+            <FolderUp className="h-4 w-4" />
+          </IconButton>
           <Button size="sm" onClick={() => uploadRef.current?.click()} disabled={!fb.path || fb.uploading}>
             {fb.uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
             Upload
@@ -130,6 +145,16 @@ export function FilesView({ agentId }: { agentId: string }) {
             hidden
             onChange={(e) => {
               if (e.target.files?.length) fb.uploadFiles(e.target.files);
+              e.target.value = "";
+            }}
+          />
+          <input
+            ref={folderUploadRef}
+            type="file"
+            multiple
+            hidden
+            onChange={(e) => {
+              if (e.target.files?.length) fb.uploadFolder(e.target.files);
               e.target.value = "";
             }}
           />
@@ -224,17 +249,15 @@ export function FilesView({ agentId }: { agentId: string }) {
                         </td>
                         <td className="px-3 py-2">
                           <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                            {!dir && (
-                              <a
-                                href={contentUrl(agentId, entry.path, "attachment")}
-                                download={entry.name}
-                                aria-label={`Download ${entry.name}`}
-                                title="Download"
-                                className="rounded p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                              >
-                                <Download className="h-3.5 w-3.5" />
-                              </a>
-                            )}
+                            <a
+                              href={dir ? archiveUrl(agentId, entry.path) : contentUrl(agentId, entry.path, "attachment")}
+                              download={dir ? `${entry.name}.tar.gz` : entry.name}
+                              aria-label={dir ? `Download ${entry.name} as a .tar.gz archive` : `Download ${entry.name}`}
+                              title={dir ? "Download as .tar.gz" : "Download"}
+                              className="rounded p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                            >
+                              <Download className="h-3.5 w-3.5" />
+                            </a>
                             <button
                               type="button"
                               onClick={() => startRename(entry)}
