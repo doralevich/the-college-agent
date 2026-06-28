@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Bot, Check, CreditCard, FolderOpen, Loader2, LogOut, MessageSquare, RotateCcw, Settings2 } from "lucide-react";
+import { Blocks, Bot, Check, CreditCard, FolderOpen, Loader2, LogOut, MessageSquare, RotateCcw, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "@/lib/supabase/client";
 import { dashboardPath, isDashboardTabId, type DashboardTabId } from "@/lib/dashboard-tabs";
@@ -19,6 +19,7 @@ import { ChatProvider, useChatContext } from "@/components/chat/ChatProvider";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { ChatView } from "@/components/chat/ChatView";
 import { FilesView } from "@/components/files/FilesView";
+import { IntegrationsView } from "@/components/IntegrationsView";
 
 type Props = {
   paid: boolean;
@@ -61,6 +62,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId }: Props
       ? [
           { id: "chat" as DashboardTabId, label: "Chat", icon: MessageSquare },
           { id: "files" as DashboardTabId, label: "Files", icon: FolderOpen },
+          { id: "integrations" as DashboardTabId, label: "Integrations", icon: Blocks },
         ]
       : []),
     hasAgent
@@ -169,6 +171,8 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId }: Props
                 <SettingsView />
               ) : active === "billing" ? (
                 <BillingView />
+              ) : active === "integrations" && agentId ? (
+                <IntegrationsView agentId={agentId} />
               ) : !paid ? (
                 <BuildCta />
               ) : hasAgent ? (
