@@ -19,12 +19,8 @@ type AmbassadorRequest = {
 
   // Social handles
   instagram?: string;
-  tiktok?: string;
   linkedin?: string;
-  snapchat?: string;
   facebook?: string;
-  x?: string;
-  socialOther?: string;
 
   // Tell us more
   anythingElse?: string;
@@ -107,12 +103,8 @@ export async function POST(req: NextRequest) {
 
     const socials: [string, string][] = [
       ["Instagram", clean(data.instagram)],
-      ["TikTok", clean(data.tiktok)],
       ["LinkedIn", clean(data.linkedin)],
-      ["Snapchat", clean(data.snapchat)],
       ["Facebook", clean(data.facebook)],
-      ["X (Twitter)", clean(data.x)],
-      ["Other", clean(data.socialOther)],
     ];
     const socialRows = socials.filter(([, v]) => v).map(([label, v]) => row(label, v)).join("");
 
