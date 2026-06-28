@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CalendarCheck2, FileText, ListChecks, TrendingUp, BookOpen } from "lucide-react";
+import { Bot, CalendarCheck2, FileText, ListChecks, TrendingUp, BookOpen } from "lucide-react";
 import Nav from "../components/Nav";
 
 export const metadata: Metadata = {
@@ -92,23 +92,35 @@ export default function AmbassadorPage() {
         </section>
 
         <section className="affiliate-section">
-          <div className="affiliate-shell">
-            <div className="section-heading">
-              <span className="mono-label">Why Students Use The College Agent</span>
+          <div className="affiliate-shell what-is-shell">
+            <div className="what-is-left">
+              {/* Robot graphic slot — swap this Bot icon for an <Image src="/ambassador-bot.png"...>
+                  once the file is uploaded to public/. */}
+              <div className="robot-slot" aria-hidden="true">
+                <Bot size={120} strokeWidth={1.2} />
+              </div>
+              <span className="mono-label">What is The College Agent</span>
               <h2>A 24/7 AI-powered academic assistant built for college students.</h2>
               <p>
-                Personalized for each student — not a general chatbot. An agent that knows your
-                classes, your schedule, and your goals.
+                The College Agent is a 24/7 AI-powered academic assistant built specifically for
+                college students. Unlike a general AI chatbot, The College Agent is personalized
+                for each student to help stay organized, reduce academic stress, and simplify the
+                day-to-day demands of college.
               </p>
             </div>
-            <div className="fit-grid uses-grid">
-              {STUDENT_USES.map(({ icon: Icon, title, desc }) => (
-                <div key={title} className="fit-card use-card">
-                  <div className="fit-icon"><Icon size={23} strokeWidth={1.9} /></div>
-                  <h3>{title}</h3>
-                  <p>{desc}</p>
-                </div>
-              ))}
+            <div className="what-is-right">
+              <h3 className="why-use-title">Why Students Use The College Agent</h3>
+              <div className="why-use-list">
+                {STUDENT_USES.map(({ icon: Icon, title, desc }) => (
+                  <div key={title} className="why-use-card">
+                    <div className="why-use-icon"><Icon size={20} strokeWidth={2} /></div>
+                    <div>
+                      <h4>{title}</h4>
+                      <p>{desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
@@ -524,6 +536,96 @@ export default function AmbassadorPage() {
           margin-top: 28px;
           font-size: 14px;
           padding: 14px 36px;
+        }
+        .what-is-shell {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+          gap: 56px;
+          align-items: start;
+        }
+        .what-is-left {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .robot-slot {
+          width: 140px;
+          height: 140px;
+          border-radius: 50%;
+          background: rgba(61,139,61,.1);
+          color: var(--green);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 24px;
+        }
+        .what-is-left .mono-label {
+          margin-bottom: 10px;
+        }
+        .what-is-left h2 {
+          font-size: clamp(24px, 2.6vw, 32px);
+          font-weight: 800;
+          color: var(--navy);
+          line-height: 1.2;
+          margin: 0 0 16px;
+        }
+        .what-is-left p {
+          font-size: 15.5px;
+          color: rgba(11,23,41,.65);
+          line-height: 1.7;
+          margin: 0;
+        }
+        .why-use-title {
+          font-size: 20px;
+          font-weight: 800;
+          color: var(--navy);
+          margin: 0 0 20px;
+        }
+        .why-use-list {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .why-use-card {
+          display: flex;
+          align-items: flex-start;
+          gap: 14px;
+          padding: 16px 18px;
+          background: #fff;
+          border: 1px solid rgba(11,23,41,.08);
+          border-radius: 10px;
+        }
+        .why-use-icon {
+          flex-shrink: 0;
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: var(--green);
+          color: #fff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .why-use-card h4 {
+          font-size: 15px;
+          font-weight: 800;
+          color: var(--navy);
+          margin: 0 0 4px;
+        }
+        .why-use-card p {
+          font-size: 13.5px;
+          color: rgba(11,23,41,.6);
+          line-height: 1.5;
+          margin: 0;
+        }
+        @media (max-width: 820px) {
+          .what-is-shell {
+            grid-template-columns: 1fr;
+            gap: 40px;
+          }
+          .what-is-left {
+            align-items: flex-start;
+          }
         }
         .uses-grid {
           grid-template-columns: repeat(3, 1fr);
