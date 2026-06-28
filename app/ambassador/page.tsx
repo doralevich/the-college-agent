@@ -103,8 +103,8 @@ export default function AmbassadorPage() {
         <section className="affiliate-section">
           <div className="affiliate-shell what-is-shell">
             <div className="what-is-left">
-              <span className="mono-label">What is The College Agent</span>
-              <h2>A 24/7 AI-powered academic assistant built for college students.</h2>
+              <h2>What is The College Agent</h2>
+              <h4>A 24/7 AI-powered academic assistant built for college students.</h4>
               <p>
                 The College Agent is a 24/7 AI-powered academic assistant built specifically for
                 college students. Unlike a general AI chatbot, The College Agent is personalized
@@ -581,14 +581,18 @@ export default function AmbassadorPage() {
           flex-direction: column;
           align-items: flex-start;
         }
-        .what-is-left .mono-label {
-          margin-bottom: 10px;
-        }
         .what-is-left h2 {
-          font-size: clamp(24px, 2.6vw, 32px);
+          font-size: 36px;
           font-weight: 800;
           color: var(--navy);
-          line-height: 1.2;
+          line-height: 1.15;
+          margin: 0 0 12px;
+        }
+        .what-is-left h4 {
+          font-size: 24px;
+          font-weight: 600;
+          color: var(--navy);
+          line-height: 1.3;
           margin: 0 0 16px;
         }
         .what-is-left p {
