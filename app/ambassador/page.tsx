@@ -750,7 +750,7 @@ export default function AmbassadorPage() {
         }
         .who-cta {
           display: inline-block;
-          margin-top: 40px;
+          margin-top: 20px;
           font-size: 14px;
           padding: 14px 32px;
         }
