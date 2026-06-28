@@ -161,9 +161,9 @@ export default function AmbassadorPage() {
               <h2>Who We&apos;re Looking For</h2>
               <h4>We&apos;re looking for students who:</h4>
               <p className="who-intro">
-                The College Agent Ambassador Program combines leadership, innovation, and
-                opportunity — giving students the chance to represent an emerging AI platform
-                while developing valuable professional skills.
+                Our ambassadors are students other students already trust — the natural connectors
+                who shape what gets noticed on campus. The role doubles as real-world experience:
+                leadership, communication, and AI fluency on your resume by graduation.
               </p>
               <ul className="bullet-list who-bullets">
                 {LOOKING_FOR.map((item) => <li key={item}>{item}</li>)}
