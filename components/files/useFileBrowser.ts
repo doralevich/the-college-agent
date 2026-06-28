@@ -6,6 +6,19 @@ import { apiFetch, readApiError } from "@/lib/api";
 import { useDropZone } from "@/lib/useDropZone";
 import { joinPath, type FileEntry, type FileListResponse } from "./types";
 
+// Run `worker` over `items` with at most `limit` in flight. Folder uploads fan out to one PUT per
+// file; an unbounded Promise.all would open hundreds of sockets (and buffer hundreds of bodies) at
+// once, so we cap concurrency.
+async function runPool<T>(items: T[], limit: number, worker: (item: T) => Promise<void>): Promise<void> {
+  let next = 0;
+  const runners = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (next < items.length) {
+      await worker(items[next++]);
+    }
+  });
+  await Promise.all(runners);
+}
+
 // Owns the Files tab's directory state + mutations. Mirrors useChatAttachments' shape: one hook
 // instance per pane, callbacks memoised, a ref-counted drag overlay. The current directory's
 // resolved absolute `path` comes from the Agents API (it resolves ~ / defaults), so navigation,
@@ -22,6 +35,13 @@ export function useFileBrowser(agentId: string) {
 
   // Guard against an older list response landing after a newer navigation.
   const loadSeq = useRef(0);
+
+  // Mirror `path` into a ref so a long-running upload can tell whether the user has since navigated
+  // away — if so, the post-upload refresh must not pull them back to the directory it started in.
+  const pathRef = useRef<string | null>(null);
+  useEffect(() => {
+    pathRef.current = path;
+  }, [path]);
 
   // Load one directory level. `target` undefined loads the agent's default workspace dir (first
   // mount); on success the resolved abs path replaces whatever we asked for.
@@ -68,38 +88,69 @@ export function useFileBrowser(agentId: string) {
     [navigate]
   );
 
-  // Upload one file per PUT to the current dir, then refresh once. overwrite=true mirrors a normal
-  // desktop drop (replace in place). Errors are toasted per file but don't abort the batch.
-  const uploadFiles = useCallback(
-    async (incoming: FileList | File[]) => {
-      const list = Array.from(incoming);
-      if (!list.length || !path) return;
-      setUploading((n) => n + list.length);
+  // PUT one file to `relPath` under the current dir. `relPath` may contain slashes (a folder
+  // upload passes webkitRelativePath); the Agents API creates the parent dirs (mkdir -p) on write.
+  const putFile = useCallback(
+    async (file: File, relPath: string): Promise<void> => {
+      const target = joinPath(path!, relPath);
+      const res = await fetch(
+        `/api/agents/${agentId}/files/content?path=${encodeURIComponent(target)}&overwrite=true`,
+        { method: "PUT", headers: { "Content-Type": file.type || "application/octet-stream" }, body: file }
+      );
+      if (!res.ok) throw new Error(await readApiError(res, "Upload failed"));
+    },
+    [agentId, path]
+  );
+
+  // Upload a batch of (file, destination-relative-path) pairs to the current dir, then refresh once.
+  // overwrite=true mirrors a normal desktop drop (replace in place); a failed file is toasted but
+  // doesn't abort the batch. Concurrency is bounded so a deep folder can't open a socket per file.
+  const uploadEntries = useCallback(
+    async (items: { file: File; relPath: string }[]) => {
+      if (!items.length || !path) return;
+      setUploading((n) => n + items.length);
       let failures = 0;
       try {
-        await Promise.all(
-          list.map(async (file) => {
-            const target = joinPath(path, file.name);
-            try {
-              const res = await fetch(
-                `/api/agents/${agentId}/files/content?path=${encodeURIComponent(target)}&overwrite=true`,
-                { method: "PUT", headers: { "Content-Type": file.type || "application/octet-stream" }, body: file }
-              );
-              if (!res.ok) throw new Error(await readApiError(res, "Upload failed"));
-            } catch (e) {
-              failures += 1;
-              toast.error(`${file.name}: ${(e as Error).message}`);
-            }
-          })
-        );
+        await runPool(items, 4, async ({ file, relPath }) => {
+          try {
+            await putFile(file, relPath);
+          } catch (e) {
+            failures += 1;
+            toast.error(`${relPath}: ${(e as Error).message}`);
+          }
+        });
       } finally {
-        setUploading((n) => Math.max(0, n - list.length));
+        setUploading((n) => Math.max(0, n - items.length));
       }
-      const ok = list.length - failures;
+      const ok = items.length - failures;
       if (ok > 0) toast.success(ok === 1 ? "Uploaded 1 file" : `Uploaded ${ok} files`);
-      await load(path);
+      // Refresh only if the user is still in the directory we uploaded into. A folder upload can run
+      // for many seconds; reloading the captured `path` would otherwise undo a navigation made while
+      // it was in flight.
+      if (pathRef.current === path) await load(path);
     },
-    [agentId, path, load]
+    [path, putFile, load]
+  );
+
+  // Flat upload (the multi-file picker + drag-drop): each file lands by its basename.
+  const uploadFiles = useCallback(
+    (incoming: FileList | File[]) =>
+      uploadEntries(Array.from(incoming).map((file) => ({ file, relPath: file.name }))),
+    [uploadEntries]
+  );
+
+  // Folder upload (webkitdirectory picker): webkitRelativePath carries the tree under the picked
+  // folder (e.g. "proj/src/a.ts"), so the structure is recreated under the current dir. Empty
+  // subfolders are dropped — the browser only enumerates files, matching every per-file uploader.
+  const uploadFolder = useCallback(
+    (incoming: FileList | File[]) =>
+      uploadEntries(
+        Array.from(incoming).map((file) => ({
+          file,
+          relPath: (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name,
+        }))
+      ),
+    [uploadEntries]
   );
 
   const createDir = useCallback(
@@ -178,6 +229,7 @@ export function useFileBrowser(agentId: string) {
     goUp,
     openEntry,
     uploadFiles,
+    uploadFolder,
     createDir,
     rename,
     remove,
