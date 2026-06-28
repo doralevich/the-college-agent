@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { CalendarCheck2, FileText, ListChecks, TrendingUp, BookOpen } from "lucide-react";
 import Nav from "../components/Nav";
 
@@ -95,15 +94,6 @@ export default function AmbassadorPage() {
         <section className="affiliate-section">
           <div className="affiliate-shell what-is-shell">
             <div className="what-is-left">
-              <div className="robot-slot">
-                <Image
-                  src="/The Collee Agent Bot.png"
-                  alt="The College Agent"
-                  width={1000}
-                  height={1000}
-                  priority
-                />
-              </div>
               <span className="mono-label">What is The College Agent</span>
               <h2>A 24/7 AI-powered academic assistant built for college students.</h2>
               <p>
@@ -552,16 +542,6 @@ export default function AmbassadorPage() {
           display: flex;
           flex-direction: column;
           align-items: flex-start;
-        }
-        .robot-slot {
-          width: 260px;
-          max-width: 100%;
-          margin-bottom: 20px;
-        }
-        .robot-slot img {
-          width: 100%;
-          height: auto;
-          display: block;
         }
         .what-is-left .mono-label {
           margin-bottom: 10px;
