@@ -148,16 +148,8 @@ export default function AmbassadorPage() {
             <div className="program-banner">
               <h2 className="program-banner-title">The Ambassador Program</h2>
               <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
-                incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-                exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute
-                irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-                pariatur.
-              </p>
-              <p>
-                Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt
-                mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit
-                voluptatem accusantium doloremque laudantium.
+                We are building a community of student leaders who are passionate about innovation,
+                excited by AI, and committed to helping fellow students succeed.
               </p>
             </div>
           </div>
