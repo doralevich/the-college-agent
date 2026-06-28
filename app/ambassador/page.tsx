@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Bot, CalendarCheck2, FileText, ListChecks, TrendingUp, BookOpen } from "lucide-react";
+import Image from "next/image";
+import { CalendarCheck2, FileText, ListChecks, TrendingUp, BookOpen } from "lucide-react";
 import Nav from "../components/Nav";
 
 export const metadata: Metadata = {
@@ -94,10 +95,14 @@ export default function AmbassadorPage() {
         <section className="affiliate-section">
           <div className="affiliate-shell what-is-shell">
             <div className="what-is-left">
-              {/* Robot graphic slot — swap this Bot icon for an <Image src="/ambassador-bot.png"...>
-                  once the file is uploaded to public/. */}
-              <div className="robot-slot" aria-hidden="true">
-                <Bot size={120} strokeWidth={1.2} />
+              <div className="robot-slot">
+                <Image
+                  src="/The Collee Agent Bot.png"
+                  alt="The College Agent"
+                  width={1000}
+                  height={1000}
+                  priority
+                />
               </div>
               <span className="mono-label">What is The College Agent</span>
               <h2>A 24/7 AI-powered academic assistant built for college students.</h2>
@@ -549,15 +554,14 @@ export default function AmbassadorPage() {
           align-items: flex-start;
         }
         .robot-slot {
-          width: 140px;
-          height: 140px;
-          border-radius: 50%;
-          background: rgba(61,139,61,.1);
-          color: var(--green);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 24px;
+          width: 260px;
+          max-width: 100%;
+          margin-bottom: 20px;
+        }
+        .robot-slot img {
+          width: 100%;
+          height: auto;
+          display: block;
         }
         .what-is-left .mono-label {
           margin-bottom: 10px;
