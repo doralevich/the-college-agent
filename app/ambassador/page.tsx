@@ -143,6 +143,26 @@ export default function AmbassadorPage() {
           </div>
         </section>
 
+        <section className="affiliate-section program-banner-section">
+          <div className="affiliate-shell">
+            <div className="program-banner">
+              <h2 className="program-banner-title">The Ambassador Program</h2>
+              <p>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+                incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute
+                irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+                pariatur.
+              </p>
+              <p>
+                Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt
+                mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit
+                voluptatem accusantium doloremque laudantium.
+              </p>
+            </div>
+          </div>
+        </section>
+
         <section className="affiliate-section">
           <div className="affiliate-shell who-shell">
             <div className="who-left">
@@ -748,6 +768,28 @@ export default function AmbassadorPage() {
           color: var(--navy);
           line-height: 1.3;
           margin: 0 0 18px;
+        }
+        .program-banner {
+          text-align: center;
+          max-width: 760px;
+          margin: 0 auto;
+        }
+        .program-banner-title {
+          font-size: clamp(36px, 4.5vw, 48px);
+          font-weight: 800;
+          color: var(--navy);
+          line-height: 1.1;
+          letter-spacing: -.01em;
+          margin: 0 0 20px;
+        }
+        .program-banner p {
+          font-size: 15.5px;
+          color: rgba(11,23,41,.65);
+          line-height: 1.7;
+          margin: 0;
+        }
+        .program-banner p + p {
+          margin-top: 14px;
         }
         .who-intro {
           font-size: 15.5px;
