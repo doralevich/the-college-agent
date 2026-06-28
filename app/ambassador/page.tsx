@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { CalendarCheck2, FileText, ListChecks, TrendingUp, BookOpen } from "lucide-react";
 import Nav from "../components/Nav";
 
@@ -70,7 +71,7 @@ export default function AmbassadorPage() {
       <main style={{ paddingTop: 72, minHeight: "100vh", background: "var(--cream2)" }}>
         <section className="affiliate-hero dark-section">
           <div className="affiliate-glow" />
-          <div className="affiliate-shell hero-shell hero-centered">
+          <div className="affiliate-shell hero-shell hero-with-bot">
             <div className="affiliate-copy">
               <div className="hero-badge">
                 <span style={{ color: "var(--green)", fontSize: 14 }}>&#9670;</span>
@@ -85,8 +86,16 @@ export default function AmbassadorPage() {
               </p>
               <div className="affiliate-actions">
                 <a href="/ambassador/apply" className="btn-purple">Apply Now</a>
-                <a href="/build" className="btn-outline">See the Agent</a>
               </div>
+            </div>
+            <div className="hero-bot">
+              <Image
+                src="/The Collee Agent Bot.png"
+                alt="The College Agent"
+                width={1000}
+                height={1000}
+                priority
+              />
             </div>
           </div>
         </section>
@@ -295,6 +304,35 @@ export default function AmbassadorPage() {
         }
         .hero-centered .affiliate-actions {
           justify-content: center;
+        }
+        .hero-bot {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .hero-bot img {
+          width: 100%;
+          max-width: 420px;
+          height: auto;
+          display: block;
+          filter: drop-shadow(0 30px 60px rgba(0,0,0,.35));
+        }
+        @media (max-width: 820px) {
+          .hero-shell.hero-with-bot {
+            grid-template-columns: 1fr;
+            text-align: center;
+            justify-items: center;
+          }
+          .hero-with-bot .affiliate-copy p {
+            margin-left: auto;
+            margin-right: auto;
+          }
+          .hero-with-bot .affiliate-actions {
+            justify-content: center;
+          }
+          .hero-bot img {
+            max-width: 260px;
+          }
         }
         .affiliate-copy,
         .affiliate-panel,
