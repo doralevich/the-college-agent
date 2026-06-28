@@ -15,17 +15,12 @@ const INVOLVEMENTS = [
   "Other",
 ];
 
-const SOCIALS: { key: keyof Pick<AmbassadorFormState,
-  "instagram" | "tiktok" | "linkedin" | "snapchat" | "facebook" | "x" | "socialOther">;
+const SOCIALS: { key: keyof Pick<AmbassadorFormState, "instagram" | "linkedin" | "facebook">;
   label: string; placeholder: string;
 }[] = [
-  { key: "instagram",   label: "Instagram",  placeholder: "@handle" },
-  { key: "tiktok",      label: "TikTok",     placeholder: "@handle" },
-  { key: "linkedin",    label: "LinkedIn",   placeholder: "linkedin.com/in/..." },
-  { key: "snapchat",    label: "Snapchat",   placeholder: "@handle" },
-  { key: "facebook",    label: "Facebook",   placeholder: "facebook.com/..." },
-  { key: "x",           label: "X (Twitter)",placeholder: "@handle" },
-  { key: "socialOther", label: "Other",      placeholder: "Platform + handle" },
+  { key: "instagram", label: "Instagram", placeholder: "@handle" },
+  { key: "linkedin",  label: "LinkedIn",  placeholder: "linkedin.com/in/..." },
+  { key: "facebook",  label: "Facebook",  placeholder: "facebook.com/..." },
 ];
 
 type AmbassadorFormState = {
@@ -47,12 +42,8 @@ type AmbassadorFormState = {
 
   // Social handles
   instagram: string;
-  tiktok: string;
   linkedin: string;
-  snapchat: string;
   facebook: string;
-  x: string;
-  socialOther: string;
 
   // Tell us more
   anythingElse: string;
@@ -67,7 +58,7 @@ const EMPTY_FORM: AmbassadorFormState = {
   fullName: "", university: "", graduationYear: "", major: "", email: "", mobile: "",
   whyInterested: "", whyAI: "", whyGreat: "",
   involvements: [],
-  instagram: "", tiktok: "", linkedin: "", snapchat: "", facebook: "", x: "", socialOther: "",
+  instagram: "", linkedin: "", facebook: "",
   anythingElse: "",
   agreeIndependent: false, agreeCommissions: false, agreeProfessional: false,
 };
@@ -244,7 +235,7 @@ export default function AmbassadorForm() {
       </fieldset>
 
       <fieldset>
-        <legend>Which social media platforms do you actively use? (include handles)</legend>
+        <legend>Social Media Platforms</legend>
         <div className="form-grid two">
           {SOCIALS.map(({ key, label, placeholder }) => (
             <label key={key}>
