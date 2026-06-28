@@ -225,8 +225,9 @@ export const agent37 = {
     const qs = params.toString();
     return call<IntegrationToolkitsResult>(`/instances/${id}/integrations/toolkits${qs ? `?${qs}` : ""}`);
   },
-  // Start an OAuth connection; returns a `redirectUrl` to open for the student to authorize.
-  connectIntegration: (id: string, body: { toolkit: string }) =>
+  // Start an OAuth connection; returns a `redirectUrl` to send the student to. `callbackUrl`
+  // (absolute https) is where Composio returns them once they finish authorizing.
+  connectIntegration: (id: string, body: { toolkit: string; callbackUrl?: string }) =>
     call<IntegrationConnectResult>(`/instances/${id}/integrations/connect`, {
       method: "POST",
       body: JSON.stringify(body),

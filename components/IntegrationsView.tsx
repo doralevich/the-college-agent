@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Check, Loader2, Plug, Plus, Search, Unplug } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
@@ -20,7 +20,7 @@ const SEARCH_DEBOUNCE_MS = 250;
 const MIN_SEARCH = 3; // the v1 toolkits route 400s a non-empty query shorter than this
 const BROWSE_LIMIT = 24; // the v1 route clamps to 24; ask for a full page so Browse feels real
 const POLL_INTERVAL_MS = 2000;
-const POLL_MAX_ATTEMPTS = 22; // give up polling for the connect to land after ~45s
+const POLL_MAX_ATTEMPTS = 22; // give up confirming the connection after ~45s
 
 type SubTab = "browse" | "connected";
 
@@ -38,7 +38,8 @@ function isToolkitConnected(conns: IntegrationConnection[], slug: string): boole
 
 // The Integrations tab: connect third-party apps (Gmail, GitHub, Slack…) to the student's agent.
 // Browse searches the catalog (popular apps by default); Connected manages the linked accounts.
-// Connecting opens the app's OAuth in a new tab and we poll connections until the link lands.
+// Connecting redirects this tab to the app's OAuth; the connect route sets a callbackUrl that
+// returns the student here (?composioConnect=1&toolkit=…), where we confirm the new connection.
 export function IntegrationsView({ agentId }: { agentId: string }) {
   const [tab, setTab] = useState<SubTab>("browse");
   const [search, setSearch] = useState("");
@@ -47,10 +48,8 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
   const [connections, setConnections] = useState<IntegrationConnection[]>([]);
   const [loadingConns, setLoadingConns] = useState(true);
   const [connecting, setConnecting] = useState<string | null>(null);
-  const [pendingSlug, setPendingSlug] = useState<string | null>(null);
+  const [finishingToolkit, setFinishingToolkit] = useState<string | null>(null);
   const [disconnecting, setDisconnecting] = useState<string | null>(null);
-
-  const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchConnections = useCallback(async () => {
     const { connections: conns } = await apiFetch<IntegrationConnectionsResult>(
@@ -60,16 +59,8 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
     return conns;
   }, [agentId]);
 
-  const stopPolling = useCallback(() => {
-    if (pollTimer.current) {
-      clearInterval(pollTimer.current);
-      pollTimer.current = null;
-    }
-    setPendingSlug(null);
-  }, []);
-
-  // Load connections on mount; stop any poll on unmount (the tab unmounts on switch away). Every
-  // setState lands in a promise callback, so the effect body does no synchronous state update.
+  // Load connections on mount. setState lands only in promise callbacks, so the effect body does
+  // no synchronous state update (react-hooks/set-state-in-effect).
   useEffect(() => {
     let cancelled = false;
     apiFetch<IntegrationConnectionsResult>(`/api/agents/${agentId}/integrations/connections`)
@@ -82,9 +73,55 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
       });
     return () => {
       cancelled = true;
-      stopPolling();
     };
-  }, [agentId, stopPolling]);
+  }, [agentId]);
+
+  // Return handler: Composio bounces the student back to ?composioConnect=1&toolkit=… after the
+  // OAuth. Land on Connected, then poll until the account shows ACTIVE (the finalize can lag the
+  // redirect by a beat). The initial tab/finishing switch is deferred to a microtask so it isn't a
+  // synchronous in-effect setState; the rest lands in the interval callback.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("composioConnect") !== "1") return;
+    const tk = (params.get("toolkit") || "").toLowerCase();
+    // Drop the one-shot params so a refresh doesn't replay this.
+    window.history.replaceState({}, "", window.location.pathname);
+    if (!tk) return;
+
+    let cancelled = false;
+    Promise.resolve().then(() => {
+      if (cancelled) return;
+      setTab("connected");
+      setFinishingToolkit(tk);
+    });
+
+    let attempts = 0;
+    const timer = setInterval(async () => {
+      attempts += 1;
+      try {
+        const conns = await fetchConnections();
+        if (isToolkitConnected(conns, tk)) {
+          clearInterval(timer);
+          if (!cancelled) {
+            setFinishingToolkit(null);
+            toast.success("Connected");
+          }
+          return;
+        }
+      } catch {
+        // transient; keep polling until the attempt cap
+      }
+      if (attempts >= POLL_MAX_ATTEMPTS) {
+        clearInterval(timer);
+        if (!cancelled) setFinishingToolkit(null);
+      }
+    }, POLL_INTERVAL_MS);
+
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [fetchConnections]);
 
   // Debounced catalog load. Empty query → the default popularity-ranked page (Browse). A query of
   // 3+ chars → search. 1–2 chars → wait (the server would 400). Every state update happens inside
@@ -121,46 +158,18 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
     };
   }, [search, agentId]);
 
-  // Called from the connect handler (not render): poll connections until the toolkit shows ACTIVE
-  // or we give up after POLL_MAX_ATTEMPTS. Stored lowercased so the per-card pending check matches
-  // even if the catalog returns a mixed-case slug.
-  function startPolling(slug: string) {
-    setPendingSlug(slug.toLowerCase());
-    let attempts = 0;
-    if (pollTimer.current) clearInterval(pollTimer.current);
-    pollTimer.current = setInterval(async () => {
-      attempts += 1;
-      try {
-        const conns = await fetchConnections();
-        if (isToolkitConnected(conns, slug)) {
-          stopPolling();
-          toast.success("Connected");
-          return;
-        }
-      } catch {
-        // transient; keep polling until the attempt cap
-      }
-      if (attempts >= POLL_MAX_ATTEMPTS) stopPolling();
-    }, POLL_INTERVAL_MS);
-  }
-
   async function connect(slug: string) {
     setConnecting(slug);
-    // Open the tab synchronously inside the click so the popup blocker doesn't eat it (it would if
-    // we opened only after the await), then point it at the OAuth URL — or close it if we fail.
-    const authWindow = window.open("about:blank", "_blank");
     try {
       const { redirectUrl } = await apiFetch<IntegrationConnectResult>(
         `/api/agents/${agentId}/integrations/connect`,
         { method: "POST", body: JSON.stringify({ toolkit: slug }) }
       );
-      if (authWindow) authWindow.location.href = redirectUrl;
-      else window.open(redirectUrl, "_blank", "noopener,noreferrer");
-      startPolling(slug);
+      // Same-tab redirect into the app's OAuth — no popup, so nothing to block. The page unloads
+      // here; we pick the flow back up via the return handler, so don't clear `connecting`.
+      window.location.assign(redirectUrl);
     } catch (e) {
-      authWindow?.close();
       toast.error((e as Error).message);
-    } finally {
       setConnecting(null);
     }
   }
@@ -229,8 +238,7 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {toolkits.map((t) => {
                 const connected = isToolkitConnected(connections, t.slug);
-                const isPending = pendingSlug === t.slug.toLowerCase();
-                const busy = connecting === t.slug || isPending;
+                const busy = connecting === t.slug;
                 return (
                   <div
                     key={t.slug}
@@ -256,11 +264,7 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
                         disabled={busy}
                         onClick={() => connect(t.slug)}
                       >
-                        {busy ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          "Connect"
-                        )}
+                        {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Connect"}
                       </Button>
                     )}
                   </div>
@@ -268,25 +272,27 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
               })}
             </div>
           )}
-
-          {pendingSlug && (
-            <p className="px-1 text-xs text-muted-foreground">
-              Waiting for you to finish connecting in the other tab…
-            </p>
-          )}
         </div>
       ) : (
         <div className="space-y-3">
+          {finishingToolkit && (
+            <div className="flex items-center gap-2 rounded-xl border bg-secondary/40 px-4 py-3 text-sm">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              <span>Finishing your {finishingToolkit} connection…</span>
+            </div>
+          )}
           {loadingConns ? (
             <p className="py-2 text-sm text-muted-foreground">Loading…</p>
           ) : activeConnections.length === 0 ? (
-            <div className="rounded-xl border border-dashed px-6 py-12 text-center">
-              <Plug className="mx-auto h-6 w-6 text-muted-foreground" />
-              <p className="mt-3 text-sm text-muted-foreground">No apps connected yet.</p>
-              <Button variant="outline" size="sm" className="mt-4" onClick={() => setTab("browse")}>
-                Browse apps
-              </Button>
-            </div>
+            !finishingToolkit && (
+              <div className="rounded-xl border border-dashed px-6 py-12 text-center">
+                <Plug className="mx-auto h-6 w-6 text-muted-foreground" />
+                <p className="mt-3 text-sm text-muted-foreground">No apps connected yet.</p>
+                <Button variant="outline" size="sm" className="mt-4" onClick={() => setTab("browse")}>
+                  Browse apps
+                </Button>
+              </div>
+            )
           ) : (
             <div className="overflow-hidden rounded-xl border">
               {activeConnections.map((c, i) => (
