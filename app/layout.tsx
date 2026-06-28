@@ -30,7 +30,6 @@ export const metadata: Metadata = {
   applicationName: "The College Agent",
   category: "Education",
   metadataBase: new URL("https://thecollegeagent.ai"),
-  alternates: { canonical: "https://thecollegeagent.ai" },
   verification: {
     google: "5fRSMFjZatwPejPvw4h30ZVsT0ZbPagGU39YXJUVjn8",
   },

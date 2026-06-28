@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import FAQ from "./components/FAQ";
 import SchoolMarquee from "./components/SchoolMarquee";
 import Explainer from "./components/Explainer";
@@ -7,6 +8,10 @@ import IntegrationGlobe from "./components/IntegrationGlobe";
 import { BookOpenCheck, BriefcaseBusiness, CalendarDays, FileText, GraduationCap, Mail, Network, NotebookTabs, ShieldCheck, Sparkles } from "lucide-react";
 
 const CALENDLY = "https://calendly.com/therealdaveo/apolloai";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "https://thecollegeagent.ai" },
+};
 
 const AGENT_WAYS = [
   {
