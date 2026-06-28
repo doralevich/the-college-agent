@@ -145,13 +145,13 @@ export default function AmbassadorPage() {
           <div className="affiliate-shell">
             <div className="included-gained-grid">
               <div className="info-card">
-                <span className="mono-label">What&apos;s Included</span>
+                <h3 className="info-card-title">What&apos;s Included</h3>
                 <ul className="bullet-list">
                   {INCLUDED.map((item) => <li key={item}>{item}</li>)}
                 </ul>
               </div>
               <div className="info-card">
-                <span className="mono-label">What You&apos;ll Gain</span>
+                <h3 className="info-card-title">What You&apos;ll Gain</h3>
                 <ul className="bullet-list">
                   {GAINED.map((item) => <li key={item}>{item}</li>)}
                 </ul>
@@ -759,13 +759,12 @@ export default function AmbassadorPage() {
           border-radius: 12px;
           padding: 24px 24px 20px;
         }
-        .info-card .bullet-list li {
-          font-weight: 700;
+        .info-card-title {
+          font-size: 20px;
+          font-weight: 800;
           color: var(--navy);
-        }
-        .info-card .mono-label {
-          margin-bottom: 12px;
-          display: block;
+          margin: 0 0 14px;
+          line-height: 1.25;
         }
         .bullet-list {
           list-style: none;
