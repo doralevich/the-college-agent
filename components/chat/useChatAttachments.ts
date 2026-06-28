@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type ClipboardEvent, type DragEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type ClipboardEvent } from "react";
 import { readApiError } from "@/lib/api";
+import { useDropZone } from "@/lib/useDropZone";
 import { uid, type MessageAttachment } from "./types";
 
 export interface PendingFile {
@@ -17,7 +18,6 @@ export interface PendingFile {
 // (POST /api/agents/{id}/chat/files) and the returned path is collected at send time.
 export function useChatAttachments(agentId: string, onFocusRequest?: () => void) {
   const [files, setFiles] = useState<PendingFile[]>([]);
-  const [dragOver, setDragOver] = useState(false);
   const controllers = useRef<Map<string, AbortController>>(new Map());
   const filesRef = useRef<PendingFile[]>([]);
   useEffect(() => {
@@ -113,34 +113,8 @@ export function useChatAttachments(agentId: string, onFocusRequest?: () => void)
     return atts;
   }, [clearFiles]);
 
-  // dragenter/dragleave fire for every child the cursor crosses and bubble to the (large) drop
-  // zone, so we count enters minus leaves rather than inspecting relatedTarget — the latter is
-  // null on Safari/Firefox, which would strobe the overlay on each child boundary crossing.
-  const dragDepth = useRef(0);
-  const dragHandlers = {
-    onDragEnter: (e: DragEvent) => {
-      if (!e.dataTransfer.types.includes("Files")) return;
-      e.preventDefault();
-      dragDepth.current += 1;
-      setDragOver(true);
-    },
-    onDragOver: (e: DragEvent) => {
-      // preventDefault is required for the drop event to fire (and suppresses the browser's
-      // default "open the file" behavior when dropping onto the textarea).
-      if (e.dataTransfer.types.includes("Files")) e.preventDefault();
-    },
-    onDragLeave: (e: DragEvent) => {
-      if (!e.dataTransfer.types.includes("Files")) return;
-      dragDepth.current = Math.max(0, dragDepth.current - 1);
-      if (dragDepth.current === 0) setDragOver(false);
-    },
-    onDrop: (e: DragEvent) => {
-      e.preventDefault();
-      dragDepth.current = 0;
-      setDragOver(false);
-      if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
-    },
-  };
+  // Whole-pane drag-drop (shared with the files browser); spread onto the drop zone in ChatView.
+  const { dragOver, dragHandlers } = useDropZone(addFiles);
 
   const handlePaste = (e: ClipboardEvent) => {
     const items = Array.from(e.clipboardData?.items ?? []).filter((i) => i.kind === "file");

@@ -44,6 +44,21 @@ export function handleError(e: unknown) {
   return apiError("Internal server error", 500, "internal_error");
 }
 
+// Throw a mapped ApiError when an Agent37 instance Response failed, reading its body once for
+// the message. Returns immediately on success WITHOUT touching the body, so the streaming /
+// multipart routes can still consume `upstream.body`/`upstream.text()` themselves. (The
+// `agent37.*` JSON helpers already throw Agent37Error, so they don't need this.)
+export async function assertUpstreamOk(
+  upstream: Response,
+  context: string,
+  fallback: string,
+  code: string
+): Promise<void> {
+  if (upstream.ok) return;
+  const text = await upstream.text().catch(() => "");
+  throw new ApiError(upstream.status || 502, code, upstreamErrorMessage(text, upstream.status, context, fallback));
+}
+
 // Turn an Agent37 instance's error body into a student-safe message. The Agents API returns
 // `{ error: { message } }` or `{ message }`; a non-JSON body (e.g. a gateway HTML 502) is
 // logged server-side under `context` and collapsed to `fallback` so we never echo internals.

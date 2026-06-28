@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type DragEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch, readApiError } from "@/lib/api";
+import { useDropZone } from "@/lib/useDropZone";
 import { joinPath, type FileEntry, type FileListResponse } from "./types";
 
 // Owns the Files tab's directory state + mutations. Mirrors useChatAttachments' shape: one hook
@@ -16,9 +17,8 @@ export function useFileBrowser(agentId: string) {
   const [truncated, setTruncated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showHidden, setShowHidden] = useState(false);
+  const [showHidden, setShowHidden] = useState(true);
   const [uploading, setUploading] = useState(0); // count of in-flight uploads
-  const [dragOver, setDragOver] = useState(false);
 
   // Guard against an older list response landing after a newer navigation.
   const loadSeq = useRef(0);
@@ -150,34 +150,14 @@ export function useFileBrowser(agentId: string) {
     [agentId, path, load]
   );
 
-  // Drag overlay: count enter/leave depth (relatedTarget is unreliable cross-browser) so the
-  // overlay doesn't strobe as the cursor crosses child rows. Same approach as useChatAttachments.
-  const dragDepth = useRef(0);
-  const dragHandlers = {
-    onDragEnter: (e: DragEvent) => {
-      if (!e.dataTransfer.types.includes("Files")) return;
-      e.preventDefault();
-      dragDepth.current += 1;
-      setDragOver(true);
-    },
-    onDragOver: (e: DragEvent) => {
-      if (e.dataTransfer.types.includes("Files")) e.preventDefault();
-    },
-    onDragLeave: (e: DragEvent) => {
-      if (!e.dataTransfer.types.includes("Files")) return;
-      dragDepth.current = Math.max(0, dragDepth.current - 1);
-      if (dragDepth.current === 0) setDragOver(false);
-    },
-    onDrop: (e: DragEvent) => {
-      e.preventDefault();
-      dragDepth.current = 0;
-      setDragOver(false);
-      if (e.dataTransfer.files.length) uploadFiles(e.dataTransfer.files);
-    },
-  };
+  // Whole-pane drag-drop overlay (shared with the chat composer).
+  const { dragOver, dragHandlers } = useDropZone(uploadFiles);
 
-  const visibleEntries = showHidden ? entries : entries.filter((e) => !e.hidden);
-  const hiddenCount = entries.length - entries.filter((e) => !e.hidden).length;
+  const visibleEntries = useMemo(
+    () => (showHidden ? entries : entries.filter((e) => !e.hidden)),
+    [entries, showHidden]
+  );
+  const hiddenCount = useMemo(() => entries.reduce((n, e) => n + (e.hidden ? 1 : 0), 0), [entries]);
 
   return {
     path,

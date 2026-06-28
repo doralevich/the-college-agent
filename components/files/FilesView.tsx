@@ -18,10 +18,12 @@ import {
   Upload,
 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { DropOverlay } from "@/components/chat/Attachments";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useAsyncAction } from "@/lib/useAsyncAction";
 import { FilePreview } from "./FilePreview";
 import { useFileBrowser } from "./useFileBrowser";
 import { breadcrumbs, contentUrl, formatBytes, formatMtime, isDir, type FileEntry } from "./types";
@@ -71,7 +73,7 @@ export function FilesView({ agentId }: { agentId: string }) {
 
   return (
     <div className="relative flex h-full min-h-0 flex-col" {...fb.dragHandlers}>
-      {fb.dragOver && <UploadOverlay />}
+      {fb.dragOver && <DropOverlay label="Drop files to upload here" />}
 
       <header className="flex h-16 shrink-0 items-center justify-between gap-3 border-b bg-background px-6 md:px-10">
         <div className="flex min-w-0 items-center gap-2">
@@ -330,17 +332,6 @@ function IconButton({
   );
 }
 
-function UploadOverlay() {
-  return (
-    <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-background/70 backdrop-blur-[2px]">
-      <div className="flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-primary bg-card/90 px-10 py-8 text-primary shadow-sm">
-        <Upload className="h-7 w-7" />
-        <span className="text-sm font-medium">Drop files to upload here</span>
-      </div>
-    </div>
-  );
-}
-
 function NewFolderDialog({
   open,
   onOpenChange,
@@ -351,19 +342,16 @@ function NewFolderDialog({
   onCreate: (name: string) => Promise<void>;
 }) {
   const [name, setName] = useState("");
-  const [busy, setBusy] = useState(false);
+  const { busy, run } = useAsyncAction();
 
-  async function submit() {
+  function submit() {
     const clean = name.trim();
     if (!clean) return;
-    setBusy(true);
-    try {
+    run(async () => {
       await onCreate(clean);
       setName("");
       onOpenChange(false);
-    } finally {
-      setBusy(false);
-    }
+    });
   }
 
   return (

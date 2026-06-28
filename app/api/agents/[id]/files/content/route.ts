@@ -1,6 +1,6 @@
 import { instanceFetch } from "@/lib/agent37";
 import { requireAgentAccess } from "@/lib/auth";
-import { ApiError, json, route, upstreamErrorMessage } from "@/lib/http";
+import { ApiError, assertUpstreamOk, json, requireTrimmed, route } from "@/lib/http";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -22,11 +22,8 @@ export const GET = route(async (request: Request, { params }: Ctx) => {
   if (disposition) qs.set("disposition", disposition);
 
   const upstream = await instanceFetch(id, `/v1/files/content?${qs.toString()}`);
-  if (!upstream.ok || !upstream.body) {
-    const text = await upstream.text().catch(() => "");
-    const message = upstreamErrorMessage(text, upstream.status, "files/content", "Download failed");
-    throw new ApiError(upstream.status || 502, "download_error", message);
-  }
+  await assertUpstreamOk(upstream, "files/content", "Download failed", "download_error");
+  if (!upstream.body) throw new ApiError(502, "download_error", "Download failed");
 
   const headers = new Headers();
   const ct = upstream.headers.get("Content-Type");
@@ -51,8 +48,7 @@ export const PUT = route(async (request: Request, { params }: Ctx) => {
   await requireAgentAccess(id, "member");
 
   const { searchParams } = new URL(request.url);
-  const path = searchParams.get("path");
-  if (!path) throw new ApiError(400, "invalid_request", "path is required");
+  const path = requireTrimmed(searchParams.get("path"), "path is required");
   const qs = new URLSearchParams();
   qs.set("path", path);
   const overwrite = searchParams.get("overwrite");
@@ -72,11 +68,8 @@ export const PUT = route(async (request: Request, { params }: Ctx) => {
     duplex: "half",
   } as RequestInit & { duplex: "half" });
 
+  await assertUpstreamOk(upstream, "files/content", "Save failed", "save_error");
   const text = await upstream.text().catch(() => "");
-  if (!upstream.ok) {
-    const message = upstreamErrorMessage(text, upstream.status, "files/content", "Save failed");
-    throw new ApiError(upstream.status || 502, "save_error", message);
-  }
   return json(text ? JSON.parse(text) : {});
 });
 

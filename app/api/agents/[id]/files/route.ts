@@ -1,6 +1,6 @@
 import { agent37 } from "@/lib/agent37";
 import { requireAgentAccess } from "@/lib/auth";
-import { ApiError, json, readJson, route } from "@/lib/http";
+import { json, readJson, requireTrimmed, route } from "@/lib/http";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -9,8 +9,7 @@ type Ctx = { params: Promise<{ id: string }> };
 export const DELETE = route(async (request: Request, { params }: Ctx) => {
   const { id } = await params;
   await requireAgentAccess(id, "member");
-  const path = new URL(request.url).searchParams.get("path");
-  if (!path) throw new ApiError(400, "invalid_request", "path is required");
+  const path = requireTrimmed(new URL(request.url).searchParams.get("path"), "path is required");
   return json(await agent37.deleteFile(id, path));
 });
 
@@ -20,6 +19,5 @@ export const PATCH = route(async (request: Request, { params }: Ctx) => {
   const { id } = await params;
   await requireAgentAccess(id, "member");
   const { from, to } = await readJson<{ from?: string; to?: string }>(request);
-  if (!from || !to) throw new ApiError(400, "invalid_request", "from and to are required");
-  return json(await agent37.moveFile(id, from, to));
+  return json(await agent37.moveFile(id, requireTrimmed(from, "from is required"), requireTrimmed(to, "to is required")));
 });

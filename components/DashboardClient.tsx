@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, type ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Bot, Check, CreditCard, FolderOpen, Loader2, LogOut, MessageSquare, RotateCcw, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "@/lib/supabase/client";
+import { dashboardPath, isDashboardTabId, type DashboardTabId } from "@/lib/dashboard-tabs";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -27,12 +28,11 @@ type Props = {
   agentId: string | null;
 };
 
-type TabId = "chat" | "files" | "agents" | "agent" | "settings" | "billing";
-
 export function DashboardClient({ paid, onboardDone, setupDone, agentId }: Props) {
   const hasAgent = !!agentId;
   const { userEmail } = useWorkspace();
   const router = useRouter();
+  const pathname = usePathname();
 
   // Provisioning fires only when the student clicks "Create my agent" (both steps done).
   const [provisioning, setProvisioning] = useState(false);
@@ -56,26 +56,43 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId }: Props
   // the default landing then). The next item swaps with the funnel stage: "Agents" (which hosts
   // the build CTA when unpaid, the setup checklist once paid) → "Your Agent". Billing appears
   // once they've paid (there's a subscription to show / manage).
-  const tabs: { id: TabId; label: string; icon: typeof Bot }[] = [
+  const tabs: { id: DashboardTabId; label: string; icon: typeof Bot }[] = [
     ...(hasAgent
       ? [
-          { id: "chat" as TabId, label: "Chat", icon: MessageSquare },
-          { id: "files" as TabId, label: "Files", icon: FolderOpen },
+          { id: "chat" as DashboardTabId, label: "Chat", icon: MessageSquare },
+          { id: "files" as DashboardTabId, label: "Files", icon: FolderOpen },
         ]
       : []),
     hasAgent
       ? { id: "agent", label: "Your Agent", icon: Bot }
       : { id: "agents", label: "Agents", icon: Bot },
-    ...(paid ? [{ id: "billing" as TabId, label: "Billing", icon: CreditCard }] : []),
+    ...(paid ? [{ id: "billing" as DashboardTabId, label: "Billing", icon: CreditCard }] : []),
     { id: "settings", label: "Settings", icon: Settings2 },
   ];
 
-  const [active, setActive] = useState<TabId>(hasAgent ? "chat" : "agents");
+  const requestedTab = requestedDashboardTab(pathname);
+  const active = normalizeDashboardTab(requestedTab, tabs, hasAgent);
+
+  useEffect(() => {
+    const activePath = dashboardPath(active);
+    if (pathname !== activePath) updateDashboardHistory(activePath, "replace");
+  }, [active, pathname]);
+
+  function openDashboardTab(tab: DashboardTabId) {
+    updateDashboardHistory(dashboardPath(tab), "push");
+  }
 
   // `active` can only reach "chat"/"files" when there's an agent (the tabs and their triggers are
   // gated on hasAgent), so these imply hasAgent.
   const isChat = active === "chat";
   const isFiles = active === "files";
+
+  // Files mounts lazily on first open, then stays mounted (just hidden) so its current directory
+  // and scroll survive tab switches — without paying its initial directory listing on dashboards
+  // where the student never opens it. (Chat is the default tab, so it always mounts.) Latched
+  // during render rather than in an effect, so the mount lands in the same pass as the switch.
+  const [filesOpened, setFilesOpened] = useState(false);
+  if (isFiles && !filesOpened) setFilesOpened(true);
 
   const shell = (
     <div className="flex h-screen">
@@ -102,15 +119,15 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId }: Props
                   Icon={Icon}
                   label={t.label}
                   isActive={isActive}
-                  onActivate={() => setActive("chat")}
+                  href={dashboardPath(t.id)}
                 />
               ) : (
-                <NavButton
+                <NavLink
                   key={t.id}
                   Icon={Icon}
                   label={t.label}
                   isActive={isActive}
-                  onClick={() => setActive(t.id)}
+                  href={dashboardPath(t.id)}
                 />
               );
             })}
@@ -118,7 +135,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId }: Props
         )}
 
         {/* Keep the thread rail visible across dashboard tabs; selecting a thread returns to Chat. */}
-        {hasAgent && <ChatSidebar onOpenChat={() => setActive("chat")} />}
+        {hasAgent && <ChatSidebar onOpenChat={() => openDashboardTab("chat")} />}
 
         <div className="mt-auto space-y-2 pt-4">
           <div className="truncate px-3 text-xs text-muted-foreground">{userEmail}</div>
@@ -140,7 +157,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId }: Props
         )}
         {/* Files mirrors Chat: full-height, kept MOUNTED (just hidden) so the current directory,
             scroll position, and any open dialog survive leaving and returning to the tab. */}
-        {agentId && (
+        {agentId && filesOpened && (
           <div className={cn("h-full", !isFiles && "hidden")}>
             <FilesView agentId={agentId} />
           </div>
@@ -155,7 +172,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId }: Props
               ) : !paid ? (
                 <BuildCta />
               ) : hasAgent ? (
-                <AgentsView onOpenChat={() => setActive("chat")} />
+                <AgentsView onOpenChat={() => openDashboardTab("chat")} />
               ) : provisioning || provisionFailed ? (
                 <Provisioning failed={provisionFailed} onRetry={provision} />
               ) : (
@@ -178,43 +195,52 @@ function ChatTabButton({
   Icon,
   label,
   isActive,
-  onActivate,
+  href,
 }: {
   Icon: typeof Bot;
   label: string;
   isActive: boolean;
-  onActivate: () => void;
+  href: string;
 }) {
   const { startNewChat } = useChatContext();
 
   return (
-    <NavButton
+    <NavLink
       Icon={Icon}
       label={label}
       isActive={isActive}
+      href={href}
       onClick={() => {
         startNewChat();
-        onActivate();
       }}
     />
   );
 }
 
-function NavButton({
+function NavLink({
   Icon,
   label,
   isActive,
+  href,
   onClick,
 }: {
   Icon: typeof Bot;
   label: string;
   isActive: boolean;
-  onClick: () => void;
+  href: string;
+  onClick?: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <Link
+      href={href}
+      prefetch={false}
+      scroll={false}
+      onNavigate={(e) => {
+        e.preventDefault();
+        onClick?.();
+        updateDashboardHistory(href, "push");
+      }}
+      aria-current={isActive ? "page" : undefined}
       className={cn(
         "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
         isActive ? "bg-secondary text-secondary-foreground" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -222,8 +248,31 @@ function NavButton({
     >
       <Icon className="h-4 w-4" />
       <span className="flex-1 text-left">{label}</span>
-    </button>
+    </Link>
   );
+}
+
+function updateDashboardHistory(path: string, mode: "push" | "replace") {
+  if (typeof window === "undefined" || window.location.pathname === path) return;
+  if (mode === "replace") window.history.replaceState(null, "", path);
+  else window.history.pushState(null, "", path);
+}
+
+function requestedDashboardTab(pathname: string): DashboardTabId | null {
+  const parts = pathname.split("/").filter(Boolean);
+  if (parts[0] !== "dashboard" || parts.length !== 2) return null;
+  return isDashboardTabId(parts[1]) ? parts[1] : null;
+}
+
+function normalizeDashboardTab(
+  requestedTab: DashboardTabId | null,
+  tabs: { id: DashboardTabId }[],
+  hasAgent: boolean
+): DashboardTabId {
+  if (requestedTab === "agents" && hasAgent) return "agent";
+  if (requestedTab === "agent" && !hasAgent) return "agents";
+  if (requestedTab && tabs.some((t) => t.id === requestedTab)) return requestedTab;
+  return hasAgent ? "chat" : "agents";
 }
 
 function BuildCta() {

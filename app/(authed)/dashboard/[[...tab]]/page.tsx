@@ -1,12 +1,21 @@
+import { notFound } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getUserWorkspaces } from "@/lib/workspaces";
+import { isDashboardTabId } from "@/lib/dashboard-tabs";
 import { DashboardClient } from "@/components/DashboardClient";
+
+type Props = {
+  params: Promise<{ tab?: string[] }>;
+};
 
 // Server component: figure out where the student is in the funnel, then hand the flags
 // to the client dashboard. State is read with the service-role client (the user is
 // already authenticated; we only read their own rows).
-export default async function DashboardPage() {
+export default async function DashboardPage({ params }: Props) {
+  const { tab } = await params;
+  if (tab && (tab.length !== 1 || !isDashboardTabId(tab[0]))) notFound();
+
   const { user } = await getSession();
   if (!user) return null; // layout already redirects logged-out users
 

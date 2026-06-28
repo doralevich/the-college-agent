@@ -1,6 +1,6 @@
 import { instanceFetch } from "@/lib/agent37";
 import { requireAgentAccess } from "@/lib/auth";
-import { ApiError, json, route, upstreamErrorMessage } from "@/lib/http";
+import { ApiError, assertUpstreamOk, json, route } from "@/lib/http";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -28,11 +28,8 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
     headers: { "Content-Type": file.type || "application/octet-stream" },
     body: file,
   });
+  await assertUpstreamOk(upstream, "chat/files", "Upload failed", "upload_error");
   const text = await upstream.text().catch(() => "");
-  if (!upstream.ok) {
-    const message = upstreamErrorMessage(text, upstream.status, "chat/files", "Upload failed");
-    throw new ApiError(upstream.status || 502, "upload_error", message);
-  }
 
   // Return the gateway's resolved path so the composer can reference it in the turn's `files`.
   const entry = text ? (JSON.parse(text) as { path?: string }) : {};

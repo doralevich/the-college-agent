@@ -1,6 +1,6 @@
 import { agent37 } from "@/lib/agent37";
 import { requireAgentAccess } from "@/lib/auth";
-import { ApiError, json, route } from "@/lib/http";
+import { json, requireTrimmed, route } from "@/lib/http";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -9,7 +9,6 @@ type Ctx = { params: Promise<{ id: string }> };
 export const POST = route(async (request: Request, { params }: Ctx) => {
   const { id } = await params;
   await requireAgentAccess(id, "member");
-  const path = new URL(request.url).searchParams.get("path");
-  if (!path) throw new ApiError(400, "invalid_request", "path is required");
+  const path = requireTrimmed(new URL(request.url).searchParams.get("path"), "path is required");
   return json(await agent37.makeDir(id, path), 201);
 });
