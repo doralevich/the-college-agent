@@ -9,17 +9,17 @@ import type { HostingKey } from "@/lib/pricing";
 // (3737/7681/8080/9119); the image remaps those surfaces to the non-reserved ports below
 // and the template declares them (template/release.sh). The signed-url allowlist tracks
 // PORTS automatically (app/api/agents/[id]/signed-url/route.ts).
-// Machine shape is driven by the student's HOSTING plan (lib/pricing). Basic is the floor
-// (4 vCPU / 8 GB / 20 GB); Pro doubles it across the board (8 vCPU / 16 GB / 40 GB). Both the
-// student auto-provision path (app/api/provision) and the admin path (app/api/agents) resolve
-// the shape from the purchased plan via shapeForHosting(), so they stay in sync.
+// Machine shape is driven by the student's HOSTING plan (lib/pricing). Each tier is what
+// students see on /build, and what the provisioner actually requests — both the student
+// auto-provision path (app/api/provision) and the admin path (app/api/agents) resolve the
+// shape from the purchased plan via shapeForHosting(), so they stay in sync.
 export type AgentShape = { cpu: number; memory: number; disk: number };
 
-// The 4/8 shape requires disk 20–40 GB (smaller 400s the create). 20 is the floor; the
-// larger 8/16 Pro shape gets 40 GB (still within the supported range for that machine).
 export const HOSTING_SHAPES: Record<HostingKey, AgentShape> = {
-  basic: { cpu: 4, memory: 8, disk: 20 },
-  pro: { cpu: 8, memory: 16, disk: 40 },
+  basic: { cpu: 1, memory: 4, disk: 12 },
+  plus:  { cpu: 2, memory: 6, disk: 20 },
+  pro:   { cpu: 4, memory: 8, disk: 30 },
+  max:   { cpu: 6, memory: 12, disk: 50 },
 };
 
 // Resolve the machine shape for a hosting plan key (the DB stores it as plain text on the
