@@ -43,14 +43,17 @@ const steps = [
 
 export function WelcomeView({
   firstName,
+  agentName,
+  avatarUrl,
   onOpenChat,
   onboardDone,
   userId,
 }: {
   firstName: string | null;
-  // agentName comes from the parent but we intentionally don't render it —
-  // the welcome speaks as "Frankenstein" per the brief, regardless of the row.
+  // Student-picked agent name from onboarding. Falls back to "your College Agent".
   agentName?: string | null;
+  // Student-uploaded avatar URL (Supabase Storage public). Falls back to the default mascot.
+  avatarUrl?: string | null;
   onOpenChat: () => void;
   // When false, the page swaps to the conversational onboarding flow.
   onboardDone: boolean;
@@ -59,10 +62,13 @@ export function WelcomeView({
 }) {
   // Conversational onboarding takes over the Welcome surface until the student has
   // answered all the questions. Once their answers are saved, we flip back to the
-  // static greeting + Open Chat CTA.
-  if (!onboardDone) return <ConversationalOnboard userId={userId} />;
+  // static greeting + Open Chat CTA. firstName (from leads or onboard) lets the bot
+  // greet the student by name in its intro line before they've filled the form again.
+  if (!onboardDone) return <ConversationalOnboard userId={userId} knownFirstName={firstName} />;
 
   const name = firstName?.trim() || "there";
+  const bot = agentName?.trim() || "your College Agent";
+  const mascotSrc = avatarUrl?.trim() || "/thecollegeagent.png";
 
   // Inject Fraunces + DM Sans on mount so we don't have to wire them into the
   // app's font config; cleaned up on unmount to avoid duplicates on navigation.
@@ -107,15 +113,25 @@ export function WelcomeView({
         className="ca-welcome-card"
       >
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 26 }}>
-          <Image
-            src="/thecollegeagent.png"
-            alt="Frankenstein, your College Agent"
-            width={150}
-            height={150}
-            className="ca-mascot"
-            style={{ height: 150, width: "auto", objectFit: "contain" }}
-            priority
-          />
+          {avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={mascotSrc}
+              alt={`${bot}, your College Agent`}
+              className="ca-mascot"
+              style={{ height: 150, width: 150, objectFit: "cover", borderRadius: "50%" }}
+            />
+          ) : (
+            <Image
+              src="/thecollegeagent.png"
+              alt="Your College Agent"
+              width={150}
+              height={150}
+              className="ca-mascot"
+              style={{ height: 150, width: "auto", objectFit: "contain" }}
+              priority
+            />
+          )}
         </div>
 
         <h1
@@ -130,7 +146,7 @@ export function WelcomeView({
             color: t.ink,
           }}
         >
-          Hey <span style={{ color: t.green }}>{name}</span>, I&apos;m Frankenstein.
+          Hey <span style={{ color: t.green }}>{name}</span>, I&apos;m {bot}.
         </h1>
 
         <p

@@ -31,8 +31,10 @@ export async function POST(req: NextRequest) {
     const raw = formData.get("data") as string;
     const data = JSON.parse(raw);
     const resumeFile = formData.get("resume") as File | null;
+    const avatarFile = formData.get("avatar") as File | null;
 
     let resumeUrl: string | null = null;
+    let avatarUrl: string | null = null;
 
     if (resumeFile && resumeFile.size > 0) {
       const buffer = Buffer.from(await resumeFile.arrayBuffer());
@@ -44,6 +46,19 @@ export async function POST(req: NextRequest) {
       if (!storageError) {
         const { data: urlData } = supabase.storage.from("college-agent-uploads").getPublicUrl(fileName);
         resumeUrl = urlData.publicUrl;
+      }
+    }
+
+    if (avatarFile && avatarFile.size > 0) {
+      const buffer = Buffer.from(await avatarFile.arrayBuffer());
+      const ext = (avatarFile.name.split(".").pop() || "png").toLowerCase();
+      const fileName = `avatars/${Date.now()}-${data.firstName}-${data.lastName}.${ext}`.replace(/\s+/g, "-").toLowerCase();
+      const { error: avatarStorageError } = await supabase.storage
+        .from("college-agent-uploads")
+        .upload(fileName, buffer, { contentType: avatarFile.type || "image/png", upsert: false });
+      if (!avatarStorageError) {
+        const { data: urlData } = supabase.storage.from("college-agent-uploads").getPublicUrl(fileName);
+        avatarUrl = urlData.publicUrl;
       }
     }
 
@@ -65,6 +80,7 @@ export async function POST(req: NextRequest) {
       // Full questionnaire fields stored as JSONB blob for flexibility
       questionnaire: data,
       resume_url: resumeUrl,
+      avatar_url: avatarUrl,
       submitted_at: new Date().toISOString(),
     }], { onConflict: "user_id" });
 

@@ -33,11 +33,13 @@ type Props = {
   firstName: string | null;
   // From agents.name — used for the "I'm {agentName}" greeting in the empty chat state.
   agentName: string | null;
+  // Optional custom avatar URL the student uploaded during onboarding.
+  avatarUrl: string | null;
   // Auth user id — scopes the conversational onboarding's localStorage progress key.
   userId: string;
 };
 
-export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstName, agentName, userId }: Props) {
+export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstName, agentName, avatarUrl, userId }: Props) {
   const hasAgent = !!agentId;
   const { userEmail } = useWorkspace();
   const router = useRouter();
@@ -214,6 +216,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
                 <WelcomeView
                   firstName={firstName}
                   agentName={agentName}
+                  avatarUrl={avatarUrl}
                   onOpenChat={() => openDashboardTab("chat")}
                   onboardDone={onboardDone}
                   userId={userId}
