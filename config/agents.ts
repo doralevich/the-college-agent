@@ -9,17 +9,23 @@ import type { HostingKey } from "@/lib/pricing";
 // (3737/7681/8080/9119); the image remaps those surfaces to the non-reserved ports below
 // and the template declares them (template/release.sh). The signed-url allowlist tracks
 // PORTS automatically (app/api/agents/[id]/signed-url/route.ts).
-// Machine shape is driven by the student's HOSTING plan (lib/pricing). Each tier is what
-// students see on /build, and what the provisioner actually requests — both the student
-// auto-provision path (app/api/provision) and the admin path (app/api/agents) resolve the
-// shape from the purchased plan via shapeForHosting(), so they stay in sync.
+// Machine shape is driven by the student's HOSTING plan (lib/pricing). Agent37 only
+// accepts three exact (cpu, memory) combos right now — 2/4, 4/8, 8/16 — with disk
+// bands of 6-20, 20-40, 40-80 GB respectively. We always meet-or-beat what the /build
+// marketing page advertises:
+//   Basic   marketed 1 vCPU / 4 GB → provisioned 2 vCPU / 4 GB  (more CPU)
+//   Plus    marketed 2 vCPU / 6 GB → provisioned 4 vCPU / 8 GB  (more CPU + RAM)
+//   Pro     marketed 4 vCPU / 8 GB → provisioned 4 vCPU / 8 GB  (matches)
+//   Max     marketed 6 vCPU / 12 GB → provisioned 8 vCPU / 16 GB (more CPU + RAM)
+// Both the student auto-provision path (app/api/provision) and the admin path
+// (app/api/agents) resolve the shape via shapeForHosting(), so they stay in sync.
 export type AgentShape = { cpu: number; memory: number; disk: number };
 
 export const HOSTING_SHAPES: Record<HostingKey, AgentShape> = {
-  basic: { cpu: 1, memory: 4, disk: 12 },
-  plus:  { cpu: 2, memory: 6, disk: 20 },
-  pro:   { cpu: 4, memory: 8, disk: 30 },
-  max:   { cpu: 6, memory: 12, disk: 50 },
+  basic: { cpu: 2, memory: 4,  disk: 12 },
+  plus:  { cpu: 4, memory: 8,  disk: 20 },
+  pro:   { cpu: 4, memory: 8,  disk: 30 },
+  max:   { cpu: 8, memory: 16, disk: 50 },
 };
 
 // Resolve the machine shape for a hosting plan key (the DB stores it as plain text on the
