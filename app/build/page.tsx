@@ -275,15 +275,12 @@ export default function BuildPage() {
                       The College Agent &middot; {annual ? "School year" : "Monthly"} &middot; {price}
                       {annual ? "/yr" : "/mo"}
                     </span>
-                    <button type="button" className="ca-plan-change" onClick={() => setStep("plan")}>
-                      Change
-                    </button>
                   </div>
 
                   {error && <p className="ca-error" role="alert">{error}</p>}
 
                   <button type="submit" className="ca-cta" disabled={loading} aria-busy={loading}>
-                    {loading ? "Loading..." : "Next — Continue to payment"}
+                    {loading ? "Loading..." : "Continue to payment"}
                   </button>
 
                   <p className="ca-trust">Secure checkout by Stripe</p>
@@ -574,20 +571,6 @@ export default function BuildPage() {
           font-weight: 600;
           color: var(--ca-ink);
         }
-        .ca-plan-change {
-          background: transparent;
-          border: none;
-          color: var(--ca-green);
-          font-family: var(--ca-sans);
-          font-size: 13px;
-          font-weight: 600;
-          cursor: pointer;
-          padding: 4px 8px;
-          border-radius: 6px;
-          text-decoration: underline;
-          text-underline-offset: 2px;
-        }
-        .ca-plan-change:hover { color: var(--ca-green-dark); }
         @media (max-width: 480px) {
           .ca-row { grid-template-columns: 1fr; }
         }
