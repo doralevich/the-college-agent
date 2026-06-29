@@ -73,10 +73,10 @@ const jsonLd = {
         "AI agent for college students, AI for college students, AI study tool, AI note taker for students, student AI assistant, college productivity app, study guide generator",
       areaServed: "United States",
       offers: [
-        { "@type": "Offer", name: "Hermes Starter", price: "999", priceCurrency: "USD" },
-        { "@type": "Offer", name: "Hermes Pro", price: "1499", priceCurrency: "USD" },
-        { "@type": "Offer", name: "OpenClaw Starter", price: "999", priceCurrency: "USD" },
-        { "@type": "Offer", name: "OpenClaw Pro", price: "1499", priceCurrency: "USD" },
+        { "@type": "Offer", name: "Hermes Starter", price: "199", priceCurrency: "USD" },
+        { "@type": "Offer", name: "Hermes Pro", price: "399", priceCurrency: "USD" },
+        { "@type": "Offer", name: "OpenClaw Starter", price: "199", priceCurrency: "USD" },
+        { "@type": "Offer", name: "OpenClaw Pro", price: "399", priceCurrency: "USD" },
       ],
     },
     {
