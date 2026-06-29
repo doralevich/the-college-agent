@@ -1,12 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { apiFetch } from "@/lib/api";
 import { isTransitional, statusVariant } from "@/lib/format";
 import type { MergedAgent, Role } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { AgentActionsMenu } from "@/components/AgentActionsMenu";
 import { AgentNameCell } from "@/components/AgentNameCell";
 import { useChatContext } from "@/components/chat/ChatProvider";
@@ -15,6 +17,7 @@ import { useChatContext } from "@/components/chat/ChatProvider";
 // the per-row "Chat" CTA. Only the student dashboard (always under a ChatProvider) renders
 // this view, so reading chat context here is safe.
 export function AgentsView({ firstName, onOpenChat }: { firstName: string | null; onOpenChat: () => void }) {
+  const router = useRouter();
   const { current } = useWorkspace();
   const { startNewChat } = useChatContext();
   const handleChat = () => {
@@ -71,6 +74,12 @@ export function AgentsView({ firstName, onOpenChat }: { firstName: string | null
       ) : agents.length === 0 ? (
         <div className="rounded-lg border border-dashed p-12 text-center">
           <p className="text-sm text-muted-foreground">No agents in this workspace yet.</p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Tell us about you again, and we&apos;ll build you a fresh agent.
+          </p>
+          <Button className="mt-4" onClick={() => router.refresh()}>
+            Create Agent
+          </Button>
         </div>
       ) : (
         <div className="overflow-hidden rounded-lg border">
@@ -112,7 +121,7 @@ export function AgentsView({ firstName, onOpenChat }: { firstName: string | null
                       role={role}
                       onChanged={load}
                       onChat={handleChat}
-                      confirmDeleteDescription="This deletes your agent and clears your onboarding answers. To get a new agent you'll fill out the setup forms again. This cannot be undone."
+                      confirmDeleteDescription="This deletes your agent and clears your onboarding answers (Tell the Agent About You). Your technical setup stays intact. You'll redo onboarding to create a new agent. This cannot be undone."
                     />
                   </td>
                 </tr>

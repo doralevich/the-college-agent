@@ -26,12 +26,14 @@ export const DELETE = route(async (_request: Request, { params }: Ctx) => {
   // DB rows, leaving a clean "nothing happened" state rather than a billed orphan.
   await agent37.deleteAgent(id);
 
-  // A student deleting their own agent re-enters the funnel, so clear their onboarding
-  // + setup intake — otherwise the dashboard would instantly re-provision a new (billed)
-  // agent from the saved answers instead of showing the forms again. This runs BEFORE
-  // the row delete so a mid-failure keeps `hasAgent` true (no re-provision). Operators
-  // deleting a student's agent from /admin must NOT wipe that student's intake.
-  if (!isPlatformAdmin) await clearStudentIntake(user.id);
+  // A student deleting their own agent re-enters the funnel. Clear ONLY the onboarding
+  // intake (the "Tell the Agent About You" answers) so the dashboard requires them to
+  // redo that step before a new agent can be provisioned — otherwise it would instantly
+  // re-provision a billed agent from saved answers. The technical setup (Telegram /
+  // BYO keys) is preserved so they don't have to re-paste those. Runs BEFORE the row
+  // delete so a mid-failure keeps `hasAgent` true (no re-provision). Operators deleting
+  // from /admin must NOT wipe that student's intake.
+  if (!isPlatformAdmin) await clearStudentIntake(user.id, ["onboard"]);
 
   await supabase.from("agents").delete().eq("agent37_id", id);
 
