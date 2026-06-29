@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { ConversationalOnboard } from "@/components/ConversationalOnboard";
 
 // First-run landing on the student dashboard. Greets as Frankenstein (the agent's
@@ -73,6 +74,12 @@ export function WelcomeView({
   const name = firstName?.trim() || "there";
   const bot = agentName?.trim() || "your College Agent";
   const mascotSrc = avatarUrl?.trim() || "/thecollegeagent.png";
+
+  // PostOnboardCTA wraps the bottom button so the !hasAgent case can manually
+  // re-trigger /api/provision if the auto-provision after onboarding silently failed.
+  // (Onboarding → provisioning was wired in PR #73 but pre-#73 students land here
+  // with no agent and need an escape hatch.)
+  const Cta = <PostOnboardCta hasAgent={hasAgent} onOpenChat={onOpenChat} />;
 
   // Inject Fraunces + DM Sans on mount so we don't have to wire them into the
   // app's font config; cleaned up on unmount to avoid duplicates on navigation.
@@ -214,34 +221,7 @@ export function WelcomeView({
           ))}
         </ol>
 
-        <div style={{ textAlign: "center" }}>
-          <button
-            type="button"
-            onClick={hasAgent ? onOpenChat : undefined}
-            disabled={!hasAgent}
-            className="ca-cta"
-            style={{
-              border: "none",
-              cursor: hasAgent ? "pointer" : "wait",
-              fontFamily: "'DM Sans', system-ui, sans-serif",
-              fontSize: 16,
-              fontWeight: 600,
-              color: "#fff",
-              background: t.green,
-              padding: "15px 40px",
-              borderRadius: 12,
-              boxShadow: "0 8px 20px -8px rgba(45,122,58,.6)",
-              opacity: hasAgent ? 1 : 0.65,
-            }}
-          >
-            {hasAgent ? "Open Chat" : "Building your agent…"}
-          </button>
-          <p style={{ marginTop: 14, fontSize: 13, color: t.inkSoft }}>
-            {hasAgent
-              ? "Takes about two minutes to get rolling."
-              : "This usually takes a minute or two. Refresh if it's still not ready."}
-          </p>
-        </div>
+        {Cta}
       </div>
 
       <style>{`
@@ -264,6 +244,92 @@ export function WelcomeView({
           .ca-mascot { animation: none; }
         }
       `}</style>
+    </div>
+  );
+}
+
+function PostOnboardCta({ hasAgent, onOpenChat }: { hasAgent: boolean; onOpenChat: () => void }) {
+  const router = useRouter();
+  const [provisioning, setProvisioning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function provisionNow() {
+    if (provisioning) return;
+    setProvisioning(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/provision", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body?.error?.message || `Couldn't build your agent (${res.status})`);
+      router.refresh();
+    } catch (e) {
+      setError((e as Error).message);
+      setProvisioning(false);
+    }
+  }
+
+  if (hasAgent) {
+    return (
+      <div style={{ textAlign: "center" }}>
+        <button
+          type="button"
+          onClick={onOpenChat}
+          className="ca-cta"
+          style={{
+            border: "none",
+            cursor: "pointer",
+            fontFamily: "'DM Sans', system-ui, sans-serif",
+            fontSize: 16,
+            fontWeight: 600,
+            color: "#fff",
+            background: t.green,
+            padding: "15px 40px",
+            borderRadius: 12,
+            boxShadow: "0 8px 20px -8px rgba(45,122,58,.6)",
+          }}
+        >
+          Open Chat
+        </button>
+        <p style={{ marginTop: 14, fontSize: 13, color: t.inkSoft }}>Takes about two minutes to get rolling.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ textAlign: "center" }}>
+      <button
+        type="button"
+        onClick={provisionNow}
+        disabled={provisioning}
+        className="ca-cta"
+        style={{
+          border: "none",
+          cursor: provisioning ? "wait" : "pointer",
+          fontFamily: "'DM Sans', system-ui, sans-serif",
+          fontSize: 16,
+          fontWeight: 600,
+          color: "#fff",
+          background: t.green,
+          padding: "15px 40px",
+          borderRadius: 12,
+          boxShadow: "0 8px 20px -8px rgba(45,122,58,.6)",
+          opacity: provisioning ? 0.65 : 1,
+        }}
+      >
+        {provisioning ? "Building your agent…" : "Build my agent"}
+      </button>
+      <p style={{ marginTop: 14, fontSize: 13, color: t.inkSoft }}>
+        {provisioning
+          ? "This usually takes a minute or two. Refresh if it's still not ready."
+          : "Click to spin up your agent. Takes about a minute."}
+      </p>
+      {error && (
+        <p style={{ marginTop: 8, fontSize: 13, color: "#B23636" }}>{error}</p>
+      )}
     </div>
   );
 }
