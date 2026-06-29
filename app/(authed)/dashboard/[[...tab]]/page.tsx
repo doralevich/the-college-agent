@@ -36,7 +36,7 @@ export default async function DashboardPage({ params }: Props) {
     workspace
       ? db
           .from("agents")
-          .select("agent37_id")
+          .select("agent37_id, name")
           .eq("workspace_id", workspace.id)
           .order("created_at", { ascending: true })
           .limit(1)
@@ -48,6 +48,7 @@ export default async function DashboardPage({ params }: Props) {
   const onboardDone = !!onboardRes.data;
   const setupDone = (setupRes.count ?? 0) > 0;
   const agentId = (agentRes.data?.agent37_id as string | undefined) ?? null;
+  const agentName = (agentRes.data?.name as string | undefined) ?? null;
   const firstName = (onboardRes.data?.first_name as string | undefined) ?? null;
 
   return (
@@ -57,6 +58,7 @@ export default async function DashboardPage({ params }: Props) {
       setupDone={setupDone}
       agentId={agentId}
       firstName={firstName}
+      agentName={agentName}
     />
   );
 }

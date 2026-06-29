@@ -30,9 +30,11 @@ type Props = {
   agentId: string | null;
   // From onboard_submissions — used for the "Hi {firstName}" greeting on the agent dashboard.
   firstName: string | null;
+  // From agents.name — used for the "I'm {agentName}" greeting in the empty chat state.
+  agentName: string | null;
 };
 
-export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstName }: Props) {
+export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstName, agentName }: Props) {
   const hasAgent = !!agentId;
   const { userEmail } = useWorkspace();
   const router = useRouter();
@@ -174,7 +176,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
             composer draft, and the model selection survive leaving and returning to the tab. */}
         {hasAgent && chatOpened && (
           <div className={cn("h-full", !isChat && "hidden")}>
-            <ChatView />
+            <ChatView firstName={firstName} agentName={agentName} />
           </div>
         )}
         {/* Files mirrors Chat: full-height, kept MOUNTED (just hidden) so the current directory,
