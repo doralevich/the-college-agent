@@ -1,199 +1,421 @@
 "use client";
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
 import BuildNav from "../components/BuildNav";
-import Configurator, { ConfigSummary } from "../components/Configurator";
-import StudentInfoForm, { StudentInfo } from "../components/StudentInfoForm";
-import CheckoutPanel from "./CheckoutPanel";
-import { dueToday, monthlyRecurring, formatUSD } from "@/lib/pricing";
+
+// One plan, two billing cadences. Both prices live on a single Stripe Product
+// ("The College Agent") and are served via Stripe Payment Links — there's no
+// custom backend session creation for this flow. The post-payment success URL
+// configured on each Payment Link in Stripe is what carries the student into
+// the onboarding form.
+const STRIPE_ANNUAL_URL = "https://buy.stripe.com/00w14n3Qd8yx0116J7dnW00";
+const STRIPE_MONTHLY_URL = "https://buy.stripe.com/5kQ3cv5Yl7ut9BBgjHdnW01";
+
+const FONTS_HREF =
+  "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap";
 
 export default function BuildPage() {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null);
-  const [configSummary, setConfigSummary] = useState<ConfigSummary | null>(null);
+  const [plan, setPlan] = useState<"annual" | "monthly">("annual");
 
-  function handleInfoComplete(info: StudentInfo) {
-    setStudentInfo(info);
-    setStep(2);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    fetch("/api/lead-capture", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(info),
-    }).catch(() => {});
-  }
+  // The HTML snippet pulls Inter + IBM Plex Mono from Google Fonts. App Router
+  // client components can't render <link> into <head>, so inject once on mount
+  // and clean up to avoid duplicates on navigation.
+  useEffect(() => {
+    const links: HTMLLinkElement[] = [];
+    const add = (attrs: Record<string, string>) => {
+      const el = document.createElement("link");
+      Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+      document.head.appendChild(el);
+      links.push(el);
+    };
+    add({ rel: "preconnect", href: "https://fonts.googleapis.com" });
+    add({ rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" });
+    add({ rel: "stylesheet", href: FONTS_HREF });
+    return () => {
+      links.forEach((el) => el.remove());
+    };
+  }, []);
 
-  function handleConfigComplete(summary: ConfigSummary) {
-    setConfigSummary(summary);
-    setStep(3);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    // The order-summary email now fires from the Stripe webhook on successful payment
-    // (lib/email/order-summary.ts), not here — so we only notify on real, paid orders.
-  }
-
-  const steps = [
-    { n: 1, label: "About You" },
-    { n: 2, label: "Build Your Agent" },
-    { n: 3, label: "Checkout" },
-  ];
-
-  // Authoritative amounts come from lib/pricing via the selection keys (not the
-  // Configurator's display strings) — the same source the server charges from.
-  const selection = configSummary
-    ? {
-        plan: configSummary.planKey,
-        hosting: configSummary.hostingKey,
-        support: configSummary.supportKey,
-        onboarding: configSummary.onboardingKey,
-      }
-    : null;
-  const dueTodayCents = selection ? dueToday(selection) : 0;
-  const monthlyCents = selection ? monthlyRecurring(selection) : 0;
+  const annual = plan === "annual";
+  const price = annual ? "$299.99" : "$29.99";
+  const period = annual ? "/ school year" : "/ month";
+  const savenote = annual ? "Save 17%, about $25/mo." : "Billed monthly. Switch to yearly anytime.";
+  const ctaHref = annual ? STRIPE_ANNUAL_URL : STRIPE_MONTHLY_URL;
 
   return (
     <>
       <BuildNav />
 
       <main style={{ paddingTop: 72 }}>
+        <section className="ca-checkout">
+          <div className="ca-panel">
+            <p className="ca-eyebrow">Get started</p>
+            <h2 className="ca-h2">One plan. Everything included.</h2>
+            <p className="ca-sub">
+              Your own AI agent, set up for you and ready to go. No build fees, no add-ons, no hosting
+              tiers to figure out.
+            </p>
 
-        {/* Step indicator */}
-        <section style={{ background: "var(--cream2)", padding: "48px 24px 36px", textAlign: "center" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0, marginBottom: 28 }}>
-            {steps.map((s, i) => (
-              <div key={s.n} style={{ display: "flex", alignItems: "center" }}>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-                  <div style={{
-                    width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
-                    background: step >= s.n ? "var(--green)" : "rgba(11,23,41,.1)",
-                    color: step >= s.n ? "#fff" : "rgba(11,23,41,.35)",
-                    fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700,
-                    transition: "background .3s",
-                  }}>
-                    {step > s.n ? "✓" : s.n}
-                  </div>
-                  <span style={{
-                    fontFamily: "var(--font-mono)", fontSize: 9, fontWeight: 600,
-                    textTransform: "uppercase", letterSpacing: ".08em",
-                    color: step >= s.n ? "var(--green)" : "rgba(11,23,41,.3)",
-                    whiteSpace: "nowrap",
-                  }}>
-                    {s.label}
-                  </span>
-                </div>
-                {i < 2 && (
-                  <div style={{
-                    width: 80, height: 1, margin: "0 8px", marginBottom: 24,
-                    background: step > s.n ? "var(--green)" : "rgba(11,23,41,.1)",
-                    transition: "background .3s",
-                  }} />
-                )}
+            <div className="ca-toggle" role="group" aria-label="Billing period">
+              <button
+                type="button"
+                className={annual ? "is-active" : undefined}
+                aria-pressed={annual}
+                onClick={() => setPlan("annual")}
+              >
+                School year<span className="ca-save-pill">Save 17%</span>
+              </button>
+              <button
+                type="button"
+                className={!annual ? "is-active" : undefined}
+                aria-pressed={!annual}
+                onClick={() => setPlan("monthly")}
+              >
+                Monthly
+              </button>
+            </div>
+
+            <div className="ca-card">
+              <h3 className="ca-plan-name">The College Agent</h3>
+              <p className="ca-plan-desc">
+                Your AI, built around your classes, your calendar, and your life. Live within 30 minutes.
+              </p>
+
+              <div className="ca-price-row">
+                <span className="ca-price">{price}</span>
+                <span className="ca-period">{period}</span>
               </div>
-            ))}
+              <p className="ca-savenote">{savenote}</p>
+
+              <ul className="ca-features">
+                <li>
+                  <span className="ca-check"><CheckIcon /></span>
+                  Your own AI Agent, built and set up for you
+                </li>
+                <li>
+                  <span className="ca-check"><CheckIcon /></span>
+                  Works on the web and Telegram, any device
+                </li>
+                <li>
+                  <span className="ca-check"><CheckIcon /></span>
+                  Connect your calendar, email, Canvas, and more
+                </li>
+                <li>
+                  <span className="ca-check"><CheckIcon /></span>
+                  Cloud hosting included
+                </li>
+                <li>
+                  <span className="ca-check"><CheckIcon /></span>
+                  Cancel anytime, pause over summer
+                </li>
+              </ul>
+
+              <a className="ca-cta" href={ctaHref}>Get started</a>
+
+              <p className="ca-trust">No setup fee &middot; Cancel anytime &middot; Secure checkout by Stripe</p>
+
+              <p className="ca-apinote">
+                <InfoIcon /> AI usage (API costs) is billed separately based on what you use.
+              </p>
+            </div>
+
+            <p className="ca-next">
+              After checkout you&apos;ll fill out a <b>2-minute onboarding form</b>, and your agent goes
+              live within 30 minutes.
+            </p>
+
+            <p className="ca-custom">
+              Need something custom for your program or club?{" "}
+              <a href="mailto:david@apolloclaw.ai">Get in touch</a>.
+            </p>
           </div>
-
-          {step === 1 && <>
-            <h1 style={{ fontSize: "clamp(26px, 3.5vw, 40px)", fontWeight: 800, letterSpacing: "-.02em", color: "var(--navy)", marginBottom: 12 }}>
-              Tell us about yourself
-            </h1>
-            <p style={{ fontSize: 15, color: "rgba(11,23,41,.55)", maxWidth: 460, margin: "0 auto" }}>
-              This helps us personalize your agent from day one.
-            </p>
-          </>}
-          {step === 2 && <>
-            <h1 style={{ fontSize: "clamp(26px, 3.5vw, 40px)", fontWeight: 800, letterSpacing: "-.02em", color: "var(--navy)", marginBottom: 12 }}>
-              Build Your Agent
-            </h1>
-            <p style={{ fontSize: 15, color: "rgba(11,23,41,.55)", maxWidth: 460, margin: "0 auto" }}>
-              Choose your framework, hosting, and support plan.
-            </p>
-          </>}
-          {step === 3 && <>
-            <h1 style={{ fontSize: "clamp(26px, 3.5vw, 40px)", fontWeight: 800, letterSpacing: "-.02em", color: "var(--navy)", marginBottom: 12 }}>
-              Review &amp; Checkout
-            </h1>
-            <p style={{ fontSize: 15, color: "rgba(11,23,41,.55)", maxWidth: 460, margin: "0 auto" }}>
-              Confirm your order and book your setup call.
-            </p>
-          </>}
         </section>
-
-        {/* Step 1 */}
-        {step === 1 && (
-          <section style={{ background: "#fff", padding: "56px 24px 80px" }}>
-            <div style={{ maxWidth: 620, margin: "0 auto" }}>
-              <StudentInfoForm onComplete={handleInfoComplete} />
-            </div>
-          </section>
-        )}
-
-        {/* Step 2 */}
-        {step === 2 && (
-          <>
-            {studentInfo && (
-              <div style={{
-                background: "rgba(61,139,61,.06)", borderBottom: "1px solid rgba(61,139,61,.15)",
-                padding: "12px 24px", textAlign: "center",
-              }}>
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--green)", letterSpacing: ".04em" }}>
-                  Building for {studentInfo.firstName} {studentInfo.lastName} · {studentInfo.school} · {studentInfo.year}
-                </span>
-              </div>
-            )}
-            <Configurator onComplete={handleConfigComplete} />
-          </>
-        )}
-
-        {/* Step 3 — Checkout */}
-        {step === 3 && configSummary && studentInfo && (
-          <section style={{ background: "#fff", padding: "60px 24px 100px" }}>
-            <div style={{ maxWidth: 660, margin: "0 auto" }}>
-
-              {/* Order Review Card */}
-              <div style={{ border: "1.5px solid rgba(11,23,41,.1)", borderRadius: 14, overflow: "hidden", marginBottom: 40 }}>
-                <div style={{ background: "var(--navy)", padding: "20px 28px" }}>
-                  <p style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "rgba(255,255,255,.4)", letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 4 }}>Order Summary</p>
-                  <p style={{ color: "#fff", fontWeight: 700, fontSize: 18 }}>{studentInfo.firstName} {studentInfo.lastName}</p>
-                  <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.45)", marginTop: 2 }}>{studentInfo.school} · {studentInfo.year}</p>
-                </div>
-
-                <div style={{ padding: "24px 28px", display: "flex", flexDirection: "column", gap: 0 }}>
-                  {[
-                    { label: "Implementation", value: configSummary.impl },
-                    { label: "Setup Fee", value: `$${configSummary.setupFee.toLocaleString()} (one-time)` },
-                    { label: "Hosting", value: `${configSummary.hosting}: $${configSummary.hostingFee}/mo` },
-                    { label: "Support Plan", value: `${configSummary.support} (${configSummary.supportPrice})` },
-                    { label: "Co-Training", value: "30-day hands-on (included)" },
-                    { label: "Deployment", value: "Live in 30 minutes" },
-                  ].map(({ label, value }) => (
-                    <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "13px 0", borderBottom: "1px solid rgba(11,23,41,.06)", gap: 16 }}>
-                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(11,23,41,.45)", textTransform: "uppercase", letterSpacing: ".06em", whiteSpace: "nowrap" }}>{label}</span>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--navy)", textAlign: "right" }}>{value}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div style={{ background: "var(--cream)", padding: "18px 28px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, color: "var(--navy)", textTransform: "uppercase", letterSpacing: ".06em" }}>Total Due Today</span>
-                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 800, color: "var(--green)" }}>{formatUSD(dueTodayCents)}</span>
-                </div>
-              </div>
-
-              <CheckoutPanel
-                studentInfo={studentInfo}
-                configSummary={configSummary}
-                dueTodayCents={dueTodayCents}
-                monthlyCents={monthlyCents}
-              />
-            </div>
-          </section>
-        )}
-
       </main>
 
-      <footer className="dark-section" style={{ borderTop: "1px solid rgba(255,255,255,.06)", padding: "32px 24px", textAlign: "center" }}>
-        <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.25)", letterSpacing: ".04em" }}>
+      <footer
+        className="dark-section"
+        style={{ borderTop: "1px solid rgba(255,255,255,.06)", padding: "32px 24px", textAlign: "center" }}
+      >
+        <p
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 11,
+            color: "rgba(255,255,255,.25)",
+            letterSpacing: ".04em",
+          }}
+        >
           &copy; 2025 The College Agent. All rights reserved. &nbsp;&middot;&nbsp; thecollegeagent.ai
         </p>
       </footer>
+
+      <style>{`
+        .ca-checkout {
+          --ca-green: #2D7A3A;
+          --ca-green-dark: #245F2E;
+          --ca-green-tint: #F2F8EF;
+          --ca-green-check: #E7F1E3;
+          --ca-cream: #EDEBE4;
+          --ca-white: #FFFFFF;
+          --ca-ink: #1A1A1A;
+          --ca-body: #565650;
+          --ca-muted: #8A897F;
+          --ca-line: #E6E4DC;
+          --ca-sans: 'Inter', system-ui, -apple-system, sans-serif;
+          --ca-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+          box-sizing: border-box;
+          font-family: var(--ca-sans);
+          background: var(--ca-cream);
+          color: var(--ca-ink);
+          padding: 64px 20px;
+          display: flex;
+          justify-content: center;
+          -webkit-font-smoothing: antialiased;
+        }
+        .ca-checkout *, .ca-checkout *::before, .ca-checkout *::after { box-sizing: border-box; }
+
+        .ca-panel {
+          background: var(--ca-white);
+          border-radius: 20px;
+          border: 1px solid var(--ca-line);
+          padding: 56px 40px;
+          width: 100%;
+          max-width: 760px;
+        }
+
+        .ca-eyebrow {
+          font-family: var(--ca-mono);
+          font-size: 12px;
+          font-weight: 500;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          color: var(--ca-green);
+          margin: 0 0 12px;
+          text-align: center;
+        }
+        .ca-h2 {
+          font-size: 30px;
+          font-weight: 600;
+          letter-spacing: -0.01em;
+          margin: 0 0 10px;
+          text-align: center;
+          color: var(--ca-ink);
+        }
+        .ca-sub {
+          font-size: 16px;
+          line-height: 1.6;
+          color: var(--ca-body);
+          margin: 0 auto 32px;
+          text-align: center;
+          max-width: 460px;
+        }
+
+        .ca-toggle {
+          display: flex;
+          gap: 4px;
+          background: var(--ca-cream);
+          border: 1px solid var(--ca-line);
+          border-radius: 12px;
+          padding: 4px;
+          width: fit-content;
+          margin: 0 auto 8px;
+        }
+        .ca-toggle button {
+          font-family: var(--ca-sans);
+          font-size: 14px;
+          font-weight: 500;
+          border: none;
+          background: transparent;
+          color: var(--ca-body);
+          padding: 9px 20px;
+          border-radius: 9px;
+          cursor: pointer;
+          transition: background 0.18s ease, color 0.18s ease;
+          position: relative;
+        }
+        .ca-toggle button.is-active {
+          background: var(--ca-green);
+          color: #fff;
+        }
+        .ca-save-pill {
+          font-family: var(--ca-mono);
+          font-size: 10px;
+          letter-spacing: 0.04em;
+          background: var(--ca-green-check);
+          color: var(--ca-green-dark);
+          border-radius: 999px;
+          padding: 2px 7px;
+          margin-left: 7px;
+          vertical-align: middle;
+        }
+        .ca-toggle button.is-active .ca-save-pill {
+          background: rgba(255,255,255,0.22);
+          color: #fff;
+        }
+
+        .ca-card {
+          border: 2px solid var(--ca-green);
+          background: var(--ca-green-tint);
+          border-radius: 18px;
+          padding: 34px 34px 30px;
+          max-width: 460px;
+          margin: 24px auto 0;
+        }
+        .ca-plan-name {
+          font-size: 20px;
+          font-weight: 600;
+          margin: 0 0 4px;
+          color: var(--ca-ink);
+        }
+        .ca-plan-desc {
+          font-size: 14px;
+          line-height: 1.55;
+          color: var(--ca-body);
+          margin: 0 0 22px;
+        }
+        .ca-price-row {
+          display: flex;
+          align-items: baseline;
+          gap: 8px;
+          margin-bottom: 4px;
+        }
+        .ca-price {
+          font-size: 42px;
+          font-weight: 700;
+          color: var(--ca-green);
+          letter-spacing: -0.02em;
+          line-height: 1;
+        }
+        .ca-period {
+          font-family: var(--ca-mono);
+          font-size: 14px;
+          color: var(--ca-muted);
+        }
+        .ca-savenote {
+          font-size: 13px;
+          color: var(--ca-green-dark);
+          font-weight: 500;
+          margin: 0 0 24px;
+          min-height: 18px;
+        }
+
+        .ca-features { list-style: none; margin: 0 0 28px; padding: 0; }
+        .ca-features li {
+          display: flex;
+          align-items: flex-start;
+          gap: 11px;
+          font-size: 15px;
+          color: var(--ca-ink);
+          padding: 7px 0;
+        }
+        .ca-check {
+          flex: 0 0 auto;
+          width: 20px; height: 20px;
+          border-radius: 50%;
+          background: var(--ca-green-check);
+          color: var(--ca-green-dark);
+          display: flex; align-items: center; justify-content: center;
+          margin-top: 1px;
+        }
+        .ca-check svg { width: 12px; height: 12px; }
+
+        .ca-cta {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          width: 100%;
+          height: 54px;
+          background: var(--ca-green);
+          color: #fff;
+          font-family: var(--ca-sans);
+          font-size: 16px;
+          font-weight: 600;
+          border-radius: 12px;
+          text-decoration: none;
+          cursor: pointer;
+          transition: background 0.18s ease, transform 0.06s ease;
+        }
+        .ca-cta:hover { background: var(--ca-green-dark); }
+        .ca-cta:active { transform: scale(0.99); }
+
+        .ca-trust {
+          font-family: var(--ca-mono);
+          font-size: 11.5px;
+          letter-spacing: 0.02em;
+          color: var(--ca-muted);
+          text-align: center;
+          margin: 16px 0 0;
+        }
+
+        .ca-apinote {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          font-size: 12.5px;
+          line-height: 1.5;
+          color: var(--ca-body);
+          background: var(--ca-green-check);
+          border-radius: 9px;
+          padding: 9px 12px;
+          margin: 14px 0 0;
+          text-align: center;
+        }
+        .ca-apinote svg { flex: 0 0 auto; width: 14px; height: 14px; color: var(--ca-green-dark); }
+
+        .ca-next {
+          font-size: 13px;
+          line-height: 1.6;
+          color: var(--ca-body);
+          text-align: center;
+          max-width: 440px;
+          margin: 28px auto 0;
+        }
+        .ca-next b { font-weight: 600; color: var(--ca-ink); }
+
+        .ca-custom {
+          font-family: var(--ca-mono);
+          font-size: 13px;
+          color: var(--ca-muted);
+          text-align: center;
+          margin: 36px 0 0;
+        }
+        .ca-custom a { color: var(--ca-green); text-decoration: none; }
+        .ca-custom a:hover { text-decoration: underline; }
+
+        .ca-checkout :focus-visible {
+          outline: 2px solid var(--ca-green);
+          outline-offset: 2px;
+        }
+
+        @media (max-width: 560px) {
+          .ca-panel { padding: 40px 22px; }
+          .ca-card { padding: 28px 22px 26px; }
+          .ca-h2 { font-size: 25px; }
+          .ca-price { font-size: 36px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .ca-toggle button, .ca-cta { transition: none; }
+        }
+      `}</style>
     </>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg viewBox="0 0 12 12" fill="none">
+      <path d="M2.5 6.2l2.2 2.2 4.8-4.8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function InfoIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M8 7.2v4M8 4.8h.01" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
   );
 }
