@@ -36,7 +36,7 @@ interface ConfigState {
 
 const TIERS: { id: Tier; badge: string; name: string; price: number; readyTime: string; desc: string; features: string[] }[] = [
   {
-    id: "undergraduate", badge: "Most Popular", name: "The Undergraduate", price: 999, readyTime: "30 min – 72 hours",
+    id: "undergraduate", badge: "Most Popular", name: "The Undergraduate", price: 199, readyTime: "30 min – 72 hours",
     desc: "The fastest path to your own AI agent. Submit your completed onboarding form and our proprietary software spins up your agent, ready within 30 minutes to 72 hours.",
     features: [
       "3 integrations included",
@@ -48,7 +48,7 @@ const TIERS: { id: Tier; badge: string; name: string; price: number; readyTime: 
     ],
   },
   {
-    id: "graduate", badge: "Advanced", name: "The Graduate", price: 1499, readyTime: "30 min – 72 hours",
+    id: "graduate", badge: "Advanced", name: "The Graduate", price: 399, readyTime: "30 min – 72 hours",
     desc: "More depth, more personalization. Submit your enhanced onboarding form and our proprietary software develops your agent within 30 minutes to 72 hours, plus a live call and 7 days of post-launch support.",
     features: [
       "5 integrations included",
@@ -62,7 +62,7 @@ const TIERS: { id: Tier; badge: string; name: string; price: number; readyTime: 
     ],
   },
   {
-    id: "scholar", badge: "Most Powerful", name: "The Scholar", price: 1999, readyTime: "30 min – 72 hours",
+    id: "scholar", badge: "Most Powerful", name: "The Scholar", price: 599, readyTime: "30 min – 72 hours",
     desc: "Built for high-achievers who want the full picture. Submit your enhanced onboarding form and our proprietary software develops your agent within 30 minutes to 72 hours, backed by a 60-minute deep-dive call and 14 days of post-launch support.",
     features: [
       "7 integrations included",

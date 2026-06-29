@@ -18,9 +18,9 @@ const stripe = new Stripe(key);
 
 // lookup_key, display name, amount (cents), recurring monthly?  Mirrors lib/pricing.ts.
 const CATALOG = [
-  { key: "plan_undergraduate", name: "The Undergraduate", amount: 99900, recurring: false },
-  { key: "plan_graduate", name: "The Graduate", amount: 149900, recurring: false },
-  { key: "plan_scholar", name: "The Scholar", amount: 199900, recurring: false },
+  { key: "plan_undergraduate", name: "The Undergraduate", amount: 19900, recurring: false },
+  { key: "plan_graduate", name: "The Graduate", amount: 39900, recurring: false },
+  { key: "plan_scholar", name: "The Scholar", amount: 59900, recurring: false },
   { key: "support_sixmonths", name: "6 Months Support", amount: 75000, recurring: false },
   { key: "support_annual", name: "Annual Support", amount: 120000, recurring: false },
   { key: "onboarding_whiteglove", name: "White Glove Onboarding", amount: 65000, recurring: false },

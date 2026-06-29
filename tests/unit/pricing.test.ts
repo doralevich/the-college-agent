@@ -51,13 +51,13 @@ describe("parseSelection", () => {
 
 describe("dueToday", () => {
   it("sums plan + support + onboarding + the first month of hosting", () => {
-    // 149900 + 120000 + 65000 + 15900
-    expect(dueToday(GRAD_PRO_ALL)).toBe(350800);
+    // 39900 + 120000 + 65000 + 15900
+    expect(dueToday(GRAD_PRO_ALL)).toBe(240800);
   });
 
   it("counts $0 support/onboarding as nothing", () => {
-    // 99900 + 0 + 0 + 8900
-    expect(dueToday(UNDERGRAD_BASIC_FREE)).toBe(108800);
+    // 19900 + 0 + 0 + 8900
+    expect(dueToday(UNDERGRAD_BASIC_FREE)).toBe(28800);
   });
 });
 

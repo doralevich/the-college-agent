@@ -15,9 +15,9 @@ export type OnboardingKey = "standard" | "whiteglove";
 export const CURRENCY = "usd";
 
 export const PLANS: Record<PlanKey, { label: string; amount: number; lookupKey: string }> = {
-  undergraduate: { label: "The Undergraduate", amount: 99900, lookupKey: "plan_undergraduate" },
-  graduate:      { label: "The Graduate",      amount: 149900, lookupKey: "plan_graduate" },
-  scholar:       { label: "The Scholar",       amount: 199900, lookupKey: "plan_scholar" },
+  undergraduate: { label: "The Undergraduate", amount: 19900, lookupKey: "plan_undergraduate" },
+  graduate:      { label: "The Graduate",      amount: 39900, lookupKey: "plan_graduate" },
+  scholar:       { label: "The Scholar",       amount: 59900, lookupKey: "plan_scholar" },
 };
 
 export const HOSTING: Record<HostingKey, { label: string; amount: number; lookupKey: string }> = {
