@@ -82,11 +82,14 @@ type Step =
   | { kind: "text"; key: TextKey; prompt: string; placeholder?: string; inputType?: "text" | "email" | "tel"; required?: boolean }
   | { kind: "textarea"; key: TextKey; prompt: string; placeholder?: string; required?: boolean }
   | { kind: "multi"; key: MultiKey; prompt: string; options: string[]; max?: number; required?: boolean }
-  | { kind: "single"; key: SingleKey; prompt: string; options: string[]; required?: boolean };
+  | { kind: "single"; key: SingleKey; prompt: string; options: string[]; required?: boolean }
+  | { kind: "image"; key: "avatarFile"; prompt: string; required?: boolean }
+  | { kind: "intro"; key: "__intro"; prompt: string };
 
 type TextKey =
   | "firstName"
   | "lastName"
+  | "agentName"
   | "schoolEmail"
   | "personalEmail"
   | "phone"
@@ -96,8 +99,18 @@ type TextKey =
 type MultiKey = "topPriority" | "agentHandleFirst" | "checkinFrequency";
 type SingleKey = "responseStyle";
 
+// `{firstName}` is interpolated from the prop at render time so the intro can greet
+// the student by name (pulled from /build lead-capture). Missing → falls back to "there".
 const STEPS: Step[] = [
-  { kind: "text", key: "firstName", prompt: "First, what should I call you? Your first name is fine.", placeholder: "Jane", required: true },
+  {
+    kind: "intro",
+    key: "__intro",
+    prompt:
+      "Hi {firstName}, nice to meet you. I'm your College Agent. Let's get started by getting to know each other. I'm going to go through a series of questions — feel free to skip any, but I really recommend we do this properly the first time. It only takes a few minutes. Ready? Great!",
+  },
+  { kind: "text", key: "agentName", prompt: "Before we dive in — what do you want to call me? Pick any name you like, or skip to leave me as your College Agent." },
+  { kind: "image", key: "avatarFile", prompt: "Want to give me a face? Upload an image (PNG or JPG), or skip and I'll use the default bot." },
+  { kind: "text", key: "firstName", prompt: "Just to confirm — what's your first name?", placeholder: "Jane", required: true },
   { kind: "text", key: "lastName", prompt: "And your last name?", placeholder: "Smith", required: true },
   { kind: "text", key: "schoolEmail", prompt: "What's your school email? I'll use this if I ever need to reach you about your classes.", placeholder: "you@school.edu", inputType: "email", required: true },
   { kind: "text", key: "personalEmail", prompt: "Got a personal email too? I'll use it for non-school stuff.", placeholder: "you@gmail.com", inputType: "email" },
@@ -114,6 +127,7 @@ const STEPS: Step[] = [
 type FormState = {
   firstName: string;
   lastName: string;
+  agentName: string;
   schoolEmail: string;
   personalEmail: string;
   phone: string;
@@ -129,6 +143,7 @@ type FormState = {
 const EMPTY: FormState = {
   firstName: "",
   lastName: "",
+  agentName: "",
   schoolEmail: "",
   personalEmail: "",
   phone: "",
@@ -143,7 +158,7 @@ const EMPTY: FormState = {
 
 type StoredProgress = { stepIdx: number; form: FormState };
 
-export function ConversationalOnboard({ userId }: { userId: string }) {
+export function ConversationalOnboard({ userId, knownFirstName }: { userId: string; knownFirstName?: string | null }) {
   const router = useRouter();
   const storageKey = `ca-onboard-progress:${userId}`;
   const [form, setForm] = useState<FormState>(EMPTY);
@@ -151,7 +166,14 @@ export function ConversationalOnboard({ userId }: { userId: string }) {
   const [restored, setRestored] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Files don't serialize cleanly to localStorage, so avatar lives in component state
+  // only — students who refresh mid-flow keep their text answers but re-pick the image.
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const displayFirstName = (form.firstName?.trim() || knownFirstName?.trim() || "there");
+  const displayBotName = (form.agentName?.trim() || "your College Agent");
 
   // Inject Fraunces + DM Sans (match the Welcome card's vibe).
   useEffect(() => {
@@ -210,20 +232,32 @@ export function ConversationalOnboard({ userId }: { userId: string }) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }, []);
 
-  function answerSummary(step: Step, value: FormState[keyof FormState]): string {
+  function answerSummary(step: Step): string {
+    if (step.kind === "intro") return "Ready, let's go!";
+    if (step.kind === "image") return avatarFile ? avatarFile.name : "(using the default bot)";
+    const value = form[step.key];
     if (Array.isArray(value)) return value.length ? value.join(", ") : "(skipped)";
     const v = String(value || "").trim();
     if (!v) return "(skipped)";
     return v;
   }
 
+  function isRequired(step: Step): boolean {
+    if (step.kind === "intro" || step.kind === "image") return false;
+    return !!step.required;
+  }
+
   function isAnswered(step: Step): boolean {
+    if (step.kind === "intro") return true;
+    if (step.kind === "image") return !!avatarFile;
     const value = form[step.key];
     if (Array.isArray(value)) return value.length > 0;
     return !!String(value || "").trim();
   }
 
   function validateCurrent(): string | null {
+    if (current.kind === "intro") return null;
+    if (current.kind === "image") return null;
     if (!current.required) return null;
     if (current.kind === "text" || current.kind === "textarea") {
       const v = String(form[current.key] || "").trim();
@@ -262,6 +296,7 @@ export function ConversationalOnboard({ userId }: { userId: string }) {
         JSON.stringify({
           firstName: form.firstName.trim(),
           lastName: form.lastName.trim(),
+          agentName: form.agentName.trim(),
           schoolEmail: form.schoolEmail.trim(),
           personalEmail: form.personalEmail.trim(),
           phone: form.phone.trim(),
@@ -274,6 +309,7 @@ export function ConversationalOnboard({ userId }: { userId: string }) {
           anythingElse: form.anythingElse.trim(),
         }),
       );
+      if (avatarFile) body.append("avatar", avatarFile);
       const res = await fetch("/api/onboard-submit", { method: "POST", body });
       if (!res.ok) throw new Error("Couldn't save your answers. Try again?");
       try {
@@ -318,9 +354,9 @@ export function ConversationalOnboard({ userId }: { userId: string }) {
         }}
       >
         <div style={{ padding: "20px 24px 14px", borderBottom: `1px solid ${T.line}`, display: "flex", alignItems: "center", gap: 12 }}>
-          <Avatar />
+          <Avatar previewUrl={avatarPreview} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontWeight: 600, fontSize: 17 }}>Frankenstein</div>
+            <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontWeight: 600, fontSize: 17 }}>{displayBotName}</div>
             <div style={{ fontSize: 12, color: T.inkSoft }}>Question {Math.min(stepIdx + 1, STEPS.length)} of {STEPS.length}</div>
           </div>
           <ProgressBar value={progress} />
@@ -329,12 +365,13 @@ export function ConversationalOnboard({ userId }: { userId: string }) {
         <div ref={scrollRef} style={{ flex: 1, padding: "22px 24px 8px", maxHeight: "62vh", minHeight: 380, overflowY: "auto" }}>
           {STEPS.slice(0, stepIdx + 1).map((step, i) => {
             const isCurrent = i === stepIdx;
+            const text = step.prompt.replace("{firstName}", displayFirstName);
             return (
               <div key={step.key + i} style={{ marginBottom: 18 }}>
-                <BotBubble>{step.prompt}</BotBubble>
+                <BotBubble previewUrl={avatarPreview}>{text}</BotBubble>
                 {!isCurrent && (
                   <UserBubble>
-                    {answerSummary(step, form[step.key])}
+                    {answerSummary(step)}
                   </UserBubble>
                 )}
               </div>
@@ -349,20 +386,37 @@ export function ConversationalOnboard({ userId }: { userId: string }) {
         </div>
 
         <div style={{ borderTop: `1px solid ${T.line}`, padding: "18px 24px 22px" }}>
-          {!submitting && <Input step={current} form={form} setField={setField} onAdvance={advance} disabled={submitting} />}
+          {!submitting && (
+            <Input
+              step={current}
+              form={form}
+              setField={setField}
+              onAdvance={advance}
+              disabled={submitting}
+              avatarFile={avatarFile}
+              avatarPreview={avatarPreview}
+              setAvatar={(file) => {
+                setAvatarFile(file);
+                setAvatarPreview((prev) => {
+                  if (prev) URL.revokeObjectURL(prev);
+                  return file ? URL.createObjectURL(file) : null;
+                });
+              }}
+            />
+          )}
           {error && <p style={{ marginTop: 10, fontSize: 13, color: "#B23636" }}>{error}</p>}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14, gap: 12 }}>
             <span style={{ fontSize: 12, color: T.inkSoft }}>
               Your progress saves automatically. You can close this tab and come back later.
             </span>
             <button
               type="button"
               onClick={advance}
-              disabled={submitting || (current.required && !isAnswered(current))}
+              disabled={submitting || (isRequired(current) && !isAnswered(current))}
               className="ca-onboard-cta"
               style={{
                 border: "none",
-                cursor: submitting || (current.required && !isAnswered(current)) ? "not-allowed" : "pointer",
+                cursor: submitting || (isRequired(current) && !isAnswered(current)) ? "not-allowed" : "pointer",
                 fontFamily: "'DM Sans', system-ui, sans-serif",
                 fontSize: 14,
                 fontWeight: 600,
@@ -370,14 +424,17 @@ export function ConversationalOnboard({ userId }: { userId: string }) {
                 background: T.green,
                 padding: "10px 22px",
                 borderRadius: 10,
-                opacity: submitting || (current.required && !isAnswered(current)) ? 0.55 : 1,
+                opacity: submitting || (isRequired(current) && !isAnswered(current)) ? 0.55 : 1,
                 transition: "background .15s, opacity .15s",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 6,
+                flexShrink: 0,
               }}
             >
-              {submitting ? <Loader2 className="animate-spin" style={{ width: 14, height: 14 }} /> : isLast ? "Finish" : "Continue"}
+              {submitting
+                ? <Loader2 className="animate-spin" style={{ width: 14, height: 14 }} />
+                : current.kind === "intro" ? "I'm ready" : isLast ? "Finish" : "Continue"}
               {!submitting && <Send style={{ width: 14, height: 14 }} />}
             </button>
           </div>
@@ -395,10 +452,15 @@ export function ConversationalOnboard({ userId }: { userId: string }) {
   );
 }
 
-function Avatar() {
+function Avatar({ previewUrl }: { previewUrl?: string | null }) {
   return (
     <div style={{ width: 40, height: 40, borderRadius: "50%", background: T.greenSoft, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-      <Image src="/thecollegeagent.png" alt="" width={40} height={40} style={{ objectFit: "contain" }} />
+      {previewUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={previewUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      ) : (
+        <Image src="/thecollegeagent.png" alt="" width={40} height={40} style={{ objectFit: "contain" }} />
+      )}
     </div>
   );
 }
@@ -411,11 +473,16 @@ function ProgressBar({ value }: { value: number }) {
   );
 }
 
-function BotBubble({ children }: { children: ReactNode }) {
+function BotBubble({ children, previewUrl }: { children: ReactNode; previewUrl?: string | null }) {
   return (
     <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 6 }}>
       <div style={{ width: 28, height: 28, borderRadius: "50%", background: T.greenSoft, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        <Image src="/thecollegeagent.png" alt="" width={28} height={28} style={{ objectFit: "contain" }} />
+        {previewUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={previewUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : (
+          <Image src="/thecollegeagent.png" alt="" width={28} height={28} style={{ objectFit: "contain" }} />
+        )}
       </div>
       <div style={{ background: T.greenSoft, color: T.ink, padding: "10px 14px", borderRadius: 14, borderTopLeftRadius: 4, fontSize: 15, lineHeight: 1.5, maxWidth: "85%" }}>
         {children}
@@ -440,13 +507,83 @@ function Input({
   setField,
   onAdvance,
   disabled,
+  avatarFile,
+  avatarPreview,
+  setAvatar,
 }: {
   step: Step;
   form: FormState;
   setField: <K extends keyof FormState>(key: K, value: FormState[K]) => void;
   onAdvance: () => void;
   disabled: boolean;
+  avatarFile: File | null;
+  avatarPreview: string | null;
+  setAvatar: (file: File | null) => void;
 }) {
+  if (step.kind === "intro") {
+    return (
+      <p style={{ fontSize: 13, color: T.inkSoft, margin: 0 }}>
+        Click <span style={{ color: T.green, fontWeight: 600 }}>I&apos;m ready</span> to begin.
+      </p>
+    );
+  }
+  if (step.kind === "image") {
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <div style={{ width: 56, height: 56, borderRadius: "50%", overflow: "hidden", background: T.greenSoft, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          {avatarPreview ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={avatarPreview} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            <Image src="/thecollegeagent.png" alt="" width={56} height={56} style={{ objectFit: "contain" }} />
+          )}
+        </div>
+        <label
+          style={{
+            cursor: disabled ? "not-allowed" : "pointer",
+            fontFamily: "'DM Sans', system-ui, sans-serif",
+            fontSize: 13,
+            fontWeight: 600,
+            color: T.green,
+            border: `1.5px solid ${T.green}`,
+            borderRadius: 10,
+            padding: "8px 14px",
+          }}
+        >
+          {avatarFile ? "Choose a different image" : "Upload an image"}
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            disabled={disabled}
+            onChange={(e) => {
+              const f = e.target.files?.[0] ?? null;
+              if (f) setAvatar(f);
+              e.target.value = "";
+            }}
+            style={{ display: "none" }}
+          />
+        </label>
+        {avatarFile && (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => setAvatar(null)}
+            style={{
+              background: "transparent",
+              border: "none",
+              color: T.inkSoft,
+              fontSize: 13,
+              cursor: "pointer",
+              textDecoration: "underline",
+              textUnderlineOffset: 2,
+            }}
+          >
+            Remove
+          </button>
+        )}
+      </div>
+    );
+  }
   if (step.kind === "text") {
     const value = form[step.key] as string;
     return (

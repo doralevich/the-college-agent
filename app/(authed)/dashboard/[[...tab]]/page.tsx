@@ -29,7 +29,7 @@ export default async function DashboardPage({ params }: Props) {
 
   const [entRes, onboardRes, setupRes, agentRes] = await Promise.all([
     db.from("entitlements").select("status").eq("email", email).maybeSingle(),
-    db.from("onboard_submissions").select("first_name").eq("user_id", user.id).maybeSingle(),
+    db.from("onboard_submissions").select("first_name, agent_name, avatar_url").eq("user_id", user.id).maybeSingle(),
     db.from("setup_submissions").select("user_id", { count: "exact", head: true }).eq("user_id", user.id),
     // Each student has a single agent; grab its id (oldest first) so the dashboard can target
     // it for the Chat tab. null when none yet -> chat tab hidden, funnel shown.
@@ -48,8 +48,13 @@ export default async function DashboardPage({ params }: Props) {
   const onboardDone = !!onboardRes.data;
   const setupDone = (setupRes.count ?? 0) > 0;
   const agentId = (agentRes.data?.agent37_id as string | undefined) ?? null;
-  const agentName = (agentRes.data?.name as string | undefined) ?? null;
+  // Prefer the student-picked name from onboarding; fall back to the provisioned
+  // agent row's name (which itself defaults to "Hermes" pre-rename).
+  const agentName =
+    ((onboardRes.data?.agent_name as string | undefined) ?? null) ||
+    ((agentRes.data?.name as string | undefined) ?? null);
   const firstName = (onboardRes.data?.first_name as string | undefined) ?? null;
+  const avatarUrl = (onboardRes.data?.avatar_url as string | undefined) ?? null;
 
   return (
     <DashboardClient
@@ -59,6 +64,7 @@ export default async function DashboardPage({ params }: Props) {
       agentId={agentId}
       firstName={firstName}
       agentName={agentName}
+      avatarUrl={avatarUrl}
       userId={user.id}
     />
   );
