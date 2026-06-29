@@ -27,7 +27,18 @@ export const POST = route(async (req) => {
     throw new ApiError(400, "invalid_request", `Invalid plan: ${String(body.plan)}`);
   }
 
-  const priceId = await priceIdFor(PLAN_LOOKUPS[plan]);
+  let priceId: string;
+  try {
+    priceId = await priceIdFor(PLAN_LOOKUPS[plan]);
+  } catch (e) {
+    // priceIdFor throws when the lookup_key isn't an active Stripe Price — usually
+    // because the catalog hasn't been synced yet for ca_monthly / ca_annual.
+    throw new ApiError(
+      503,
+      "catalog_not_synced",
+      `Stripe catalog out of sync for '${PLAN_LOOKUPS[plan]}'. An admin must run the Stripe catalog sync at /admin/stripe. (${(e as Error).message})`
+    );
+  }
 
   // Prefer the request Origin so local dev redirects to localhost, not the prod site.
   const origin = req.headers.get("origin") || process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin;
