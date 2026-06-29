@@ -156,7 +156,9 @@ function ChatWelcome({
   return (
     <div className="mx-auto w-full max-w-2xl space-y-5 px-2 pb-2 text-left">
       <h1 className="text-[26px] font-semibold tracking-tight text-foreground sm:text-[30px]">
-        Hi {name}, I&apos;m {bot}. Here to help and guide you through your college years (and then some!).
+        Hi {name},
+        <br />
+        I&apos;m {bot}. Here to help and guide you through your college years (and then some!).
       </h1>
       <p className="text-sm leading-relaxed text-muted-foreground">
         First, let me know a little about yourself. Tell me about your academic life, your personal life,
@@ -164,12 +166,12 @@ function ChatWelcome({
       </p>
       <p className="text-sm leading-relaxed text-muted-foreground">
         Then, click on the <span className="font-medium text-foreground">Integrations</span> tab in the
-        sidebar — this is where you customize your experience with programs you already use: Email, Google
-        Docs, Outlook, Dropbox, Canvas, Blackbaud. There are thousands of integrations — just search, and in
+        sidebar. This is where you customize your experience with programs you already use: Email, Google
+        Docs, Outlook, Dropbox, Canvas, Blackbaud. There are thousands of integrations, just search and in
         a few clicks you&apos;re all set.
       </p>
       <p className="text-sm leading-relaxed text-muted-foreground">
-        Try your email or calendar and then ask &mdash;{" "}
+        Try your email or calendar and then ask{" "}
         <span className="font-medium text-foreground">&ldquo;What&apos;s on my calendar?&rdquo;</span>
       </p>
     </div>
