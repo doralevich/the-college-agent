@@ -317,6 +317,31 @@ export function ConversationalOnboard({ userId, knownFirstName }: { userId: stri
       } catch {
         /* non-fatal */
       }
+      // Auto-provision once onboarding is in — the dashboard otherwise leaves the
+      // student stranded on the Welcome card with no Chat tab. Best-effort: a
+      // provision failure surfaces a message but the onboard answers are saved, so
+      // the student can retry from the dashboard funnel.
+      try {
+        const provRes = await fetch("/api/provision", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+        if (!provRes.ok) {
+          const body = await provRes.json().catch(() => ({}));
+          // 400 onboard_incomplete shouldn't happen after a successful submit, but be
+          // defensive — surface anything Stripe / Agent37 says rather than silently failing.
+          const msg = body?.error?.message || `Couldn't build your agent (${provRes.status})`;
+          throw new Error(msg);
+        }
+      } catch (provErr) {
+        // Don't undo the onboarding submit on a provision failure; the StepsView fallback
+        // can pick up from here. Surface the reason to the student.
+        setError(`Saved your answers — but ${(provErr as Error).message}. Refresh to try again.`);
+        setSubmitting(false);
+        router.refresh();
+        return;
+      }
       router.refresh();
     } catch (e) {
       setError((e as Error).message);
@@ -380,7 +405,7 @@ export function ConversationalOnboard({ userId, knownFirstName }: { userId: stri
           {submitting && (
             <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 8, color: T.inkSoft, fontSize: 14 }}>
               <Loader2 className="animate-spin" style={{ width: 14, height: 14 }} />
-              Saving your answers and prepping your agent…
+              Saving your answers and building your agent… this can take a minute or two.
             </div>
           )}
         </div>
