@@ -7,19 +7,26 @@ import { getStripe } from "./client";
 // the lookup_key to it, then archive the old one. Renamed keys (ARCHIVED_KEYS) are
 // deactivated so priceIdFor never resolves a stale entry.
 
-type CatalogItem = { key: string; name: string; amount: number; recurring: boolean };
+type CatalogItem = {
+  key: string;
+  name: string;
+  amount: number;
+  recurring: false | "month" | "year";
+};
 
 const CATALOG: CatalogItem[] = [
+  { key: "ca_monthly", name: "The College Agent (Monthly)", amount: 2999, recurring: "month" },
+  { key: "ca_annual", name: "The College Agent (School Year)", amount: 29999, recurring: "year" },
   { key: "plan_undergraduate", name: "The Undergraduate", amount: 19900, recurring: false },
   { key: "plan_graduate", name: "The Graduate", amount: 39900, recurring: false },
   { key: "plan_scholar", name: "The Scholar", amount: 59900, recurring: false },
   { key: "support_sixmonths", name: "6 Months Support", amount: 75000, recurring: false },
   { key: "support_annual", name: "Annual Support", amount: 120000, recurring: false },
   { key: "onboarding_whiteglove", name: "White Glove Onboarding", amount: 65000, recurring: false },
-  { key: "hosting_basic", name: "Hosting - Basic", amount: 1999, recurring: true },
-  { key: "hosting_plus", name: "Hosting - Plus", amount: 2999, recurring: true },
-  { key: "hosting_pro", name: "Hosting - Pro", amount: 4999, recurring: true },
-  { key: "hosting_max", name: "Hosting - Max", amount: 9900, recurring: true },
+  { key: "hosting_basic", name: "Hosting - Basic", amount: 1999, recurring: "month" },
+  { key: "hosting_plus", name: "Hosting - Plus", amount: 2999, recurring: "month" },
+  { key: "hosting_pro", name: "Hosting - Pro", amount: 4999, recurring: "month" },
+  { key: "hosting_max", name: "Hosting - Max", amount: 9900, recurring: "month" },
 ];
 
 const ARCHIVED_KEYS = ["plan_basic", "support_6mo"];
@@ -104,7 +111,7 @@ async function upsert(item: CatalogItem, stripe: S): Promise<SeedRow> {
       unit_amount: item.amount,
       lookup_key: item.key,
       transfer_lookup_key: true,
-      ...(item.recurring ? { recurring: { interval: "month" as const } } : {}),
+      ...(item.recurring ? { recurring: { interval: item.recurring } } : {}),
     });
     action = "created";
   } else if (price.unit_amount !== item.amount) {
@@ -115,7 +122,7 @@ async function upsert(item: CatalogItem, stripe: S): Promise<SeedRow> {
       unit_amount: item.amount,
       lookup_key: item.key,
       transfer_lookup_key: true,
-      ...(item.recurring ? { recurring: { interval: "month" as const } } : {}),
+      ...(item.recurring ? { recurring: { interval: item.recurring } } : {}),
     });
     await stripe.prices.update(old.id, { active: false });
     action = "repriced";
