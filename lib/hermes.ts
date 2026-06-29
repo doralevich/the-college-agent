@@ -129,6 +129,10 @@ export function mapCheckinToCron(
 ): { schedule: string; label: string } | null {
   const c = (checkin || "").toLowerCase();
   if (!c) return null;
+  // Highest-frequency wins when several cadences are selected (the form now allows
+  // multiple) — students who want "daily morning" AND "weekly digest" still get the
+  // daily cron, with the weekly preference living in USER.md as context.
+  if (c.includes("multiple")) return { schedule: "0 8,12,17 * * *", label: "thrice-daily" };
   if (c.includes("daily") || c.includes("morning briefing")) return { schedule: "0 8 * * *", label: "daily morning" };
   if (c.includes("twice")) return { schedule: "0 8 * * 1,4", label: "twice-weekly" };
   if (c.includes("weekly")) return { schedule: "0 8 * * 1", label: "weekly" };

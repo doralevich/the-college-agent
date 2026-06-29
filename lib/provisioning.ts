@@ -91,7 +91,12 @@ export async function configureAgentFromIntake(
   // A scheduled check-in only makes sense when Telegram is connected (it's the delivery
   // channel) and the chosen cadence maps to a real cron schedule; otherwise we skip it and
   // the cadence still lives in USER.md as a fact.
-  const cadence = (persona.questionnaire?.checkinFrequency as string | undefined) ?? null;
+  // checkinFrequency may now be either a single string (legacy single-pick) or an array
+  // (the multi-pick form). Join arrays so mapCheckinToCron's substring match still works.
+  const rawCadence = persona.questionnaire?.checkinFrequency;
+  const cadence = Array.isArray(rawCadence)
+    ? rawCadence.filter(Boolean).join(", ")
+    : (rawCadence as string | undefined) ?? null;
   const cron = hasTelegram ? mapCheckinToCron(cadence) : null;
   const checkin = cron ? { schedule: cron.schedule, prompt: buildCheckinPrompt(persona, cron.label) } : null;
 

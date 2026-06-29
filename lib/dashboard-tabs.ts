@@ -1,4 +1,4 @@
-export const DASHBOARD_TAB_IDS = ["chat", "files", "integrations", "agent", "agents", "billing", "settings"] as const;
+export const DASHBOARD_TAB_IDS = ["chat", "files", "integrations", "shortcuts", "agent", "agents", "billing", "settings"] as const;
 
 export type DashboardTabId = (typeof DASHBOARD_TAB_IDS)[number];
 
