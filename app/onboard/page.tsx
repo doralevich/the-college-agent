@@ -12,6 +12,10 @@ const PRIORITIES = [
   "Mental health and wellbeing",
   "Social life and balance",
   "Health and fitness",
+  "Preparing for semester abroad",
+  "Preparing for summer internships",
+  "Preparing for after-college plans",
+  "Preparing for secondary education",
   "Not sure yet",
 ];
 
@@ -25,15 +29,25 @@ const HANDLE_FIRST = [
   "General task management",
 ];
 
-const RESPONSE_STYLES = [
-  "Short and direct: bullet points, no fluff",
-  "Detailed: full context and explanation",
-  "Motivational: coach me through it",
-  "Warm but focused",
-  "Depends on the situation",
+// 12 voice/personality options for "How do you want your agent to speak like?".
+// 6 male, 6 female — radio (single pick). The label drives SOUL.md tone.
+const VOICES = [
+  "Marcus — direct and confident (male)",
+  "Leo — witty and playful (male)",
+  "Sam — calm and reassuring (male)",
+  "Jordan — pragmatic and focused (male)",
+  "Theo — thoughtful and academic (male)",
+  "Ben — supportive and steady (male)",
+  "Sarah — warm and encouraging (female)",
+  "Maya — sharp and analytical (female)",
+  "Riley — friendly and energetic (female)",
+  "Eva — calm and grounded (female)",
+  "Zoe — motivational and upbeat (female)",
+  "Iris — thoughtful and patient (female)",
 ];
 
 const CHECKIN_FREQ = [
+  "Multiple times throughout the day",
   "Daily morning briefing",
   "Twice a week",
   "Weekly digest only",
@@ -44,8 +58,8 @@ const CHECKIN_FREQ = [
 const STEPS = [
   { num: 1, label: "Basics" },
   { num: 2, label: "Priorities" },
-  { num: 3, label: "Agent Focus" },
-  { num: 4, label: "Response Style" },
+  { num: 3, label: "Success" },
+  { num: 4, label: "Voice" },
   { num: 5, label: "Check-ins" },
   { num: 6, label: "Final Details" },
 ];
@@ -61,8 +75,10 @@ const BLANK: FD = {
   school: "",
   topPriority: [],
   agentHandleFirst: [],
-  responseStyle: [],
-  checkinFrequency: "",
+  // Voice is a single pick (one persona drives SOUL.md tone).
+  responseStyle: "",
+  // Check-ins are now multi-select — students can stack cadences.
+  checkinFrequency: [],
   currentClasses: "",
   anythingElse: "",
   resumeFile: null,
@@ -219,34 +235,26 @@ export default function OnboardPage() {
           )}
 
           {step === 2 && (
-            <Section title="Your priorities this semester." sub="Pick up to 3 — these set the tone for everything your agent does for you.">
-              <Field label="Your priorities this semester (pick up to 3)" required>
-                <CheckGrid options={PRIORITIES} selected={form.topPriority as string[]} onToggle={(v) => toggle("topPriority", v, 3)} cols={2} max={3} />
-              </Field>
+            <Section title="Your priorities this semester." sub="Pick up to 3. These set the tone for everything your agent does for you.">
+              <CheckGrid options={PRIORITIES} selected={form.topPriority as string[]} onToggle={(v) => toggle("topPriority", v, 3)} cols={2} max={3} />
             </Section>
           )}
 
           {step === 3 && (
-            <Section title="What should your agent handle first?" sub="Pick up to 3 — your agent can take on more once it knows you better.">
-              <Field label="Where your agent should jump in first (pick up to 3)" required>
-                <CheckGrid options={HANDLE_FIRST} selected={form.agentHandleFirst as string[]} onToggle={(v) => toggle("agentHandleFirst", v, 3)} cols={2} max={3} />
-              </Field>
+            <Section title="What is complete success with you and your agent." sub="Pick up to 3. These are the wins your agent will optimize for.">
+              <CheckGrid options={HANDLE_FIRST} selected={form.agentHandleFirst as string[]} onToggle={(v) => toggle("agentHandleFirst", v, 3)} cols={2} max={3} />
             </Section>
           )}
 
           {step === 4 && (
-            <Section title="How do you want your agent to respond?" sub="Pick up to 3 styles — it will mix and match based on context.">
-              <Field label="Preferred response styles (pick up to 3)" required>
-                <CheckGrid options={RESPONSE_STYLES} selected={form.responseStyle as string[]} onToggle={(v) => toggle("responseStyle", v, 3)} cols={1} max={3} />
-              </Field>
+            <Section title="How do you want your agent to speak like?" sub="Pick the voice that sounds most like how you want your agent to talk to you.">
+              <RadioGrid options={VOICES} name="responseStyle" selected={form.responseStyle as string} onSelect={(v) => set("responseStyle", v)} cols={2} />
             </Section>
           )}
 
           {step === 5 && (
-            <Section title="How often do you want check-ins?" sub="One cadence to start with — you can change it later from your dashboard.">
-              <Field label="Check-in cadence" required>
-                <RadioGrid options={CHECKIN_FREQ} name="checkinFrequency" selected={form.checkinFrequency as string} onSelect={(v) => set("checkinFrequency", v)} cols={1} />
-              </Field>
+            <Section title="How often do you want check-ins?" sub="Pick any that fit — your agent can ping you on more than one cadence.">
+              <CheckGrid options={CHECKIN_FREQ} selected={form.checkinFrequency as string[]} onToggle={(v) => toggle("checkinFrequency", v)} cols={1} />
             </Section>
           )}
 
@@ -325,8 +333,8 @@ function Section({ title, sub, children }: { title: string; sub: string; childre
   return (
     <div>
       <div style={{ marginBottom: 36 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--navy)", marginBottom: 8, lineHeight: 1.25 }}>{title}</h1>
-        <p style={{ fontSize: 15, color: "rgba(11,23,41,.5)", lineHeight: 1.6 }}>{sub}</p>
+        <h1 style={{ fontSize: 34, fontWeight: 800, color: "var(--navy)", marginBottom: 10, lineHeight: 1.2, letterSpacing: "-.01em" }}>{title}</h1>
+        <p style={{ fontSize: 16, color: "rgba(11,23,41,.55)", lineHeight: 1.6 }}>{sub}</p>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>{children}</div>
     </div>

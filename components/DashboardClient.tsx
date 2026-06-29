@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Blocks, Bot, Check, CreditCard, FolderOpen, Loader2, LogOut, MessageSquare, RotateCcw, Settings2 } from "lucide-react";
+import { Blocks, Bot, Check, CreditCard, FolderOpen, Loader2, LogOut, MessageSquare, RotateCcw, Settings2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "@/lib/supabase/client";
 import { dashboardPath, parseDashboardRoute, type DashboardTabId } from "@/lib/dashboard-tabs";
@@ -20,6 +20,7 @@ import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { ChatView } from "@/components/chat/ChatView";
 import { FilesView } from "@/components/files/FilesView";
 import { IntegrationsView } from "@/components/IntegrationsView";
+import { ShortcutsView } from "@/components/ShortcutsView";
 
 type Props = {
   paid: boolean;
@@ -67,6 +68,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
           { id: "agent" as DashboardTabId, label: "Your Agent", icon: Bot },
           { id: "files" as DashboardTabId, label: "Files", icon: FolderOpen },
           { id: "integrations" as DashboardTabId, label: "Integrations", icon: Blocks },
+          { id: "shortcuts" as DashboardTabId, label: "Shortcuts", icon: Sparkles },
         ]
       : [{ id: "agents" as DashboardTabId, label: "Agents", icon: Bot }]),
     ...(paid ? [{ id: "billing" as DashboardTabId, label: "Billing", icon: CreditCard }] : []),
@@ -191,6 +193,8 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
                 <BillingView />
               ) : active === "integrations" && agentId ? (
                 <IntegrationsView agentId={agentId} />
+              ) : active === "shortcuts" && hasAgent ? (
+                <ShortcutsView />
               ) : !paid ? (
                 <BuildCta />
               ) : hasAgent ? (

@@ -56,19 +56,8 @@ export function AgentsView({ firstName, onOpenChat }: { firstName: string | null
 
   if (!current) return <p className="text-sm text-muted-foreground">No workspace selected.</p>;
 
-  const greetingName = firstName?.trim() || "there";
   return (
     <div className="space-y-6">
-      <div className="space-y-3">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Hi {greetingName}, welcome to your agent&apos;s dashboard. Click on Chat to get started.
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          You can also select Integrations on the sidebar, this is where you&apos;ll connect all of
-          your external programs. It&apos;s pretty simple and kind of easy...and completely secure.
-        </p>
-      </div>
-
       {loading ? (
         <p className="text-sm text-muted-foreground">Loading...</p>
       ) : agents.length === 0 ? (
