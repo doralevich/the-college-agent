@@ -16,18 +16,20 @@ if (!key) {
 }
 const stripe = new Stripe(key);
 
-// lookup_key, display name, amount (cents), recurring monthly?  Mirrors lib/pricing.ts.
+// lookup_key, display name, amount (cents), recurring interval ('month' | 'year' | false).
 const CATALOG = [
+  { key: "ca_monthly", name: "The College Agent (Monthly)", amount: 2999, recurring: "month" },
+  { key: "ca_annual", name: "The College Agent (School Year)", amount: 29999, recurring: "year" },
   { key: "plan_undergraduate", name: "The Undergraduate", amount: 19900, recurring: false },
   { key: "plan_graduate", name: "The Graduate", amount: 39900, recurring: false },
   { key: "plan_scholar", name: "The Scholar", amount: 59900, recurring: false },
   { key: "support_sixmonths", name: "6 Months Support", amount: 75000, recurring: false },
   { key: "support_annual", name: "Annual Support", amount: 120000, recurring: false },
   { key: "onboarding_whiteglove", name: "White Glove Onboarding", amount: 65000, recurring: false },
-  { key: "hosting_basic", name: "Hosting - Basic", amount: 1999, recurring: true },
-  { key: "hosting_plus", name: "Hosting - Plus", amount: 2999, recurring: true },
-  { key: "hosting_pro", name: "Hosting - Pro", amount: 4999, recurring: true },
-  { key: "hosting_max", name: "Hosting - Max", amount: 9900, recurring: true },
+  { key: "hosting_basic", name: "Hosting - Basic", amount: 1999, recurring: "month" },
+  { key: "hosting_plus", name: "Hosting - Plus", amount: 2999, recurring: "month" },
+  { key: "hosting_pro", name: "Hosting - Pro", amount: 4999, recurring: "month" },
+  { key: "hosting_max", name: "Hosting - Max", amount: 9900, recurring: "month" },
 ];
 
 // lookup_keys renamed during development — archive the old prices/products so the catalog
@@ -61,7 +63,7 @@ async function upsert(item) {
       unit_amount: item.amount,
       lookup_key: item.key,
       transfer_lookup_key: true,
-      ...(item.recurring ? { recurring: { interval: "month" } } : {}),
+      ...(item.recurring ? { recurring: { interval: item.recurring } } : {}),
     });
     created = true;
   } else if (price.unit_amount !== item.amount) {
@@ -73,7 +75,7 @@ async function upsert(item) {
       unit_amount: item.amount,
       lookup_key: item.key,
       transfer_lookup_key: true,
-      ...(item.recurring ? { recurring: { interval: "month" } } : {}),
+      ...(item.recurring ? { recurring: { interval: item.recurring } } : {}),
     });
     await stripe.prices.update(old.id, { active: false });
     created = true;

@@ -3,19 +3,20 @@
 import { useEffect, useState } from "react";
 import BuildNav from "../components/BuildNav";
 
-// One plan, two billing cadences. Both prices live on a single Stripe Product
-// ("The College Agent") and are served via Stripe Payment Links — there's no
-// custom backend session creation for this flow. The post-payment success URL
-// configured on each Payment Link in Stripe is what carries the student into
-// the onboarding form.
-const STRIPE_ANNUAL_URL = "https://buy.stripe.com/00w14n3Qd8yx0116J7dnW00";
-const STRIPE_MONTHLY_URL = "https://buy.stripe.com/5kQ3cv5Yl7ut9BBgjHdnW01";
+// One plan, two billing cadences. The Stripe Price for each cadence is resolved
+// server-side from its lookup_key (ca_monthly / ca_annual) when we create the
+// Checkout Session — see app/api/build/checkout. We POST to that endpoint and
+// redirect to the returned session.url so students land on a Stripe Checkout
+// session WE created (with user_id metadata), not a static Payment Link — the
+// metadata is what lets the webhook activate the right account on payment.
 
 const FONTS_HREF =
   "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap";
 
 export default function BuildPage() {
   const [plan, setPlan] = useState<"annual" | "monthly">("annual");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // The HTML snippet pulls Inter + IBM Plex Mono from Google Fonts. App Router
   // client components can't render <link> into <head>, so inject once on mount
@@ -40,7 +41,32 @@ export default function BuildPage() {
   const price = annual ? "$299.99" : "$29.99";
   const period = annual ? "/ school year" : "/ month";
   const savenote = annual ? "Save 17%, about $25/mo." : "Billed monthly. Switch to yearly anytime.";
-  const ctaHref = annual ? STRIPE_ANNUAL_URL : STRIPE_MONTHLY_URL;
+
+  async function handleGetStarted() {
+    if (loading) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/build/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan }),
+      });
+      // Unauthed: send to login then back here.
+      if (res.status === 401) {
+        window.location.href = `/login?next=${encodeURIComponent("/build")}`;
+        return;
+      }
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok || !body?.url) {
+        throw new Error(body?.error?.message ?? `Checkout failed (${res.status})`);
+      }
+      window.location.href = body.url as string;
+    } catch (e) {
+      setError((e as Error).message);
+      setLoading(false);
+    }
+  }
 
   return (
     <>
@@ -110,7 +136,17 @@ export default function BuildPage() {
                 </li>
               </ul>
 
-              <a className="ca-cta" href={ctaHref}>Get started</a>
+              <button
+                type="button"
+                className="ca-cta"
+                onClick={handleGetStarted}
+                disabled={loading}
+                aria-busy={loading}
+              >
+                {loading ? "Loading..." : "Get started"}
+              </button>
+
+              {error && <p className="ca-error">{error}</p>}
 
               <p className="ca-trust">No setup fee &middot; Cancel anytime &middot; Secure checkout by Stripe</p>
 
@@ -338,6 +374,17 @@ export default function BuildPage() {
         }
         .ca-cta:hover { background: var(--ca-green-dark); }
         .ca-cta:active { transform: scale(0.99); }
+        .ca-cta[disabled] { opacity: 0.7; cursor: progress; }
+        .ca-cta[disabled]:hover { background: var(--ca-green); }
+        .ca-error {
+          color: #B23636;
+          background: #FDECEC;
+          border-radius: 8px;
+          padding: 10px 12px;
+          font-size: 13px;
+          margin: 12px 0 0;
+          text-align: center;
+        }
 
         .ca-trust {
           font-family: var(--ca-mono);

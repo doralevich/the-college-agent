@@ -1,11 +1,23 @@
+"use client";
+
+import { useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import BuildNav from "../../components/BuildNav";
 
-// Stripe redirects here after a successful Checkout. Fulfillment (order -> paid,
-// entitlement -> active, confirmation email) happens asynchronously in the webhook, so
-// this page just confirms and points to the dashboard. The webhook usually lands within
-// a second or two; the dashboard gates on entitlement either way.
+// Stripe redirects here after a successful Checkout. Fulfillment (entitlement → active,
+// confirmation email) happens asynchronously in the webhook, so this page just confirms
+// and auto-routes to the dashboard a few seconds later. The dashboard gates on
+// entitlement either way, so even if the webhook hasn't landed yet, the student lands
+// on the right surface for whatever state we're in.
 export default function CheckoutSuccessPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const t = setTimeout(() => router.replace("/dashboard"), 3000);
+    return () => clearTimeout(t);
+  }, [router]);
+
   return (
     <>
       <BuildNav />
@@ -24,15 +36,14 @@ export default function CheckoutSuccessPage() {
             Payment received
           </h1>
           <p style={{ fontSize: 15, color: "rgba(11,23,41,.6)", lineHeight: 1.7, marginBottom: 32, maxWidth: 440, marginLeft: "auto", marginRight: "auto" }}>
-            Your College Agent order is confirmed. We&apos;re setting up your account now. Next,
-            complete a quick onboarding and your agent goes live automatically. A confirmation
-            email is on its way.
+            Your College Agent order is confirmed. We&apos;re taking you to your dashboard so you
+            can finish setup and meet your agent. A confirmation email is on its way.
           </p>
           <Link href="/dashboard" className="btn-purple" style={{ fontSize: 14, padding: "16px 40px", borderRadius: 8, display: "inline-block" }}>
-            Go to your dashboard →
+            Continue to Dashboard →
           </Link>
           <p style={{ marginTop: 16, fontFamily: "var(--font-mono)", fontSize: 10, color: "rgba(11,23,41,.35)", letterSpacing: ".04em" }}>
-            Hosting renews monthly. Manage or cancel anytime from your dashboard.
+            Redirecting automatically in a few seconds...
           </p>
         </div>
       </main>
