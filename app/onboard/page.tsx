@@ -29,21 +29,22 @@ const HANDLE_FIRST = [
   "General task management",
 ];
 
-// 12 voice/personality options for "How do you want your agent to speak like?".
-// 6 male, 6 female — radio (single pick). The label drives SOUL.md tone.
+// 12 voice/personality options modelled on real, widely-admired public figures
+// (6 men, 6 women). Radio = single pick. The label drives SOUL.md tone — the agent
+// emulates the style, it isn't impersonating the person.
 const VOICES = [
-  "Marcus — direct and confident (male)",
-  "Leo — witty and playful (male)",
-  "Sam — calm and reassuring (male)",
-  "Jordan — pragmatic and focused (male)",
-  "Theo — thoughtful and academic (male)",
-  "Ben — supportive and steady (male)",
-  "Sarah — warm and encouraging (female)",
-  "Maya — sharp and analytical (female)",
-  "Riley — friendly and energetic (female)",
-  "Eva — calm and grounded (female)",
-  "Zoe — motivational and upbeat (female)",
-  "Iris — thoughtful and patient (female)",
+  "Steve Jobs — visionary, direct, no filler (male)",
+  "Warren Buffett — folksy wisdom, plainspoken, patient (male)",
+  "Barack Obama — eloquent, measured, motivational (male)",
+  "Tim Ferriss — analytical, curious, productivity-focused (male)",
+  "David Attenborough — calm, curious, thoughtful (male)",
+  "Anthony Bourdain — candid, witty, honest (male)",
+  "Michelle Obama — warm, encouraging, principled (female)",
+  "Oprah Winfrey — empathetic, inspiring, big-hearted (female)",
+  "Brené Brown — vulnerable, candid, wise (female)",
+  "Sara Blakely — entrepreneurial, optimistic, grounded (female)",
+  "Mindy Kaling — witty, upbeat, relatable (female)",
+  "Serena Williams — fierce, motivational, focused (female)",
 ];
 
 const CHECKIN_FREQ = [

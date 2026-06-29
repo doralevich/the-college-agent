@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Blocks, Bot, Check, CreditCard, FolderOpen, Home, Loader2, LogOut, MessageSquare, RotateCcw, Settings2, Sparkles } from "lucide-react";
+import { Blocks, Bot, Check, CreditCard, Home, Loader2, LogOut, MessageSquare, RotateCcw, Settings2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "@/lib/supabase/client";
 import { dashboardPath, parseDashboardRoute, type DashboardTabId } from "@/lib/dashboard-tabs";
@@ -66,23 +66,26 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
   // Before there's an agent that whole block collapses to a single "Agents" item (which hosts the
   // build CTA when unpaid, the setup checklist once paid). Billing appears once they've paid
   // (there's a subscription to show / manage).
-  const tabs: { id: DashboardTabId; label: string; icon: typeof Bot }[] = [
+  // `iconColor` (optional) tints just the icon — used to make Integrations / Shortcuts
+  // stand out from the otherwise-muted sidebar. Labels stay in the default text color so
+  // the row still reads as a single nav item, not a colored chip.
+  const tabs: { id: DashboardTabId; label: string; icon: typeof Bot; iconColor?: string }[] = [
     // Welcome shows for any paid student — it's the conversational onboarding pre-agent
     // and the persistent greeting + Open Chat CTA post-agent. The rest of the agent-bound
-    // surfaces (Chat, Your Agent, Files) only appear after the agent is provisioned.
+    // surfaces (Chat, Your Agent) only appear after the agent is provisioned. Files has
+    // been hidden from the sidebar (still routable directly if needed).
     ...(paid ? [{ id: "welcome" as DashboardTabId, label: "Welcome", icon: Home }] : []),
     ...(hasAgent
       ? [
           { id: "chat" as DashboardTabId, label: "Chat", icon: MessageSquare },
           { id: "agent" as DashboardTabId, label: "Your Agent", icon: Bot },
-          { id: "integrations" as DashboardTabId, label: "Integrations", icon: Blocks },
-          { id: "shortcuts" as DashboardTabId, label: "Shortcuts", icon: Sparkles },
+          { id: "integrations" as DashboardTabId, label: "Integrations", icon: Blocks, iconColor: "#3B82F6" },
+          { id: "shortcuts" as DashboardTabId, label: "Shortcuts", icon: Sparkles, iconColor: "#F59E0B" },
         ]
       : paid
         ? []
         : [{ id: "agents" as DashboardTabId, label: "Agents", icon: Bot }]),
     ...(paid ? [{ id: "billing" as DashboardTabId, label: "Billing", icon: CreditCard }] : []),
-    ...(hasAgent ? [{ id: "files" as DashboardTabId, label: "Files", icon: FolderOpen }] : []),
     { id: "settings", label: "Settings", icon: Settings2 },
   ];
 
@@ -161,6 +164,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
                   label={t.label}
                   isActive={isActive}
                   href={dashboardPath(t.id)}
+                  iconColor={t.iconColor}
                 />
               );
             })}
@@ -277,12 +281,14 @@ function NavLink({
   isActive,
   href,
   onClick,
+  iconColor,
 }: {
   Icon: typeof Bot;
   label: string;
   isActive: boolean;
   href: string;
   onClick?: () => void;
+  iconColor?: string;
 }) {
   return (
     <Link
@@ -300,7 +306,7 @@ function NavLink({
         isActive ? "bg-secondary text-secondary-foreground" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
       )}
     >
-      <Icon className="h-4 w-4" />
+      <Icon className="h-4 w-4" style={iconColor ? { color: iconColor } : undefined} />
       <span className="flex-1 text-left">{label}</span>
     </Link>
   );
