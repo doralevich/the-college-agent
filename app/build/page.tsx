@@ -13,8 +13,24 @@ import BuildNav from "../components/BuildNav";
 const FONTS_HREF =
   "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap";
 
+type InfoForm = {
+  firstName: string;
+  lastName: string;
+  schoolEmail: string;
+  personalEmail: string;
+  mobile: string;
+};
+
 export default function BuildPage() {
+  const [step, setStep] = useState<"plan" | "info">("plan");
   const [plan, setPlan] = useState<"annual" | "monthly">("annual");
+  const [info, setInfo] = useState<InfoForm>({
+    firstName: "",
+    lastName: "",
+    schoolEmail: "",
+    personalEmail: "",
+    mobile: "",
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,17 +58,55 @@ export default function BuildPage() {
   const period = annual ? "/ school year" : "/ month";
   const savenote = annual ? "Save 17%, about $25/mo." : "Billed monthly. Switch to yearly anytime.";
 
-  async function handleGetStarted() {
+  function continueToInfo() {
+    setError(null);
+    setStep("info");
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function setField<K extends keyof InfoForm>(key: K, value: string) {
+    setInfo((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function validateInfo(): string | null {
+    if (!info.firstName.trim()) return "First name is required.";
+    if (!info.lastName.trim()) return "Last name is required.";
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(info.schoolEmail.trim())) return "Enter a valid school email.";
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(info.personalEmail.trim())) return "Enter a valid personal email.";
+    if (!info.mobile.trim()) return "Phone number is required.";
+    return null;
+  }
+
+  async function handleContinueToPayment(e: React.FormEvent) {
+    e.preventDefault();
     if (loading) return;
+    const v = validateInfo();
+    if (v) {
+      setError(v);
+      return;
+    }
     setLoading(true);
     setError(null);
+
+    // Lead capture is best-effort — never block payment if it fails.
+    fetch("/api/lead-capture", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        firstName: info.firstName.trim(),
+        lastName: info.lastName.trim(),
+        schoolEmail: info.schoolEmail.trim(),
+        personalEmail: info.personalEmail.trim(),
+        mobile: info.mobile.trim(),
+      }),
+    }).catch(() => {});
+
     try {
       const res = await fetch("/api/build/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan }),
       });
-      // Unauthed: send to login then back here.
       if (res.status === 401) {
         window.location.href = `/login?next=${encodeURIComponent("/build")}`;
         return;
@@ -62,8 +116,8 @@ export default function BuildPage() {
         throw new Error(body?.error?.message ?? `Checkout failed (${res.status})`);
       }
       window.location.href = body.url as string;
-    } catch (e) {
-      setError((e as Error).message);
+    } catch (err) {
+      setError((err as Error).message);
       setLoading(false);
     }
   }
@@ -75,95 +129,168 @@ export default function BuildPage() {
       <main style={{ paddingTop: 72 }}>
         <section className="ca-checkout">
           <div className="ca-panel">
-            <p className="ca-eyebrow">Get started</p>
-            <h2 className="ca-h2">One plan. Everything included.</h2>
-            <p className="ca-sub">
-              Your own AI agent, set up for you and ready to go. No build fees, no add-ons, no hosting
-              tiers to figure out.
-            </p>
 
-            <div className="ca-toggle" role="group" aria-label="Billing period">
-              <button
-                type="button"
-                className={annual ? "is-active" : undefined}
-                aria-pressed={annual}
-                onClick={() => setPlan("annual")}
-              >
-                School year<span className="ca-save-pill">Save 17%</span>
-              </button>
-              <button
-                type="button"
-                className={!annual ? "is-active" : undefined}
-                aria-pressed={!annual}
-                onClick={() => setPlan("monthly")}
-              >
-                Monthly
-              </button>
-            </div>
+            {step === "plan" && (
+              <>
+                <p className="ca-eyebrow">Get started</p>
+                <h2 className="ca-h2">One plan. Everything included.</h2>
+                <p className="ca-sub">
+                  Your own AI agent, set up for you and ready to go. No build fees, no add-ons, no
+                  hosting tiers to figure out.
+                </p>
 
-            <div className="ca-card">
-              <h3 className="ca-plan-name">The College Agent</h3>
-              <p className="ca-plan-desc">
-                Your AI, built around your classes, your calendar, and your life. Live within 30 minutes.
-              </p>
+                <div className="ca-toggle" role="group" aria-label="Billing period">
+                  <button
+                    type="button"
+                    className={annual ? "is-active" : undefined}
+                    aria-pressed={annual}
+                    onClick={() => setPlan("annual")}
+                  >
+                    School year<span className="ca-save-pill">Save 17%</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={!annual ? "is-active" : undefined}
+                    aria-pressed={!annual}
+                    onClick={() => setPlan("monthly")}
+                  >
+                    Monthly
+                  </button>
+                </div>
 
-              <div className="ca-price-row">
-                <span className="ca-price">{price}</span>
-                <span className="ca-period">{period}</span>
-              </div>
-              <p className="ca-savenote">{savenote}</p>
+                <div className="ca-card">
+                  <h3 className="ca-plan-name">The College Agent</h3>
+                  <p className="ca-plan-desc">
+                    Your AI, built around your classes, your calendar, and your life. Live within 30 minutes.
+                  </p>
 
-              <ul className="ca-features">
-                <li>
-                  <span className="ca-check"><CheckIcon /></span>
-                  Your own AI Agent, built and set up for you
-                </li>
-                <li>
-                  <span className="ca-check"><CheckIcon /></span>
-                  Works on the web and Telegram, any device
-                </li>
-                <li>
-                  <span className="ca-check"><CheckIcon /></span>
-                  Connect your calendar, email, Canvas, and more
-                </li>
-                <li>
-                  <span className="ca-check"><CheckIcon /></span>
-                  Cloud hosting included
-                </li>
-                <li>
-                  <span className="ca-check"><CheckIcon /></span>
-                  Cancel anytime, pause over summer
-                </li>
-              </ul>
+                  <div className="ca-price-row">
+                    <span className="ca-price">{price}</span>
+                    <span className="ca-period">{period}</span>
+                  </div>
+                  <p className="ca-savenote">{savenote}</p>
 
-              <button
-                type="button"
-                className="ca-cta"
-                onClick={handleGetStarted}
-                disabled={loading}
-                aria-busy={loading}
-              >
-                {loading ? "Loading..." : "Get started"}
-              </button>
+                  <ul className="ca-features">
+                    <li><span className="ca-check"><CheckIcon /></span>Your own AI Agent, built and set up for you</li>
+                    <li><span className="ca-check"><CheckIcon /></span>Works on the web and Telegram, any device</li>
+                    <li><span className="ca-check"><CheckIcon /></span>Connect your calendar, email, Canvas, and more</li>
+                    <li><span className="ca-check"><CheckIcon /></span>Cloud hosting included</li>
+                    <li><span className="ca-check"><CheckIcon /></span>Cancel anytime, pause over summer</li>
+                  </ul>
 
-              {error && <p className="ca-error">{error}</p>}
+                  <button type="button" className="ca-cta" onClick={continueToInfo}>
+                    Get started
+                  </button>
 
-              <p className="ca-trust">No setup fee &middot; Cancel anytime &middot; Secure checkout by Stripe</p>
+                  <p className="ca-trust">No setup fee &middot; Cancel anytime &middot; Secure checkout by Stripe</p>
 
-              <p className="ca-apinote">
-                <InfoIcon /> AI usage (API costs) is billed separately based on what you use.
-              </p>
-            </div>
+                  <p className="ca-apinote">
+                    <InfoIcon /> AI usage (API costs) is billed separately based on what you use.
+                  </p>
+                </div>
 
-            <p className="ca-next">
-              After checkout you&apos;ll fill out a <b>2-minute onboarding form</b>, and your agent goes
-              live within 30 minutes.
-            </p>
+                <p className="ca-next">
+                  After checkout you&apos;ll fill out a <b>2-minute onboarding form</b>, and your agent
+                  goes live within 30 minutes.
+                </p>
 
-            <p className="ca-custom">
-              Need something custom for your program or club?{" "}
-              <a href="mailto:david@apolloclaw.ai">Get in touch</a>.
-            </p>
+                <p className="ca-custom">
+                  Need something custom for your program or club?{" "}
+                  <a href="mailto:david@apolloclaw.ai">Get in touch</a>.
+                </p>
+              </>
+            )}
+
+            {step === "info" && (
+              <>
+                <p className="ca-eyebrow">Step 1 of 2</p>
+                <h2 className="ca-h2">Tell us about yourself.</h2>
+                <p className="ca-sub">
+                  Quick details so we know who&apos;s building this agent. Next step is secure payment.
+                </p>
+
+                <form className="ca-form" onSubmit={handleContinueToPayment} noValidate>
+                  <div className="ca-row">
+                    <label className="ca-field">
+                      <span>First name</span>
+                      <input
+                        type="text"
+                        autoComplete="given-name"
+                        value={info.firstName}
+                        onChange={(e) => setField("firstName", e.target.value)}
+                        required
+                      />
+                    </label>
+                    <label className="ca-field">
+                      <span>Last name</span>
+                      <input
+                        type="text"
+                        autoComplete="family-name"
+                        value={info.lastName}
+                        onChange={(e) => setField("lastName", e.target.value)}
+                        required
+                      />
+                    </label>
+                  </div>
+
+                  <label className="ca-field">
+                    <span>School email</span>
+                    <input
+                      type="email"
+                      autoComplete="email"
+                      value={info.schoolEmail}
+                      onChange={(e) => setField("schoolEmail", e.target.value)}
+                      placeholder="you@school.edu"
+                      required
+                    />
+                  </label>
+
+                  <label className="ca-field">
+                    <span>Personal email</span>
+                    <input
+                      type="email"
+                      autoComplete="email"
+                      value={info.personalEmail}
+                      onChange={(e) => setField("personalEmail", e.target.value)}
+                      placeholder="you@gmail.com"
+                      required
+                    />
+                  </label>
+
+                  <label className="ca-field">
+                    <span>Phone</span>
+                    <input
+                      type="tel"
+                      autoComplete="tel"
+                      value={info.mobile}
+                      onChange={(e) => setField("mobile", e.target.value)}
+                      placeholder="(555) 123-4567"
+                      required
+                    />
+                  </label>
+
+                  <div className="ca-plan-recap">
+                    <span className="ca-plan-recap-label">Selected plan</span>
+                    <span className="ca-plan-recap-value">
+                      The College Agent &middot; {annual ? "School year" : "Monthly"} &middot; {price}
+                      {annual ? "/yr" : "/mo"}
+                    </span>
+                    <button type="button" className="ca-plan-change" onClick={() => setStep("plan")}>
+                      Change
+                    </button>
+                  </div>
+
+                  {error && <p className="ca-error" role="alert">{error}</p>}
+
+                  <button type="submit" className="ca-cta" disabled={loading} aria-busy={loading}>
+                    {loading ? "Loading..." : "Next — Continue to payment"}
+                  </button>
+
+                  <p className="ca-trust">Secure checkout by Stripe</p>
+                </form>
+              </>
+            )}
+
           </div>
         </section>
       </main>
@@ -384,6 +511,85 @@ export default function BuildPage() {
           font-size: 13px;
           margin: 12px 0 0;
           text-align: center;
+        }
+
+        .ca-form {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+          max-width: 460px;
+          margin: 0 auto;
+        }
+        .ca-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 14px;
+        }
+        .ca-field {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .ca-field > span {
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--ca-body);
+        }
+        .ca-field input {
+          font-family: var(--ca-sans);
+          font-size: 15px;
+          color: var(--ca-ink);
+          background: var(--ca-white);
+          border: 1px solid var(--ca-line);
+          border-radius: 10px;
+          padding: 12px 14px;
+          outline: none;
+          transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .ca-field input:focus {
+          border-color: var(--ca-green);
+          box-shadow: 0 0 0 3px rgba(45, 122, 58, 0.15);
+        }
+        .ca-plan-recap {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 12px 14px;
+          background: var(--ca-green-tint);
+          border: 1px solid rgba(45, 122, 58, 0.2);
+          border-radius: 10px;
+          margin: 4px 0 6px;
+          flex-wrap: wrap;
+        }
+        .ca-plan-recap-label {
+          font-family: var(--ca-mono);
+          font-size: 10px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--ca-green-dark);
+        }
+        .ca-plan-recap-value {
+          flex: 1;
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--ca-ink);
+        }
+        .ca-plan-change {
+          background: transparent;
+          border: none;
+          color: var(--ca-green);
+          font-family: var(--ca-sans);
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          padding: 4px 8px;
+          border-radius: 6px;
+          text-decoration: underline;
+          text-underline-offset: 2px;
+        }
+        .ca-plan-change:hover { color: var(--ca-green-dark); }
+        @media (max-width: 480px) {
+          .ca-row { grid-template-columns: 1fr; }
         }
 
         .ca-trust {
