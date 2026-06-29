@@ -219,6 +219,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
                   avatarUrl={avatarUrl}
                   onOpenChat={() => openDashboardTab("chat")}
                   onboardDone={onboardDone}
+                  hasAgent={hasAgent}
                   userId={userId}
                 />
               ) : !paid ? (

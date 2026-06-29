@@ -47,6 +47,7 @@ export function WelcomeView({
   avatarUrl,
   onOpenChat,
   onboardDone,
+  hasAgent,
   userId,
 }: {
   firstName: string | null;
@@ -57,6 +58,9 @@ export function WelcomeView({
   onOpenChat: () => void;
   // When false, the page swaps to the conversational onboarding flow.
   onboardDone: boolean;
+  // Whether the student's agent has been provisioned. When false but onboardDone is true,
+  // the Welcome card shows a "Building your agent…" state instead of Open Chat.
+  hasAgent: boolean;
   // Used to scope localStorage progress to this student.
   userId: string;
 }) {
@@ -213,11 +217,12 @@ export function WelcomeView({
         <div style={{ textAlign: "center" }}>
           <button
             type="button"
-            onClick={onOpenChat}
+            onClick={hasAgent ? onOpenChat : undefined}
+            disabled={!hasAgent}
             className="ca-cta"
             style={{
               border: "none",
-              cursor: "pointer",
+              cursor: hasAgent ? "pointer" : "wait",
               fontFamily: "'DM Sans', system-ui, sans-serif",
               fontSize: 16,
               fontWeight: 600,
@@ -226,12 +231,15 @@ export function WelcomeView({
               padding: "15px 40px",
               borderRadius: 12,
               boxShadow: "0 8px 20px -8px rgba(45,122,58,.6)",
+              opacity: hasAgent ? 1 : 0.65,
             }}
           >
-            Open Chat
+            {hasAgent ? "Open Chat" : "Building your agent…"}
           </button>
           <p style={{ marginTop: 14, fontSize: 13, color: t.inkSoft }}>
-            Takes about two minutes to get rolling.
+            {hasAgent
+              ? "Takes about two minutes to get rolling."
+              : "This usually takes a minute or two. Refresh if it's still not ready."}
           </p>
         </div>
       </div>
