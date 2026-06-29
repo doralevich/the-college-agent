@@ -49,5 +49,11 @@ export const DEFAULT_INTEGRATION_TOOLKITS: IntegrationToolkit[] = [
   toolkit("firecrawl", "Firecrawl", "Firecrawl automates web crawling and extraction.", ["API_KEY"]),
   toolkit("tavily", "Tavily", "Tavily offers search and data retrieval for agents.", ["API_KEY"]),
   toolkit("youtube", "YouTube", "YouTube hosts and manages video content."),
-  toolkit("canvas", "Canvas", "Canvas is a learning management system."),
+  toolkit("canvas", "Canvas", "Canvas is the LMS most universities use for classes and assignments."),
+  toolkit("blackbaud", "Blackbaud", "Blackbaud powers many private-school and higher-ed admin systems."),
+  toolkit("googleclassroom", "Google Classroom", "Google Classroom for assignments, announcements, and grades."),
+  toolkit("microsoftteams", "Microsoft Teams", "Microsoft Teams for class meetings and group chats."),
+  toolkit("zoom", "Zoom", "Zoom for lectures, office hours, and study sessions."),
+  toolkit("onedrive", "OneDrive", "OneDrive for Microsoft 365 cloud files."),
+  toolkit("dropbox", "Dropbox", "Dropbox for shared files and group projects."),
 ];
