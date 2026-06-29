@@ -23,7 +23,7 @@ export default function TermsPage() {
               <li>Optional support plans (6 Months and Annual)</li>
               <li>Optional White Glove onboarding experience</li>
             </ul>
-            <p>All agent builds are powered by Apollo[Claw] proprietary software. Upon receipt of your completed onboarding form, your agent will be developed and deployed within 30 minutes to 72 hours.</p>
+            <p>All agent builds are powered by Apollo[Claw] proprietary software. Upon receipt of your completed onboarding form, your agent will be developed and deployed within 30 minutes.</p>
           </Section>
 
           <Section title="3. Payments &amp; Fees">

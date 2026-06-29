@@ -162,7 +162,7 @@ export default function BuildPage() {
                     { label: "Hosting", value: `${configSummary.hosting}: $${configSummary.hostingFee}/mo` },
                     { label: "Support Plan", value: `${configSummary.support} (${configSummary.supportPrice})` },
                     { label: "Co-Training", value: "30-day hands-on (included)" },
-                    { label: "Deployment", value: "72 hours from signed agreement" },
+                    { label: "Deployment", value: "Live in 30 minutes" },
                   ].map(({ label, value }) => (
                     <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "13px 0", borderBottom: "1px solid rgba(11,23,41,.06)", gap: 16 }}>
                       <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(11,23,41,.45)", textTransform: "uppercase", letterSpacing: ".06em", whiteSpace: "nowrap" }}>{label}</span>
