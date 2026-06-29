@@ -90,48 +90,57 @@ const HOSTING_TIERS: {
   id: HostingPlan;
   price: number;
   name: string;
-  tag: string;
-  blurb: string;
-  cpu: string;
-  ram: string;
-  disk: string;
-  support: string;
-  highlight?: boolean;
+  features: { text: string; bold?: boolean }[];
 }[] = [
   {
-    id: "basic", price: 19.99, name: "Basic", tag: "Starter",
-    blurb: "Try out your agent with light daily use.",
-    cpu: "1 vCPU", ram: "4 GB RAM", disk: "12 GB SSD",
-    support: "Community support",
+    id: "basic", price: 19.99, name: "Basic",
+    features: [
+      { text: "1 vCPU, 4 GB RAM, 12 GB storage" },
+      { text: "Bring your own API keys (BYOK)" },
+      { text: "All supported AI models (Claude, GPT, Gemini, DeepSeek, Qwen)" },
+      { text: "1,000+ ready-to-use integrations" },
+      { text: "$1/mo in AI credits" },
+      { text: "75 web searches / month" },
+      { text: "1K app actions / month" },
+    ],
   },
   {
-    id: "plus", price: 29.99, name: "Plus", tag: "Recommended",
-    blurb: "Smooth headroom for everyday studying and research.",
-    cpu: "2 vCPU", ram: "6 GB RAM", disk: "20 GB SSD",
-    support: "Community support",
-    highlight: true,
+    id: "plus", price: 29.99, name: "Plus",
+    features: [
+      { text: "2 vCPU, 6 GB RAM, 20 GB storage" },
+      { text: "Bring your own API keys (BYOK)" },
+      { text: "All supported AI models (Claude, GPT, Gemini, DeepSeek, Qwen)" },
+      { text: "1,000+ ready-to-use integrations" },
+      { text: "$1/mo in AI credits" },
+      { text: "75 web searches / month" },
+      { text: "1K app actions / month" },
+    ],
   },
   {
-    id: "pro", price: 49.99, name: "Pro", tag: "Power User",
-    blurb: "Heavier workloads — multiple integrations, longer docs, faster responses.",
-    cpu: "4 vCPU", ram: "8 GB RAM", disk: "30 GB SSD",
-    support: "Community support",
+    id: "pro", price: 49.99, name: "Pro",
+    features: [
+      { text: "4 vCPU, 8 GB RAM, 30 GB storage" },
+      { text: "Bring your own API keys (BYOK)" },
+      { text: "All supported AI models (Claude, GPT, Gemini, DeepSeek, Qwen)" },
+      { text: "1,000+ ready-to-use integrations" },
+      { text: "$1/mo in AI credits" },
+      { text: "75 web searches / month" },
+      { text: "1K app actions / month" },
+    ],
   },
   {
-    id: "max", price: 99, name: "Max", tag: "Premium",
-    blurb: "Maximum performance with direct support from our team.",
-    cpu: "6 vCPU", ram: "12 GB RAM", disk: "50 GB SSD",
-    support: "Email & Telegram support",
+    id: "max", price: 99, name: "Max",
+    features: [
+      { text: "6 vCPU, 12 GB RAM, 50 GB storage" },
+      { text: "Email & Telegram Support", bold: true },
+      { text: "Bring your own API keys (BYOK)" },
+      { text: "All supported AI models (Claude, GPT, Gemini, DeepSeek, Qwen)" },
+      { text: "1,000+ ready-to-use integrations" },
+      { text: "$1/mo in AI credits" },
+      { text: "75 web searches / month" },
+      { text: "1K app actions / month" },
+    ],
   },
-];
-
-const HOSTING_INCLUDED = [
-  "Bring your own API keys",
-  "All supported AI models",
-  "1,000+ ready-to-use integrations",
-  "$1/mo in AI credits",
-  "75 web searches / month",
-  "1K app actions / month",
 ];
 
 export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSummary) => void } = {}) {
@@ -233,49 +242,24 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
             <div className="step-num">2</div>
             <span className="step-title">Choose Your Hosting Plan</span>
           </div>
-          <p style={{ fontSize: 14, color: "rgba(11,23,41,.55)", lineHeight: 1.7, marginBottom: 24 }}>
-            Pick the machine your agent runs on. More resources mean faster responses, more parallel work,
-            and headroom for heavier integrations. Every plan ships with the same features — only the
-            horsepower and support tier change.
-          </p>
           <div className="hosting-grid">
             {HOSTING_TIERS.map((plan) => (
               <div
                 key={plan.id}
-                className={`hosting-card ${config.hosting === plan.id ? "selected" : ""} ${plan.highlight ? "highlight" : ""}`}
+                className={`hosting-card ${config.hosting === plan.id ? "selected" : ""}`}
                 onClick={() => selectHosting(plan.id)}
               >
-                <div className="hosting-tag">{plan.tag}</div>
-                <div className="hosting-name">{plan.name}</div>
-                <div className="hosting-blurb">{plan.blurb}</div>
-                <div className="hosting-specs">
-                  <div className="hosting-spec">
-                    <span className="hosting-spec-label">CPU</span>
-                    <span className="hosting-spec-value">{plan.cpu}</span>
-                  </div>
-                  <div className="hosting-spec">
-                    <span className="hosting-spec-label">Memory</span>
-                    <span className="hosting-spec-value">{plan.ram}</span>
-                  </div>
-                  <div className="hosting-spec">
-                    <span className="hosting-spec-label">Storage</span>
-                    <span className="hosting-spec-value">{plan.disk}</span>
-                  </div>
-                </div>
-                <div className="hosting-support">{plan.support}</div>
                 <div className="hosting-price">
                   ${plan.price}<span className="hosting-price-unit">/mo</span>
                 </div>
+                <div className="hosting-name">{plan.name}</div>
+                <ul className="hosting-features">
+                  {plan.features.map((f, i) => (
+                    <li key={i} className={f.bold ? "bold" : undefined}>{f.text}</li>
+                  ))}
+                </ul>
               </div>
             ))}
-          </div>
-          <div className="hosting-included">
-            <div className="hosting-included-title">Every plan includes</div>
-            <div className="hosting-included-list">
-              {HOSTING_INCLUDED.map((item) => (
-                <span key={item}>{item}</span>
-              ))}
-            </div>
           </div>
           <p className="hosting-note">
             Apollo Claw cloud hosting is required for all College Agent deployments. Your agent lives
@@ -554,78 +538,30 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
         }
         .custom-note a { color: var(--green); }
 
-        .hosting-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        .hosting-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
         .hosting-card {
-          border: 2px solid rgba(11,23,41,.1); border-radius: 12px; padding: 22px 20px;
-          cursor: pointer; transition: border-color .15s, background .15s, transform .15s;
-          display: flex; flex-direction: column; background: #fff; position: relative;
+          border: 2px solid rgba(11,23,41,.1); border-radius: 10px; padding: 18px;
+          cursor: pointer; transition: border-color .15s, background .15s;
+          display: flex; flex-direction: column; background: #fff;
         }
-        .hosting-card:hover { border-color: rgba(61,139,61,.45); transform: translateY(-2px); }
+        .hosting-card:hover { border-color: rgba(61,139,61,.4); }
         .hosting-card.selected { border-color: var(--green); background: rgba(61,139,61,.04); }
-        .hosting-card.highlight { border-color: rgba(61,139,61,.35); }
-        .hosting-card.highlight.selected { border-color: var(--green); }
-        .hosting-tag {
-          font-family: var(--font-mono); font-size: 10px; font-weight: 700;
-          letter-spacing: .12em; text-transform: uppercase; color: var(--green);
-          margin-bottom: 10px;
-        }
-        .hosting-name {
-          font-size: 22px; font-weight: 800; color: var(--navy);
-          margin-bottom: 8px; letter-spacing: -.01em;
-        }
-        .hosting-blurb {
-          font-size: 12px; line-height: 1.55; color: rgba(11,23,41,.62);
-          margin-bottom: 16px;
-        }
-        .hosting-specs {
-          display: flex; flex-direction: column; gap: 7px;
-          padding: 12px 14px; background: rgba(11,23,41,.03);
-          border-radius: 8px; margin-bottom: 14px;
-        }
-        .hosting-spec { display: flex; justify-content: space-between; align-items: center; }
-        .hosting-spec-label {
-          font-family: var(--font-mono); font-size: 10px; text-transform: uppercase;
-          letter-spacing: .08em; color: rgba(11,23,41,.4);
-        }
-        .hosting-spec-value {
-          font-size: 12px; font-weight: 700; color: var(--navy);
-          font-family: var(--font-mono);
-        }
-        .hosting-support {
-          font-size: 11px; font-weight: 600; color: rgba(11,23,41,.7);
-          padding: 10px 0; text-align: center;
-          border-top: 1px solid rgba(11,23,41,.07);
-          border-bottom: 1px solid rgba(11,23,41,.07);
-          margin-bottom: 16px;
-        }
         .hosting-price {
-          font-family: var(--font-mono); font-size: 26px; font-weight: 800;
-          color: var(--green); margin-top: auto; letter-spacing: -.02em;
+          font-family: var(--font-mono); font-size: 20px; font-weight: 700;
+          color: var(--green); margin-bottom: 4px;
         }
-        .hosting-price-unit { font-size: 13px; font-weight: 500; color: rgba(11,23,41,.4); margin-left: 2px; }
-
-        .hosting-included {
-          margin-top: 22px; padding: 18px 20px;
-          background: rgba(61,139,61,.05);
-          border: 1px solid rgba(61,139,61,.15); border-radius: 10px;
+        .hosting-price-unit { font-size: 13px; font-weight: 500; color: rgba(11,23,41,.4); }
+        .hosting-name { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+        .hosting-features { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+        .hosting-features li {
+          font-size: 12px; color: rgba(11,23,41,.6);
+          display: flex; align-items: center; gap: 6px;
         }
-        .hosting-included-title {
-          font-family: var(--font-mono); font-size: 10px; font-weight: 700;
-          letter-spacing: .12em; text-transform: uppercase; color: var(--green);
-          margin-bottom: 12px;
+        .hosting-features li.bold { color: var(--navy); font-weight: 700; }
+        .hosting-features li::before {
+          content: ''; width: 5px; height: 5px; border-radius: 50%;
+          background: var(--green); flex-shrink: 0;
         }
-        .hosting-included-list {
-          display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px 18px;
-        }
-        .hosting-included-list span {
-          font-size: 12.5px; color: rgba(11,23,41,.72);
-          display: flex; align-items: center; gap: 8px;
-        }
-        .hosting-included-list span::before {
-          content: '✓'; color: var(--green); font-weight: 700; font-size: 12px;
-          flex-shrink: 0;
-        }
-
         .hosting-note {
           font-size: 12px; line-height: 1.6; color: rgba(11,23,41,.5);
           margin-top: 14px; padding: 12px; background: rgba(11,23,41,.03);
@@ -684,12 +620,10 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
         @media (max-width: 900px) {
           .config-layout { grid-template-columns: 1fr; }
           .order-summary { position: static; }
-          .hosting-included-list { grid-template-columns: repeat(2, 1fr); }
         }
         @media (max-width: 640px) {
           .impl-grid { grid-template-columns: 1fr; }
           .hosting-grid { grid-template-columns: 1fr; }
-          .hosting-included-list { grid-template-columns: 1fr; }
         }
       `}</style>
     </section>
