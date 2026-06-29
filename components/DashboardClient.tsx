@@ -27,9 +27,11 @@ type Props = {
   setupDone: boolean;
   // The student's single agent id, or null before one is provisioned. null => Chat tab hidden.
   agentId: string | null;
+  // From onboard_submissions — used for the "Hi {firstName}" greeting on the agent dashboard.
+  firstName: string | null;
 };
 
-export function DashboardClient({ paid, onboardDone, setupDone, agentId }: Props) {
+export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstName }: Props) {
   const hasAgent = !!agentId;
   const { userEmail } = useWorkspace();
   const router = useRouter();
@@ -192,7 +194,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId }: Props
               ) : !paid ? (
                 <BuildCta />
               ) : hasAgent ? (
-                <AgentsView onOpenChat={() => openDashboardTab("chat")} />
+                <AgentsView firstName={firstName} onOpenChat={() => openDashboardTab("chat")} />
               ) : provisioning || provisionFailed ? (
                 <Provisioning failed={provisionFailed} onRetry={provision} />
               ) : (
