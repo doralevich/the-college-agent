@@ -11,17 +11,11 @@ import { useChat } from "./useChat";
 import { useChatAttachments } from "./useChatAttachments";
 
 // The conversation pane, rendered full-height in the dashboard main when the Chat tab is active.
-// Empty state = a centered welcome (heading + big composer + subtitle); once there are messages
-// it becomes a scrolling transcript with the composer docked at the bottom. The composer is kept
-// at a STABLE position in the tree across both states so it never remounts (preserving the draft,
-// model, and effort selection through the first send).
-export function ChatView({
-  firstName,
-  agentName,
-}: {
-  firstName: string | null;
-  agentName: string | null;
-}) {
+// Empty state = a centered heading + big composer; once there are messages it becomes a scrolling
+// transcript with the composer docked at the bottom. The composer is kept at a STABLE position in
+// the tree across both states so it never remounts (preserving the draft, model, and effort
+// selection through the first send).
+export function ChatView() {
   const {
     agentId,
     sessions,
@@ -109,7 +103,9 @@ export function ChatView({
         ) : messages.length > 0 ? (
           <ChatMessages messages={messages} isStreaming={isStreaming} />
         ) : (
-          <ChatWelcome firstName={firstName} agentName={agentName} />
+          <h1 className="text-[26px] font-semibold tracking-tight text-foreground sm:text-[30px]">
+            What can I help with?
+          </h1>
         )}
       </div>
 
@@ -135,45 +131,13 @@ export function ChatView({
       </div>
 
       {/* Bottom: balances the vertical centering on the welcome state. */}
-      {showWelcome && <div className="flex-1" />}
-    </div>
-  );
-}
-
-// First-touch welcome shown in place of the empty-state heading. Uses the student's first
-// name and the provisioned agent's name when available; falls back gracefully when either
-// is missing (a brand-new account that landed here before onboarding completed).
-function ChatWelcome({
-  firstName,
-  agentName,
-}: {
-  firstName: string | null;
-  agentName: string | null;
-}) {
-  const name = firstName?.trim() || "there";
-  const bot = agentName?.trim() || "your College Agent";
-  return (
-    <div className="mx-auto w-full max-w-2xl space-y-5 px-2 pb-2 text-left">
-      <h1 className="text-[26px] font-semibold tracking-tight text-foreground sm:text-[30px]">
-        Hi {name},
-        <br />
-        I&apos;m {bot}. Here to help and guide you through your college years (and then some!).
-      </h1>
-      <p className="text-sm leading-relaxed text-muted-foreground">
-        First, let me know a little about yourself. Tell me about your academic life, your personal life,
-        family, social life, your major, your minor. Tell me anything you want me to know so we can get started.
-      </p>
-      <p className="text-sm leading-relaxed text-muted-foreground">
-        Then, click on the{" "}
-        <span className="font-medium text-foreground">Integrations</span>{" "}
-        tab in the sidebar. This is where you customize your experience with programs you already use:
-        Email, Google Docs, Outlook, Dropbox, Canvas, Blackbaud. There are thousands of integrations,
-        just search and in a few clicks you&apos;re all set.
-      </p>
-      <p className="text-sm leading-relaxed text-muted-foreground">
-        Try your email or calendar and then ask{" "}
-        <span className="font-medium text-foreground">&ldquo;What&apos;s on my calendar?&rdquo;</span>
-      </p>
+      {showWelcome && (
+        <div className="flex flex-1 flex-col items-center px-4 pt-3">
+          <p className="text-sm text-muted-foreground">
+            The more context you give, the better your agent can help.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

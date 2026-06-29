@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Blocks, Bot, Check, CreditCard, FolderOpen, Loader2, LogOut, MessageSquare, RotateCcw, Settings2, Sparkles } from "lucide-react";
+import { Blocks, Bot, Check, CreditCard, FolderOpen, Home, Loader2, LogOut, MessageSquare, RotateCcw, Settings2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "@/lib/supabase/client";
 import { dashboardPath, parseDashboardRoute, type DashboardTabId } from "@/lib/dashboard-tabs";
@@ -21,6 +21,7 @@ import { ChatView } from "@/components/chat/ChatView";
 import { FilesView } from "@/components/files/FilesView";
 import { IntegrationsView } from "@/components/IntegrationsView";
 import { ShortcutsView } from "@/components/ShortcutsView";
+import { WelcomeView } from "@/components/WelcomeView";
 
 type Props = {
   paid: boolean;
@@ -66,6 +67,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
   const tabs: { id: DashboardTabId; label: string; icon: typeof Bot }[] = [
     ...(hasAgent
       ? [
+          { id: "welcome" as DashboardTabId, label: "Welcome", icon: Home },
           { id: "chat" as DashboardTabId, label: "Chat", icon: MessageSquare },
           { id: "agent" as DashboardTabId, label: "Your Agent", icon: Bot },
           { id: "integrations" as DashboardTabId, label: "Integrations", icon: Blocks },
@@ -176,7 +178,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
             composer draft, and the model selection survive leaving and returning to the tab. */}
         {hasAgent && chatOpened && (
           <div className={cn("h-full", !isChat && "hidden")}>
-            <ChatView firstName={firstName} agentName={agentName} />
+            <ChatView />
           </div>
         )}
         {/* Files mirrors Chat: full-height, kept MOUNTED (just hidden) so the current directory,
@@ -197,6 +199,8 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
                 <IntegrationsView agentId={agentId} />
               ) : active === "shortcuts" && hasAgent ? (
                 <ShortcutsView />
+              ) : active === "welcome" && hasAgent ? (
+                <WelcomeView firstName={firstName} agentName={agentName} onOpenChat={() => openDashboardTab("chat")} />
               ) : !paid ? (
                 <BuildCta />
               ) : hasAgent ? (
@@ -303,7 +307,7 @@ function normalizeDashboardTab(
   if (requestedTab === "agents" && hasAgent) return "agent";
   if (requestedTab === "agent" && !hasAgent) return "agents";
   if (requestedTab && tabs.some((t) => t.id === requestedTab)) return requestedTab;
-  return hasAgent ? "chat" : "agents";
+  return hasAgent ? "welcome" : "agents";
 }
 
 function BuildCta() {

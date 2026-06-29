@@ -68,13 +68,15 @@ function ToolChip({ tool }: { tool: ToolEvent }) {
   );
 }
 
+// Bigger, higher-contrast "..." with a staggered bounce. Telegram-style — visible the whole time
+// the agent is generating, until the first content chunk arrives.
 function TypingDots() {
   return (
-    <span className="inline-flex items-center gap-1 text-muted-foreground">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-2" aria-label="Agent is typing">
       {[0, 150, 300].map((d) => (
         <span
           key={d}
-          className="h-1.5 w-1.5 animate-pulse rounded-full bg-current"
+          className="h-2 w-2 animate-bounce rounded-full bg-foreground/60"
           style={{ animationDelay: `${d}ms` }}
         />
       ))}
@@ -104,8 +106,11 @@ export function ChatMessages({ messages, isStreaming }: { messages: ChatMessage[
 
         const lastAssistant = i === messages.length - 1 && m.role === "assistant";
         const tools = m.tools ?? [];
-        const showDots =
-          lastAssistant && isStreaming && !m.content && !m.thinking && !tools.some((t) => t.status === "running");
+        // Show the Telegram-style dots whenever the agent is generating and no markdown content
+        // has streamed yet — even if a thinking block or tool chip is already visible. That way
+        // the student always sees an obvious "something is happening" cue, not just a subtle
+        // spinner buried in the thinking dropdown.
+        const showDots = lastAssistant && isStreaming && !m.content;
 
         return (
           <div key={m.id} className="flex justify-start">
@@ -118,7 +123,12 @@ export function ChatMessages({ messages, isStreaming }: { messages: ChatMessage[
                   ))}
                 </div>
               )}
-              {m.content ? <Markdown content={m.content} /> : showDots ? <TypingDots /> : null}
+              {m.content ? <Markdown content={m.content} /> : null}
+              {showDots && (
+                <div className={m.thinking || tools.length > 0 ? "mt-2" : undefined}>
+                  <TypingDots />
+                </div>
+              )}
             </div>
           </div>
         );
