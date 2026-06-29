@@ -59,6 +59,7 @@ export default async function DashboardPage({ params }: Props) {
       agentId={agentId}
       firstName={firstName}
       agentName={agentName}
+      userId={user.id}
     />
   );
 }
