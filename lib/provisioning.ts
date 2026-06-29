@@ -62,18 +62,17 @@ export async function readProvisioningIntake(
 
 export type ConfigureOutcome = { configured: boolean; detail: string };
 
-// Best-effort, never throws: with any credential on file (Telegram and/or a BYO model key),
-// build the persona and wire up Hermes; with nothing to connect, leave the agent bare.
+// Best-effort, never throws. Always builds the persona (SOUL.md / USER.md) from the
+// student's onboarding so the agent is never "blank" — the platform's metered gateway
+// keeps the agent able to talk to an LLM without a BYO key. Telegram + BYO model keys
+// layer on top when they exist, and the proactive check-in only runs when Telegram is
+// connected (it's the delivery channel).
 export async function configureAgentFromIntake(
   agent37Id: string,
   onboard: OnboardIntake,
   setup: SetupIntake
 ): Promise<ConfigureOutcome> {
   const hasTelegram = !!(setup?.telegram_token && setup?.telegram_user_id);
-  const hasModelKey = !!(setup?.anthropic_key || setup?.openai_key);
-  if (!hasTelegram && !hasModelKey) {
-    return { configured: false, detail: "no credentials on file, agent left unconfigured" };
-  }
 
   // Split the intake across the files Hermes reads: identity -> SOUL.md, durable student
   // facts -> USER.md, check-in cadence -> a cron job. (See lib/hermes.ts for each mapping.)
