@@ -29,7 +29,7 @@ export default async function DashboardPage({ params }: Props) {
 
   const [entRes, onboardRes, setupRes, agentRes] = await Promise.all([
     db.from("entitlements").select("status").eq("email", email).maybeSingle(),
-    db.from("onboard_submissions").select("user_id", { count: "exact", head: true }).eq("user_id", user.id),
+    db.from("onboard_submissions").select("first_name").eq("user_id", user.id).maybeSingle(),
     db.from("setup_submissions").select("user_id", { count: "exact", head: true }).eq("user_id", user.id),
     // Each student has a single agent; grab its id (oldest first) so the dashboard can target
     // it for the Chat tab. null when none yet -> chat tab hidden, funnel shown.
@@ -45,9 +45,10 @@ export default async function DashboardPage({ params }: Props) {
   ]);
 
   const paid = entRes.data?.status === "active";
-  const onboardDone = (onboardRes.count ?? 0) > 0;
+  const onboardDone = !!onboardRes.data;
   const setupDone = (setupRes.count ?? 0) > 0;
   const agentId = (agentRes.data?.agent37_id as string | undefined) ?? null;
+  const firstName = (onboardRes.data?.first_name as string | undefined) ?? null;
 
   return (
     <DashboardClient
@@ -55,6 +56,7 @@ export default async function DashboardPage({ params }: Props) {
       onboardDone={onboardDone}
       setupDone={setupDone}
       agentId={agentId}
+      firstName={firstName}
     />
   );
 }
