@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Image from "next/image";
+import { ConversationalOnboard } from "@/components/ConversationalOnboard";
 
 // First-run landing on the student dashboard. Greets as Frankenstein (the agent's
 // persona), lists the three things to do, and offers one big button into Chat.
@@ -43,13 +44,24 @@ const steps = [
 export function WelcomeView({
   firstName,
   onOpenChat,
+  onboardDone,
+  userId,
 }: {
   firstName: string | null;
   // agentName comes from the parent but we intentionally don't render it —
   // the welcome speaks as "Frankenstein" per the brief, regardless of the row.
   agentName?: string | null;
   onOpenChat: () => void;
+  // When false, the page swaps to the conversational onboarding flow.
+  onboardDone: boolean;
+  // Used to scope localStorage progress to this student.
+  userId: string;
 }) {
+  // Conversational onboarding takes over the Welcome surface until the student has
+  // answered all the questions. Once their answers are saved, we flip back to the
+  // static greeting + Open Chat CTA.
+  if (!onboardDone) return <ConversationalOnboard userId={userId} />;
+
   const name = firstName?.trim() || "there";
 
   // Inject Fraunces + DM Sans on mount so we don't have to wire them into the

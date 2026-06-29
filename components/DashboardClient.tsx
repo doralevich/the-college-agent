@@ -33,9 +33,11 @@ type Props = {
   firstName: string | null;
   // From agents.name — used for the "I'm {agentName}" greeting in the empty chat state.
   agentName: string | null;
+  // Auth user id — scopes the conversational onboarding's localStorage progress key.
+  userId: string;
 };
 
-export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstName, agentName }: Props) {
+export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstName, agentName, userId }: Props) {
   const hasAgent = !!agentId;
   const { userEmail } = useWorkspace();
   const router = useRouter();
@@ -65,15 +67,20 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
   // build CTA when unpaid, the setup checklist once paid). Billing appears once they've paid
   // (there's a subscription to show / manage).
   const tabs: { id: DashboardTabId; label: string; icon: typeof Bot }[] = [
+    // Welcome shows for any paid student — it's the conversational onboarding pre-agent
+    // and the persistent greeting + Open Chat CTA post-agent. The rest of the agent-bound
+    // surfaces (Chat, Your Agent, Files) only appear after the agent is provisioned.
+    ...(paid ? [{ id: "welcome" as DashboardTabId, label: "Welcome", icon: Home }] : []),
     ...(hasAgent
       ? [
-          { id: "welcome" as DashboardTabId, label: "Welcome", icon: Home },
           { id: "chat" as DashboardTabId, label: "Chat", icon: MessageSquare },
           { id: "agent" as DashboardTabId, label: "Your Agent", icon: Bot },
           { id: "integrations" as DashboardTabId, label: "Integrations", icon: Blocks },
           { id: "shortcuts" as DashboardTabId, label: "Shortcuts", icon: Sparkles },
         ]
-      : [{ id: "agents" as DashboardTabId, label: "Agents", icon: Bot }]),
+      : paid
+        ? []
+        : [{ id: "agents" as DashboardTabId, label: "Agents", icon: Bot }]),
     ...(paid ? [{ id: "billing" as DashboardTabId, label: "Billing", icon: CreditCard }] : []),
     ...(hasAgent ? [{ id: "files" as DashboardTabId, label: "Files", icon: FolderOpen }] : []),
     { id: "settings", label: "Settings", icon: Settings2 },
@@ -199,8 +206,14 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
                 <IntegrationsView agentId={agentId} />
               ) : active === "shortcuts" && hasAgent ? (
                 <ShortcutsView />
-              ) : active === "welcome" && hasAgent ? (
-                <WelcomeView firstName={firstName} agentName={agentName} onOpenChat={() => openDashboardTab("chat")} />
+              ) : active === "welcome" && paid ? (
+                <WelcomeView
+                  firstName={firstName}
+                  agentName={agentName}
+                  onOpenChat={() => openDashboardTab("chat")}
+                  onboardDone={onboardDone}
+                  userId={userId}
+                />
               ) : !paid ? (
                 <BuildCta />
               ) : hasAgent ? (
@@ -307,7 +320,10 @@ function normalizeDashboardTab(
   if (requestedTab === "agents" && hasAgent) return "agent";
   if (requestedTab === "agent" && !hasAgent) return "agents";
   if (requestedTab && tabs.some((t) => t.id === requestedTab)) return requestedTab;
-  return hasAgent ? "welcome" : "agents";
+  // Welcome is the default whenever it's available (every paid student) — it covers
+  // both the conversational onboarding (pre-agent) and the static greeting (post-agent).
+  if (tabs.some((t) => t.id === "welcome")) return "welcome";
+  return hasAgent ? "chat" : "agents";
 }
 
 function BuildCta() {
