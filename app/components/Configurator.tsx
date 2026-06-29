@@ -36,11 +36,11 @@ interface ConfigState {
 
 const TIERS: { id: Tier; badge: string; name: string; price: number; readyTime: string; desc: string; features: string[] }[] = [
   {
-    id: "undergraduate", badge: "Most Popular", name: "The Undergraduate", price: 199, readyTime: "30 min – 72 hours",
-    desc: "The fastest path to your own AI agent. Submit your completed onboarding form and our proprietary software spins up your agent, ready within 30 minutes to 72 hours.",
+    id: "undergraduate", badge: "Most Popular", name: "The Undergraduate", price: 199, readyTime: "30 minutes",
+    desc: "The fastest path to your own AI agent. Submit your completed onboarding form and our proprietary software spins up your agent, ready in 30 minutes.",
     features: [
       "3 integrations included",
-      "Agent live in 30 min – 72 hours",
+      "Agent live in 30 minutes",
       "Standard onboarding form",
       "Web portal access",
       "Cloud hosted via Apollo Claw",
@@ -48,13 +48,13 @@ const TIERS: { id: Tier; badge: string; name: string; price: number; readyTime: 
     ],
   },
   {
-    id: "graduate", badge: "Advanced", name: "The Graduate", price: 399, readyTime: "30 min – 72 hours",
-    desc: "More depth, more personalization. Submit your enhanced onboarding form and our proprietary software develops your agent within 30 minutes to 72 hours, plus a live call and 7 days of post-launch support.",
+    id: "graduate", badge: "Advanced", name: "The Graduate", price: 399, readyTime: "30 minutes",
+    desc: "More depth, more personalization. Submit your enhanced onboarding form and our proprietary software develops your agent in 30 minutes, plus a live call and 7 days of post-launch support.",
     features: [
       "5 integrations included",
-      "Agent live in 30 min – 72 hours",
+      "Agent live in 30 minutes",
       "Enhanced onboarding form",
-      "30-minute onboarding call",
+      "15-minute onboarding call",
       "7 days post-launch support",
       "Web portal access",
       "Cloud hosted via Apollo Claw",
@@ -62,13 +62,13 @@ const TIERS: { id: Tier; badge: string; name: string; price: number; readyTime: 
     ],
   },
   {
-    id: "scholar", badge: "Most Powerful", name: "The Scholar", price: 599, readyTime: "30 min – 72 hours",
-    desc: "Built for high-achievers who want the full picture. Submit your enhanced onboarding form and our proprietary software develops your agent within 30 minutes to 72 hours, backed by a 60-minute deep-dive call and 14 days of post-launch support.",
+    id: "scholar", badge: "Most Powerful", name: "The Scholar", price: 599, readyTime: "30 minutes",
+    desc: "Built for high-achievers who want the full picture. Submit your enhanced onboarding form and our proprietary software develops your agent in 30 minutes, backed by a 30-minute deep-dive call and 14 days of post-launch support.",
     features: [
       "7 integrations included",
-      "Agent live in 30 min – 72 hours",
+      "Agent live in 30 minutes",
       "Enhanced onboarding form",
-      "60-minute onboarding call",
+      "30-minute onboarding call",
       "14 days post-launch support",
       "Web portal access",
       "Cloud hosted via Apollo Claw",
@@ -323,16 +323,16 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
                   label: "Standard Onboarding",
                   price: "Included",
                   priceColor: "#27ae60",
-                  time: "Agent ready in 30 minutes to 72 hours",
-                  desc: "Complete your onboarding form after checkout. Our proprietary software develops your agent and has it live within 30 minutes to 72 hours.",
+                  time: "Agent ready in 30 minutes",
+                  desc: "Complete your onboarding form after checkout. Our proprietary software develops your agent and has it live in 30 minutes.",
                 },
                 {
                   id: "whiteglove" as Onboarding,
                   label: "White Glove Onboarding",
                   price: "+$650",
                   priceColor: "var(--green)",
-                  time: "Agent ready in 30 minutes to 72 hours",
-                  desc: "A dedicated 60-minute deep-dive call before your form is submitted. Our proprietary software develops your agent with advanced skills, custom workflows, and deep personalization, live within 30 minutes to 72 hours.",
+                  time: "Agent ready in 30 minutes",
+                  desc: "A dedicated 60-minute deep-dive call before your form is submitted. Our proprietary software develops your agent with advanced skills, custom workflows, and deep personalization, live in 30 minutes.",
                 },
               ] as const).map((opt) => (
                 <div
@@ -371,7 +371,7 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
                 "LinkedIn integration included",
                 "Google Workspace or Office 365 (appropriate access required)",
                 "Cloud hosted via Apollo Claw, access from any device",
-                "Agent ready in 30 minutes to 72 hours",
+                "Agent ready in 30 minutes",
                 "Support plan options available",
               ].map((item) => (
                 <div key={item} className="included-item">
@@ -428,7 +428,7 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
           <div className="order-row">
             <div className="order-label">Agent Ready</div>
             <div className="order-value">
-              {config.onboarding ? "30 minutes to 72 hours" : "--"}
+              {config.onboarding ? "30 minutes" : "--"}
             </div>
           </div>
 
