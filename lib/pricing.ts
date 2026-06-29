@@ -8,7 +8,7 @@
 // Hosting is the recurring MONTHLY line.
 
 export type PlanKey = "undergraduate" | "graduate" | "scholar";
-export type HostingKey = "basic" | "pro";
+export type HostingKey = "basic" | "plus" | "pro" | "max";
 export type SupportKey = "none" | "sixmonths" | "annual";
 export type OnboardingKey = "standard" | "whiteglove";
 
@@ -21,8 +21,10 @@ export const PLANS: Record<PlanKey, { label: string; amount: number; lookupKey: 
 };
 
 export const HOSTING: Record<HostingKey, { label: string; amount: number; lookupKey: string }> = {
-  basic: { label: "Basic", amount: 8900, lookupKey: "hosting_basic" },
-  pro:   { label: "Pro",   amount: 15900, lookupKey: "hosting_pro" },
+  basic: { label: "Basic", amount: 1999, lookupKey: "hosting_basic" },
+  plus:  { label: "Plus",  amount: 2999, lookupKey: "hosting_plus" },
+  pro:   { label: "Pro",   amount: 4999, lookupKey: "hosting_pro" },
+  max:   { label: "Max",   amount: 9900, lookupKey: "hosting_max" },
 };
 
 export const SUPPORT: Record<SupportKey, { label: string; amount: number; lookupKey: string | null }> = {
@@ -78,5 +80,10 @@ export function lineItemLookupKeys(s: Selection): string[] {
 }
 
 export function formatUSD(cents: number): string {
-  return "$" + Math.round(cents / 100).toLocaleString("en-US");
+  const dollars = cents / 100;
+  const hasCents = cents % 100 !== 0;
+  return "$" + dollars.toLocaleString("en-US", {
+    minimumFractionDigits: hasCents ? 2 : 0,
+    maximumFractionDigits: 2,
+  });
 }

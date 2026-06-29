@@ -5,7 +5,7 @@ import { useState, useCallback } from "react";
 const CALENDLY = "https://calendly.com/therealdaveo/apolloai";
 
 type Tier = "undergraduate" | "graduate" | "scholar";
-type HostingPlan = "basic" | "pro";
+type HostingPlan = "basic" | "plus" | "pro" | "max";
 type SupportPlan = "none" | "sixmonths" | "annual";
 type Onboarding = "standard" | "whiteglove";
 
@@ -83,7 +83,8 @@ const SUPPORT_PLANS: { id: SupportPlan; label: string; price: string; fee: numbe
   { id: "annual",    label: "Annual Support",   price: "$1,200/yr",  fee: 1200, desc: "Best value. Full year of support, updates, and access to new features as they ship." },
 ];
 
-const HOSTING_PRICES: Record<HostingPlan, number> = { basic: 89, pro: 159 };
+const HOSTING_PRICES: Record<HostingPlan, number> = { basic: 19.99, plus: 29.99, pro: 49.99, max: 99 };
+const HOSTING_LABELS: Record<HostingPlan, string> = { basic: "Basic", plus: "Plus", pro: "Pro", max: "Max" };
 
 export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSummary) => void } = {}) {
   const [config, setConfig] = useState<ConfigState>({
@@ -103,7 +104,7 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
       impl: tierData.name,
       tier: config.tier ?? "",
       setupFee: tierData.price,
-      hosting: config.hosting === "basic" ? "Basic" : "Pro",
+      hosting: config.hosting ? HOSTING_LABELS[config.hosting] : "",
       hostingFee: config.hosting ? HOSTING_PRICES[config.hosting] : 0,
       hostingAnnual: false,
       support: SUPPORT_PLANS.find(p => p.id === config.support)?.label ?? "None",
@@ -133,7 +134,7 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
         <div className="config-step">
           <div className="step-header">
             <div className="step-num">1</div>
-            <span className="step-title">Choose Your Implementation</span>
+            <span className="step-title">Choose Your Agent&apos;s Build</span>
           </div>
           <p style={{ fontSize: 14, color: "rgba(11,23,41,.55)", lineHeight: 1.7, marginBottom: 24 }}>
             Every College Agent is built around you. Your schedule, your goals, your communication style.
@@ -192,15 +193,63 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
                 [
                   {
                     id: "basic" as HostingPlan,
-                    price: 89,
+                    price: 19.99,
                     name: "Basic",
-                    features: ["Standard VPS instance", "Single agent slot", "99.9% uptime SLA", "Access via Telegram"],
+                    features: [
+                      "1 vCPU, 4 GB RAM, 12 GB storage",
+                      "Bring your own API keys (BYOK)",
+                      "All supported AI models (Claude, GPT, Gemini, DeepSeek, Qwen)",
+                      "1,000+ ready-to-use integrations",
+                      "Discord / Community support",
+                      "$1/mo in AI credits",
+                      "75 web searches / month",
+                      "1K app actions / month",
+                    ],
+                  },
+                  {
+                    id: "plus" as HostingPlan,
+                    price: 29.99,
+                    name: "Plus",
+                    features: [
+                      "2 vCPU, 6 GB RAM, 20 GB storage",
+                      "Bring your own API keys (BYOK)",
+                      "All supported AI models (Claude, GPT, Gemini, DeepSeek, Qwen)",
+                      "1,000+ ready-to-use integrations",
+                      "Discord / Community support",
+                      "$1/mo in AI credits",
+                      "75 web searches / month",
+                      "1K app actions / month",
+                    ],
                   },
                   {
                     id: "pro" as HostingPlan,
-                    price: 159,
+                    price: 49.99,
                     name: "Pro",
-                    features: ["Performance VPS instance", "Priority queue", "Faster response times", "Access via Telegram + web"],
+                    features: [
+                      "4 vCPU, 8 GB RAM, 30 GB storage",
+                      "Bring your own API keys (BYOK)",
+                      "All supported AI models (Claude, GPT, Gemini, DeepSeek, Qwen)",
+                      "1,000+ ready-to-use integrations",
+                      "Discord / Community support",
+                      "$1/mo in AI credits",
+                      "75 web searches / month",
+                      "1K app actions / month",
+                    ],
+                  },
+                  {
+                    id: "max" as HostingPlan,
+                    price: 99,
+                    name: "Max",
+                    features: [
+                      "6 vCPU, 12 GB RAM, 50 GB storage",
+                      "Email / Telegram chat support",
+                      "Bring your own API keys (BYOK)",
+                      "All supported AI models (Claude, GPT, Gemini, DeepSeek, Qwen)",
+                      "1,000+ ready-to-use integrations",
+                      "$1/mo in AI credits",
+                      "75 web searches / month",
+                      "1K app actions / month",
+                    ],
                   },
                 ] as const
               ).map((plan) => (
@@ -353,7 +402,7 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
             <div className="order-label">Hosting</div>
             <div className={`order-value ${config.hosting ? "" : "placeholder"}`}>
               {config.hosting
-                ? `${config.hosting === "basic" ? "Basic" : "Pro"} ($${hostingFee}/mo)`
+                ? `${HOSTING_LABELS[config.hosting]} ($${hostingFee}/mo)`
                 : "Not selected"}
             </div>
           </div>

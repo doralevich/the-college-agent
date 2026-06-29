@@ -24,8 +24,10 @@ const CATALOG = [
   { key: "support_sixmonths", name: "6 Months Support", amount: 75000, recurring: false },
   { key: "support_annual", name: "Annual Support", amount: 120000, recurring: false },
   { key: "onboarding_whiteglove", name: "White Glove Onboarding", amount: 65000, recurring: false },
-  { key: "hosting_basic", name: "Hosting - Basic", amount: 8900, recurring: true },
-  { key: "hosting_pro", name: "Hosting Pro", amount: 15900, recurring: true },
+  { key: "hosting_basic", name: "Hosting - Basic", amount: 1999, recurring: true },
+  { key: "hosting_plus", name: "Hosting - Plus", amount: 2999, recurring: true },
+  { key: "hosting_pro", name: "Hosting - Pro", amount: 4999, recurring: true },
+  { key: "hosting_max", name: "Hosting - Max", amount: 9900, recurring: true },
 ];
 
 // lookup_keys renamed during development — archive the old prices/products so the catalog
