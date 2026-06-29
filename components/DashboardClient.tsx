@@ -68,12 +68,12 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
       ? [
           { id: "chat" as DashboardTabId, label: "Chat", icon: MessageSquare },
           { id: "agent" as DashboardTabId, label: "Your Agent", icon: Bot },
-          { id: "files" as DashboardTabId, label: "Files", icon: FolderOpen },
           { id: "integrations" as DashboardTabId, label: "Integrations", icon: Blocks },
           { id: "shortcuts" as DashboardTabId, label: "Shortcuts", icon: Sparkles },
         ]
       : [{ id: "agents" as DashboardTabId, label: "Agents", icon: Bot }]),
     ...(paid ? [{ id: "billing" as DashboardTabId, label: "Billing", icon: CreditCard }] : []),
+    ...(hasAgent ? [{ id: "files" as DashboardTabId, label: "Files", icon: FolderOpen }] : []),
     { id: "settings", label: "Settings", icon: Settings2 },
   ];
 

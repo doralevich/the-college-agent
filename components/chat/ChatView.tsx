@@ -81,7 +81,6 @@ export function ChatView({
       <header className="flex h-16 shrink-0 items-center justify-between border-b bg-background px-6 md:px-10">
         <div className="min-w-0">
           <h1 className="truncate text-base font-semibold text-foreground">{headerTitle}</h1>
-          <p className="text-xs text-muted-foreground">Hermes</p>
         </div>
         <button
           type="button"
@@ -165,10 +164,11 @@ function ChatWelcome({
         family, social life, your major, your minor. Tell me anything you want me to know so we can get started.
       </p>
       <p className="text-sm leading-relaxed text-muted-foreground">
-        Then, click on the <span className="font-medium text-foreground">Integrations</span> tab in the
-        sidebar. This is where you customize your experience with programs you already use: Email, Google
-        Docs, Outlook, Dropbox, Canvas, Blackbaud. There are thousands of integrations, just search and in
-        a few clicks you&apos;re all set.
+        Then, click on the{" "}
+        <span className="font-medium text-foreground">Integrations</span>{" "}
+        tab in the sidebar. This is where you customize your experience with programs you already use:
+        Email, Google Docs, Outlook, Dropbox, Canvas, Blackbaud. There are thousands of integrations,
+        just search and in a few clicks you&apos;re all set.
       </p>
       <p className="text-sm leading-relaxed text-muted-foreground">
         Try your email or calendar and then ask{" "}
