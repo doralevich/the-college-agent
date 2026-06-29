@@ -90,6 +90,7 @@ const HOSTING_TIERS: {
   id: HostingPlan;
   price: number;
   name: string;
+  blurb?: string;
   features: { text: string; bold?: boolean }[];
 }[] = [
   {
@@ -122,6 +123,7 @@ const HOSTING_TIERS: {
   },
   {
     id: "pro", price: 49.99, name: "Pro",
+    blurb: "Heavier workloads — multiple integrations, longer docs, faster responses.",
     features: [
       { text: "4 vCPU" },
       { text: "8 GB RAM" },
@@ -136,6 +138,7 @@ const HOSTING_TIERS: {
   },
   {
     id: "max", price: 99, name: "Max",
+    blurb: "Maximum performance with direct support from our team.",
     features: [
       { text: "6 vCPU" },
       { text: "12 GB RAM" },
@@ -261,6 +264,7 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
                   ${plan.price}<span className="hosting-price-unit">/mo</span>
                 </div>
                 <div className="hosting-name">{plan.name}</div>
+                {plan.blurb && <div className="hosting-blurb">{plan.blurb}</div>}
                 <ul className="hosting-features">
                   {plan.features.map((f, i) => (
                     <li key={i} className={f.bold ? "bold" : undefined}>{f.text}</li>
@@ -559,7 +563,11 @@ export default function Configurator({ onComplete }: { onComplete?: (s: ConfigSu
           color: var(--green); margin-bottom: 4px;
         }
         .hosting-price-unit { font-size: 13px; font-weight: 500; color: rgba(11,23,41,.4); }
-        .hosting-name { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+        .hosting-name { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+        .hosting-blurb {
+          font-size: 12px; line-height: 1.55; color: rgba(11,23,41,.6);
+          margin-bottom: 12px;
+        }
         .hosting-features { list-style: none; display: flex; flex-direction: column; gap: 5px; }
         .hosting-features li {
           font-size: 12px; color: rgba(11,23,41,.6);
