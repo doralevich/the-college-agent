@@ -51,20 +51,20 @@ describe("parseSelection", () => {
 
 describe("dueToday", () => {
   it("sums plan + support + onboarding + the first month of hosting", () => {
-    // 39900 + 120000 + 65000 + 15900
-    expect(dueToday(GRAD_PRO_ALL)).toBe(240800);
+    // 39900 + 120000 + 65000 + 4999
+    expect(dueToday(GRAD_PRO_ALL)).toBe(229899);
   });
 
   it("counts $0 support/onboarding as nothing", () => {
-    // 19900 + 0 + 0 + 8900
-    expect(dueToday(UNDERGRAD_BASIC_FREE)).toBe(28800);
+    // 19900 + 0 + 0 + 1999
+    expect(dueToday(UNDERGRAD_BASIC_FREE)).toBe(21899);
   });
 });
 
 describe("monthlyRecurring", () => {
   it("is hosting only, independent of the one-time items", () => {
-    expect(monthlyRecurring(GRAD_PRO_ALL)).toBe(15900);
-    expect(monthlyRecurring(UNDERGRAD_BASIC_FREE)).toBe(8900);
+    expect(monthlyRecurring(GRAD_PRO_ALL)).toBe(4999);
+    expect(monthlyRecurring(UNDERGRAD_BASIC_FREE)).toBe(1999);
   });
 });
 
@@ -88,5 +88,10 @@ describe("formatUSD", () => {
     expect(formatUSD(108800)).toBe("$1,088");
     expect(formatUSD(8900)).toBe("$89");
     expect(formatUSD(0)).toBe("$0");
+  });
+
+  it("renders cent-precision amounts with two decimals", () => {
+    expect(formatUSD(1999)).toBe("$19.99");
+    expect(formatUSD(21899)).toBe("$218.99");
   });
 });
