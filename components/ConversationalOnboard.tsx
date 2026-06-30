@@ -255,13 +255,6 @@ const STEPS: Step[] = [
     tier: 2,
   },
   {
-    kind: "multi",
-    key: "integrationsWanted",
-    prompt: "Want to connect a few tools so I can see your world? We'll keep adding more software for you over time.",
-    options: INTEGRATION_OPTIONS,
-    tier: 2,
-  },
-  {
     kind: "branch",
     key: "wantDeepDive",
     prompt: "Want to get into some more detailed questions? They help me build a fuller picture of your life. Just a couple more minutes.",
