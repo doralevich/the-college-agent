@@ -26,7 +26,7 @@ export async function sendWelcomeEmail(r: WelcomeRecipients): Promise<void> {
   if (!key) return;
 
   const first = (r.firstName || "").trim() || "there";
-  const agent = (r.agentName || "").trim() || "your College Agent";
+  const agent = (r.agentName || "").trim() || "Your College Agent";
 
   const recipients: { email: string; name?: string; type: "to" }[] = [
     { email: r.accountEmail, name: first, type: "to" },

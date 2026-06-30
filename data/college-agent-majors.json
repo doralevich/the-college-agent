@@ -1,0 +1,141 @@
+{
+  "note": "Curated list for the College Agent major dropdown. Grouped for <optgroup> rendering. 75 majors plus Undecided and Other fallbacks. Backed by an Other free-text field to catch the long tail.",
+  "groups": [
+    {
+      "label": "Business & Economics",
+      "majors": [
+        "Accounting",
+        "Finance",
+        "Marketing",
+        "Management",
+        "Business Administration",
+        "Economics",
+        "Entrepreneurship",
+        "International Business",
+        "Supply Chain Management",
+        "Human Resources"
+      ]
+    },
+    {
+      "label": "Engineering & Computing",
+      "majors": [
+        "Computer Science",
+        "Software Engineering",
+        "Data Science",
+        "Information Technology",
+        "Cybersecurity",
+        "Computer Engineering",
+        "Electrical Engineering",
+        "Mechanical Engineering",
+        "Civil Engineering",
+        "Chemical Engineering",
+        "Biomedical Engineering",
+        "Aerospace Engineering",
+        "Industrial Engineering"
+      ]
+    },
+    {
+      "label": "Health & Life Sciences",
+      "majors": [
+        "Biology",
+        "Nursing",
+        "Public Health",
+        "Neuroscience",
+        "Biochemistry",
+        "Kinesiology / Exercise Science",
+        "Nutrition / Dietetics",
+        "Health Sciences",
+        "Pre-Med",
+        "Pharmacy",
+        "Physical Therapy"
+      ]
+    },
+    {
+      "label": "Physical Sciences & Math",
+      "majors": [
+        "Chemistry",
+        "Physics",
+        "Mathematics",
+        "Statistics",
+        "Environmental Science",
+        "Geology / Earth Science"
+      ]
+    },
+    {
+      "label": "Social Sciences",
+      "majors": [
+        "Psychology",
+        "Sociology",
+        "Political Science",
+        "International Relations",
+        "Anthropology",
+        "Criminal Justice",
+        "Social Work",
+        "Geography"
+      ]
+    },
+    {
+      "label": "Humanities",
+      "majors": [
+        "English",
+        "History",
+        "Philosophy",
+        "Religious Studies",
+        "Linguistics",
+        "Classics"
+      ]
+    },
+    {
+      "label": "Arts, Media & Design",
+      "majors": [
+        "Communications",
+        "Journalism",
+        "Film / Media Studies",
+        "Graphic Design",
+        "Studio Art",
+        "Music",
+        "Theater / Performing Arts",
+        "Architecture",
+        "Fashion Design",
+        "Creative Writing",
+        "Photography"
+      ]
+    },
+    {
+      "label": "Education",
+      "majors": [
+        "Education",
+        "Early Childhood Education",
+        "Special Education"
+      ]
+    },
+    {
+      "label": "Languages",
+      "majors": [
+        "Spanish",
+        "French",
+        "Foreign Languages"
+      ]
+    },
+    {
+      "label": "Professional & Applied",
+      "majors": [
+        "Pre-Law",
+        "Public Policy",
+        "Hospitality / Tourism Management",
+        "Sports Management",
+        "Urban Planning",
+        "Agriculture",
+        "Gender Studies",
+        "Liberal Arts / General Studies"
+      ]
+    },
+    {
+      "label": "Other",
+      "majors": [
+        "Undecided",
+        "Other (type your own)"
+      ]
+    }
+  ]
+}
