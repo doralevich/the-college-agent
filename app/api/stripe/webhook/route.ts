@@ -141,19 +141,20 @@ async function handleCheckoutCompleted(db: DB, session: Stripe.Checkout.Session)
   if (createdAccount && entEmail) {
     try {
       const firstName = (session.metadata?.first_name as string | undefined) || null;
+      // Skip Supabase's verify-endpoint redirect (which hash-encodes the
+      // token onto an unauthenticated /dashboard render). Instead, build a
+      // URL pointing straight at our /auth/callback Route Handler with the
+      // server-friendly ?token_hash + ?type query params it already knows
+      // how to verifyOtp + redirect with cookies set.
       const { data: linkData } = await db.auth.admin.generateLink({
         type: "magiclink",
         email: entEmail,
-        // Route the magic link through /auth/callback so the client-side
-        // handler can read the implicit-flow hash, set the session cookies,
-        // and then forward to /dashboard. A direct redirectTo: /dashboard
-        // leaves the tokens stranded in the URL hash on a server-rendered
-        // page and the student lands unsigned-in.
-        options: {
-          redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://thecollegeagent.ai"}/auth/callback?next=/dashboard`,
-        },
       });
-      const magicLink = linkData?.properties?.action_link || `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://thecollegeagent.ai"}/auth/sign-in`;
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://thecollegeagent.ai";
+      const tokenHash = linkData?.properties?.hashed_token;
+      const magicLink = tokenHash
+        ? `${siteUrl}/auth/callback?token_hash=${encodeURIComponent(tokenHash)}&type=magiclink&next=${encodeURIComponent("/dashboard")}`
+        : `${siteUrl}/auth/sign-in`;
       await sendAccountCreatedEmail({ email: entEmail, firstName, magicLink });
     } catch (err) {
       console.error("[stripe webhook] account-created email failed", err);
