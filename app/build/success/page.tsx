@@ -1,37 +1,27 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import BuildNav from "../../components/BuildNav";
-import { getStripe } from "@/lib/stripe/client";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { findOrCreateAuthUser } from "@/lib/auth/find-or-create-user";
 
-// Stripe redirects here after a successful Checkout. We use the session_id to
-// resolve the student's email, find-or-create their auth account (idempotent
-// with the webhook), and immediately redirect them through a fresh magic-link
-// URL straight onto /dashboard — no email click required. The webhook still
-// runs in parallel to handle entitlements + the "your account is ready" email,
-// but it no longer gates the student's first visit to the dashboard.
+// Stripe redirects here after a successful Checkout. We immediately hand off
+// to /api/auth/post-checkout, which resolves the customer, find-or-creates
+// their auth.users row, runs verifyOtp on a server-side cookie client to
+// set the Supabase session cookies, and 302s to /dashboard.
 //
-// Server Component so the magic-link generation never reaches the browser.
+// All of that requires writable cookies, which Route Handlers have but
+// Server Components don't — hence the bounce instead of doing the work here.
 
 type Props = {
   searchParams: Promise<{ session_id?: string }>;
 };
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://thecollegeagent.ai";
-
 export default async function CheckoutSuccessPage({ searchParams }: Props) {
   const { session_id } = await searchParams;
-
   if (session_id) {
-    const target = await autoSignInUrl(session_id);
-    if (target) redirect(target);
+    redirect(`/api/auth/post-checkout?session_id=${encodeURIComponent(session_id)}`);
   }
 
-  // Fallback: render the static success card and let the student click through.
-  // This is reached when (a) no session_id arrived, (b) Stripe lookup failed,
-  // (c) email missing from the session, or (d) magic-link generation failed —
-  // in every case /dashboard's own auth proxy handles the sign-in prompt.
+  // No session_id (someone hit the URL directly) — fall back to the static
+  // success card. /dashboard's existing auth gate handles the sign-in prompt.
   return (
     <>
       <BuildNav />
@@ -99,38 +89,4 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
       </main>
     </>
   );
-}
-
-// Returns a magic-link URL that signs the student in and lands them on the
-// dashboard, or null if anything along the way failed (caller falls back to
-// the static success card).
-async function autoSignInUrl(sessionId: string): Promise<string | null> {
-  try {
-    const stripe = getStripe();
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
-    const email =
-      (session.customer_email || session.customer_details?.email || "").trim().toLowerCase();
-    if (!email) return null;
-
-    const firstName = ((session.metadata?.first_name as string | undefined) || "").trim() || null;
-    const lastName = ((session.metadata?.last_name as string | undefined) || "").trim() || null;
-
-    const db = createAdminClient();
-    const { userId } = await findOrCreateAuthUser(db, email, firstName, lastName);
-    if (!userId) return null;
-
-    const { data: linkData, error } = await db.auth.admin.generateLink({
-      type: "magiclink",
-      email,
-      options: { redirectTo: `${SITE_URL}/dashboard` },
-    });
-    if (error) {
-      console.error("[build/success] generateLink failed", error.message);
-      return null;
-    }
-    return linkData?.properties?.action_link ?? null;
-  } catch (err) {
-    console.error("[build/success] auto sign-in resolution failed", err);
-    return null;
-  }
 }
