@@ -144,7 +144,14 @@ async function handleCheckoutCompleted(db: DB, session: Stripe.Checkout.Session)
       const { data: linkData } = await db.auth.admin.generateLink({
         type: "magiclink",
         email: entEmail,
-        options: { redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://thecollegeagent.ai"}/dashboard` },
+        // Route the magic link through /auth/callback so the client-side
+        // handler can read the implicit-flow hash, set the session cookies,
+        // and then forward to /dashboard. A direct redirectTo: /dashboard
+        // leaves the tokens stranded in the URL hash on a server-rendered
+        // page and the student lands unsigned-in.
+        options: {
+          redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://thecollegeagent.ai"}/auth/callback?next=/dashboard`,
+        },
       });
       const magicLink = linkData?.properties?.action_link || `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://thecollegeagent.ai"}/auth/sign-in`;
       await sendAccountCreatedEmail({ email: entEmail, firstName, magicLink });
