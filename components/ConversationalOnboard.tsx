@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Loader2, Send } from "lucide-react";
+import { Loader2, Plus, Send, X } from "lucide-react";
 
 // Conversational replacement for /onboard. Frankenstein asks one question at a time;
 // the student answers with text or chip-picks. Each answer is persisted to
@@ -51,15 +51,24 @@ const CHECKIN_OPTIONS = [
   "Real-time, whenever something comes up",
 ];
 
+const YEAR_OPTIONS = ["Freshman", "Sophomore", "Junior", "Senior", "Grad student", "Other"];
+
 // Each step in the conversation. `kind` controls the input UI and validation. `key`
 // matches the form-field name the existing /api/onboard-submit endpoint reads.
+// `deepDive: true` means the step only renders if the student opted in to deeper questions.
 type Step =
-  | { kind: "text"; key: TextKey; prompt: string; placeholder?: string; inputType?: "text" | "email" | "tel"; required?: boolean }
-  | { kind: "textarea"; key: TextKey; prompt: string; placeholder?: string; required?: boolean }
-  | { kind: "multi"; key: MultiKey; prompt: string; options: string[]; max?: number; required?: boolean }
-  | { kind: "single"; key: SingleKey; prompt: string; options: string[]; required?: boolean }
+  | { kind: "text"; key: TextKey; prompt: string; placeholder?: string; inputType?: "text" | "email" | "tel"; required?: boolean; deepDive?: boolean }
+  | { kind: "textarea"; key: TextKey; prompt: string; placeholder?: string; required?: boolean; deepDive?: boolean }
+  | { kind: "multi"; key: MultiKey; prompt: string; options: string[]; max?: number; required?: boolean; deepDive?: boolean }
+  | { kind: "single"; key: SingleKey; prompt: string; options: string[]; required?: boolean; deepDive?: boolean }
   | { kind: "image"; key: "avatarFile"; prompt: string; required?: boolean }
-  | { kind: "intro"; key: "__intro"; prompt: string };
+  | { kind: "intro"; key: "__intro"; prompt: string }
+  // Read-only message bubble (no input, no answer). Used to set up a section.
+  | { kind: "info"; key: string; prompt: string }
+  // Yes/No branch. Answer drives whether `deepDive: true` steps are rendered.
+  | { kind: "branch"; key: "wantDeepDive"; prompt: string; yesLabel?: string; noLabel?: string }
+  // Repeating list of classes — name + days + time + location + professor + SKU.
+  | { kind: "classList"; key: "classes"; prompt: string };
 
 type TextKey =
   | "firstName"
@@ -71,10 +80,32 @@ type TextKey =
   | "school"
   | "topPriority"
   | "agentHandleFirst"
-  | "currentClasses"
+  | "major"
+  | "minor"
+  | "greekLife"
+  | "clubs"
+  | "sportsTeams"
+  | "livingSituation"
+  | "workStatus"
+  | "family"
+  | "socialLife"
+  | "careerGoal"
+  | "academicChallenges"
+  | "stressBurnout"
   | "anythingElse";
 type MultiKey = "checkinFrequency";
-type SingleKey = "responseStyle";
+type SingleKey = "responseStyle" | "year";
+
+export type ClassEntry = {
+  name: string;
+  days: string;
+  time: string;
+  location: string;
+  professor: string;
+  sku: string;
+};
+
+const EMPTY_CLASS: ClassEntry = { name: "", days: "", time: "", location: "", professor: "", sku: "" };
 
 // `{firstName}` is interpolated from the prop at render time so the intro can greet
 // the student by name (pulled from /build lead-capture). Missing → falls back to "there".
@@ -111,7 +142,39 @@ const STEPS: Step[] = [
   },
   { kind: "single", key: "responseStyle", prompt: "How do you want me to sound when I talk to you?", options: VOICE_OPTIONS, required: true },
   { kind: "multi", key: "checkinFrequency", prompt: "How often should I check in with you? Pick any that fit.", options: CHECKIN_OPTIONS, required: true },
-  { kind: "textarea", key: "currentClasses", prompt: "What classes are you taking this semester? Just dump them, formatting doesn't matter.", placeholder: "Marketing 301, Stats II, Bio Lab Tues/Thu 2pm…", required: true },
+  {
+    kind: "classList",
+    key: "classes",
+    prompt: "Let's add your classes one at a time. For each one I'll grab the name, days, time, location, professor, and class SKU — then we'll add another until you're done.",
+  },
+  {
+    kind: "info",
+    key: "__integrations",
+    prompt:
+      "Do you want to integrate any of your software or accounts? Like Gmail, Outlook, Dropbox, Calendar, Canvas… there are thousands. You can do this later from the Integrations tab in the sidebar, or just ask me about it any time in our chat.",
+  },
+  {
+    kind: "branch",
+    key: "wantDeepDive",
+    prompt:
+      "Want to get into some more detailed questions? They help me build a fuller picture of your life so I can be more useful. Should only take a couple more minutes.",
+    yesLabel: "Yes, let's keep going",
+    noLabel: "No, that's enough for now",
+  },
+  // Deep-dive questions — only shown if wantDeepDive === "yes".
+  { kind: "single", key: "year", prompt: "What year are you in?", options: YEAR_OPTIONS, deepDive: true },
+  { kind: "text", key: "major", prompt: "What's your major?", placeholder: "e.g. Computer Science", deepDive: true },
+  { kind: "text", key: "minor", prompt: "Any minor or second focus?", placeholder: "e.g. Studio Art (or skip)", deepDive: true },
+  { kind: "text", key: "livingSituation", prompt: "Where are you living this year? Dorm, apartment, with family?", placeholder: "On-campus dorm with two roommates", deepDive: true },
+  { kind: "text", key: "greekLife", prompt: "Are you in a fraternity or sorority? If so, which?", placeholder: "e.g. Kappa Sigma — pledged this fall (or no)", deepDive: true },
+  { kind: "textarea", key: "clubs", prompt: "What clubs or student orgs are you part of? Include any leadership roles.", placeholder: "Robotics Club (treasurer), Investment Club, Outdoors Society…", deepDive: true },
+  { kind: "textarea", key: "sportsTeams", prompt: "Are you on any sports teams — varsity, club, or intramural? When do you practice and play?", placeholder: "Club soccer Tue/Thu 6–8pm, intramural ultimate on weekends…", deepDive: true },
+  { kind: "textarea", key: "workStatus", prompt: "Do you work or have a side hustle alongside school? How many hours a week?", placeholder: "Barista at campus café, ~12 hrs/week", deepDive: true },
+  { kind: "textarea", key: "family", prompt: "Tell me a bit about your family. Who's close, who you talk to often, anything I should know.", placeholder: "Mom and dad in Chicago, older sister in NYC, call Sunday nights…", deepDive: true },
+  { kind: "textarea", key: "socialLife", prompt: "What's your social life like? Who do you spend time with and what do you like to do?", placeholder: "Hang with roommates, weekly dinner with the same 4 friends, occasional shows…", deepDive: true },
+  { kind: "textarea", key: "careerGoal", prompt: "What are you hoping to do after college? Career, grad school, gap year, undecided — anything goes.", placeholder: "Aiming for product management at a tech company — open to consulting too", deepDive: true },
+  { kind: "textarea", key: "academicChallenges", prompt: "What's hardest for you academically? Classes that trip you up, habits you struggle with, etc.", placeholder: "Procrastinate on reading-heavy classes, math comes slow…", deepDive: true },
+  { kind: "textarea", key: "stressBurnout", prompt: "When you get stressed or burnt out, what does that look like for you? What helps you reset?", placeholder: "Skip meals, doom-scroll. Walks and calling mom help.", deepDive: true },
   { kind: "textarea", key: "anythingElse", prompt: "Anything else you want me to know? Goals, habits, pressure points, anything." },
 ];
 
@@ -127,7 +190,21 @@ type FormState = {
   agentHandleFirst: string;
   responseStyle: string;
   checkinFrequency: string[];
-  currentClasses: string;
+  classes: ClassEntry[];
+  wantDeepDive: "" | "yes" | "no";
+  year: string;
+  major: string;
+  minor: string;
+  greekLife: string;
+  clubs: string;
+  sportsTeams: string;
+  livingSituation: string;
+  workStatus: string;
+  family: string;
+  socialLife: string;
+  careerGoal: string;
+  academicChallenges: string;
+  stressBurnout: string;
   anythingElse: string;
 };
 
@@ -143,11 +220,39 @@ const EMPTY: FormState = {
   agentHandleFirst: "",
   responseStyle: "",
   checkinFrequency: [],
-  currentClasses: "",
+  classes: [],
+  wantDeepDive: "",
+  year: "",
+  major: "",
+  minor: "",
+  greekLife: "",
+  clubs: "",
+  sportsTeams: "",
+  livingSituation: "",
+  workStatus: "",
+  family: "",
+  socialLife: "",
+  careerGoal: "",
+  academicChallenges: "",
+  stressBurnout: "",
   anythingElse: "",
 };
 
 type StoredProgress = { stepIdx: number; form: FormState };
+
+// Format a class list into the legacy `currentClasses` text blob so the existing
+// provisioner/SOUL.md path (which references currentClasses) keeps working unchanged.
+function formatClassesForLegacy(classes: ClassEntry[]): string {
+  return classes
+    .filter((c) => c.name.trim())
+    .map((c) => {
+      const bits = [c.name, c.days, c.time, c.location, c.professor, c.sku]
+        .map((s) => s.trim())
+        .filter(Boolean);
+      return bits.join(" — ");
+    })
+    .join("; ");
+}
 
 export function ConversationalOnboard({ userId, knownFirstName }: { userId: string; knownFirstName?: string | null }) {
   const router = useRouter();
@@ -161,10 +266,19 @@ export function ConversationalOnboard({ userId, knownFirstName }: { userId: stri
   // only — students who refresh mid-flow keep their text answers but re-pick the image.
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  // Draft class being filled out before it lands in form.classes.
+  const [classDraft, setClassDraft] = useState<ClassEntry>(EMPTY_CLASS);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const displayFirstName = (form.firstName?.trim() || knownFirstName?.trim() || "there");
   const displayBotName = (form.agentName?.trim() || "your College Agent");
+
+  // Filter out deep-dive steps when the student declined. Memoised so identity is
+  // stable for the slice/indexing below.
+  const visibleSteps = useMemo(() => {
+    const wants = form.wantDeepDive === "yes";
+    return STEPS.filter((s) => !("deepDive" in s && s.deepDive) || wants);
+  }, [form.wantDeepDive]);
 
   // Inject Fraunces + DM Sans (match the Welcome card's vibe).
   useEffect(() => {
@@ -190,6 +304,9 @@ export function ConversationalOnboard({ userId, knownFirstName }: { userId: stri
         const parsed = JSON.parse(raw) as Partial<StoredProgress>;
         if (parsed.form) setForm({ ...EMPTY, ...parsed.form });
         if (typeof parsed.stepIdx === "number") {
+          // Clamp into the visible-step range computed from the restored form.
+          // visibleSteps isn't available here (we'd need to recompute), so cap at the
+          // full list length — the next effect tightens this if needed.
           setStepIdx(Math.min(Math.max(parsed.stepIdx, 0), STEPS.length - 1));
         }
       }
@@ -215,8 +332,16 @@ export function ConversationalOnboard({ userId, knownFirstName }: { userId: stri
     if (el) el.scrollTop = el.scrollHeight;
   }, [stepIdx, submitting]);
 
-  const current = STEPS[stepIdx];
-  const isLast = stepIdx === STEPS.length - 1;
+  // If the visible list shrinks (e.g. student switched from yes to no on deep-dive),
+  // clamp the cursor so we don't index off the end.
+  useEffect(() => {
+    if (stepIdx > visibleSteps.length - 1) {
+      setStepIdx(Math.max(0, visibleSteps.length - 1));
+    }
+  }, [visibleSteps.length, stepIdx]);
+
+  const current = visibleSteps[stepIdx];
+  const isLast = stepIdx === visibleSteps.length - 1;
 
   const setField = useCallback(<K extends keyof FormState>(key: K, value: FormState[K]) => {
     setError(null);
@@ -225,8 +350,18 @@ export function ConversationalOnboard({ userId, knownFirstName }: { userId: stri
 
   function answerSummary(step: Step): string {
     if (step.kind === "intro") return "Ready, let's go!";
+    if (step.kind === "info") return "Got it.";
     if (step.kind === "image") return avatarFile ? avatarFile.name : "(using the default bot)";
-    const value = form[step.key];
+    if (step.kind === "branch") {
+      if (form.wantDeepDive === "yes") return "Yes, let's keep going.";
+      if (form.wantDeepDive === "no") return "No, that's enough for now.";
+      return "(skipped)";
+    }
+    if (step.kind === "classList") {
+      if (!form.classes.length) return "(none added)";
+      return form.classes.map((c) => c.name).filter(Boolean).join(", ") || "(none added)";
+    }
+    const value = form[step.key as keyof FormState];
     if (Array.isArray(value)) return value.length ? value.join(", ") : "(skipped)";
     const v = String(value || "").trim();
     if (!v) return "(skipped)";
@@ -234,21 +369,30 @@ export function ConversationalOnboard({ userId, knownFirstName }: { userId: stri
   }
 
   function isRequired(step: Step): boolean {
-    if (step.kind === "intro" || step.kind === "image") return false;
+    if (step.kind === "intro" || step.kind === "info" || step.kind === "image") return false;
+    if (step.kind === "branch") return true;
+    if (step.kind === "classList") return false;
     return !!step.required;
   }
 
   function isAnswered(step: Step): boolean {
-    if (step.kind === "intro") return true;
+    if (step.kind === "intro" || step.kind === "info") return true;
     if (step.kind === "image") return !!avatarFile;
-    const value = form[step.key];
+    if (step.kind === "branch") return form.wantDeepDive === "yes" || form.wantDeepDive === "no";
+    if (step.kind === "classList") return form.classes.length > 0;
+    const value = form[step.key as keyof FormState];
     if (Array.isArray(value)) return value.length > 0;
     return !!String(value || "").trim();
   }
 
   function validateCurrent(): string | null {
-    if (current.kind === "intro") return null;
+    if (current.kind === "intro" || current.kind === "info") return null;
     if (current.kind === "image") return null;
+    if (current.kind === "classList") return null;
+    if (current.kind === "branch") {
+      if (form.wantDeepDive !== "yes" && form.wantDeepDive !== "no") return "Pick one.";
+      return null;
+    }
     if (!current.required) return null;
     if (current.kind === "text" || current.kind === "textarea") {
       const v = String(form[current.key] || "").trim();
@@ -296,7 +440,24 @@ export function ConversationalOnboard({ userId, knownFirstName }: { userId: stri
           agentHandleFirst: form.agentHandleFirst.trim(),
           responseStyle: form.responseStyle ? [form.responseStyle] : [],
           checkinFrequency: form.checkinFrequency,
-          currentClasses: form.currentClasses.trim(),
+          // Legacy text blob for the existing provisioner/SOUL.md path. The full
+          // structured list also rides along under `classes`.
+          currentClasses: formatClassesForLegacy(form.classes),
+          classes: form.classes,
+          wantDeepDive: form.wantDeepDive,
+          year: form.year.trim(),
+          major: form.major.trim(),
+          minor: form.minor.trim(),
+          greekLife: form.greekLife.trim(),
+          clubs: form.clubs.trim(),
+          sportsTeams: form.sportsTeams.trim(),
+          livingSituation: form.livingSituation.trim(),
+          workStatus: form.workStatus.trim(),
+          family: form.family.trim(),
+          socialLife: form.socialLife.trim(),
+          careerGoal: form.careerGoal.trim(),
+          academicChallenges: form.academicChallenges.trim(),
+          stressBurnout: form.stressBurnout.trim(),
           anythingElse: form.anythingElse.trim(),
         }),
       );
@@ -340,7 +501,10 @@ export function ConversationalOnboard({ userId, knownFirstName }: { userId: stri
     }
   }
 
-  const progress = useMemo(() => Math.round(((stepIdx + (submitting ? 1 : 0)) / STEPS.length) * 100), [stepIdx, submitting]);
+  const progress = useMemo(
+    () => Math.round(((stepIdx + (submitting ? 1 : 0)) / visibleSteps.length) * 100),
+    [stepIdx, submitting, visibleSteps.length],
+  );
 
   return (
     <div
@@ -373,13 +537,13 @@ export function ConversationalOnboard({ userId, knownFirstName }: { userId: stri
           <Avatar previewUrl={avatarPreview} />
           <div style={{ flex: 1 }}>
             <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontWeight: 600, fontSize: 17 }}>{displayBotName}</div>
-            <div style={{ fontSize: 12, color: T.inkSoft }}>Question {Math.min(stepIdx + 1, STEPS.length)} of {STEPS.length}</div>
+            <div style={{ fontSize: 12, color: T.inkSoft }}>Question {Math.min(stepIdx + 1, visibleSteps.length)} of {visibleSteps.length}</div>
           </div>
           <ProgressBar value={progress} />
         </div>
 
         <div ref={scrollRef} style={{ flex: 1, padding: "22px 24px 8px", maxHeight: "62vh", minHeight: 380, overflowY: "auto" }}>
-          {STEPS.slice(0, stepIdx + 1).map((step, i) => {
+          {visibleSteps.slice(0, stepIdx + 1).map((step, i) => {
             const isCurrent = i === stepIdx;
             const text = step.prompt.replace("{firstName}", displayFirstName);
             return (
@@ -418,6 +582,14 @@ export function ConversationalOnboard({ userId, knownFirstName }: { userId: stri
                   return file ? URL.createObjectURL(file) : null;
                 });
               }}
+              classDraft={classDraft}
+              setClassDraft={setClassDraft}
+              addClass={() => {
+                if (!classDraft.name.trim()) return;
+                setField("classes", [...form.classes, classDraft]);
+                setClassDraft(EMPTY_CLASS);
+              }}
+              removeClass={(idx) => setField("classes", form.classes.filter((_, i) => i !== idx))}
             />
           )}
           {error && <p style={{ marginTop: 10, fontSize: 13, color: "#B23636" }}>{error}</p>}
@@ -450,7 +622,7 @@ export function ConversationalOnboard({ userId, knownFirstName }: { userId: stri
             >
               {submitting
                 ? <Loader2 className="animate-spin" style={{ width: 14, height: 14 }} />
-                : current.kind === "intro" ? "I'm ready" : isLast ? "Finish" : "Continue"}
+                : ctaLabel(current, isLast, form)}
               {!submitting && <Send style={{ width: 14, height: 14 }} />}
             </button>
           </div>
@@ -466,6 +638,14 @@ export function ConversationalOnboard({ userId, knownFirstName }: { userId: stri
       `}</style>
     </div>
   );
+}
+
+function ctaLabel(step: Step, isLast: boolean, form: FormState): string {
+  if (step.kind === "intro") return "I'm ready";
+  if (step.kind === "info") return "Got it";
+  if (step.kind === "classList") return form.classes.length ? (isLast ? "Finish" : "Continue") : "Skip for now";
+  if (isLast) return "Finish";
+  return "Continue";
 }
 
 function Avatar({ previewUrl }: { previewUrl?: string | null }) {
@@ -526,6 +706,10 @@ function Input({
   avatarFile,
   avatarPreview,
   setAvatar,
+  classDraft,
+  setClassDraft,
+  addClass,
+  removeClass,
 }: {
   step: Step;
   form: FormState;
@@ -535,12 +719,71 @@ function Input({
   avatarFile: File | null;
   avatarPreview: string | null;
   setAvatar: (file: File | null) => void;
+  classDraft: ClassEntry;
+  setClassDraft: (c: ClassEntry) => void;
+  addClass: () => void;
+  removeClass: (idx: number) => void;
 }) {
   if (step.kind === "intro") {
     return (
       <p style={{ fontSize: 13, color: T.inkSoft, margin: 0 }}>
         Click <span style={{ color: T.green, fontWeight: 600 }}>I&apos;m ready</span> to begin.
       </p>
+    );
+  }
+  if (step.kind === "info") {
+    return (
+      <p style={{ fontSize: 13, color: T.inkSoft, margin: 0 }}>
+        Click <span style={{ color: T.green, fontWeight: 600 }}>Got it</span> to keep going.
+      </p>
+    );
+  }
+  if (step.kind === "branch") {
+    const yesLabel = step.yesLabel ?? "Yes";
+    const noLabel = step.noLabel ?? "No";
+    return (
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        {[
+          { value: "yes" as const, label: yesLabel },
+          { value: "no" as const, label: noLabel },
+        ].map((opt) => {
+          const selected = form.wantDeepDive === opt.value;
+          return (
+            <button
+              key={opt.value}
+              type="button"
+              disabled={disabled}
+              onClick={() => setField("wantDeepDive", opt.value)}
+              style={{
+                fontFamily: "'DM Sans', system-ui, sans-serif",
+                fontSize: 13,
+                fontWeight: 500,
+                padding: "8px 14px",
+                borderRadius: 999,
+                border: `1.5px solid ${selected ? T.green : T.line}`,
+                background: selected ? T.green : T.card,
+                color: selected ? "#fff" : T.ink,
+                cursor: disabled ? "not-allowed" : "pointer",
+                transition: "background .15s, color .15s, border-color .15s",
+              }}
+            >
+              {opt.label}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+  if (step.kind === "classList") {
+    return (
+      <ClassListInput
+        classes={form.classes}
+        draft={classDraft}
+        setDraft={setClassDraft}
+        addClass={addClass}
+        removeClass={removeClass}
+        disabled={disabled}
+      />
     );
   }
   if (step.kind === "image") {
@@ -725,4 +968,142 @@ function Input({
     );
   }
   return null;
+}
+
+function ClassListInput({
+  classes,
+  draft,
+  setDraft,
+  addClass,
+  removeClass,
+  disabled,
+}: {
+  classes: ClassEntry[];
+  draft: ClassEntry;
+  setDraft: (c: ClassEntry) => void;
+  addClass: () => void;
+  removeClass: (idx: number) => void;
+  disabled: boolean;
+}) {
+  const fields: Array<{ key: keyof ClassEntry; label: string; placeholder: string }> = [
+    { key: "name", label: "Class name", placeholder: "Marketing 301" },
+    { key: "days", label: "Days", placeholder: "Mon / Wed / Fri" },
+    { key: "time", label: "Time", placeholder: "10:00–10:50am" },
+    { key: "location", label: "Location", placeholder: "Bryan Hall 215" },
+    { key: "professor", label: "Professor", placeholder: "Prof. Lewis" },
+    { key: "sku", label: "Class SKU", placeholder: "MKT-301-A" },
+  ];
+  const canAdd = !!draft.name.trim();
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      {classes.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {classes.map((c, i) => (
+            <div
+              key={i}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 10,
+                background: T.greenSoft,
+                padding: "8px 12px",
+                borderRadius: 10,
+                fontSize: 13,
+              }}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 600, color: T.ink }}>{c.name || "Untitled class"}</div>
+                <div style={{ color: T.inkSoft, fontSize: 12, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {[c.days, c.time, c.location, c.professor, c.sku].filter((s) => s.trim()).join(" · ") || "No details"}
+                </div>
+              </div>
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={() => removeClass(i)}
+                aria-label="Remove class"
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  color: T.inkSoft,
+                  cursor: disabled ? "not-allowed" : "pointer",
+                  padding: 4,
+                  borderRadius: 6,
+                  display: "flex",
+                }}
+              >
+                <X style={{ width: 14, height: 14 }} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 8,
+          padding: 12,
+          border: `1.5px dashed ${T.line}`,
+          borderRadius: 12,
+        }}
+      >
+        {fields.map((f) => (
+          <label key={f.key} style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: T.inkSoft }}>
+            {f.label}
+            <input
+              type="text"
+              value={draft[f.key]}
+              disabled={disabled}
+              placeholder={f.placeholder}
+              onChange={(e) => setDraft({ ...draft, [f.key]: e.target.value })}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  if (canAdd) addClass();
+                }
+              }}
+              style={{
+                width: "100%",
+                fontFamily: "'DM Sans', system-ui, sans-serif",
+                fontSize: 14,
+                padding: "8px 10px",
+                border: `1px solid ${T.line}`,
+                borderRadius: 8,
+                outline: "none",
+                background: T.card,
+                color: T.ink,
+              }}
+            />
+          </label>
+        ))}
+        <button
+          type="button"
+          disabled={disabled || !canAdd}
+          onClick={addClass}
+          style={{
+            gridColumn: "1 / -1",
+            marginTop: 2,
+            background: canAdd ? T.green : T.greenSoft,
+            color: canAdd ? "#fff" : T.inkSoft,
+            border: "none",
+            borderRadius: 10,
+            padding: "10px 14px",
+            cursor: disabled || !canAdd ? "not-allowed" : "pointer",
+            fontFamily: "'DM Sans', system-ui, sans-serif",
+            fontSize: 13,
+            fontWeight: 600,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+          }}
+        >
+          <Plus style={{ width: 14, height: 14 }} />
+          {classes.length === 0 ? "Add first class" : "Add another class"}
+        </button>
+      </div>
+    </div>
+  );
 }
