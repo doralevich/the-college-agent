@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ConversationalOnboard } from "@/components/ConversationalOnboard";
+import { ConversationalOnboard, type OnboardPrefill } from "@/components/ConversationalOnboard";
 
 // First-run landing on the student dashboard. Greets as Frankenstein (the agent's
 // persona), lists the three things to do, and offers one big button into Chat.
@@ -50,6 +50,7 @@ export function WelcomeView({
   onboardDone,
   hasAgent,
   userId,
+  onboardPrefill,
 }: {
   firstName: string | null;
   // Student-picked agent name from onboarding. Falls back to "your College Agent".
@@ -64,12 +65,14 @@ export function WelcomeView({
   hasAgent: boolean;
   // Used to scope localStorage progress to this student.
   userId: string;
+  // Pre-payment lead data used to skip duplicate questions in the conversational onboard.
+  onboardPrefill: OnboardPrefill | null;
 }) {
   // Conversational onboarding takes over the Welcome surface until the student has
   // answered all the questions. Once their answers are saved, we flip back to the
   // static greeting + Open Chat CTA. firstName (from leads or onboard) lets the bot
   // greet the student by name in its intro line before they've filled the form again.
-  if (!onboardDone) return <ConversationalOnboard userId={userId} knownFirstName={firstName} />;
+  if (!onboardDone) return <ConversationalOnboard userId={userId} knownFirstName={firstName} prefill={onboardPrefill} />;
 
   const name = firstName?.trim() || "there";
   const bot = agentName?.trim() || "your College Agent";

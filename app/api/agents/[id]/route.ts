@@ -1,4 +1,4 @@
-import { agent37 } from "@/lib/agent37";
+import { agent37, Agent37Error } from "@/lib/agent37";
 import { requireAgentAccess } from "@/lib/auth";
 import { clearStudentIntake } from "@/lib/intake";
 import { ApiError, json, readJson, requireTrimmed, route } from "@/lib/http";
@@ -24,7 +24,17 @@ export const DELETE = route(async (_request: Request, { params }: Ctx) => {
 
   // Tear down the Agent37 instance first: if this throws we abort before touching any
   // DB rows, leaving a clean "nothing happened" state rather than a billed orphan.
-  await agent37.deleteAgent(id);
+  // EXCEPT for 404 — the instance is already gone, so swallow it and proceed with the
+  // DB delete so admins aren't stuck with orphan rows blocking workspace cleanup.
+  try {
+    await agent37.deleteAgent(id);
+  } catch (e) {
+    if (e instanceof Agent37Error && e.status === 404) {
+      console.warn("[agent:delete] upstream 404 — proceeding with DB cleanup", id);
+    } else {
+      throw e;
+    }
+  }
 
   // A student deleting their own agent re-enters the funnel. Clear ONLY the onboarding
   // intake (the "Tell the Agent About You" answers) so the dashboard requires them to
