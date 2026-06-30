@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Loader2, Plus, Send, X } from "lucide-react";
+import { Check, Loader2, Plus, Send, X } from "lucide-react";
 
 // Conversational replacement for /onboard. Frankenstein asks one question at a time;
 // the student answers with text or chip-picks. Each answer is persisted to
@@ -1087,6 +1087,8 @@ function Input({
   if (step.kind === "multi") {
     const value = (form[step.key] as string[]) ?? [];
     const atLimit = !!step.max && value.length >= step.max;
+    // Pill rows with a leading checkbox square so the multi-select affordance is
+    // unmistakable. Whole row is the click target (label + box toggle together).
     return (
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
         {step.options.map((opt) => {
@@ -1096,6 +1098,8 @@ function Input({
             <button
               key={opt}
               type="button"
+              role="checkbox"
+              aria-checked={selected}
               disabled={disabled || tooMany}
               onClick={() => {
                 if (selected) setField(step.key, value.filter((v) => v !== opt));
@@ -1105,16 +1109,36 @@ function Input({
                 fontFamily: "'DM Sans', system-ui, sans-serif",
                 fontSize: 13,
                 fontWeight: 500,
-                padding: "8px 14px",
+                padding: "8px 12px 8px 10px",
                 borderRadius: 999,
                 border: `1.5px solid ${selected ? T.green : T.line}`,
-                background: selected ? T.green : T.card,
-                color: selected ? "#fff" : T.ink,
+                background: selected ? T.greenSoft : T.card,
+                color: T.ink,
                 cursor: disabled || tooMany ? "not-allowed" : "pointer",
                 opacity: tooMany ? 0.5 : 1,
-                transition: "background .15s, color .15s, border-color .15s",
+                transition: "background .15s, border-color .15s",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
               }}
             >
+              <span
+                aria-hidden
+                style={{
+                  flex: "0 0 auto",
+                  width: 18,
+                  height: 18,
+                  borderRadius: 5,
+                  border: `1.5px solid ${selected ? T.green : T.line}`,
+                  background: selected ? T.green : "#FFFFFF",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "background .15s, border-color .15s",
+                }}
+              >
+                {selected && <Check style={{ width: 12, height: 12, color: "#FFFFFF", strokeWidth: 3 }} />}
+              </span>
               {opt}
             </button>
           );
