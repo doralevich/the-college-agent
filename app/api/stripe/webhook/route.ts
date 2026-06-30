@@ -2,6 +2,7 @@ import type Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/client";
 import { sendOrderSummaryEmail, type OrderForEmail } from "@/lib/email/order-summary";
+import { sendAccountCreatedEmail } from "@/lib/email/account-created";
 
 // Stripe webhook. This is the ONLY thing that flips entitlements to 'active' (never a
 // user-facing button). It MUST stay out of the proxy.ts auth matcher (no redirects) and
@@ -101,6 +102,20 @@ async function handleCheckoutCompleted(db: DB, session: Stripe.Checkout.Session)
   }
 
   const entEmail = (email || orderRow?.email || "").toLowerCase();
+
+  // Anonymous /build → Pay flow: no user_id metadata, no order row with one.
+  // Find-or-create the auth user by email so the entitlement attaches to a real
+  // account, then email them a magic link so they can sign in without picking a
+  // password. Logged-in students short-circuit through the existing userId.
+  let createdAccount = false;
+  if (entEmail && !userId) {
+    const firstName = (session.metadata?.first_name as string | undefined) || null;
+    const lastName = (session.metadata?.last_name as string | undefined) || null;
+    const { userId: resolvedId, isNew } = await findOrCreateAuthUser(db, entEmail, firstName, lastName);
+    userId = resolvedId;
+    createdAccount = isNew;
+  }
+
   if (entEmail) {
     const { error: entErr } = await db.from("entitlements").upsert(
       {
@@ -117,6 +132,24 @@ async function handleCheckoutCompleted(db: DB, session: Stripe.Checkout.Session)
     // A paid student MUST get access — never swallow this. Throwing makes the webhook 500
     // so Stripe retries (the order is already marked paid; re-running is idempotent).
     if (entErr) throw new Error(`entitlement upsert failed: ${entErr.message}`);
+  }
+
+  // For freshly-auto-created accounts, ship a magic-link sign-in email. Best-effort —
+  // the entitlement is already active and the student could sign in normally (password
+  // reset) if delivery hiccups.
+  if (createdAccount && entEmail) {
+    try {
+      const firstName = (session.metadata?.first_name as string | undefined) || null;
+      const { data: linkData } = await db.auth.admin.generateLink({
+        type: "magiclink",
+        email: entEmail,
+        options: { redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://thecollegeagent.ai"}/dashboard` },
+      });
+      const magicLink = linkData?.properties?.action_link || `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://thecollegeagent.ai"}/auth/sign-in`;
+      await sendAccountCreatedEmail({ email: entEmail, firstName, magicLink });
+    } catch (err) {
+      console.error("[stripe webhook] account-created email failed", err);
+    }
   }
 
   // Best-effort post-payment notification — never let it fail the webhook.
@@ -161,4 +194,39 @@ function idOf(v: string | { id: string } | null | undefined): string | null {
 function subIdFromInvoice(invoice: Stripe.Invoice): string | null {
   const sub = (invoice as unknown as { subscription?: string | { id: string } | null }).subscription;
   return idOf(sub ?? null);
+}
+
+// Find an auth.users row by email or create one. Returns the userId plus a flag so
+// the caller knows whether to send an account-welcome / magic-link email. GoTrue's
+// listUsers is paged; we cap at 50 pages (10k users) which is well above the current
+// scale and bounds the worst-case work.
+async function findOrCreateAuthUser(
+  db: DB,
+  email: string,
+  firstName: string | null,
+  lastName: string | null
+): Promise<{ userId: string | null; isNew: boolean }> {
+  const wanted = email.toLowerCase();
+  for (let page = 1; page <= 50; page++) {
+    const { data, error } = await db.auth.admin.listUsers({ page, perPage: 200 });
+    if (error) break;
+    const users = data?.users ?? [];
+    if (users.length === 0) break;
+    const hit = users.find((u) => (u.email ?? "").toLowerCase() === wanted);
+    if (hit) return { userId: hit.id, isNew: false };
+  }
+  const { data: created, error: createErr } = await db.auth.admin.createUser({
+    email,
+    email_confirm: true,
+    user_metadata: {
+      first_name: firstName ?? undefined,
+      last_name: lastName ?? undefined,
+      created_via: "stripe_checkout",
+    },
+  });
+  if (createErr) {
+    console.error("[stripe webhook] createUser failed", createErr.message);
+    return { userId: null, isNew: false };
+  }
+  return { userId: created?.user?.id ?? null, isNew: true };
 }

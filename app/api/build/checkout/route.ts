@@ -1,21 +1,46 @@
-import { requireUser } from "@/lib/auth";
-import { ApiError, json, route } from "@/lib/http";
+import { ApiError, json, readJson, route } from "@/lib/http";
 import { getStripe } from "@/lib/stripe/client";
 import { priceIdFor } from "@/lib/stripe/prices";
 import { currentPlanLookup, HOSTING_LOOKUP } from "@/lib/pricing/intro-cutoff";
+import { getOptionalUserId } from "@/lib/auth";
+import { createAdminClient } from "@/lib/supabase/admin";
 
-// Creates a Stripe Checkout Session for The College Agent.
-// Two line items in one subscription:
-//   1. one-time plan fee  ($499 intro thru Aug 15 / $599 regular thereafter)
-//   2. recurring monthly hosting ($25/mo)
-// The webhook (app/api/stripe/webhook) reads `metadata.user_id` to upsert the
-// entitlement once Stripe says the payment cleared — that's the trigger the
-// dashboard waits on, NOT this route.
+// Anonymous-friendly Stripe Checkout entrypoint.
+// - Logged-in students: we pass user_id metadata so the webhook flips their
+//   entitlement directly.
+// - Anonymous students: we accept email + first/last name from the body, ship them
+//   to Stripe, and the webhook (app/api/stripe/webhook) creates the auth user on
+//   payment success and emails them a magic-link sign-in. This kills the old
+//   "Pay" -> login-wall UX where students had to create an account before paying.
+
+type Body = {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+};
 
 export const POST = route(async (req) => {
-  const { user } = await requireUser();
-  const email = (user.email ?? "").toLowerCase();
-  if (!email) throw new ApiError(400, "invalid_request", "No email on account");
+  const body = await readJson<Body>(req);
+
+  // Prefer the authenticated session if there is one — that's still the cleanest path
+  // (no account-creation flow to walk through on the webhook side). Fall back to the
+  // body-provided email for anonymous /build → Pay traffic.
+  const sessionUserId = await getOptionalUserId();
+  let email = (body.email ?? "").trim().toLowerCase();
+  let userId: string | null = sessionUserId;
+
+  if (sessionUserId) {
+    const db = createAdminClient();
+    const { data } = await db.auth.admin.getUserById(sessionUserId);
+    email = (data?.user?.email ?? email).toLowerCase();
+  }
+
+  if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    throw new ApiError(400, "invalid_request", "Valid email is required");
+  }
+
+  const firstName = (body.firstName ?? "").trim();
+  const lastName = (body.lastName ?? "").trim();
 
   const planLookup = currentPlanLookup();
 
@@ -27,8 +52,6 @@ export const POST = route(async (req) => {
       priceIdFor(HOSTING_LOOKUP),
     ]);
   } catch (e) {
-    // priceIdFor throws when the lookup_key isn't an active Stripe Price — usually
-    // because the catalog hasn't been synced after a pricing change.
     throw new ApiError(
       503,
       "catalog_not_synced",
@@ -36,23 +59,28 @@ export const POST = route(async (req) => {
     );
   }
 
-  // Prefer the request Origin so local dev redirects to localhost, not the prod site.
   const origin = req.headers.get("origin") || process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin;
+
+  // Metadata travels back on the webhook (subscription_data is what we read on
+  // invoice.paid; metadata is what we read on checkout.session.completed). Carry
+  // names so the webhook can stamp them on the freshly-created auth user.
+  const metadata: Record<string, string> = { plan_lookup: planLookup };
+  if (userId) metadata.user_id = userId;
+  if (firstName) metadata.first_name = firstName;
+  if (lastName) metadata.last_name = lastName;
 
   const stripe = getStripe();
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     allow_promotion_codes: true,
     payment_method_collection: "if_required",
-    // Order matters in Stripe Checkout: the FIRST line item must be the recurring
-    // subscription line. The one-time plan rides along on the first invoice only.
     line_items: [
       { price: hostingPriceId, quantity: 1 },
       { price: planPriceId, quantity: 1 },
     ],
     customer_email: email,
-    metadata: { user_id: user.id, plan_lookup: planLookup },
-    subscription_data: { metadata: { user_id: user.id, plan_lookup: planLookup } },
+    metadata,
+    subscription_data: { metadata },
     success_url: `${origin}/build/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/build?canceled=1`,
   });

@@ -123,12 +123,12 @@ export default function BuildPage() {
       const res = await fetch("/api/build/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({
+          email: info.schoolEmail.trim(),
+          firstName: info.firstName.trim(),
+          lastName: info.lastName.trim(),
+        }),
       });
-      if (res.status === 401) {
-        window.location.href = `/login?next=${encodeURIComponent("/build")}`;
-        return;
-      }
       const body = await res.json().catch(() => ({}));
       if (!res.ok || !body?.url) {
         throw new Error(body?.error?.message ?? `Checkout failed (${res.status})`);
