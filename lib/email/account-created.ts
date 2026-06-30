@@ -37,14 +37,11 @@ export async function sendAccountCreatedEmail(r: AccountCreatedRecipient): Promi
             </tr>
             <tr>
               <td style="padding:32px;">
-                <h1 style="font-family:Georgia,'Fraunces',serif;font-size:24px;line-height:1.2;font-weight:600;color:#1A2421;margin:0 0 14px;">
-                  Hi ${escapeHtml(first)} &mdash; your payment cleared.
+                <h1 style="font-family:Georgia,'Fraunces',serif;font-size:24px;line-height:1.2;font-weight:600;color:#1A2421;margin:0 0 20px;">
+                  Hi ${escapeHtml(first)}, your account is ready.
                 </h1>
-                <p style="font-size:15px;line-height:1.6;color:#1A2421;margin:0 0 14px;">
-                  We just created your College Agent account. Click below to sign in &mdash; no password needed, the link does the work.
-                </p>
-                <p style="font-size:13px;line-height:1.5;color:#5C6660;margin:0 0 24px;">
-                  This link will sign you straight into your dashboard, where you can finish a quick onboarding and meet your agent.
+                <p style="font-size:15px;line-height:1.6;color:#1A2421;margin:0 0 24px;">
+                  One click signs you in. No password needed.
                 </p>
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 26px;">
                   <tr>
