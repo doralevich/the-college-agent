@@ -10,14 +10,14 @@ const supabase = createAdminClient();
 // like the form. Each entry maps a stored field key to a human label; values are pulled from
 // the submitted `data` blob and empty answers are skipped.
 const ONBOARD_GROUPS: { heading: string; fields: Array<[string, string]> }[] = [
-  { heading: "About You", fields: [["schoolEmail", "School Email"], ["personalEmail", "Personal Email"], ["phone", "Phone"], ["school", "School"], ["agentName", "Agent Name"]] },
+  { heading: "About You", fields: [["schoolEmail", "School Email"], ["personalEmail", "Personal Email"], ["phone", "Phone"], ["school", "School"], ["agentName", "Agent Name"], ["year", "Year"], ["major", "Major"], ["minor", "Minor"], ["livingSituation", "Living Situation"]] },
   { heading: "Academic Life", fields: [["currentClasses", "Current Classes"], ["lmsType", "LMS"], ["gpaGoal", "GPA Goal"], ["academicChallenges", "Academic Challenges"], ["studyStyle", "Study Style"], ["studyMethods", "Study Methods"], ["studyTime", "Best Study Time"], ["studyLocation", "Study Location"], ["studySessionLength", "Session Length"]] },
   { heading: "Schedule & Routine", fields: [["wakeTime", "Wake Time"], ["sleepTime", "Sleep Time"], ["productiveTime", "Most Productive"], ["classDays", "Class Days"], ["workStatus", "Work Status"], ["weeklyHours", "Weekly Hours"]] },
-  { heading: "Social & Campus Life", fields: [["greekLife", "Greek Life"], ["sportsTeams", "Sports Teams"], ["socialFrequency", "Social Frequency"], ["socialActivities", "Social Activities"], ["clubTypes", "Clubs & Orgs"], ["specificClubs", "Specific Clubs"], ["leadershipRole", "Leadership Role"], ["clubTimeCommitment", "Club Time/Week"], ["volunteering", "Volunteering"], ["causeAreas", "Cause Areas"], ["volunteerOrgs", "Volunteer Orgs"]] },
-  { heading: "Mental Health & Wellbeing", fields: [["sleepQuality", "Sleep Quality"], ["stressLevel", "Stress Level"], ["burnoutSignals", "Burnout Signals"], ["agentWellbeingFlag", "Wellbeing Flagging"], ["wellbeingBoundaries", "Wellbeing Boundaries"]] },
+  { heading: "Social & Campus Life", fields: [["greekLife", "Greek Life"], ["sportsTeams", "Sports Teams"], ["clubs", "Clubs / Orgs (free text)"], ["socialLife", "Social Life"], ["family", "Family"], ["socialFrequency", "Social Frequency"], ["socialActivities", "Social Activities"], ["clubTypes", "Clubs & Orgs"], ["specificClubs", "Specific Clubs"], ["leadershipRole", "Leadership Role"], ["clubTimeCommitment", "Club Time/Week"], ["volunteering", "Volunteering"], ["causeAreas", "Cause Areas"], ["volunteerOrgs", "Volunteer Orgs"]] },
+  { heading: "Mental Health & Wellbeing", fields: [["sleepQuality", "Sleep Quality"], ["stressLevel", "Stress Level"], ["burnoutSignals", "Burnout Signals"], ["stressBurnout", "Stress / Burnout (free text)"], ["agentWellbeingFlag", "Wellbeing Flagging"], ["wellbeingBoundaries", "Wellbeing Boundaries"]] },
   { heading: "Tools & Communication", fields: [["apps", "Apps"], ["devices", "Devices"], ["browser", "Browser"], ["noteTaking", "Note Taking"], ["calendarApp", "Calendar"], ["taskManager", "Task Manager"], ["commStyle", "Writing Style"], ["preferredChannels", "Channels"], ["responseStyle", "Response Style"], ["emailResponseTime", "Email Response Time"]] },
   { heading: "Goals & Career", fields: [["topPriority", "Top Priority"], ["academicGoal", "Academic Goal"], ["careerGoal", "Career Goal"], ["personalGoal", "Personal Goal"], ["stopDoing", "Wants to Stop"], ["startDoing", "Wants to Start"], ["industryInterest", "Industry"], ["graduationYear", "Graduation Year"], ["internshipStatus", "Internship Status"], ["resumeReady", "Resume Ready"], ["jobSearchActivities", "Job Search"], ["dreamCompany", "Dream Company"], ["biggestStressors", "Biggest Stressors"], ["fallsThrough", "Falls Through Cracks"], ["agentHandleFirst", "Agent Handle First"]] },
-  { heading: "Your Agent", fields: [["agentTone", "Tone"], ["checkinFrequency", "Check-in Frequency"], ["agentTopics", "Surface Proactively"], ["agentOffLimits", "Off Limits"], ["anythingElse", "Anything Else"]] },
+  { heading: "Your Agent", fields: [["agentTone", "Tone"], ["checkinFrequency", "Check-in Frequency"], ["agentTopics", "Surface Proactively"], ["agentOffLimits", "Off Limits"], ["wantDeepDive", "Deep-Dive Opt-In"], ["anythingElse", "Anything Else"]] },
 ];
 
 function formatVal(v: unknown): string {
@@ -77,6 +77,11 @@ export async function POST(req: NextRequest) {
       phone: data.phone,
       school: data.school,
       agent_name: data.agentName || null,
+      // Promote a couple of high-value answers to dedicated columns so the
+      // provisioner (lib/provisioning.ts) can read them off the row instead of
+      // digging into the JSONB blob. Null when not asked / left blank.
+      year: data.year || null,
+      major: data.major || null,
       // Full questionnaire fields stored as JSONB blob for flexibility
       questionnaire: data,
       resume_url: resumeUrl,
