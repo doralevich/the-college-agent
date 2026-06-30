@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/client";
 import { sendOrderSummaryEmail, type OrderForEmail } from "@/lib/email/order-summary";
 import { sendAccountCreatedEmail } from "@/lib/email/account-created";
+import { findOrCreateAuthUser } from "@/lib/auth/find-or-create-user";
 
 // Stripe webhook. This is the ONLY thing that flips entitlements to 'active' (never a
 // user-facing button). It MUST stay out of the proxy.ts auth matcher (no redirects) and
@@ -196,37 +197,5 @@ function subIdFromInvoice(invoice: Stripe.Invoice): string | null {
   return idOf(sub ?? null);
 }
 
-// Find an auth.users row by email or create one. Returns the userId plus a flag so
-// the caller knows whether to send an account-welcome / magic-link email. GoTrue's
-// listUsers is paged; we cap at 50 pages (10k users) which is well above the current
-// scale and bounds the worst-case work.
-async function findOrCreateAuthUser(
-  db: DB,
-  email: string,
-  firstName: string | null,
-  lastName: string | null
-): Promise<{ userId: string | null; isNew: boolean }> {
-  const wanted = email.toLowerCase();
-  for (let page = 1; page <= 50; page++) {
-    const { data, error } = await db.auth.admin.listUsers({ page, perPage: 200 });
-    if (error) break;
-    const users = data?.users ?? [];
-    if (users.length === 0) break;
-    const hit = users.find((u) => (u.email ?? "").toLowerCase() === wanted);
-    if (hit) return { userId: hit.id, isNew: false };
-  }
-  const { data: created, error: createErr } = await db.auth.admin.createUser({
-    email,
-    email_confirm: true,
-    user_metadata: {
-      first_name: firstName ?? undefined,
-      last_name: lastName ?? undefined,
-      created_via: "stripe_checkout",
-    },
-  });
-  if (createErr) {
-    console.error("[stripe webhook] createUser failed", createErr.message);
-    return { userId: null, isNew: false };
-  }
-  return { userId: created?.user?.id ?? null, isNew: true };
-}
+// findOrCreateAuthUser lives in lib/auth/find-or-create-user.ts so both the
+// webhook and /build/success can use the same idempotent lookup.
