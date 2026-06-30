@@ -429,7 +429,7 @@ export function ConversationalOnboard({
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const displayFirstName = (form.firstName?.trim() || knownFirstName?.trim() || "there");
-  const displayBotName = (form.agentName?.trim() || "your College Agent");
+  const displayBotName = (form.agentName?.trim() || "Your College Agent");
 
   // Filter steps based on the student's branch answers and what we already know from
   // pre-payment lead capture. Three filters layered:

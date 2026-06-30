@@ -75,7 +75,7 @@ export function WelcomeView({
   if (!onboardDone) return <ConversationalOnboard userId={userId} knownFirstName={firstName} prefill={onboardPrefill} />;
 
   const name = firstName?.trim() || "there";
-  const bot = agentName?.trim() || "your College Agent";
+  const bot = agentName?.trim() || "Your College Agent";
   const mascotSrc = avatarUrl?.trim() || "/thecollegeagent.png";
 
   // PostOnboardCTA wraps the bottom button so the !hasAgent case can manually
@@ -131,7 +131,7 @@ export function WelcomeView({
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={mascotSrc}
-              alt={`${bot}, your College Agent`}
+              alt={bot}
               className="ca-mascot"
               style={{ height: 150, width: 150, objectFit: "cover", borderRadius: "50%" }}
             />
