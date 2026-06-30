@@ -78,6 +78,27 @@ const SUCCESS_OPTIONS = [
   "Show up consistently and finish what I start",
 ];
 
+// Most-relevant integrations for college students, drawn from
+// lib/integration-catalog.ts. Selected slugs are stored on the onboard
+// submission so the Integrations tab can spotlight them later. Labels match
+// the catalog's display names so it's obvious which app is which.
+const INTEGRATION_OPTIONS = [
+  "Gmail",
+  "Outlook",
+  "Google Calendar",
+  "Google Drive",
+  "Google Docs",
+  "OneDrive",
+  "Dropbox",
+  "Canvas",
+  "Google Classroom",
+  "Blackbaud",
+  "Microsoft Teams",
+  "Zoom",
+  "Notion",
+  "Discord",
+];
+
 const PRIORITY_OPTIONS = [
   "Academic performance & grades",
   "Mental health & wellbeing",
@@ -139,7 +160,7 @@ type TextKey =
   | "academicChallenges"
   | "stressBurnout"
   | "anythingElse";
-type MultiKey = "checkinFrequency" | "topPriority" | "agentHandleFirst" | "responseStyle";
+type MultiKey = "checkinFrequency" | "topPriority" | "agentHandleFirst" | "responseStyle" | "integrationsWanted";
 type SingleKey = "year";
 
 export type ClassEntry = {
@@ -208,10 +229,11 @@ const STEPS: Step[] = [
     prompt: "Let's add your classes one at a time. For each one I'll grab the name, days, time, location, professor, and class SKU — then we'll add another until you're done.",
   },
   {
-    kind: "info",
-    key: "__integrations",
+    kind: "multi",
+    key: "integrationsWanted",
     prompt:
-      "Do you want to integrate any of your software or accounts? Like Gmail, Outlook, Dropbox, Calendar, Canvas… there are thousands. You can do this later from the Integrations tab in the sidebar, or just ask me about it any time in our chat.",
+      "Which of these do you want me to connect to? Pick any — I'll surface them on your Integrations tab so you can hook them up in a click. You can also add thousands more from the sidebar later, or just ask me about it in chat.",
+    options: INTEGRATION_OPTIONS,
   },
   {
     kind: "branch",
@@ -252,6 +274,7 @@ type FormState = {
   agentHandleFirstNotes: string;
   responseStyle: string[];
   checkinFrequency: string[];
+  integrationsWanted: string[];
   classes: ClassEntry[];
   wantDeepDive: "" | "yes" | "no";
   year: string;
@@ -284,6 +307,7 @@ const EMPTY: FormState = {
   agentHandleFirstNotes: "",
   responseStyle: [],
   checkinFrequency: [],
+  integrationsWanted: [],
   classes: [],
   wantDeepDive: "",
   year: "",
@@ -506,6 +530,7 @@ export function ConversationalOnboard({ userId, knownFirstName }: { userId: stri
           agentHandleFirstNotes: form.agentHandleFirstNotes.trim(),
           responseStyle: form.responseStyle,
           checkinFrequency: form.checkinFrequency,
+          integrationsWanted: form.integrationsWanted,
           // Legacy text blob for the existing provisioner/SOUL.md path. The full
           // structured list also rides along under `classes`.
           currentClasses: formatClassesForLegacy(form.classes),
