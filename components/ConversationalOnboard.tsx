@@ -139,8 +139,8 @@ type TextKey =
   | "academicChallenges"
   | "stressBurnout"
   | "anythingElse";
-type MultiKey = "checkinFrequency" | "topPriority" | "agentHandleFirst";
-type SingleKey = "responseStyle" | "year";
+type MultiKey = "checkinFrequency" | "topPriority" | "agentHandleFirst" | "responseStyle";
+type SingleKey = "year";
 
 export type ClassEntry = {
   name: string;
@@ -200,7 +200,7 @@ const STEPS: Step[] = [
       "Add specifics where you can — e.g. \"a 3.8 GPA\", \"a paid internship offer by April\", \"sleeping 7+ hours a night\", \"finishing the screenplay\". Anything you want me to hold you to.",
     placeholder: "A 3.8 GPA, a paid internship offer by April, sleeping 7+ hours a night, finishing the screenplay…",
   },
-  { kind: "single", key: "responseStyle", prompt: "How do you want me to sound when I talk to you?", options: VOICE_OPTIONS, required: true },
+  { kind: "multi", key: "responseStyle", prompt: "How do you want me to sound when I talk to you? Pick everyone whose vibe fits — I'll blend them.", options: VOICE_OPTIONS, required: true },
   { kind: "multi", key: "checkinFrequency", prompt: "How often should I check in with you? Pick any that fit.", options: CHECKIN_OPTIONS, required: true },
   {
     kind: "classList",
@@ -250,7 +250,7 @@ type FormState = {
   topPriorityNotes: string;
   agentHandleFirst: string[];
   agentHandleFirstNotes: string;
-  responseStyle: string;
+  responseStyle: string[];
   checkinFrequency: string[];
   classes: ClassEntry[];
   wantDeepDive: "" | "yes" | "no";
@@ -282,7 +282,7 @@ const EMPTY: FormState = {
   topPriorityNotes: "",
   agentHandleFirst: [],
   agentHandleFirstNotes: "",
-  responseStyle: "",
+  responseStyle: [],
   checkinFrequency: [],
   classes: [],
   wantDeepDive: "",
@@ -504,7 +504,7 @@ export function ConversationalOnboard({ userId, knownFirstName }: { userId: stri
           topPriorityNotes: form.topPriorityNotes.trim(),
           agentHandleFirst: form.agentHandleFirst,
           agentHandleFirstNotes: form.agentHandleFirstNotes.trim(),
-          responseStyle: form.responseStyle ? [form.responseStyle] : [],
+          responseStyle: form.responseStyle,
           checkinFrequency: form.checkinFrequency,
           // Legacy text blob for the existing provisioner/SOUL.md path. The full
           // structured list also rides along under `classes`.
