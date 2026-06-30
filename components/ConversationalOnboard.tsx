@@ -53,6 +53,52 @@ const CHECKIN_OPTIONS = [
 
 const YEAR_OPTIONS = ["Freshman", "Sophomore", "Junior", "Senior", "Grad student", "Other"];
 
+// Broad coverage across every area a student might prioritise across their college years.
+// Multi-select with no max — pick as many as fit. A free-text note step right after lets
+// the student add anything that isn't captured here.
+// What "success" can mean by year-end across academics, social, health, career,
+// finances, and personal growth. Same multi-select + free-text-notes pattern as
+// PRIORITY_OPTIONS so the SOUL/USER builder keeps working unchanged.
+const SUCCESS_OPTIONS = [
+  "Hit my target GPA",
+  "Finish every class I'm enrolled in",
+  "Build deeper friendships",
+  "Land an internship or job offer",
+  "Get into grad / professional school",
+  "Build a consistent habit (sleep, gym, study)",
+  "Finish a personal project",
+  "Improve a key skill (writing, coding, language…)",
+  "Get fitter or healthier",
+  "Protect my mental health",
+  "Strengthen a key relationship",
+  "Step into a leadership role",
+  "Launch a side hustle or org",
+  "Save money or pay down debt",
+  "Travel somewhere meaningful",
+  "Show up consistently and finish what I start",
+];
+
+const PRIORITY_OPTIONS = [
+  "Academic performance & grades",
+  "Mental health & wellbeing",
+  "Physical health, fitness & sleep",
+  "Friendships & social life",
+  "Family relationships",
+  "Romantic life & dating",
+  "Career prep & internships",
+  "Networking & mentorship",
+  "Leadership & extracurriculars",
+  "Skill building & certifications",
+  "Financial stability & earning",
+  "Time management & organisation",
+  "Spirituality, faith or values",
+  "Creative projects & hobbies",
+  "Travel or study abroad",
+  "Graduate school prep",
+  "Personal growth & self-discovery",
+  "Community service & impact",
+];
+
 // Each step in the conversation. `kind` controls the input UI and validation. `key`
 // matches the form-field name the existing /api/onboard-submit endpoint reads.
 // `deepDive: true` means the step only renders if the student opted in to deeper questions.
@@ -78,8 +124,8 @@ type TextKey =
   | "personalEmail"
   | "phone"
   | "school"
-  | "topPriority"
-  | "agentHandleFirst"
+  | "topPriorityNotes"
+  | "agentHandleFirstNotes"
   | "major"
   | "minor"
   | "greekLife"
@@ -93,7 +139,7 @@ type TextKey =
   | "academicChallenges"
   | "stressBurnout"
   | "anythingElse";
-type MultiKey = "checkinFrequency";
+type MultiKey = "checkinFrequency" | "topPriority" | "agentHandleFirst";
 type SingleKey = "responseStyle" | "year";
 
 export type ClassEntry = {
@@ -125,20 +171,34 @@ const STEPS: Step[] = [
   { kind: "text", key: "phone", prompt: "What's a good phone number? I won't spam you, promise.", placeholder: "+1 (___) ___-____", inputType: "tel", required: true },
   { kind: "text", key: "school", prompt: "Which school are you at?", placeholder: "Your university", required: true },
   {
-    kind: "textarea",
+    kind: "multi",
     key: "topPriority",
     prompt:
-      "What are your primary priorities this semester, this year, and through your college experience? The more you tell me here, the better I can help you later.",
-    placeholder: "Academic performance, staying organized, lining up a summer internship, mental health, taking care of myself, prepping for grad school…",
+      "What are your primary priorities across your college years? Pick everything that matters — academics, social, health, career, the works. We'll add any specifics in the next step.",
+    options: PRIORITY_OPTIONS,
     required: true,
   },
   {
     kind: "textarea",
+    key: "topPriorityNotes",
+    prompt:
+      "Anything to add to those priorities? Specifics about a particular semester, why something matters, or anything I missed in the chips above.",
+    placeholder: "Junior-year GPA matters most because of grad school apps. Want to keep weightlifting 4×/week. Save for a summer Europe trip…",
+  },
+  {
+    kind: "multi",
     key: "agentHandleFirst",
     prompt:
-      "What does success look like at the end of this semester, and this year? Be specific where you can — grades, projects, friendships, habits, anything.",
-    placeholder: "A 3.8 GPA, a paid internship offer by April, sleeping 7+ hours a night, finishing the screenplay…",
+      "What does success look like at the end of this semester, and this year? Pick everything that fits — grades, projects, friendships, habits, anything. We'll add specifics in the next step.",
+    options: SUCCESS_OPTIONS,
     required: true,
+  },
+  {
+    kind: "textarea",
+    key: "agentHandleFirstNotes",
+    prompt:
+      "Add specifics where you can — e.g. \"a 3.8 GPA\", \"a paid internship offer by April\", \"sleeping 7+ hours a night\", \"finishing the screenplay\". Anything you want me to hold you to.",
+    placeholder: "A 3.8 GPA, a paid internship offer by April, sleeping 7+ hours a night, finishing the screenplay…",
   },
   { kind: "single", key: "responseStyle", prompt: "How do you want me to sound when I talk to you?", options: VOICE_OPTIONS, required: true },
   { kind: "multi", key: "checkinFrequency", prompt: "How often should I check in with you? Pick any that fit.", options: CHECKIN_OPTIONS, required: true },
@@ -186,8 +246,10 @@ type FormState = {
   personalEmail: string;
   phone: string;
   school: string;
-  topPriority: string;
-  agentHandleFirst: string;
+  topPriority: string[];
+  topPriorityNotes: string;
+  agentHandleFirst: string[];
+  agentHandleFirstNotes: string;
   responseStyle: string;
   checkinFrequency: string[];
   classes: ClassEntry[];
@@ -216,8 +278,10 @@ const EMPTY: FormState = {
   personalEmail: "",
   phone: "",
   school: "",
-  topPriority: "",
-  agentHandleFirst: "",
+  topPriority: [],
+  topPriorityNotes: "",
+  agentHandleFirst: [],
+  agentHandleFirstNotes: "",
   responseStyle: "",
   checkinFrequency: [],
   classes: [],
@@ -436,8 +500,10 @@ export function ConversationalOnboard({ userId, knownFirstName }: { userId: stri
           personalEmail: form.personalEmail.trim(),
           phone: form.phone.trim(),
           school: form.school.trim(),
-          topPriority: form.topPriority.trim(),
-          agentHandleFirst: form.agentHandleFirst.trim(),
+          topPriority: form.topPriority,
+          topPriorityNotes: form.topPriorityNotes.trim(),
+          agentHandleFirst: form.agentHandleFirst,
+          agentHandleFirstNotes: form.agentHandleFirstNotes.trim(),
           responseStyle: form.responseStyle ? [form.responseStyle] : [],
           checkinFrequency: form.checkinFrequency,
           // Legacy text blob for the existing provisioner/SOUL.md path. The full
