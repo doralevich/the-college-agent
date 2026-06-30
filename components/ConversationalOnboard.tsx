@@ -25,31 +25,6 @@ const T = {
 const FONTS_HREF =
   "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=DM+Sans:wght@400;500;600;700&display=swap";
 
-const PRIORITY_OPTIONS = [
-  "Academic performance",
-  "Career / internship search",
-  "Staying organized",
-  "Time management",
-  "Mental health and wellbeing",
-  "Social life and balance",
-  "Health and fitness",
-  "Preparing for semester abroad",
-  "Preparing for summer internships",
-  "Preparing for after-college plans",
-  "Preparing for secondary education",
-  "Not sure yet",
-];
-
-const SUCCESS_OPTIONS = [
-  "Deadline tracking and reminders",
-  "Weekly planning briefings",
-  "Study scheduling",
-  "Email drafting and follow-ups",
-  "Internship / job search support",
-  "Meeting and class prep",
-  "General task management",
-];
-
 // Voice personas modelled on real, widely-admired public figures (6 men, 6 women).
 // The label drives SOUL.md tone — the agent emulates the style, not the person.
 const VOICE_OPTIONS = [
@@ -94,9 +69,11 @@ type TextKey =
   | "personalEmail"
   | "phone"
   | "school"
+  | "topPriority"
+  | "agentHandleFirst"
   | "currentClasses"
   | "anythingElse";
-type MultiKey = "topPriority" | "agentHandleFirst" | "checkinFrequency";
+type MultiKey = "checkinFrequency";
 type SingleKey = "responseStyle";
 
 // `{firstName}` is interpolated from the prop at render time so the intro can greet
@@ -116,8 +93,22 @@ const STEPS: Step[] = [
   { kind: "text", key: "personalEmail", prompt: "Got a personal email too? I'll use it for non-school stuff.", placeholder: "you@gmail.com", inputType: "email" },
   { kind: "text", key: "phone", prompt: "What's a good phone number? I won't spam you, promise.", placeholder: "+1 (___) ___-____", inputType: "tel", required: true },
   { kind: "text", key: "school", prompt: "Which school are you at?", placeholder: "Your university", required: true },
-  { kind: "multi", key: "topPriority", prompt: "Pick up to 3 priorities for this semester. These shape everything I help you with.", options: PRIORITY_OPTIONS, max: 3, required: true },
-  { kind: "multi", key: "agentHandleFirst", prompt: "What does success look like with me? Pick up to 3.", options: SUCCESS_OPTIONS, max: 3, required: true },
+  {
+    kind: "textarea",
+    key: "topPriority",
+    prompt:
+      "What are your primary priorities this semester, this year, and through your college experience? The more you tell me here, the better I can help you later.",
+    placeholder: "Academic performance, staying organized, lining up a summer internship, mental health, taking care of myself, prepping for grad school…",
+    required: true,
+  },
+  {
+    kind: "textarea",
+    key: "agentHandleFirst",
+    prompt:
+      "What does success look like at the end of this semester, and this year? Be specific where you can — grades, projects, friendships, habits, anything.",
+    placeholder: "A 3.8 GPA, a paid internship offer by April, sleeping 7+ hours a night, finishing the screenplay…",
+    required: true,
+  },
   { kind: "single", key: "responseStyle", prompt: "How do you want me to sound when I talk to you?", options: VOICE_OPTIONS, required: true },
   { kind: "multi", key: "checkinFrequency", prompt: "How often should I check in with you? Pick any that fit.", options: CHECKIN_OPTIONS, required: true },
   { kind: "textarea", key: "currentClasses", prompt: "What classes are you taking this semester? Just dump them, formatting doesn't matter.", placeholder: "Marketing 301, Stats II, Bio Lab Tues/Thu 2pm…", required: true },
@@ -132,8 +123,8 @@ type FormState = {
   personalEmail: string;
   phone: string;
   school: string;
-  topPriority: string[];
-  agentHandleFirst: string[];
+  topPriority: string;
+  agentHandleFirst: string;
   responseStyle: string;
   checkinFrequency: string[];
   currentClasses: string;
@@ -148,8 +139,8 @@ const EMPTY: FormState = {
   personalEmail: "",
   phone: "",
   school: "",
-  topPriority: [],
-  agentHandleFirst: [],
+  topPriority: "",
+  agentHandleFirst: "",
   responseStyle: "",
   checkinFrequency: [],
   currentClasses: "",
@@ -301,8 +292,8 @@ export function ConversationalOnboard({ userId, knownFirstName }: { userId: stri
           personalEmail: form.personalEmail.trim(),
           phone: form.phone.trim(),
           school: form.school.trim(),
-          topPriority: form.topPriority,
-          agentHandleFirst: form.agentHandleFirst,
+          topPriority: form.topPriority.trim(),
+          agentHandleFirst: form.agentHandleFirst.trim(),
           responseStyle: form.responseStyle ? [form.responseStyle] : [],
           checkinFrequency: form.checkinFrequency,
           currentClasses: form.currentClasses.trim(),
