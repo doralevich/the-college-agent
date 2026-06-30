@@ -122,20 +122,26 @@ const PRIORITY_OPTIONS = [
 
 // Each step in the conversation. `kind` controls the input UI and validation. `key`
 // matches the form-field name the existing /api/onboard-submit endpoint reads.
-// `deepDive: true` means the step only renders if the student opted in to deeper questions.
+// `tier: 2` -> shown only when wantTier2 === "yes"  (priorities, voice, classes, etc.)
+// `tier: 3` -> shown only when wantDeepDive === "yes" (year, major, family, etc.)
+// `tier: "tail"` -> shown unless the student exited early at wantTier2.
+type Tier = 2 | 3 | "tail";
 type Step =
-  | { kind: "text"; key: TextKey; prompt: string; placeholder?: string; inputType?: "text" | "email" | "tel"; required?: boolean; deepDive?: boolean }
-  | { kind: "textarea"; key: TextKey; prompt: string; placeholder?: string; required?: boolean; deepDive?: boolean }
-  | { kind: "multi"; key: MultiKey; prompt: string; options: string[]; max?: number; required?: boolean; deepDive?: boolean }
-  | { kind: "single"; key: SingleKey; prompt: string; options: string[]; required?: boolean; deepDive?: boolean }
+  | { kind: "text"; key: TextKey; prompt: string; placeholder?: string; inputType?: "text" | "email" | "tel"; required?: boolean; tier?: Tier }
+  | { kind: "textarea"; key: TextKey; prompt: string; placeholder?: string; required?: boolean; tier?: Tier }
+  | { kind: "multi"; key: MultiKey; prompt: string; options: string[]; max?: number; required?: boolean; tier?: Tier }
+  | { kind: "single"; key: SingleKey; prompt: string; options: string[]; required?: boolean; tier?: Tier }
   | { kind: "image"; key: "avatarFile"; prompt: string; required?: boolean }
   | { kind: "intro"; key: "__intro"; prompt: string }
   // Read-only message bubble (no input, no answer). Used to set up a section.
   | { kind: "info"; key: string; prompt: string }
-  // Yes/No branch. Answer drives whether `deepDive: true` steps are rendered.
-  | { kind: "branch"; key: "wantDeepDive"; prompt: string; yesLabel?: string; noLabel?: string }
+  // Yes/No branch. wantTier2 gates whether tier-2/3 steps render at all (graceful early
+  // exit); wantDeepDive then narrows tier-3 if they keep going.
+  | { kind: "branch"; key: BranchKey; prompt: string; yesLabel?: string; noLabel?: string; tier?: Tier }
   // Repeating list of classes — name + days + time + location + professor + SKU.
-  | { kind: "classList"; key: "classes"; prompt: string };
+  | { kind: "classList"; key: "classes"; prompt: string; tier?: Tier };
+
+type BranchKey = "wantTier2" | "wantDeepDive";
 
 type TextKey =
   | "firstName"
@@ -181,59 +187,73 @@ const STEPS: Step[] = [
     kind: "intro",
     key: "__intro",
     prompt:
-      "Hi {firstName}, nice to meet you. I'm your College Agent. Let's get started by getting to know each other. I'm going to go through a series of questions — feel free to skip any, but I really recommend we do this properly the first time. It only takes a few minutes. Ready? Great!",
+      "Hi {firstName}, nice to meet you. I'm your College Agent. Let's start by getting to know each other. I'll run through a few quick questions, it only takes a couple of minutes, and the more you tell me the sharper I get. Ready?",
   },
-  { kind: "text", key: "agentName", prompt: "Before we dive in — what do you want to call me? Pick any name you like, or skip to leave me as your College Agent." },
-  { kind: "image", key: "avatarFile", prompt: "Want to give me a face? Upload an image (PNG or JPG), or skip and I'll use the default bot." },
-  { kind: "text", key: "firstName", prompt: "Just to confirm — what's your first name?", placeholder: "Jane", required: true },
-  { kind: "text", key: "lastName", prompt: "And your last name?", placeholder: "Smith", required: true },
-  { kind: "text", key: "schoolEmail", prompt: "What's your school email? I'll use this if I ever need to reach you about your classes.", placeholder: "you@school.edu", inputType: "email", required: true },
-  { kind: "text", key: "personalEmail", prompt: "Got a personal email too? I'll use it for non-school stuff.", placeholder: "you@gmail.com", inputType: "email" },
-  { kind: "text", key: "phone", prompt: "What's a good phone number? I won't spam you, promise.", placeholder: "+1 (___) ___-____", inputType: "tel", required: true },
-  { kind: "text", key: "school", prompt: "Which school are you at?", placeholder: "Your university", required: true },
+  { kind: "text", key: "agentName", prompt: "Before we dive in, what do you want to call me? Pick any name you like, or skip to leave me as your College Agent.", placeholder: "Type a name..." },
+  { kind: "image", key: "avatarFile", prompt: "Want to give me a face? Upload an image (PNG or JPG), or skip and I'll use the default bot. You can always change this later." },
+  { kind: "text", key: "firstName", prompt: "And what should I call you? Just your first name is perfect.", placeholder: "Your first name", required: true },
+  { kind: "text", key: "lastName", prompt: "And your last name", placeholder: "Your last name", required: true },
+  { kind: "text", key: "school", prompt: "What school do you go to?", placeholder: "Start typing your school...", required: true },
+  { kind: "text", key: "schoolEmail", prompt: "What's your school email?", placeholder: "you@school.edu", inputType: "email", required: true },
+  { kind: "text", key: "personalEmail", prompt: "What's your personal email?", placeholder: "you@email.com", inputType: "email" },
+  { kind: "text", key: "phone", prompt: "What's your mobile number?", placeholder: "(555) 555-5555", inputType: "tel", required: true },
+  {
+    kind: "branch",
+    key: "wantTier2",
+    prompt:
+      "Awesome, that's the basics done. We're officially introduced. Now here's where it gets good. The more I know about your schedule, your classes, and how you like to work, the more I can actually help instead of just answering questions. Want to keep going? It's worth it, I promise.",
+    yesLabel: "Let's keep going",
+    noLabel: "I'm good for now",
+  },
   {
     kind: "multi",
     key: "topPriority",
     prompt:
-      "What are your primary priorities across your college years? Pick everything that matters — academics, social, health, career, the works. We'll add any specifics in the next step.",
+      "What are your primary priorities across your college years? Pick everything that matters: academics, social, health, career, the works. We'll add any specifics in the next step.",
     options: PRIORITY_OPTIONS,
     required: true,
+    tier: 2,
   },
   {
     kind: "textarea",
     key: "topPriorityNotes",
     prompt:
       "Anything to add to those priorities? Specifics about a particular semester, why something matters, or anything I missed in the chips above.",
-    placeholder: "Junior-year GPA matters most because of grad school apps. Want to keep weightlifting 4×/week. Save for a summer Europe trip…",
+    placeholder: "Junior-year GPA matters most because of grad school apps. Want to keep weightlifting 4x/week. Save for a summer Europe trip...",
+    tier: 2,
   },
   {
     kind: "multi",
     key: "agentHandleFirst",
     prompt:
-      "What does success look like at the end of this semester, and this year? Pick everything that fits — grades, projects, friendships, habits, anything. We'll add specifics in the next step.",
+      "What does success look like at the end of this semester, and this year? Pick everything that fits: grades, projects, friendships, habits, anything. We'll add specifics in the next step.",
     options: SUCCESS_OPTIONS,
     required: true,
+    tier: 2,
   },
   {
     kind: "textarea",
     key: "agentHandleFirstNotes",
     prompt:
-      "Add specifics where you can — e.g. \"a 3.8 GPA\", \"a paid internship offer by April\", \"sleeping 7+ hours a night\", \"finishing the screenplay\". Anything you want me to hold you to.",
-    placeholder: "A 3.8 GPA, a paid internship offer by April, sleeping 7+ hours a night, finishing the screenplay…",
+      "Add specifics where you can. For example: \"a 3.8 GPA\", \"a paid internship offer by April\", \"sleeping 7+ hours a night\", \"finishing the screenplay\". Anything you want me to hold you to.",
+    placeholder: "A 3.8 GPA, a paid internship offer by April, sleeping 7+ hours a night, finishing the screenplay...",
+    tier: 2,
   },
-  { kind: "multi", key: "responseStyle", prompt: "How do you want me to sound when I talk to you? Pick everyone whose vibe fits — I'll blend them.", options: VOICE_OPTIONS, required: true },
-  { kind: "multi", key: "checkinFrequency", prompt: "How often should I check in with you? Pick any that fit.", options: CHECKIN_OPTIONS, required: true },
+  { kind: "multi", key: "responseStyle", prompt: "How do you want me to sound when I talk to you? Pick everyone whose vibe fits and I'll blend them.", options: VOICE_OPTIONS, required: true, tier: 2 },
+  { kind: "multi", key: "checkinFrequency", prompt: "How often should I check in with you? Pick any that fit.", options: CHECKIN_OPTIONS, required: true, tier: 2 },
   {
     kind: "classList",
     key: "classes",
-    prompt: "Let's add your classes one at a time. For each one I'll grab the name, days, time, location, professor, and class SKU — then we'll add another until you're done.",
+    prompt: "Let's add your classes one at a time. For each one I'll grab the name, days, time, location, professor, and class SKU, then we'll add another until you're done.",
+    tier: 2,
   },
   {
     kind: "multi",
     key: "integrationsWanted",
     prompt:
-      "Which of these do you want me to connect to? Pick any — I'll surface them on your Integrations tab so you can hook them up in a click. You can also add thousands more from the sidebar later, or just ask me about it in chat.",
+      "Which of these do you want me to connect to? Pick any. I'll surface them on your Integrations tab so you can hook them up in a click. You can also add thousands more from the sidebar later, or just ask me about it in chat.",
     options: INTEGRATION_OPTIONS,
+    tier: 2,
   },
   {
     kind: "branch",
@@ -242,22 +262,23 @@ const STEPS: Step[] = [
       "Want to get into some more detailed questions? They help me build a fuller picture of your life so I can be more useful. Should only take a couple more minutes.",
     yesLabel: "Yes, let's keep going",
     noLabel: "No, that's enough for now",
+    tier: 2,
   },
   // Deep-dive questions — only shown if wantDeepDive === "yes".
-  { kind: "single", key: "year", prompt: "What year are you in?", options: YEAR_OPTIONS, deepDive: true },
-  { kind: "text", key: "major", prompt: "What's your major?", placeholder: "e.g. Computer Science", deepDive: true },
-  { kind: "text", key: "minor", prompt: "Any minor or second focus?", placeholder: "e.g. Studio Art (or skip)", deepDive: true },
-  { kind: "text", key: "livingSituation", prompt: "Where are you living this year? Dorm, apartment, with family?", placeholder: "On-campus dorm with two roommates", deepDive: true },
-  { kind: "text", key: "greekLife", prompt: "Are you in a fraternity or sorority? If so, which?", placeholder: "e.g. Kappa Sigma — pledged this fall (or no)", deepDive: true },
-  { kind: "textarea", key: "clubs", prompt: "What clubs or student orgs are you part of? Include any leadership roles.", placeholder: "Robotics Club (treasurer), Investment Club, Outdoors Society…", deepDive: true },
-  { kind: "textarea", key: "sportsTeams", prompt: "Are you on any sports teams — varsity, club, or intramural? When do you practice and play?", placeholder: "Club soccer Tue/Thu 6–8pm, intramural ultimate on weekends…", deepDive: true },
-  { kind: "textarea", key: "workStatus", prompt: "Do you work or have a side hustle alongside school? How many hours a week?", placeholder: "Barista at campus café, ~12 hrs/week", deepDive: true },
-  { kind: "textarea", key: "family", prompt: "Tell me a bit about your family. Who's close, who you talk to often, anything I should know.", placeholder: "Mom and dad in Chicago, older sister in NYC, call Sunday nights…", deepDive: true },
-  { kind: "textarea", key: "socialLife", prompt: "What's your social life like? Who do you spend time with and what do you like to do?", placeholder: "Hang with roommates, weekly dinner with the same 4 friends, occasional shows…", deepDive: true },
-  { kind: "textarea", key: "careerGoal", prompt: "What are you hoping to do after college? Career, grad school, gap year, undecided — anything goes.", placeholder: "Aiming for product management at a tech company — open to consulting too", deepDive: true },
-  { kind: "textarea", key: "academicChallenges", prompt: "What's hardest for you academically? Classes that trip you up, habits you struggle with, etc.", placeholder: "Procrastinate on reading-heavy classes, math comes slow…", deepDive: true },
-  { kind: "textarea", key: "stressBurnout", prompt: "When you get stressed or burnt out, what does that look like for you? What helps you reset?", placeholder: "Skip meals, doom-scroll. Walks and calling mom help.", deepDive: true },
-  { kind: "textarea", key: "anythingElse", prompt: "Anything else you want me to know? Goals, habits, pressure points, anything." },
+  { kind: "single", key: "year", prompt: "What year are you in?", options: YEAR_OPTIONS, tier: 3 },
+  { kind: "text", key: "major", prompt: "What's your major?", placeholder: "e.g. Computer Science", tier: 3 },
+  { kind: "text", key: "minor", prompt: "Any minor or second focus?", placeholder: "e.g. Studio Art (or skip)", tier: 3 },
+  { kind: "text", key: "livingSituation", prompt: "Where are you living this year? Dorm, apartment, with family?", placeholder: "On-campus dorm with two roommates", tier: 3 },
+  { kind: "text", key: "greekLife", prompt: "Are you in a fraternity or sorority? If so, which?", placeholder: "e.g. Kappa Sigma, pledged this fall (or no)", tier: 3 },
+  { kind: "textarea", key: "clubs", prompt: "What clubs or student orgs are you part of? Include any leadership roles.", placeholder: "Robotics Club (treasurer), Investment Club, Outdoors Society...", tier: 3 },
+  { kind: "textarea", key: "sportsTeams", prompt: "Are you on any sports teams: varsity, club, or intramural? When do you practice and play?", placeholder: "Club soccer Tue/Thu 6-8pm, intramural ultimate on weekends...", tier: 3 },
+  { kind: "textarea", key: "workStatus", prompt: "Do you work or have a side hustle alongside school? How many hours a week?", placeholder: "Barista at campus cafe, ~12 hrs/week", tier: 3 },
+  { kind: "textarea", key: "family", prompt: "Tell me a bit about your family. Who's close, who you talk to often, anything I should know.", placeholder: "Mom and dad in Chicago, older sister in NYC, call Sunday nights...", tier: 3 },
+  { kind: "textarea", key: "socialLife", prompt: "What's your social life like? Who do you spend time with and what do you like to do?", placeholder: "Hang with roommates, weekly dinner with the same 4 friends, occasional shows...", tier: 3 },
+  { kind: "textarea", key: "careerGoal", prompt: "What are you hoping to do after college? Career, grad school, gap year, undecided. Anything goes.", placeholder: "Aiming for product management at a tech company. Open to consulting too.", tier: 3 },
+  { kind: "textarea", key: "academicChallenges", prompt: "What's hardest for you academically? Classes that trip you up, habits you struggle with, etc.", placeholder: "Procrastinate on reading-heavy classes, math comes slow...", tier: 3 },
+  { kind: "textarea", key: "stressBurnout", prompt: "When you get stressed or burnt out, what does that look like for you? What helps you reset?", placeholder: "Skip meals, doom-scroll. Walks and calling mom help.", tier: 3 },
+  { kind: "textarea", key: "anythingElse", prompt: "Anything else you want me to know? Goals, habits, pressure points, anything.", tier: "tail" },
 ];
 
 type FormState = {
@@ -276,6 +297,7 @@ type FormState = {
   checkinFrequency: string[];
   integrationsWanted: string[];
   classes: ClassEntry[];
+  wantTier2: "" | "yes" | "no";
   wantDeepDive: "" | "yes" | "no";
   year: string;
   major: string;
@@ -309,6 +331,7 @@ const EMPTY: FormState = {
   checkinFrequency: [],
   integrationsWanted: [],
   classes: [],
+  wantTier2: "",
   wantDeepDive: "",
   year: "",
   major: "",
@@ -352,7 +375,7 @@ function formatClassesForLegacy(classes: ClassEntry[]): string {
       const bits = [c.name, c.days, c.time, c.location, c.professor, c.sku]
         .map((s) => s.trim())
         .filter(Boolean);
-      return bits.join(" — ");
+      return bits.join(" - ");
     })
     .join("; ");
 }
@@ -408,11 +431,15 @@ export function ConversationalOnboard({
   const displayFirstName = (form.firstName?.trim() || knownFirstName?.trim() || "there");
   const displayBotName = (form.agentName?.trim() || "your College Agent");
 
-  // Filter out (a) deep-dive steps when the student declined and (b) any step whose key
-  // is already populated by `prefill` (pre-payment /build form). Memoised so identity is
-  // stable for the slice/indexing below.
+  // Filter steps based on the student's branch answers and what we already know from
+  // pre-payment lead capture. Three filters layered:
+  //   (1) Step prefilled by /build leads → skip it (no duplicate question).
+  //   (2) wantTier2 === "no" → drop everything tagged tier 2 / 3 / tail. The branch is
+  //       then the LAST visible step, so Continue becomes Finish and the student exits
+  //       gracefully with just the basics on file.
+  //   (3) wantDeepDive === "no" → drop tier-3 steps (the deeper questions). Tier 2 +
+  //       the closing "anything else" still show.
   const visibleSteps = useMemo(() => {
-    const wants = form.wantDeepDive === "yes";
     const prefilledKeys = new Set<string>();
     if (prefill) {
       for (const k of PREFILL_KEYS) {
@@ -420,11 +447,16 @@ export function ConversationalOnboard({
       }
     }
     return STEPS.filter((s) => {
-      if ("deepDive" in s && s.deepDive && !wants) return false;
       if ((s.kind === "text" || s.kind === "textarea") && prefilledKeys.has(s.key)) return false;
+      const tier = "tier" in s ? s.tier : undefined;
+      // Default is to SHOW tier 2 / 3 / tail. Only hide when the student explicitly
+      // tapped "no" on the matching branch, so the branch step's CTA stays
+      // "Continue" before they pick (and flips to "Finish" once they say no).
+      if (form.wantTier2 === "no" && (tier === 2 || tier === 3 || tier === "tail")) return false;
+      if (form.wantDeepDive === "no" && tier === 3) return false;
       return true;
     });
-  }, [form.wantDeepDive, prefill]);
+  }, [form.wantTier2, form.wantDeepDive, prefill]);
 
   // Inject Fraunces + DM Sans (match the Welcome card's vibe).
   useEffect(() => {
@@ -499,8 +531,9 @@ export function ConversationalOnboard({
     if (step.kind === "info") return "Got it.";
     if (step.kind === "image") return avatarFile ? avatarFile.name : "(using the default bot)";
     if (step.kind === "branch") {
-      if (form.wantDeepDive === "yes") return "Yes, let's keep going.";
-      if (form.wantDeepDive === "no") return "No, that's enough for now.";
+      const v = form[step.key];
+      if (v === "yes") return step.yesLabel ?? "Yes";
+      if (v === "no") return step.noLabel ?? "No";
       return "(skipped)";
     }
     if (step.kind === "classList") {
@@ -524,7 +557,10 @@ export function ConversationalOnboard({
   function isAnswered(step: Step): boolean {
     if (step.kind === "intro" || step.kind === "info") return true;
     if (step.kind === "image") return !!avatarFile;
-    if (step.kind === "branch") return form.wantDeepDive === "yes" || form.wantDeepDive === "no";
+    if (step.kind === "branch") {
+      const v = form[step.key];
+      return v === "yes" || v === "no";
+    }
     if (step.kind === "classList") return form.classes.length > 0;
     const value = form[step.key as keyof FormState];
     if (Array.isArray(value)) return value.length > 0;
@@ -536,7 +572,8 @@ export function ConversationalOnboard({
     if (current.kind === "image") return null;
     if (current.kind === "classList") return null;
     if (current.kind === "branch") {
-      if (form.wantDeepDive !== "yes" && form.wantDeepDive !== "no") return "Pick one.";
+      const v = form[current.key];
+      if (v !== "yes" && v !== "no") return "Pick one.";
       return null;
     }
     if (!current.required) return null;
@@ -593,6 +630,7 @@ export function ConversationalOnboard({
           // structured list also rides along under `classes`.
           currentClasses: formatClassesForLegacy(form.classes),
           classes: form.classes,
+          wantTier2: form.wantTier2,
           wantDeepDive: form.wantDeepDive,
           year: form.year.trim(),
           major: form.major.trim(),
@@ -790,7 +828,7 @@ export function ConversationalOnboard({
 }
 
 function ctaLabel(step: Step, isLast: boolean, form: FormState): string {
-  if (step.kind === "intro") return "I'm ready";
+  if (step.kind === "intro") return "Let's do it";
   if (step.kind === "info") return "Got it";
   if (step.kind === "classList") return form.classes.length ? (isLast ? "Finish" : "Continue") : "Skip for now";
   if (isLast) return "Finish";
@@ -896,13 +934,13 @@ function Input({
           { value: "yes" as const, label: yesLabel },
           { value: "no" as const, label: noLabel },
         ].map((opt) => {
-          const selected = form.wantDeepDive === opt.value;
+          const selected = form[step.key] === opt.value;
           return (
             <button
               key={opt.value}
               type="button"
               disabled={disabled}
-              onClick={() => setField("wantDeepDive", opt.value)}
+              onClick={() => setField(step.key, opt.value)}
               style={{
                 fontFamily: "'DM Sans', system-ui, sans-serif",
                 fontSize: 13,
