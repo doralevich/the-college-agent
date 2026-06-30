@@ -27,7 +27,7 @@ export default async function DashboardPage({ params }: Props) {
   // Shares the layout's memberships query within this request (React cache()).
   const workspace = (await getUserWorkspaces(user.id))[0] ?? null;
 
-  const [entRes, onboardRes, setupRes, agentRes] = await Promise.all([
+  const [entRes, onboardRes, setupRes, agentRes, leadRes] = await Promise.all([
     db.from("entitlements").select("status").eq("email", email).maybeSingle(),
     db.from("onboard_submissions").select("first_name, agent_name, avatar_url").eq("user_id", user.id).maybeSingle(),
     db.from("setup_submissions").select("user_id", { count: "exact", head: true }).eq("user_id", user.id),
@@ -42,6 +42,15 @@ export default async function DashboardPage({ params }: Props) {
           .limit(1)
           .maybeSingle()
       : Promise.resolve({ data: null }),
+    // Most-recent /build lead-capture row for this student, matched on either email field.
+    // Lets the conversational onboarding skip the questions we already asked pre-payment.
+    db
+      .from("leads")
+      .select("first_name, last_name, school_email, personal_email, mobile, school")
+      .or(`school_email.ilike.${email},personal_email.ilike.${email}`)
+      .order("captured_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   const paid = entRes.data?.status === "active";
@@ -56,6 +65,30 @@ export default async function DashboardPage({ params }: Props) {
   const firstName = (onboardRes.data?.first_name as string | undefined) ?? null;
   const avatarUrl = (onboardRes.data?.avatar_url as string | undefined) ?? null;
 
+  // Prefill the conversational onboarding from the /build lead row so we don't re-ask the
+  // student for fields they already gave us. The component drops any step whose value is
+  // already known here.
+  const lead = leadRes.data as
+    | {
+        first_name: string | null;
+        last_name: string | null;
+        school_email: string | null;
+        personal_email: string | null;
+        mobile: string | null;
+        school: string | null;
+      }
+    | null;
+  const onboardPrefill = lead
+    ? {
+        firstName: lead.first_name ?? "",
+        lastName: lead.last_name ?? "",
+        schoolEmail: lead.school_email ?? "",
+        personalEmail: lead.personal_email ?? "",
+        phone: lead.mobile ?? "",
+        school: lead.school ?? "",
+      }
+    : null;
+
   return (
     <DashboardClient
       paid={paid}
@@ -66,6 +99,7 @@ export default async function DashboardPage({ params }: Props) {
       agentName={agentName}
       avatarUrl={avatarUrl}
       userId={user.id}
+      onboardPrefill={onboardPrefill}
     />
   );
 }

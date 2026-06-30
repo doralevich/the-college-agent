@@ -328,6 +328,21 @@ const EMPTY: FormState = {
 
 type StoredProgress = { stepIdx: number; form: FormState };
 
+// Layer pre-payment lead values onto a FormState (typically EMPTY or a restored draft).
+// Only fields the student actually filled in pre-payment are copied — leaves whatever
+// they've since typed in the chat alone if they already overrode it.
+function seedFormFromPrefill(base: FormState, prefill: OnboardPrefill | null | undefined): FormState {
+  if (!prefill) return base;
+  const next: FormState = { ...base };
+  for (const k of PREFILL_KEYS) {
+    const v = (prefill[k] ?? "").trim();
+    if (v && !(base[k] as string).trim()) {
+      (next as Record<keyof OnboardPrefill, string>)[k] = v;
+    }
+  }
+  return next;
+}
+
 // Format a class list into the legacy `currentClasses` text blob so the existing
 // provisioner/SOUL.md path (which references currentClasses) keeps working unchanged.
 function formatClassesForLegacy(classes: ClassEntry[]): string {
@@ -342,10 +357,42 @@ function formatClassesForLegacy(classes: ClassEntry[]): string {
     .join("; ");
 }
 
-export function ConversationalOnboard({ userId, knownFirstName }: { userId: string; knownFirstName?: string | null }) {
+export type OnboardPrefill = {
+  firstName: string;
+  lastName: string;
+  schoolEmail: string;
+  personalEmail: string;
+  phone: string;
+  school: string;
+};
+
+// Keys we collected pre-payment on /build. When prefill has a non-empty value for one of
+// these, the matching step is dropped from the chat and its value lives in form state from
+// the first render — the student never sees a duplicate question for something they typed
+// in the build form.
+const PREFILL_KEYS: ReadonlyArray<keyof OnboardPrefill> = [
+  "firstName",
+  "lastName",
+  "schoolEmail",
+  "personalEmail",
+  "phone",
+  "school",
+];
+
+export function ConversationalOnboard({
+  userId,
+  knownFirstName,
+  prefill,
+}: {
+  userId: string;
+  knownFirstName?: string | null;
+  prefill?: OnboardPrefill | null;
+}) {
   const router = useRouter();
   const storageKey = `ca-onboard-progress:${userId}`;
-  const [form, setForm] = useState<FormState>(EMPTY);
+  // Initial form state already carries any pre-payment lead values so the submit payload
+  // is complete even though the student never sees those questions.
+  const [form, setForm] = useState<FormState>(() => seedFormFromPrefill(EMPTY, prefill));
   const [stepIdx, setStepIdx] = useState(0);
   const [restored, setRestored] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -361,12 +408,23 @@ export function ConversationalOnboard({ userId, knownFirstName }: { userId: stri
   const displayFirstName = (form.firstName?.trim() || knownFirstName?.trim() || "there");
   const displayBotName = (form.agentName?.trim() || "your College Agent");
 
-  // Filter out deep-dive steps when the student declined. Memoised so identity is
+  // Filter out (a) deep-dive steps when the student declined and (b) any step whose key
+  // is already populated by `prefill` (pre-payment /build form). Memoised so identity is
   // stable for the slice/indexing below.
   const visibleSteps = useMemo(() => {
     const wants = form.wantDeepDive === "yes";
-    return STEPS.filter((s) => !("deepDive" in s && s.deepDive) || wants);
-  }, [form.wantDeepDive]);
+    const prefilledKeys = new Set<string>();
+    if (prefill) {
+      for (const k of PREFILL_KEYS) {
+        if ((prefill[k] ?? "").trim()) prefilledKeys.add(k);
+      }
+    }
+    return STEPS.filter((s) => {
+      if ("deepDive" in s && s.deepDive && !wants) return false;
+      if ((s.kind === "text" || s.kind === "textarea") && prefilledKeys.has(s.key)) return false;
+      return true;
+    });
+  }, [form.wantDeepDive, prefill]);
 
   // Inject Fraunces + DM Sans (match the Welcome card's vibe).
   useEffect(() => {
@@ -390,7 +448,7 @@ export function ConversationalOnboard({ userId, knownFirstName }: { userId: stri
       const raw = localStorage.getItem(storageKey);
       if (raw) {
         const parsed = JSON.parse(raw) as Partial<StoredProgress>;
-        if (parsed.form) setForm({ ...EMPTY, ...parsed.form });
+        if (parsed.form) setForm(seedFormFromPrefill({ ...EMPTY, ...parsed.form }, prefill));
         if (typeof parsed.stepIdx === "number") {
           // Clamp into the visible-step range computed from the restored form.
           // visibleSteps isn't available here (we'd need to recompute), so cap at the

@@ -22,6 +22,7 @@ import { FilesView } from "@/components/files/FilesView";
 import { IntegrationsView } from "@/components/IntegrationsView";
 import { ShortcutsView } from "@/components/ShortcutsView";
 import { WelcomeView } from "@/components/WelcomeView";
+import type { OnboardPrefill } from "@/components/ConversationalOnboard";
 
 type Props = {
   paid: boolean;
@@ -37,9 +38,12 @@ type Props = {
   avatarUrl: string | null;
   // Auth user id — scopes the conversational onboarding's localStorage progress key.
   userId: string;
+  // Optional prefill from the pre-payment /build lead-capture form, so the conversational
+  // onboarding can skip questions we already asked. null when no lead row exists.
+  onboardPrefill: OnboardPrefill | null;
 };
 
-export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstName, agentName, avatarUrl, userId }: Props) {
+export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstName, agentName, avatarUrl, userId, onboardPrefill }: Props) {
   const hasAgent = !!agentId;
   const { userEmail } = useWorkspace();
   const router = useRouter();
@@ -221,6 +225,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
                   onboardDone={onboardDone}
                   hasAgent={hasAgent}
                   userId={userId}
+                  onboardPrefill={onboardPrefill}
                 />
               ) : !paid ? (
                 <BuildCta />
