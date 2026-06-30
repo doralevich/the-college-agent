@@ -15,8 +15,15 @@ type CatalogItem = {
 };
 
 const CATALOG: CatalogItem[] = [
-  { key: "ca_monthly", name: "The College Agent (Monthly)", amount: 2999, recurring: "month" },
-  { key: "ca_annual", name: "The College Agent (School Year)", amount: 29999, recurring: "year" },
+  // The College Agent — new pricing model: one-time plan fee + monthly hosting.
+  // Intro vs regular flips on the Aug 15 cutoff (lib/pricing/intro-cutoff.ts);
+  // the checkout route picks the right key per-request, but both stay seeded so
+  // either can resolve immediately.
+  { key: "ca_plan_intro", name: "The College Agent (Intro, thru Aug 15)", amount: 49900, recurring: false },
+  { key: "ca_plan_regular", name: "The College Agent (Plan)", amount: 59900, recurring: false },
+  { key: "ca_hosting", name: "The College Agent — Hosting", amount: 2500, recurring: "month" },
+  // Legacy configurator catalog (multi-tier /build configurator) — keep seeded for
+  // back-compat until those routes go away.
   { key: "plan_undergraduate", name: "The Undergraduate", amount: 19900, recurring: false },
   { key: "plan_graduate", name: "The Graduate", amount: 39900, recurring: false },
   { key: "plan_scholar", name: "The Scholar", amount: 59900, recurring: false },
@@ -29,7 +36,10 @@ const CATALOG: CatalogItem[] = [
   { key: "hosting_max", name: "Hosting - Max", amount: 9900, recurring: "month" },
 ];
 
-const ARCHIVED_KEYS = ["plan_basic", "support_6mo"];
+// Old recurring College Agent prices ($29.99/mo, $299.99/yr). The new model splits
+// the plan (one-time) from hosting (monthly), so these are deactivated. Existing
+// subscribers keep paying their original price until they cancel/migrate.
+const ARCHIVED_KEYS = ["plan_basic", "support_6mo", "ca_monthly", "ca_annual"];
 
 export type SeedRow = {
   key: string;

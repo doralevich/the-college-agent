@@ -5,6 +5,7 @@ import { DEFAULT_AGENT, shapeForHosting } from "@/config/agents";
 import { usdToMicros } from "@/lib/format";
 import { ApiError, json, route } from "@/lib/http";
 import { configureAgentFromIntake, readProvisioningIntake } from "@/lib/provisioning";
+import { sendWelcomeEmail } from "@/lib/email/welcome";
 
 // Auto-provision the student's Hermes agent. Triggered by the dashboard once they've
 // PAID (entitlement active) and completed BOTH onboarding steps. This is the system
@@ -25,6 +26,8 @@ export const POST = route(async () => {
   if (!workspaceId) throw new ApiError(400, "no_workspace", "No workspace for this account yet");
 
   // Already provisioned? Return it (idempotent — the checklist may fire more than once).
+  // The welcome email only fires the FIRST time we hit this path, so repeated calls don't
+  // spam the student.
   const { data: existing } = await db
     .from("agents")
     .select("agent37_id")
@@ -86,6 +89,15 @@ export const POST = route(async () => {
   // If this fails the agent still exists (operator fallback finishes it in /admin).
   const { configured, detail: configDetail } = await configureAgentFromIntake(agent.id, onboard, setup);
   if (!configured) console.error("[provision:configure]", agent.id, configDetail);
+
+  // Fire the student-facing welcome email. Best-effort: a delivery failure is logged
+  // inside sendWelcomeEmail but never breaks this route — the agent is built either way.
+  await sendWelcomeEmail({
+    accountEmail: user.email ?? "",
+    schoolEmail: (onboard.questionnaire?.schoolEmail as string | undefined) ?? null,
+    firstName: onboard.first_name,
+    agentName: onboard.agent_name || agent.name,
+  });
 
   return json({ ok: true, agent37_id: agent.id, configured, configDetail }, 201);
 });

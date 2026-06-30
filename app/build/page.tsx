@@ -1,14 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import BuildNav from "../components/BuildNav";
+import {
+  INTRO_CUTOFF_LABEL,
+  INTRO_PLAN_AMOUNT_CENTS,
+  REGULAR_PLAN_AMOUNT_CENTS,
+  HOSTING_AMOUNT_CENTS,
+  introPromoActive,
+} from "@/lib/pricing/intro-cutoff";
 
-// One plan, two billing cadences. The Stripe Price for each cadence is resolved
-// server-side from its lookup_key (ca_monthly / ca_annual) when we create the
-// Checkout Session — see app/api/build/checkout. We POST to that endpoint and
-// redirect to the returned session.url so students land on a Stripe Checkout
-// session WE created (with user_id metadata), not a static Payment Link — the
-// metadata is what lets the webhook activate the right account on payment.
+// Single price model: one-time plan fee ($499 intro thru Aug 15, $599 after)
+// PLUS recurring monthly hosting ($25/mo). The Stripe Checkout Session bundles
+// both line items (see app/api/build/checkout); we POST to that endpoint and
+// redirect to the returned session.url so students land on a session WE created
+// (with user_id metadata), not a static Payment Link — the metadata is what lets
+// the webhook activate the right account on payment.
 
 const FONTS_HREF =
   "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap";
@@ -21,9 +28,16 @@ type InfoForm = {
   mobile: string;
 };
 
+function formatPrice(cents: number): string {
+  const dollars = cents / 100;
+  return "$" + dollars.toLocaleString("en-US", {
+    minimumFractionDigits: dollars % 1 === 0 ? 0 : 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 export default function BuildPage() {
   const [step, setStep] = useState<"plan" | "info">("plan");
-  const [plan, setPlan] = useState<"annual" | "monthly">("annual");
   const [info, setInfo] = useState<InfoForm>({
     firstName: "",
     lastName: "",
@@ -53,10 +67,14 @@ export default function BuildPage() {
     };
   }, []);
 
-  const annual = plan === "annual";
-  const price = annual ? "$299.99" : "$29.99";
-  const period = annual ? "/ school year" : "/ month";
-  const savenote = annual ? "Save 17%, about $25/mo." : "Billed monthly. Switch to yearly anytime.";
+  // Intro promo status — read once per render. Server resolves the same flag at
+  // checkout time, so what the student sees on /build matches what they pay.
+  const promoActive = useMemo(() => introPromoActive(), []);
+  const planPriceCents = promoActive ? INTRO_PLAN_AMOUNT_CENTS : REGULAR_PLAN_AMOUNT_CENTS;
+  const planPrice = formatPrice(planPriceCents);
+  const regularPrice = formatPrice(REGULAR_PLAN_AMOUNT_CENTS);
+  const hostingPrice = formatPrice(HOSTING_AMOUNT_CENTS);
+  const savings = formatPrice(REGULAR_PLAN_AMOUNT_CENTS - INTRO_PLAN_AMOUNT_CENTS);
 
   function continueToInfo() {
     setError(null);
@@ -105,7 +123,7 @@ export default function BuildPage() {
       const res = await fetch("/api/build/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({}),
       });
       if (res.status === 401) {
         window.location.href = `/login?next=${encodeURIComponent("/build")}`;
@@ -139,24 +157,14 @@ export default function BuildPage() {
                   hosting tiers to figure out.
                 </p>
 
-                <div className="ca-toggle" role="group" aria-label="Billing period">
-                  <button
-                    type="button"
-                    className={annual ? "is-active" : undefined}
-                    aria-pressed={annual}
-                    onClick={() => setPlan("annual")}
-                  >
-                    School year<span className="ca-save-pill">Save 17%</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={!annual ? "is-active" : undefined}
-                    aria-pressed={!annual}
-                    onClick={() => setPlan("monthly")}
-                  >
-                    Monthly
-                  </button>
-                </div>
+                {promoActive && (
+                  <div className="ca-promo" role="status">
+                    <span className="ca-promo-pill">Intro pricing</span>
+                    <span>
+                      {planPrice} through {INTRO_CUTOFF_LABEL} — save {savings} vs the {regularPrice} regular price.
+                    </span>
+                  </div>
+                )}
 
                 <div className="ca-card">
                   <h3 className="ca-plan-name">The College Agent</h3>
@@ -165,10 +173,12 @@ export default function BuildPage() {
                   </p>
 
                   <div className="ca-price-row">
-                    <span className="ca-price">{price}</span>
-                    <span className="ca-period">{period}</span>
+                    <span className="ca-price">{planPrice}</span>
+                    <span className="ca-period">one-time</span>
                   </div>
-                  <p className="ca-savenote">{savenote}</p>
+                  <p className="ca-savenote">
+                    Plus {hostingPrice}/month for cloud hosting. Cancel hosting any time.
+                  </p>
 
                   <ul className="ca-features">
                     <li><span className="ca-check"><CheckIcon /></span>Your own AI Agent, built and set up for you</li>
@@ -272,8 +282,7 @@ export default function BuildPage() {
                   <div className="ca-plan-recap">
                     <span className="ca-plan-recap-label">Selected plan</span>
                     <span className="ca-plan-recap-value">
-                      The College Agent &middot; {annual ? "School year" : "Monthly"} &middot; {price}
-                      {annual ? "/yr" : "/mo"}
+                      The College Agent &middot; {planPrice} one-time + {hostingPrice}/mo hosting
                     </span>
                   </div>
 
@@ -457,6 +466,30 @@ export default function BuildPage() {
           font-weight: 500;
           margin: 0 0 24px;
           min-height: 18px;
+        }
+        .ca-promo {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 14px 18px;
+          margin: 0 0 18px;
+          background: #FEF3C7;
+          border: 1px solid #F59E0B;
+          border-radius: 12px;
+          color: #78350F;
+          font-size: 14px;
+          line-height: 1.45;
+        }
+        .ca-promo-pill {
+          flex: 0 0 auto;
+          background: #F59E0B;
+          color: #FFFFFF;
+          font-weight: 700;
+          font-size: 11px;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          padding: 4px 10px;
+          border-radius: 999px;
         }
 
         .ca-features { list-style: none; margin: 0 0 28px; padding: 0; }
