@@ -25,40 +25,30 @@ const T = {
 const FONTS_HREF =
   "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=DM+Sans:wght@400;500;600;700&display=swap";
 
-// Voice personas modelled on real, widely-admired public figures (6 men, 6 women).
-// The label drives SOUL.md tone — the agent emulates the style, not the person.
+// Voice options — pick any to blend (short labels, picked from the spec).
 const VOICE_OPTIONS = [
-  "Steve Jobs, visionary, direct, no filler (male)",
-  "Warren Buffett, folksy wisdom, plainspoken, patient (male)",
-  "Barack Obama, eloquent, measured, motivational (male)",
-  "Tim Ferriss, analytical, curious, productivity-focused (male)",
-  "David Attenborough, calm, curious, thoughtful (male)",
-  "Anthony Bourdain, candid, witty, honest (male)",
-  "Michelle Obama, warm, encouraging, principled (female)",
-  "Oprah Winfrey, empathetic, inspiring, big-hearted (female)",
-  "Brené Brown, vulnerable, candid, wise (female)",
-  "Sara Blakely, entrepreneurial, optimistic, grounded (female)",
-  "Mindy Kaling, witty, upbeat, relatable (female)",
-  "Serena Williams, fierce, motivational, focused (female)",
+  "Direct, no filler",
+  "Calm and thoughtful",
+  "Warm and encouraging",
+  "Witty, give me personality",
+  "Motivational and fierce",
+  "Plainspoken and patient",
+  "Candid and real",
+  "Analytical and curious",
 ];
 
 const CHECKIN_OPTIONS = [
-  "Multiple times throughout the day",
-  "Daily morning briefing",
+  "A few times a day",
+  "A morning briefing each day",
   "Twice a week",
-  "Weekly digest only",
+  "Weekly digest",
   "Only when I ask",
   "Real-time, whenever something comes up",
 ];
 
-const YEAR_OPTIONS = ["Freshman", "Sophomore", "Junior", "Senior", "Grad student", "Other"];
+const YEAR_OPTIONS = ["Freshman", "Sophomore", "Junior", "Senior", "5th year+", "Grad student"];
 
-// Broad coverage across every area a student might prioritise across their college years.
-// Multi-select with no max — pick as many as fit. A free-text note step right after lets
-// the student add anything that isn't captured here.
-// What "success" can mean by year-end across academics, social, health, career,
-// finances, and personal growth. Same multi-select + free-text-notes pattern as
-// PRIORITY_OPTIONS so the SOUL/USER builder keeps working unchanged.
+// Success picks — what "success" can mean by year-end. Spec list, verbatim.
 const SUCCESS_OPTIONS = [
   "Hit my target GPA",
   "Finish every class I'm enrolled in",
@@ -67,7 +57,7 @@ const SUCCESS_OPTIONS = [
   "Get into grad / professional school",
   "Build a consistent habit (sleep, gym, study)",
   "Finish a personal project",
-  "Improve a key skill (writing, coding, language…)",
+  "Improve a key skill",
   "Get fitter or healthier",
   "Protect my mental health",
   "Strengthen a key relationship",
@@ -78,46 +68,84 @@ const SUCCESS_OPTIONS = [
   "Show up consistently and finish what I start",
 ];
 
-// Most-relevant integrations for college students, drawn from
-// lib/integration-catalog.ts. Selected slugs are stored on the onboard
-// submission so the Integrations tab can spotlight them later. Labels match
-// the catalog's display names so it's obvious which app is which.
+// Trimmed to the realistic v1 set from the spec (each requires its own OAuth,
+// so don't promise more than we can wire). Selected labels land on the onboard
+// submission for the Integrations tab to spotlight.
 const INTEGRATION_OPTIONS = [
-  "Gmail",
-  "Outlook",
   "Google Calendar",
-  "Google Drive",
-  "Google Docs",
-  "OneDrive",
-  "Dropbox",
+  "Gmail",
   "Canvas",
-  "Google Classroom",
-  "Blackbaud",
-  "Microsoft Teams",
-  "Zoom",
-  "Notion",
-  "Discord",
+  "School email",
 ];
 
 const PRIORITY_OPTIONS = [
-  "Academic performance & grades",
-  "Mental health & wellbeing",
+  "Grades & academic performance",
+  "Skill building & certifications",
+  "Grad / professional school prep",
+  "Mental health",
   "Physical health, fitness & sleep",
+  "Spirituality, faith or values",
   "Friendships & social life",
   "Family relationships",
   "Romantic life & dating",
-  "Career prep & internships",
   "Networking & mentorship",
+  "Career prep & internships",
   "Leadership & extracurriculars",
-  "Skill building & certifications",
   "Financial stability & earning",
-  "Time management & organisation",
-  "Spirituality, faith or values",
-  "Creative projects & hobbies",
   "Travel or study abroad",
-  "Graduate school prep",
-  "Personal growth & self-discovery",
+  "Time management & organization",
+  "Creative projects & hobbies",
+  "Personal growth",
   "Community service & impact",
+];
+
+// Tier-3 short option lists (per spec).
+const LIVING_OPTIONS = ["Dorm / on-campus", "Off-campus apartment or house", "With family", "Greek house"];
+const GREEK_OPTIONS = ["Yes", "No", "Thinking about rushing"];
+const CLUBS_OPTIONS = [
+  "Academic / pre-professional",
+  "Cultural / identity",
+  "Service / volunteer",
+  "Arts / music / performance",
+  "Religious / spiritual",
+  "Political / advocacy",
+  "Recreational / hobby",
+  "Student government",
+  "None right now",
+];
+const SPORTS_OPTIONS = ["Varsity", "Club", "Intramural", "Not right now"];
+const WORK_OPTIONS = [
+  "No, school is my focus",
+  "Yes, under 10 hrs/week",
+  "Yes, 10-20 hrs/week",
+  "Yes, 20+ hrs/week",
+];
+const AFTER_COLLEGE_OPTIONS = [
+  "Straight into a career",
+  "Grad / professional school",
+  "Gap year",
+  "Start something of my own",
+  "Still figuring it out",
+];
+const ACADEMIC_STRUGGLES_OPTIONS = [
+  "Staying focused",
+  "Procrastination",
+  "Test anxiety",
+  "Writing / essays",
+  "Math-heavy classes",
+  "Reading load",
+  "Time management",
+  "Asking for help",
+];
+const STRESS_RESET_OPTIONS = [
+  "Exercise / moving",
+  "Sleep",
+  "Time with friends",
+  "Alone time",
+  "Music",
+  "Getting outside",
+  "Talking it out",
+  "Just powering through",
 ];
 
 // Each step in the conversation. `kind` controls the input UI and validation. `key`
@@ -151,23 +179,20 @@ type TextKey =
   | "personalEmail"
   | "phone"
   | "school"
-  | "topPriorityNotes"
-  | "agentHandleFirstNotes"
   | "major"
   | "minor"
-  | "greekLife"
+  | "anythingElse";
+type MultiKey =
+  | "checkinFrequency"
+  | "topPriority"
+  | "agentHandleFirst"
+  | "responseStyle"
+  | "integrationsWanted"
   | "clubs"
   | "sportsTeams"
-  | "livingSituation"
-  | "workStatus"
-  | "family"
-  | "socialLife"
-  | "careerGoal"
-  | "academicChallenges"
-  | "stressBurnout"
-  | "anythingElse";
-type MultiKey = "checkinFrequency" | "topPriority" | "agentHandleFirst" | "responseStyle" | "integrationsWanted";
-type SingleKey = "year";
+  | "academicStruggles"
+  | "stressReset";
+type SingleKey = "year" | "livingSituation" | "greekLife" | "workStatus" | "afterCollege";
 
 export type ClassEntry = {
   name: string;
@@ -208,76 +233,55 @@ const STEPS: Step[] = [
   {
     kind: "multi",
     key: "topPriority",
-    prompt:
-      "What are your primary priorities across your college years? Pick everything that matters: academics, social, health, career, the works. We'll add any specifics in the next step.",
+    prompt: "What matters most to you across your college years? Pick everything that fits.",
     options: PRIORITY_OPTIONS,
     required: true,
     tier: 2,
   },
   {
-    kind: "textarea",
-    key: "topPriorityNotes",
-    prompt:
-      "Anything to add to those priorities? Specifics about a particular semester, why something matters, or anything I missed in the chips above.",
-    placeholder: "Junior-year GPA matters most because of grad school apps. Want to keep weightlifting 4x/week. Save for a summer Europe trip...",
-    tier: 2,
-  },
-  {
     kind: "multi",
     key: "agentHandleFirst",
-    prompt:
-      "What does success look like at the end of this semester, and this year? Pick everything that fits: grades, projects, friendships, habits, anything. We'll add specifics in the next step.",
+    prompt: "What does success look like by the end of this semester and this year? Pick everything that fits.",
     options: SUCCESS_OPTIONS,
     required: true,
     tier: 2,
   },
-  {
-    kind: "textarea",
-    key: "agentHandleFirstNotes",
-    prompt:
-      "Add specifics where you can. For example: \"a 3.8 GPA\", \"a paid internship offer by April\", \"sleeping 7+ hours a night\", \"finishing the screenplay\". Anything you want me to hold you to.",
-    placeholder: "A 3.8 GPA, a paid internship offer by April, sleeping 7+ hours a night, finishing the screenplay...",
-    tier: 2,
-  },
-  { kind: "multi", key: "responseStyle", prompt: "How do you want me to sound when I talk to you? Pick everyone whose vibe fits and I'll blend them.", options: VOICE_OPTIONS, required: true, tier: 2 },
+  { kind: "multi", key: "responseStyle", prompt: "How do you want me to sound? Pick any that fit and I'll blend them.", options: VOICE_OPTIONS, required: true, tier: 2 },
   { kind: "multi", key: "checkinFrequency", prompt: "How often should I check in with you? Pick any that fit.", options: CHECKIN_OPTIONS, required: true, tier: 2 },
   {
     kind: "classList",
     key: "classes",
-    prompt: "Let's add your classes one at a time. For each one I'll grab the name, days, time, location, professor, and class SKU, then we'll add another until you're done.",
+    prompt: "Let's add your classes one at a time. Name, days, time, location, professor, class SKU. Add another until you're done.",
     tier: 2,
   },
   {
     kind: "multi",
     key: "integrationsWanted",
-    prompt:
-      "Which of these do you want me to connect to? Pick any. I'll surface them on your Integrations tab so you can hook them up in a click. You can also add thousands more from the sidebar later, or just ask me about it in chat.",
+    prompt: "Want to connect a few tools so I can see your world? We'll keep adding more software for you over time.",
     options: INTEGRATION_OPTIONS,
     tier: 2,
   },
   {
     kind: "branch",
     key: "wantDeepDive",
-    prompt:
-      "Want to get into some more detailed questions? They help me build a fuller picture of your life so I can be more useful. Should only take a couple more minutes.",
+    prompt: "Want to get into some more detailed questions? They help me build a fuller picture of your life. Just a couple more minutes.",
     yesLabel: "Yes, let's keep going",
     noLabel: "No, that's enough for now",
     tier: 2,
   },
-  // Deep-dive questions — only shown if wantDeepDive === "yes".
+  // Tier 3 — only shown if wantDeepDive === "yes". Spec-aligned: short radios and
+  // checkbox lists, no follow-up text prompts.
   { kind: "single", key: "year", prompt: "What year are you in?", options: YEAR_OPTIONS, tier: 3 },
   { kind: "text", key: "major", prompt: "What's your major?", placeholder: "e.g. Computer Science", tier: 3 },
-  { kind: "text", key: "minor", prompt: "Any minor or second focus?", placeholder: "e.g. Studio Art (or skip)", tier: 3 },
-  { kind: "text", key: "livingSituation", prompt: "Where are you living this year? Dorm, apartment, with family?", placeholder: "On-campus dorm with two roommates", tier: 3 },
-  { kind: "text", key: "greekLife", prompt: "Are you in a fraternity or sorority? If so, which?", placeholder: "e.g. Kappa Sigma, pledged this fall (or no)", tier: 3 },
-  { kind: "textarea", key: "clubs", prompt: "What clubs or student orgs are you part of? Include any leadership roles.", placeholder: "Robotics Club (treasurer), Investment Club, Outdoors Society...", tier: 3 },
-  { kind: "textarea", key: "sportsTeams", prompt: "Are you on any sports teams: varsity, club, or intramural? When do you practice and play?", placeholder: "Club soccer Tue/Thu 6-8pm, intramural ultimate on weekends...", tier: 3 },
-  { kind: "textarea", key: "workStatus", prompt: "Do you work or have a side hustle alongside school? How many hours a week?", placeholder: "Barista at campus cafe, ~12 hrs/week", tier: 3 },
-  { kind: "textarea", key: "family", prompt: "Tell me a bit about your family. Who's close, who you talk to often, anything I should know.", placeholder: "Mom and dad in Chicago, older sister in NYC, call Sunday nights...", tier: 3 },
-  { kind: "textarea", key: "socialLife", prompt: "What's your social life like? Who do you spend time with and what do you like to do?", placeholder: "Hang with roommates, weekly dinner with the same 4 friends, occasional shows...", tier: 3 },
-  { kind: "textarea", key: "careerGoal", prompt: "What are you hoping to do after college? Career, grad school, gap year, undecided. Anything goes.", placeholder: "Aiming for product management at a tech company. Open to consulting too.", tier: 3 },
-  { kind: "textarea", key: "academicChallenges", prompt: "What's hardest for you academically? Classes that trip you up, habits you struggle with, etc.", placeholder: "Procrastinate on reading-heavy classes, math comes slow...", tier: 3 },
-  { kind: "textarea", key: "stressBurnout", prompt: "When you get stressed or burnt out, what does that look like for you? What helps you reset?", placeholder: "Skip meals, doom-scroll. Walks and calling mom help.", tier: 3 },
+  { kind: "text", key: "minor", prompt: "Any minor or second focus?", placeholder: "e.g. Studio Art, or 'Not yet'", tier: 3 },
+  { kind: "single", key: "livingSituation", prompt: "Where are you living this year?", options: LIVING_OPTIONS, tier: 3 },
+  { kind: "single", key: "greekLife", prompt: "Are you in a fraternity or sorority?", options: GREEK_OPTIONS, tier: 3 },
+  { kind: "multi", key: "clubs", prompt: "What clubs or student orgs are you part of? Pick any that apply.", options: CLUBS_OPTIONS, tier: 3 },
+  { kind: "multi", key: "sportsTeams", prompt: "Are you on any sports teams? Pick any that apply.", options: SPORTS_OPTIONS, tier: 3 },
+  { kind: "single", key: "workStatus", prompt: "Do you work or have a side hustle alongside school?", options: WORK_OPTIONS, tier: 3 },
+  { kind: "single", key: "afterCollege", prompt: "What are you hoping to do after college?", options: AFTER_COLLEGE_OPTIONS, tier: 3 },
+  { kind: "multi", key: "academicStruggles", prompt: "What's hardest for you academically? Pick any that apply.", options: ACADEMIC_STRUGGLES_OPTIONS, tier: 3 },
+  { kind: "multi", key: "stressReset", prompt: "When you get stressed or burnt out, what helps you reset? Pick any that fit.", options: STRESS_RESET_OPTIONS, tier: 3 },
   { kind: "textarea", key: "anythingElse", prompt: "Anything else you want me to know? Goals, habits, pressure points, anything.", tier: "tail" },
 ];
 
@@ -290,9 +294,7 @@ type FormState = {
   phone: string;
   school: string;
   topPriority: string[];
-  topPriorityNotes: string;
   agentHandleFirst: string[];
-  agentHandleFirstNotes: string;
   responseStyle: string[];
   checkinFrequency: string[];
   integrationsWanted: string[];
@@ -302,16 +304,14 @@ type FormState = {
   year: string;
   major: string;
   minor: string;
-  greekLife: string;
-  clubs: string;
-  sportsTeams: string;
   livingSituation: string;
+  greekLife: string;
+  clubs: string[];
+  sportsTeams: string[];
   workStatus: string;
-  family: string;
-  socialLife: string;
-  careerGoal: string;
-  academicChallenges: string;
-  stressBurnout: string;
+  afterCollege: string;
+  academicStruggles: string[];
+  stressReset: string[];
   anythingElse: string;
 };
 
@@ -324,9 +324,7 @@ const EMPTY: FormState = {
   phone: "",
   school: "",
   topPriority: [],
-  topPriorityNotes: "",
   agentHandleFirst: [],
-  agentHandleFirstNotes: "",
   responseStyle: [],
   checkinFrequency: [],
   integrationsWanted: [],
@@ -336,16 +334,14 @@ const EMPTY: FormState = {
   year: "",
   major: "",
   minor: "",
-  greekLife: "",
-  clubs: "",
-  sportsTeams: "",
   livingSituation: "",
+  greekLife: "",
+  clubs: [],
+  sportsTeams: [],
   workStatus: "",
-  family: "",
-  socialLife: "",
-  careerGoal: "",
-  academicChallenges: "",
-  stressBurnout: "",
+  afterCollege: "",
+  academicStruggles: [],
+  stressReset: [],
   anythingElse: "",
 };
 
@@ -620,9 +616,7 @@ export function ConversationalOnboard({
           phone: form.phone.trim(),
           school: form.school.trim(),
           topPriority: form.topPriority,
-          topPriorityNotes: form.topPriorityNotes.trim(),
           agentHandleFirst: form.agentHandleFirst,
-          agentHandleFirstNotes: form.agentHandleFirstNotes.trim(),
           responseStyle: form.responseStyle,
           checkinFrequency: form.checkinFrequency,
           integrationsWanted: form.integrationsWanted,
@@ -635,16 +629,14 @@ export function ConversationalOnboard({
           year: form.year.trim(),
           major: form.major.trim(),
           minor: form.minor.trim(),
-          greekLife: form.greekLife.trim(),
-          clubs: form.clubs.trim(),
-          sportsTeams: form.sportsTeams.trim(),
-          livingSituation: form.livingSituation.trim(),
-          workStatus: form.workStatus.trim(),
-          family: form.family.trim(),
-          socialLife: form.socialLife.trim(),
-          careerGoal: form.careerGoal.trim(),
-          academicChallenges: form.academicChallenges.trim(),
-          stressBurnout: form.stressBurnout.trim(),
+          livingSituation: form.livingSituation,
+          greekLife: form.greekLife,
+          clubs: form.clubs,
+          sportsTeams: form.sportsTeams,
+          workStatus: form.workStatus,
+          afterCollege: form.afterCollege,
+          academicStruggles: form.academicStruggles,
+          stressReset: form.stressReset,
           anythingElse: form.anythingElse.trim(),
         }),
       );
@@ -1087,10 +1079,10 @@ function Input({
   if (step.kind === "multi") {
     const value = (form[step.key] as string[]) ?? [];
     const atLimit = !!step.max && value.length >= step.max;
-    // Pill rows with a leading checkbox square so the multi-select affordance is
-    // unmistakable. Whole row is the click target (label + box toggle together).
+    // Vertical aligned checkbox list: square checkbox on the left, label on the
+    // right, full row is the click target. Reads as a standard form, not a pill row.
     return (
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {step.options.map((opt) => {
           const selected = value.includes(opt);
           const tooMany = atLimit && !selected;
@@ -1107,39 +1099,41 @@ function Input({
               }}
               style={{
                 fontFamily: "'DM Sans', system-ui, sans-serif",
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: 500,
-                padding: "8px 12px 8px 10px",
-                borderRadius: 999,
-                border: `1.5px solid ${selected ? T.green : T.line}`,
-                background: selected ? T.greenSoft : T.card,
+                padding: "10px 12px",
+                borderRadius: 8,
+                border: "none",
+                background: selected ? T.greenSoft : "transparent",
                 color: T.ink,
                 cursor: disabled || tooMany ? "not-allowed" : "pointer",
                 opacity: tooMany ? 0.5 : 1,
-                transition: "background .15s, border-color .15s",
-                display: "inline-flex",
+                transition: "background .12s",
+                display: "flex",
                 alignItems: "center",
-                gap: 8,
+                gap: 12,
+                textAlign: "left",
+                width: "100%",
               }}
             >
               <span
                 aria-hidden
                 style={{
                   flex: "0 0 auto",
-                  width: 18,
-                  height: 18,
+                  width: 20,
+                  height: 20,
                   borderRadius: 5,
                   border: `1.5px solid ${selected ? T.green : T.line}`,
                   background: selected ? T.green : "#FFFFFF",
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  transition: "background .15s, border-color .15s",
+                  transition: "background .12s, border-color .12s",
                 }}
               >
-                {selected && <Check style={{ width: 12, height: 12, color: "#FFFFFF", strokeWidth: 3 }} />}
+                {selected && <Check style={{ width: 13, height: 13, color: "#FFFFFF", strokeWidth: 3 }} />}
               </span>
-              {opt}
+              <span style={{ flex: 1 }}>{opt}</span>
             </button>
           );
         })}
@@ -1148,30 +1142,65 @@ function Input({
   }
   if (step.kind === "single") {
     const value = form[step.key] as string;
+    // Vertical aligned radio list — same shape as the checkbox list, with a round
+    // bullet instead of a square. Pick-one semantics.
     return (
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {step.options.map((opt) => {
           const selected = value === opt;
           return (
             <button
               key={opt}
               type="button"
+              role="radio"
+              aria-checked={selected}
               disabled={disabled}
               onClick={() => setField(step.key, opt)}
               style={{
                 fontFamily: "'DM Sans', system-ui, sans-serif",
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: 500,
-                padding: "8px 14px",
-                borderRadius: 999,
-                border: `1.5px solid ${selected ? T.green : T.line}`,
-                background: selected ? T.green : T.card,
-                color: selected ? "#fff" : T.ink,
+                padding: "10px 12px",
+                borderRadius: 8,
+                border: "none",
+                background: selected ? T.greenSoft : "transparent",
+                color: T.ink,
                 cursor: disabled ? "not-allowed" : "pointer",
-                transition: "background .15s, color .15s, border-color .15s",
+                transition: "background .12s",
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                textAlign: "left",
+                width: "100%",
               }}
             >
-              {opt}
+              <span
+                aria-hidden
+                style={{
+                  flex: "0 0 auto",
+                  width: 20,
+                  height: 20,
+                  borderRadius: "50%",
+                  border: `1.5px solid ${selected ? T.green : T.line}`,
+                  background: "#FFFFFF",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "border-color .12s",
+                }}
+              >
+                {selected && (
+                  <span
+                    style={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: "50%",
+                      background: T.green,
+                    }}
+                  />
+                )}
+              </span>
+              <span style={{ flex: 1 }}>{opt}</span>
             </button>
           );
         })}
