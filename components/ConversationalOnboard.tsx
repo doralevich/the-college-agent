@@ -593,6 +593,12 @@ export function ConversationalOnboard({
     await submit();
   }
 
+  function goBack() {
+    if (stepIdx === 0) return;
+    setError(null);
+    setStepIdx((i) => Math.max(0, i - 1));
+  }
+
   async function submit() {
     setSubmitting(true);
     setError(null);
@@ -696,49 +702,51 @@ export function ConversationalOnboard({
         style={{
           background: T.card,
           width: "100%",
-          maxWidth: 640,
+          maxWidth: 620,
           border: `1px solid ${T.line}`,
-          borderRadius: 24,
+          borderRadius: 20,
           boxShadow: "0 1px 2px rgba(26,36,33,.04), 0 24px 60px -28px rgba(27,94,42,.28)",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
         }}
       >
-        <div style={{ padding: "20px 24px 14px", borderBottom: `1px solid ${T.line}`, display: "flex", alignItems: "center", gap: 12 }}>
-          <Avatar previewUrl={avatarPreview} />
-          <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontWeight: 600, fontSize: 17 }}>{displayBotName}</div>
-            <div style={{ fontSize: 12, color: T.inkSoft }}>Question {Math.min(stepIdx + 1, visibleSteps.length)} of {visibleSteps.length}</div>
+        {/* Progress bar — single thin line across the top of the card. */}
+        <div style={{ height: 4, background: T.greenSoft }}>
+          <div
+            style={{
+              width: `${progress}%`,
+              height: "100%",
+              background: T.green,
+              transition: "width .3s ease",
+            }}
+          />
+        </div>
+
+        <div style={{ padding: "44px 44px 28px", minHeight: 360 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: T.inkSoft, letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 16 }}>
+            Question {Math.min(stepIdx + 1, visibleSteps.length)} of {visibleSteps.length}
           </div>
-          <ProgressBar value={progress} />
-        </div>
+          <h1
+            style={{
+              fontFamily: "'Fraunces', Georgia, serif",
+              fontSize: 26,
+              fontWeight: 600,
+              lineHeight: 1.25,
+              letterSpacing: "-.01em",
+              color: T.ink,
+              margin: "0 0 28px",
+            }}
+          >
+            {current.prompt.replace("{firstName}", displayFirstName)}
+          </h1>
 
-        <div ref={scrollRef} style={{ flex: 1, padding: "22px 24px 8px", maxHeight: "62vh", minHeight: 380, overflowY: "auto" }}>
-          {visibleSteps.slice(0, stepIdx + 1).map((step, i) => {
-            const isCurrent = i === stepIdx;
-            const text = step.prompt.replace("{firstName}", displayFirstName);
-            return (
-              <div key={step.key + i} style={{ marginBottom: 18 }}>
-                <BotBubble previewUrl={avatarPreview}>{text}</BotBubble>
-                {!isCurrent && (
-                  <UserBubble>
-                    {answerSummary(step)}
-                  </UserBubble>
-                )}
-              </div>
-            );
-          })}
-          {submitting && (
-            <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 8, color: T.inkSoft, fontSize: 14 }}>
-              <Loader2 className="animate-spin" style={{ width: 14, height: 14 }} />
-              Saving your answers and building your agent… this can take a minute or two.
+          {submitting ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, color: T.inkSoft, fontSize: 14, padding: "16px 0" }}>
+              <Loader2 className="animate-spin" style={{ width: 16, height: 16 }} />
+              Saving your answers and building your agent. This can take a minute or two.
             </div>
-          )}
-        </div>
-
-        <div style={{ borderTop: `1px solid ${T.line}`, padding: "18px 24px 22px" }}>
-          {!submitting && (
+          ) : (
             <Input
               step={current}
               form={form}
@@ -764,48 +772,83 @@ export function ConversationalOnboard({
               removeClass={(idx) => setField("classes", form.classes.filter((_, i) => i !== idx))}
             />
           )}
-          {error && <p style={{ marginTop: 10, fontSize: 13, color: "#B23636" }}>{error}</p>}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14, gap: 12 }}>
-            <span style={{ fontSize: 12, color: T.inkSoft }}>
-              Your progress saves automatically. You can close this tab and come back later.
-            </span>
-            <button
-              type="button"
-              onClick={advance}
-              disabled={submitting || (isRequired(current) && !isAnswered(current))}
-              className="ca-onboard-cta"
-              style={{
-                border: "none",
-                cursor: submitting || (isRequired(current) && !isAnswered(current)) ? "not-allowed" : "pointer",
-                fontFamily: "'DM Sans', system-ui, sans-serif",
-                fontSize: 14,
-                fontWeight: 600,
-                color: "#fff",
-                background: T.green,
-                padding: "10px 22px",
-                borderRadius: 10,
-                opacity: submitting || (isRequired(current) && !isAnswered(current)) ? 0.55 : 1,
-                transition: "background .15s, opacity .15s",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                flexShrink: 0,
-              }}
-            >
-              {submitting
-                ? <Loader2 className="animate-spin" style={{ width: 14, height: 14 }} />
-                : ctaLabel(current, isLast, form)}
-              {!submitting && <Send style={{ width: 14, height: 14 }} />}
-            </button>
-          </div>
+
+          {error && <p style={{ marginTop: 14, fontSize: 13, color: "#B23636" }}>{error}</p>}
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "16px 44px 20px",
+            borderTop: `1px solid ${T.line}`,
+            gap: 12,
+          }}
+        >
+          <button
+            type="button"
+            onClick={goBack}
+            disabled={submitting || stepIdx === 0}
+            className="ca-onboard-back"
+            style={{
+              border: "none",
+              background: "transparent",
+              color: T.inkSoft,
+              fontFamily: "'DM Sans', system-ui, sans-serif",
+              fontSize: 14,
+              fontWeight: 500,
+              padding: "10px 14px",
+              cursor: submitting || stepIdx === 0 ? "not-allowed" : "pointer",
+              opacity: submitting || stepIdx === 0 ? 0.4 : 1,
+              borderRadius: 8,
+            }}
+          >
+            ← Back
+          </button>
+
+          <button
+            type="button"
+            onClick={advance}
+            disabled={submitting || (isRequired(current) && !isAnswered(current))}
+            className="ca-onboard-cta"
+            style={{
+              border: "none",
+              cursor: submitting || (isRequired(current) && !isAnswered(current)) ? "not-allowed" : "pointer",
+              fontFamily: "'DM Sans', system-ui, sans-serif",
+              fontSize: 15,
+              fontWeight: 600,
+              color: "#fff",
+              background: T.green,
+              padding: "12px 28px",
+              borderRadius: 10,
+              opacity: submitting || (isRequired(current) && !isAnswered(current)) ? 0.55 : 1,
+              transition: "background .15s, opacity .15s",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              flexShrink: 0,
+            }}
+          >
+            {submitting
+              ? <Loader2 className="animate-spin" style={{ width: 14, height: 14 }} />
+              : ctaLabel(current, isLast, form)}
+          </button>
+        </div>
+
+        <div style={{ padding: "10px 44px 18px", textAlign: "center", fontSize: 12, color: T.inkSoft }}>
+          Saves automatically. Close this tab and come back any time.
         </div>
       </div>
 
       <style>{`
         .ca-onboard-cta:hover:not(:disabled) { background: ${T.greenDeep}; }
         .ca-onboard-cta:focus-visible { outline: 3px solid ${T.greenSoft}; outline-offset: 3px; }
+        .ca-onboard-back:hover:not(:disabled) { background: ${T.greenSoft}; color: ${T.ink}; }
         @media (max-width: 560px) {
-          .ca-onboard-card { border-radius: 16px !important; }
+          .ca-onboard-card { border-radius: 14px !important; }
+          .ca-onboard-card h1 { font-size: 22px !important; }
+          .ca-onboard-card > div { padding-left: 22px !important; padding-right: 22px !important; }
         }
       `}</style>
     </div>
@@ -1030,10 +1073,10 @@ function Input({
         style={{
           width: "100%",
           fontFamily: "'DM Sans', system-ui, sans-serif",
-          fontSize: 15,
-          padding: "12px 14px",
+          fontSize: 17,
+          padding: "14px 16px",
           border: `1.5px solid ${T.line}`,
-          borderRadius: 12,
+          borderRadius: 10,
           outline: "none",
           background: T.card,
           color: T.ink,
