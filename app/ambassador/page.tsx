@@ -608,6 +608,38 @@ export default function AmbassadorPage() {
           .why-use-list {
             grid-template-columns: 1fr;
           }
+          /* Mobile hero: tighter spacing, smaller heading that wraps cleanly,
+             everything centered. */
+          .affiliate-hero {
+            padding: 40px 0 44px;
+          }
+          .hero-shell.hero-with-bot {
+            gap: 28px;
+          }
+          .hero-badge {
+            margin-bottom: 18px;
+            font-size: 10px;
+          }
+          .affiliate-copy h1 {
+            font-size: clamp(28px, 8vw, 40px);
+            line-height: 1.08;
+            margin-bottom: 16px;
+          }
+          .hero-tagline {
+            font-size: 16px !important;
+          }
+          .affiliate-copy p {
+            font-size: 15.5px;
+            line-height: 1.65;
+            margin-bottom: 26px;
+          }
+          .affiliate-actions {
+            justify-content: center;
+            width: 100%;
+          }
+          .hero-bot img {
+            max-width: 200px;
+          }
         }
         .why-use-card {
           display: flex;
