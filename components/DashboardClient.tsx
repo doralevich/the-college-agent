@@ -405,7 +405,7 @@ function StepsView({
         >
           {!onboardDone && (
             <Button asChild className="mt-4">
-              <Link href="/onboard">Get started</Link>
+              <Link href="/dashboard/welcome">Get started</Link>
             </Button>
           )}
         </StepRow>
