@@ -711,20 +711,23 @@ export function ConversationalOnboard({
           overflow: "hidden",
         }}
       >
-        {/* Progress bar — a visible timeline across the top of the card. */}
-        <div style={{ height: 8, background: T.greenSoft }}>
-          <div
-            style={{
-              width: `${Math.max(progress, 3)}%`,
-              height: "100%",
-              background: T.green,
-              borderRadius: "0 4px 4px 0",
-              transition: "width .3s ease",
-            }}
-          />
+        {/* Progress bar — a rounded pill inside the top padding so the card's
+            corner radius never clips it. */}
+        <div style={{ padding: "24px 44px 0" }}>
+          <div style={{ height: 8, background: T.greenSoft, borderRadius: 999, overflow: "hidden" }}>
+            <div
+              style={{
+                width: `${Math.max(progress, 4)}%`,
+                height: "100%",
+                background: T.green,
+                borderRadius: 999,
+                transition: "width .3s ease",
+              }}
+            />
+          </div>
         </div>
 
-        <div style={{ padding: "32px 44px 28px", minHeight: 360, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div style={{ padding: "28px 44px", minHeight: 320, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           {/* Mascot + question header, side by side. */}
           <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 26 }}>
             <div
