@@ -82,8 +82,8 @@ export default function Explainer() {
               The difference is not another chatbot. It is a personalized agent that knows the student's real college life and keeps the work moving.
             </p>
           </div>
-          {/* Column headers */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 12, paddingTop: 16 }}>
+          {/* Column headers — hidden on mobile where the layout stacks. */}
+          <div className="ba-headers">
             <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: "rgba(11,23,41,.38)", paddingLeft: 4 }}>Without</div>
             <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--green)", paddingLeft: 4 }}>With The College Agent</div>
           </div>
@@ -91,12 +91,14 @@ export default function Explainer() {
           {/* Rows */}
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {SCENARIOS.map((s, i) => (
-              <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+              <div key={i} className="ba-row">
                 <div className="ba-card ba-card-before">
+                  <span className="ba-tag ba-tag-before">Without</span>
                   <div className="ba-headline ba-headline-before">{s.before.headline}</div>
                   <p className="ba-body ba-body-before">{s.before.body}</p>
                 </div>
                 <div className="ba-card ba-card-after">
+                  <span className="ba-tag ba-tag-after">With The College Agent</span>
                   <div className="ba-headline ba-headline-after">{s.after.headline}</div>
                   <p className="ba-body ba-body-after">{s.after.body}</p>
                 </div>
@@ -105,6 +107,30 @@ export default function Explainer() {
           </div>
         </div>
         <style>{`
+          .ba-headers {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 12px;
+            padding-top: 16px;
+          }
+          .ba-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+          }
+          /* Per-card tag — only shown on mobile, where the paired header row is hidden. */
+          .ba-tag {
+            display: none;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+          }
+          .ba-tag-before { color: rgba(11,23,41,.4); }
+          .ba-tag-after { color: var(--green); }
           .ba-card { border-radius: 16px; padding: 30px 32px; }
           .ba-card-before {
             background: rgba(255,255,255,.62);
@@ -132,6 +158,10 @@ export default function Explainer() {
           @media (max-width: 680px) {
             .ba-card { padding: 22px 20px; }
             .ba-headline { font-size: 18px; }
+            /* Stack to a single column; hide the paired header, show per-card tags. */
+            .ba-headers { display: none; }
+            .ba-row { grid-template-columns: 1fr; gap: 12px; }
+            .ba-tag { display: inline-block; }
           }
         `}</style>
       </section>
