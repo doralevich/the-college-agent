@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Check, Loader2, Plus, Send, X } from "lucide-react";
+import { Check, Loader2, Plus, Search, Send, X } from "lucide-react";
+import majorsData from "@/data/college-agent-majors.json";
 
 // Conversational replacement for /onboard. Frankenstein asks one question at a time;
 // the student answers with text or chip-picks. Each answer is persisted to
@@ -148,6 +149,10 @@ const STRESS_RESET_OPTIONS = [
   "Just powering through",
 ];
 
+// Curated major list (grouped) loaded from data/college-agent-majors.json. The
+// "Other" group already contains "Undecided" and "Other (type your own)".
+const MAJOR_GROUPS: MajorGroup[] = (majorsData as { groups: MajorGroup[] }).groups;
+
 // Each step in the conversation. `kind` controls the input UI and validation. `key`
 // matches the form-field name the existing /api/onboard-submit endpoint reads.
 // `tier: 2` -> shown only when wantTier2 === "yes"  (priorities, voice, classes, etc.)
@@ -159,6 +164,11 @@ type Step =
   | { kind: "textarea"; key: TextKey; prompt: string; placeholder?: string; required?: boolean; tier?: Tier }
   | { kind: "multi"; key: MultiKey; prompt: string; options: string[]; max?: number; required?: boolean; tier?: Tier }
   | { kind: "single"; key: SingleKey; prompt: string; options: string[]; required?: boolean; tier?: Tier }
+  // School typeahead backed by /api/schools (College Scorecard proxy).
+  | { kind: "typeahead"; key: TextKey; prompt: string; placeholder?: string; required?: boolean; tier?: Tier }
+  // Grouped dropdown with search (majors/minors). extraOptions inject non-major
+  // choices like "Not yet" / "None" at the top of the list.
+  | { kind: "select"; key: TextKey; prompt: string; placeholder?: string; groups: MajorGroup[]; extraOptions?: string[]; required?: boolean; tier?: Tier }
   | { kind: "image"; key: "avatarFile"; prompt: string; required?: boolean }
   | { kind: "intro"; key: "__intro"; prompt: string }
   // Read-only message bubble (no input, no answer). Used to set up a section.
@@ -168,6 +178,8 @@ type Step =
   | { kind: "branch"; key: BranchKey; prompt: string; yesLabel?: string; noLabel?: string; tier?: Tier }
   // Repeating list of classes — name + days + time + location + professor + SKU.
   | { kind: "classList"; key: "classes"; prompt: string; tier?: Tier };
+
+type MajorGroup = { label: string; majors: string[] };
 
 type BranchKey = "wantTier2" | "wantDeepDive";
 
@@ -218,7 +230,7 @@ const STEPS: Step[] = [
   { kind: "image", key: "avatarFile", prompt: "Want to give me a face? Upload an image (PNG or JPG), or skip and I'll use the default bot. You can always change this later." },
   { kind: "text", key: "firstName", prompt: "And what should I call you? Just your first name is perfect.", placeholder: "Your first name", required: true },
   { kind: "text", key: "lastName", prompt: "And your last name", placeholder: "Your last name", required: true },
-  { kind: "text", key: "school", prompt: "What school do you go to?", placeholder: "Start typing your school...", required: true },
+  { kind: "typeahead", key: "school", prompt: "What school do you go to?", placeholder: "Start typing your school...", required: true },
   { kind: "text", key: "schoolEmail", prompt: "What's your school email?", placeholder: "you@school.edu", inputType: "email", required: true },
   { kind: "text", key: "personalEmail", prompt: "What's your personal email?", placeholder: "you@email.com", inputType: "email" },
   { kind: "text", key: "phone", prompt: "What's your mobile number?", placeholder: "(555) 555-5555", inputType: "tel", required: true },
@@ -265,8 +277,8 @@ const STEPS: Step[] = [
   // Tier 3 — only shown if wantDeepDive === "yes". Spec-aligned: short radios and
   // checkbox lists, no follow-up text prompts.
   { kind: "single", key: "year", prompt: "What year are you in?", options: YEAR_OPTIONS, tier: 3 },
-  { kind: "text", key: "major", prompt: "What's your major?", placeholder: "e.g. Computer Science", tier: 3 },
-  { kind: "text", key: "minor", prompt: "Any minor or second focus?", placeholder: "e.g. Studio Art, or 'Not yet'", tier: 3 },
+  { kind: "select", key: "major", prompt: "What's your major?", placeholder: "Search majors...", groups: MAJOR_GROUPS, tier: 3 },
+  { kind: "select", key: "minor", prompt: "Any minor or second focus?", placeholder: "Search minors...", groups: MAJOR_GROUPS, extraOptions: ["Not yet", "None"], tier: 3 },
   { kind: "single", key: "livingSituation", prompt: "Where are you living this year?", options: LIVING_OPTIONS, tier: 3 },
   { kind: "single", key: "greekLife", prompt: "Are you in a fraternity or sorority?", options: GREEK_OPTIONS, tier: 3 },
   { kind: "multi", key: "clubs", prompt: "What clubs or student orgs are you part of? Pick any that apply.", options: CLUBS_OPTIONS, tier: 3 },
@@ -436,7 +448,7 @@ export function ConversationalOnboard({
       }
     }
     return STEPS.filter((s) => {
-      if ((s.kind === "text" || s.kind === "textarea") && prefilledKeys.has(s.key)) return false;
+      if ((s.kind === "text" || s.kind === "textarea" || s.kind === "typeahead") && prefilledKeys.has(s.key)) return false;
       const tier = "tier" in s ? s.tier : undefined;
       // Default is to SHOW tier 2 / 3 / tail. Only hide when the student explicitly
       // tapped "no" on the matching branch, so the branch step's CTA stays
@@ -566,7 +578,7 @@ export function ConversationalOnboard({
       return null;
     }
     if (!current.required) return null;
-    if (current.kind === "text" || current.kind === "textarea") {
+    if (current.kind === "text" || current.kind === "textarea" || current.kind === "typeahead" || current.kind === "select") {
       const v = String(form[current.key] || "").trim();
       if (!v) return "This one's required.";
       if (current.kind === "text" && current.inputType === "email" && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) {
@@ -1140,6 +1152,28 @@ function Input({
       />
     );
   }
+  if (step.kind === "typeahead") {
+    return (
+      <SchoolTypeahead
+        value={form[step.key] as string}
+        placeholder={step.placeholder}
+        disabled={disabled}
+        onChange={(v) => setField(step.key, v)}
+      />
+    );
+  }
+  if (step.kind === "select") {
+    return (
+      <MajorSelect
+        value={form[step.key] as string}
+        placeholder={step.placeholder}
+        groups={step.groups}
+        extraOptions={step.extraOptions}
+        disabled={disabled}
+        onChange={(v) => setField(step.key, v)}
+      />
+    );
+  }
   if (step.kind === "multi") {
     const value = (form[step.key] as string[]) ?? [];
     const atLimit = !!step.max && value.length >= step.max;
@@ -1409,5 +1443,356 @@ function ClassListInput({
         </button>
       </div>
     </div>
+  );
+}
+
+// School typeahead — queries /api/schools (College Scorecard proxy) as the student
+// types and shows matching institutions. Selecting one stores its name; the student
+// can also just type a school we don't return and keep it (free-text fallback).
+function SchoolTypeahead({
+  value,
+  placeholder,
+  disabled,
+  onChange,
+}: {
+  value: string;
+  placeholder?: string;
+  disabled: boolean;
+  onChange: (v: string) => void;
+}) {
+  const [query, setQuery] = useState(value);
+  const [results, setResults] = useState<{ id: number; name: string; city: string; state: string }[]>([]);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
+
+  // Debounced fetch. Skips queries under 2 chars (matches the API's own guard) and
+  // when the box is showing an already-selected value.
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 2) {
+      setResults([]);
+      return;
+    }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/schools?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        if (!cancelled) setResults(Array.isArray(data) ? data : []);
+      } catch {
+        if (!cancelled) setResults([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }, 220);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [query]);
+
+  // Close the dropdown on outside click.
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  return (
+    <div ref={boxRef} style={{ position: "relative", width: "100%" }}>
+      <input
+        type="text"
+        autoFocus
+        placeholder={placeholder}
+        value={query}
+        disabled={disabled}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          onChange(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        className="ca-onboard-input"
+        style={{
+          width: "100%",
+          fontFamily: "'DM Sans', system-ui, sans-serif",
+          fontSize: 17,
+          padding: "14px 16px",
+          border: `1.5px solid ${T.line}`,
+          borderRadius: 10,
+          outline: "none",
+          background: T.card,
+          color: T.ink,
+        }}
+      />
+      {open && query.trim().length >= 2 && (results.length > 0 || loading) && (
+        <div
+          style={{
+            position: "absolute",
+            top: "calc(100% + 6px)",
+            left: 0,
+            right: 0,
+            zIndex: 20,
+            background: T.card,
+            border: `1.5px solid ${T.line}`,
+            borderRadius: 10,
+            boxShadow: "0 12px 30px -12px rgba(26,36,33,.25)",
+            maxHeight: 260,
+            overflowY: "auto",
+          }}
+        >
+          {loading && results.length === 0 ? (
+            <div style={{ padding: "12px 14px", fontSize: 14, color: T.inkSoft }}>Searching…</div>
+          ) : (
+            results.map((r) => (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => {
+                  onChange(r.name);
+                  setQuery(r.name);
+                  setOpen(false);
+                }}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  textAlign: "left",
+                  border: "none",
+                  background: "transparent",
+                  padding: "11px 14px",
+                  cursor: "pointer",
+                  fontFamily: "'DM Sans', system-ui, sans-serif",
+                  fontSize: 15,
+                  color: T.ink,
+                  borderBottom: `1px solid ${T.paper}`,
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = T.greenSoft)}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              >
+                <span style={{ fontWeight: 500 }}>{r.name}</span>
+                {(r.city || r.state) && (
+                  <span style={{ color: T.inkSoft, fontSize: 13 }}>
+                    {" "}
+                    · {[r.city, r.state].filter(Boolean).join(", ")}
+                  </span>
+                )}
+              </button>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Grouped, searchable dropdown for majors/minors. Renders a search box that filters
+// the curated list; picking an option stores its label. "Other (type your own)" lets
+// the student enter a value we don't list.
+function MajorSelect({
+  value,
+  placeholder,
+  groups,
+  extraOptions,
+  disabled,
+  onChange,
+}: {
+  value: string;
+  placeholder?: string;
+  groups: MajorGroup[];
+  extraOptions?: string[];
+  disabled: boolean;
+  onChange: (v: string) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const [customMode, setCustomMode] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  const q = query.trim().toLowerCase();
+  const filteredGroups = groups
+    .map((g) => ({ label: g.label, majors: g.majors.filter((m) => !q || m.toLowerCase().includes(q)) }))
+    .filter((g) => g.majors.length > 0);
+  const filteredExtras = (extraOptions ?? []).filter((o) => !q || o.toLowerCase().includes(q));
+
+  // Free-text entry once the student picks "Other (type your own)".
+  if (customMode) {
+    return (
+      <div style={{ width: "100%" }}>
+        <input
+          type="text"
+          autoFocus
+          placeholder="Type your major..."
+          value={value}
+          disabled={disabled}
+          onChange={(e) => onChange(e.target.value)}
+          className="ca-onboard-input"
+          style={{
+            width: "100%",
+            fontFamily: "'DM Sans', system-ui, sans-serif",
+            fontSize: 17,
+            padding: "14px 16px",
+            border: `1.5px solid ${T.line}`,
+            borderRadius: 10,
+            outline: "none",
+            background: T.card,
+            color: T.ink,
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => {
+            setCustomMode(false);
+            onChange("");
+          }}
+          style={{
+            marginTop: 10,
+            border: "none",
+            background: "transparent",
+            color: T.inkSoft,
+            fontSize: 13,
+            cursor: "pointer",
+            textDecoration: "underline",
+            textUnderlineOffset: 2,
+          }}
+        >
+          Back to the list
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={boxRef} style={{ position: "relative", width: "100%" }}>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setOpen((o) => !o)}
+        style={{
+          width: "100%",
+          textAlign: "left",
+          fontFamily: "'DM Sans', system-ui, sans-serif",
+          fontSize: 17,
+          padding: "14px 16px",
+          border: `1.5px solid ${T.line}`,
+          borderRadius: 10,
+          background: T.card,
+          color: value ? T.ink : T.inkSoft,
+          cursor: disabled ? "not-allowed" : "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        {value || placeholder || "Select…"}
+        <span style={{ color: T.inkSoft, fontSize: 12 }}>▾</span>
+      </button>
+      {open && (
+        <div
+          style={{
+            position: "absolute",
+            top: "calc(100% + 6px)",
+            left: 0,
+            right: 0,
+            zIndex: 20,
+            background: T.card,
+            border: `1.5px solid ${T.line}`,
+            borderRadius: 10,
+            boxShadow: "0 12px 30px -12px rgba(26,36,33,.25)",
+            maxHeight: 300,
+            overflowY: "auto",
+          }}
+        >
+          <div style={{ position: "sticky", top: 0, background: T.card, padding: 8, borderBottom: `1px solid ${T.paper}` }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", border: `1.5px solid ${T.line}`, borderRadius: 8 }}>
+              <Search style={{ width: 15, height: 15, color: T.inkSoft, flexShrink: 0 }} />
+              <input
+                type="text"
+                autoFocus
+                placeholder={placeholder}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                style={{
+                  border: "none",
+                  outline: "none",
+                  width: "100%",
+                  fontFamily: "'DM Sans', system-ui, sans-serif",
+                  fontSize: 15,
+                  background: "transparent",
+                  color: T.ink,
+                }}
+              />
+            </div>
+          </div>
+          {filteredExtras.map((opt) => (
+            <MajorOption key={opt} label={opt} onPick={() => { onChange(opt); setOpen(false); }} />
+          ))}
+          {filteredGroups.map((g) => (
+            <div key={g.label}>
+              <div style={{ padding: "8px 14px 4px", fontSize: 11, fontWeight: 700, color: T.inkSoft, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                {g.label}
+              </div>
+              {g.majors.map((m) => {
+                const isCustom = m.toLowerCase().startsWith("other");
+                return (
+                  <MajorOption
+                    key={m}
+                    label={m}
+                    onPick={() => {
+                      if (isCustom) {
+                        setCustomMode(true);
+                        onChange("");
+                      } else {
+                        onChange(m);
+                      }
+                      setOpen(false);
+                    }}
+                  />
+                );
+              })}
+            </div>
+          ))}
+          {filteredGroups.length === 0 && filteredExtras.length === 0 && (
+            <div style={{ padding: "12px 14px", fontSize: 14, color: T.inkSoft }}>No matches.</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MajorOption({ label, onPick }: { label: string; onPick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onPick}
+      style={{
+        display: "block",
+        width: "100%",
+        textAlign: "left",
+        border: "none",
+        background: "transparent",
+        padding: "10px 14px",
+        cursor: "pointer",
+        fontFamily: "'DM Sans', system-ui, sans-serif",
+        fontSize: 15,
+        color: T.ink,
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = T.greenSoft)}
+      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+    >
+      {label}
+    </button>
   );
 }
