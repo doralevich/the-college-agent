@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ChevronDown, ChevronRight, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
@@ -111,7 +111,7 @@ export function AdminWorkspacesView() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Workspaces</h1>
         <p className="text-sm text-muted-foreground">
-          All workspaces across the platform (newest 50). Instances are shown inline; collapse a row to hide them.
+          All workspaces across the platform (newest 50). Expand a card to see its instances.
         </p>
       </div>
 
@@ -122,97 +122,91 @@ export function AdminWorkspacesView() {
           <p className="text-sm text-muted-foreground">No workspaces yet.</p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-left text-xs text-muted-foreground">
-              <tr>
-                <th className="px-4 py-2 font-medium">Workspace</th>
-                <th className="px-4 py-2 font-medium">Owner</th>
-                <th className="px-4 py-2 font-medium">Members</th>
-                <th className="px-4 py-2 font-medium">Agents</th>
-                <th className="px-4 py-2 font-medium">Created</th>
-                <th className="px-4 py-2 text-right font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {workspaces.map((w) => {
-                const isOpen = expanded.has(w.id);
-                const detail = details[w.id];
-                return (
-                  <Fragment key={w.id}>
-                    <tr className="border-t [&>td]:align-middle">
-                      <td className="px-4 py-3">
-                        <button
-                          type="button"
-                          onClick={() => toggle(w.id)}
-                          className="flex items-center gap-2 text-left font-medium hover:text-primary"
-                          aria-expanded={isOpen}
-                        >
-                          {isOpen ? (
-                            <ChevronDown className="h-4 w-4 shrink-0" />
-                          ) : (
-                            <ChevronRight className="h-4 w-4 shrink-0" />
-                          )}
-                          <span className="truncate">{w.name}</span>
-                        </button>
-                        <div className="pl-6 font-mono text-xs text-muted-foreground">{w.id}</div>
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground">{w.owner_email ?? "-"}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{w.member_count}</td>
-                      <td className="px-4 py-3 text-muted-foreground">
-                        {w.agent_count === 0 ? (
-                          "0"
-                        ) : (
-                          <span>
-                            {w.agent_count}
-                            <span className="text-xs"> ({w.running_count} running)</span>
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground">{formatDate(w.created_at)}</td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button variant="outline" size="sm" onClick={() => setEditWs(w)}>
-                            <Pencil className="h-4 w-4" />
-                            Edit intake
-                          </Button>
-                          <CreateAgentButton
-                            workspaceId={w.id}
-                            onCreated={() => onCreated(w.id)}
-                            label="Create Hermes"
-                            size="sm"
-                          />
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-destructive hover:text-destructive"
-                            disabled={w.agent_count > 0}
-                            title={
-                              w.agent_count > 0
-                                ? "Delete this workspace's instances first"
-                                : "Delete workspace"
-                            }
-                            onClick={() => setDeleteWs(w)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            Delete
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {workspaces.map((w) => {
+            const isOpen = expanded.has(w.id);
+            const detail = details[w.id];
+            return (
+              <div key={w.id} className="flex flex-col rounded-xl border bg-card shadow-sm">
+                <div className="flex flex-1 flex-col gap-3 p-4">
+                  {/* Title + agent status */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="truncate font-semibold">{w.name}</div>
+                      <div className="truncate font-mono text-xs text-muted-foreground">{w.id}</div>
+                    </div>
+                    <span
+                      className={
+                        "shrink-0 rounded-full px-2 py-0.5 text-xs font-medium " +
+                        (w.agent_count === 0
+                          ? "bg-muted text-muted-foreground"
+                          : "bg-emerald-100 text-emerald-700")
+                      }
+                    >
+                      {w.agent_count === 0
+                        ? "No agent"
+                        : `${w.agent_count} agent${w.agent_count > 1 ? "s" : ""} · ${w.running_count} running`}
+                    </span>
+                  </div>
 
-                    {isOpen && (
-                      <tr className="border-t bg-muted/30">
-                        <td colSpan={6} className="px-4 py-3">
-                          <InstanceList detail={detail} onChanged={() => onCreated(w.id)} />
-                        </td>
-                      </tr>
-                    )}
-                  </Fragment>
-                );
-              })}
-            </tbody>
-          </table>
+                  {/* Meta */}
+                  <div className="space-y-1 text-sm text-muted-foreground">
+                    <div className="truncate">{w.owner_email ?? "No owner"}</div>
+                    <div className="flex items-center gap-3 text-xs">
+                      <span>{w.member_count} member{w.member_count === 1 ? "" : "s"}</span>
+                      <span>·</span>
+                      <span>{formatDate(w.created_at)}</span>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    <Button variant="outline" size="sm" onClick={() => setEditWs(w)}>
+                      <Pencil className="h-4 w-4" />
+                      Edit intake
+                    </Button>
+                    <CreateAgentButton
+                      workspaceId={w.id}
+                      onCreated={() => onCreated(w.id)}
+                      label="Create Hermes"
+                      size="sm"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      disabled={w.agent_count > 0}
+                      title={
+                        w.agent_count > 0
+                          ? "Delete this workspace's instances first"
+                          : "Delete workspace"
+                      }
+                      onClick={() => setDeleteWs(w)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Expandable instances */}
+                <button
+                  type="button"
+                  onClick={() => toggle(w.id)}
+                  className="flex items-center justify-center gap-1.5 border-t px-4 py-2 text-xs font-medium text-muted-foreground hover:bg-muted/50"
+                  aria-expanded={isOpen}
+                >
+                  {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                  {isOpen ? "Hide instances" : "Show instances"}
+                </button>
+                {isOpen && (
+                  <div className="border-t bg-muted/30 p-3">
+                    <InstanceList detail={detail} onChanged={() => onCreated(w.id)} />
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
