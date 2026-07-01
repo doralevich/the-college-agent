@@ -724,7 +724,7 @@ export function ConversationalOnboard({
           />
         </div>
 
-        <div style={{ padding: "32px 44px 28px", minHeight: 360 }}>
+        <div style={{ padding: "32px 44px 28px", minHeight: 360, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           {/* Mascot + question header, side by side. */}
           <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 26 }}>
             <div
