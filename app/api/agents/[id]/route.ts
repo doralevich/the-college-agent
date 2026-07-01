@@ -18,9 +18,15 @@ export const PATCH = route(async (request: Request, { params }: Ctx) => {
   return json({ id, name: trimmed });
 });
 
-export const DELETE = route(async (_request: Request, { params }: Ctx) => {
+export const DELETE = route(async (request: Request, { params }: Ctx) => {
   const { id } = await params;
   const { supabase, user, isPlatformAdmin } = await requireAgentAccess(id, "admin");
+
+  // Self-service delete from the student's own "Your Agent" view sends ?reonboard=1.
+  // That view always targets the CURRENT user's own agent, so clearing their intake is
+  // always correct there — even for platform-admin accounts testing as students. The
+  // /admin god-view omits the flag (the current user is the operator, not the owner).
+  const reonboard = new URL(request.url).searchParams.get("reonboard") === "1";
 
   // Tear down the Agent37 instance first: if this throws we abort before touching any
   // DB rows, leaving a clean "nothing happened" state rather than a billed orphan.
@@ -42,8 +48,9 @@ export const DELETE = route(async (_request: Request, { params }: Ctx) => {
   // re-provision a billed agent from saved answers. The technical setup (Telegram /
   // BYO keys) is preserved so they don't have to re-paste those. Runs BEFORE the row
   // delete so a mid-failure keeps `hasAgent` true (no re-provision). Operators deleting
-  // from /admin must NOT wipe that student's intake.
-  if (!isPlatformAdmin) await clearStudentIntake(user.id, ["onboard"]);
+  // from /admin must NOT wipe that student's intake — unless this is the student's own
+  // self-service "Your Agent" delete (reonboard=1), which always clears it.
+  if (reonboard || !isPlatformAdmin) await clearStudentIntake(user.id, ["onboard"]);
 
   await supabase.from("agents").delete().eq("agent37_id", id);
 

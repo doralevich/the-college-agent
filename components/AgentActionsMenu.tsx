@@ -49,6 +49,7 @@ export function AgentActionsMenu({
   onChanged,
   onChat,
   confirmDeleteDescription = "This permanently deletes the agent and its data. This cannot be undone.",
+  reonboardOnDelete = false,
 }: {
   agent: MergedAgent;
   role: Role;
@@ -59,6 +60,11 @@ export function AgentActionsMenu({
   // Copy for the delete confirmation. Defaults to the operator-grade wording; the
   // student view overrides it to explain the re-onboarding flow.
   confirmDeleteDescription?: string;
+  // Self-service ("Your Agent") delete: also clear the student's onboarding intake so
+  // they redo it before a new agent can be built. Distinguishes the student deleting
+  // their OWN agent from an operator deleting one in the /admin god-view (where the
+  // current user is the operator, not the agent's owner, so intake must be preserved).
+  reonboardOnDelete?: boolean;
 }) {
   const isAdmin = role === "admin";
   const running = agent.live_status === "running";
@@ -106,7 +112,8 @@ export function AgentActionsMenu({
   }
 
   async function remove() {
-    await apiFetch(`/api/agents/${agent.agent37_id}`, { method: "DELETE" });
+    const qs = reonboardOnDelete ? "?reonboard=1" : "";
+    await apiFetch(`/api/agents/${agent.agent37_id}${qs}`, { method: "DELETE" });
     toast.success("Agent deleted");
     onChanged();
   }

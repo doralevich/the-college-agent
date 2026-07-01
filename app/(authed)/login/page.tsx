@@ -119,8 +119,13 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center px-6">
       <div className="w-full max-w-sm space-y-6">
-        <div className="space-y-1 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">{branding.appName}</h1>
+        <div className="space-y-3 text-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo-college-agent.svg"
+            alt={branding.appName}
+            className="mx-auto h-7 w-auto"
+          />
           <p className="text-sm text-muted-foreground">{copy.subtitle}</p>
         </div>
 

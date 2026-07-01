@@ -184,7 +184,6 @@ export default function BuildPage() {
                     <li><span className="ca-check"><CheckIcon /></span>Your own AI Agent, built and set up for you</li>
                     <li><span className="ca-check"><CheckIcon /></span>Works on the web and Telegram, any device</li>
                     <li><span className="ca-check"><CheckIcon /></span>Connect your calendar, email, Canvas, and more</li>
-                    <li><span className="ca-check"><CheckIcon /></span>Cloud hosting included</li>
                     <li><span className="ca-check"><CheckIcon /></span>Cancel anytime, pause over summer</li>
                   </ul>
 
@@ -192,7 +191,7 @@ export default function BuildPage() {
                     Get started
                   </button>
 
-                  <p className="ca-trust">No setup fee &middot; Cancel anytime &middot; Secure checkout by Stripe</p>
+                  <p className="ca-trust">Secure checkout by Stripe</p>
 
                   <p className="ca-apinote">
                     <InfoIcon /> AI usage (API costs) is billed separately based on what you use.
@@ -620,17 +619,19 @@ export default function BuildPage() {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 6px;
-          font-size: 12.5px;
+          gap: 8px;
+          font-size: 13px;
+          font-weight: 600;
           line-height: 1.5;
-          color: var(--ca-body);
-          background: var(--ca-green-check);
+          color: #8a5a00;
+          background: #FEF3C7;
+          border: 1px solid #F59E0B;
           border-radius: 9px;
-          padding: 9px 12px;
+          padding: 11px 14px;
           margin: 14px 0 0;
           text-align: center;
         }
-        .ca-apinote svg { flex: 0 0 auto; width: 14px; height: 14px; color: var(--ca-green-dark); }
+        .ca-apinote svg { flex: 0 0 auto; width: 15px; height: 15px; color: #B45309; }
 
         .ca-next {
           font-size: 13px;

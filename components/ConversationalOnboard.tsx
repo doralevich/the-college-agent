@@ -704,11 +704,51 @@ export function ConversationalOnboard({
         fontFamily: "'DM Sans', system-ui, sans-serif",
         color: T.ink,
         margin: "-16px",
-        padding: "32px 4px",
+        padding: "40px 16px 32px",
         display: "flex",
-        justifyContent: "center",
+        flexDirection: "column",
+        alignItems: "center",
       }}
     >
+      {/* Welcome header above the wizard card. */}
+      <div className="ca-onboard-header" style={{ width: "100%", maxWidth: 620, textAlign: "center", marginBottom: 24 }}>
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            background: T.greenSoft,
+            color: T.greenDeep,
+            fontSize: 12,
+            fontWeight: 600,
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            padding: "6px 14px",
+            borderRadius: 999,
+            marginBottom: 16,
+          }}
+        >
+          Your intake
+        </div>
+        <h1
+          style={{
+            fontFamily: "'Fraunces', Georgia, serif",
+            fontSize: 32,
+            fontWeight: 600,
+            lineHeight: 1.15,
+            letterSpacing: "-.01em",
+            color: T.ink,
+            margin: "0 0 10px",
+          }}
+        >
+          Welcome{displayFirstName && displayFirstName !== "there" ? `, ${displayFirstName}` : ""}!
+        </h1>
+        <p style={{ fontSize: 16, lineHeight: 1.6, color: T.inkSoft, maxWidth: 500, margin: "0 auto" }}>
+          Let&apos;s build your College Agent. A few quick questions about you, your classes, and how you
+          like to work, so your agent is personalized from day one. It saves as you go.
+        </p>
+      </div>
+
       <div
         className="ca-onboard-card"
         style={{
@@ -889,6 +929,8 @@ export function ConversationalOnboard({
           .ca-onboard-card { border-radius: 14px !important; }
           .ca-onboard-card h1 { font-size: 22px !important; }
           .ca-onboard-card > div { padding-left: 22px !important; padding-right: 22px !important; }
+          .ca-onboard-header h1 { font-size: 26px !important; }
+          .ca-onboard-header p { font-size: 15px !important; }
         }
       `}</style>
     </div>
