@@ -711,35 +711,60 @@ export function ConversationalOnboard({
           overflow: "hidden",
         }}
       >
-        {/* Progress bar — single thin line across the top of the card. */}
-        <div style={{ height: 4, background: T.greenSoft }}>
+        {/* Progress bar — a visible timeline across the top of the card. */}
+        <div style={{ height: 8, background: T.greenSoft }}>
           <div
             style={{
-              width: `${progress}%`,
+              width: `${Math.max(progress, 3)}%`,
               height: "100%",
               background: T.green,
+              borderRadius: "0 4px 4px 0",
               transition: "width .3s ease",
             }}
           />
         </div>
 
-        <div style={{ padding: "44px 44px 28px", minHeight: 360 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: T.inkSoft, letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 16 }}>
-            Question {Math.min(stepIdx + 1, visibleSteps.length)} of {visibleSteps.length}
+        <div style={{ padding: "32px 44px 28px", minHeight: 360 }}>
+          {/* Mascot + question header, side by side. */}
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 26 }}>
+            <div
+              style={{
+                flex: "0 0 auto",
+                width: 52,
+                height: 52,
+                borderRadius: "50%",
+                background: T.greenSoft,
+                overflow: "hidden",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {avatarPreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={avatarPreview} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <Image src="/thecollegeagent.png" alt="" width={52} height={52} style={{ objectFit: "contain" }} />
+              )}
+            </div>
+            <div style={{ flex: 1, paddingTop: 2 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: T.inkSoft, letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 8 }}>
+                Question {Math.min(stepIdx + 1, visibleSteps.length)} of {visibleSteps.length}
+              </div>
+              <h1
+                style={{
+                  fontFamily: "'DM Sans', system-ui, sans-serif",
+                  fontSize: 18,
+                  fontWeight: 400,
+                  lineHeight: 1.45,
+                  color: T.ink,
+                  margin: 0,
+                }}
+              >
+                {current.prompt.replace("{firstName}", displayFirstName)}
+              </h1>
+            </div>
           </div>
-          <h1
-            style={{
-              fontFamily: "'Fraunces', Georgia, serif",
-              fontSize: 26,
-              fontWeight: 600,
-              lineHeight: 1.25,
-              letterSpacing: "-.01em",
-              color: T.ink,
-              margin: "0 0 28px",
-            }}
-          >
-            {current.prompt.replace("{firstName}", displayFirstName)}
-          </h1>
 
           {submitting ? (
             <div style={{ display: "flex", alignItems: "center", gap: 10, color: T.inkSoft, fontSize: 14, padding: "16px 0" }}>
