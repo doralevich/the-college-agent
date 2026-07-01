@@ -280,7 +280,6 @@ export default function BuildPage() {
                   </label>
 
                   <div className="ca-plan-recap">
-                    <span className="ca-plan-recap-label">Selected plan</span>
                     <span className="ca-plan-recap-value">
                       The College Agent &middot; {planPrice} one-time + {hostingPrice}/mo hosting
                     </span>
