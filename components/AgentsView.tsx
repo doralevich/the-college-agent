@@ -110,6 +110,7 @@ export function AgentsView({ firstName, onOpenChat }: { firstName: string | null
                       role={role}
                       onChanged={load}
                       onChat={handleChat}
+                      reonboardOnDelete
                       confirmDeleteDescription="This deletes your agent and clears your onboarding answers (Tell the Agent About You). Your technical setup stays intact. You'll redo onboarding to create a new agent. This cannot be undone."
                     />
                   </td>
