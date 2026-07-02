@@ -11,12 +11,23 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "The College Agent | AI Agent for College Students",
+  title: "The College Agent — Your Personal AI for All 4 Years of College",
   description:
-    "A personal AI agent for college students that helps organize classes, notes, deadlines, study plans, professor emails, internships, and campus life.",
+    "The College Agent is a personal AI companion that grows with you through college — managing classes, study, internships, social life, and career planning from freshman year to graduation.",
   keywords: [
-    "AI agent for college students",
     "AI for college students",
+    "AI study companion",
+    "personal AI agent for students",
+    "AI college planner",
+    "AI class schedule manager",
+    "AI internship prep",
+    "college life AI",
+    "AI study partner",
+    "AI for high school students",
+    "college AI assistant",
+    "AI tutor for college",
+    "AI for college life",
+    "AI agent for college students",
     "AI study tool",
     "AI note taker for students",
     "college productivity app",
@@ -43,9 +54,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: "https://thecollegeagent.ai",
-    title: "The College Agent | AI Agent for College Students",
+    title: "The College Agent — Your Personal AI for All 4 Years of College",
     description:
-      "A personalized AI agent for college students: classes, notes, deadlines, study plans, professor emails, internships, and campus life in one system.",
+      "The College Agent is a personal AI companion that grows with you through college — managing classes, study, internships, social life, and career planning from freshman year to graduation.",
     siteName: "The College Agent",
     images: [
       {
@@ -58,9 +69,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "The College Agent | AI Agent for College Students",
+    title: "The College Agent — Your Personal AI for All 4 Years of College",
     description:
-      "A personalized student AI assistant for classes, notes, deadlines, study plans, professor emails, internships, and campus life.",
+      "The College Agent is a personal AI companion that grows with you through college — managing classes, study, internships, social life, and career planning from freshman year to graduation.",
     images: ["/og-image.png"],
   },
 };

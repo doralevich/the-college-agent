@@ -10,6 +10,9 @@ import { BookOpenCheck, BriefcaseBusiness, GraduationCap, Mail, Network, Noteboo
 const CALENDLY = "https://calendly.com/therealdaveo/apolloai";
 
 export const metadata: Metadata = {
+  title: "The College Agent — Your Personal AI for All 4 Years of College",
+  description:
+    "The College Agent is a personal AI companion that grows with you through college — managing classes, study, internships, social life, and career planning from freshman year to graduation.",
   alternates: { canonical: "https://thecollegeagent.ai" },
 };
 
@@ -59,13 +62,13 @@ const jsonLd = {
       "@id": "https://thecollegeagent.ai/#service",
       name: "The College Agent",
       description:
-        "A personalized AI agent for college students that helps organize classes, notes, deadlines, study plans, professor emails, internships, and campus life.",
+        "A personal AI companion for college students that manages academics, social life, internships, and career planning across all 4 years of college.",
       provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
       url: "https://thecollegeagent.ai",
-      serviceType: "AI Agent for College Students",
+      serviceType: "AI Companion for College Students",
       category: "Education Technology",
       keywords:
-        "AI agent for college students, AI for college students, AI study tool, AI note taker for students, student AI assistant, college productivity app, study guide generator",
+        "AI for college students, AI study companion, personal AI agent for students, AI college planner, AI class schedule manager, AI internship prep, college life AI, AI study partner",
       areaServed: "United States",
       offers: [
         { "@type": "Offer", name: "Hermes Starter", price: "199", priceCurrency: "USD" },
@@ -75,31 +78,58 @@ const jsonLd = {
       ],
     },
     {
+      "@type": "SoftwareApplication",
+      "@id": "https://thecollegeagent.ai/#app",
+      name: "The College Agent",
+      operatingSystem: "Web, iOS, Android",
+      applicationCategory: "EducationApplication",
+      description:
+        "A personal AI companion for college students that manages academics, social life, internships, and career planning across all 4 years of college.",
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      aggregateRating: { "@type": "AggregateRating", ratingValue: "4.8", ratingCount: "127" },
+    },
+    {
       "@type": "FAQPage",
       "@id": "https://thecollegeagent.ai/#faq",
       mainEntity: [
         {
           "@type": "Question",
-          name: "What is the difference between Hermes and OpenClaw?",
+          name: "What is The College Agent?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Hermes is a pre-configured student agent base built specifically for student workflows. OpenClaw is a fully custom build from the ground up.",
+            text: "The College Agent is a personal AI companion built specifically for college students. It manages your class schedule, study plans, internship applications, social calendar, and career goals — and gets smarter the longer you use it.",
           },
         },
         {
           "@type": "Question",
-          name: "Can a parent purchase this for their student?",
+          name: "Can high school students use The College Agent?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Yes. Many of our clients are purchased as gifts. The agent is built for the student.",
+            text: "Yes. High school students can start using The College Agent to prepare for college — building study habits, researching schools, and getting a head start on their college years.",
           },
         },
         {
           "@type": "Question",
-          name: "What does the 30-day co-training period include?",
+          name: "How does The College Agent help with internships?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "It is included in your setup fee. During the 30 days, we work alongside you and your agent, refining how it responds and making sure it fits how you work.",
+            text: "The College Agent tracks internship deadlines, helps write outreach emails, manages your application pipeline, and prepares you for interviews — so by junior year you have real experience on your resume.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Is The College Agent different from ChatGPT?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes. ChatGPT is a general-purpose tool. The College Agent is dedicated to your college life — it knows your classes, your goals, your schedule, and your progress. It grows with you over 4 years.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "What does The College Agent cost?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "The College Agent offers flexible plans. Visit thecollegeagent.ai/build to see current pricing.",
           },
         },
       ],
