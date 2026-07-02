@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
+import Link from "next/link";
 import { Loader2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DropOverlay } from "./Attachments";
@@ -35,6 +36,13 @@ function classIsToday(days: string): boolean {
   const tokens = DAY_TOKENS[new Date().getDay()];
   const norm = days.toLowerCase();
   return tokens.some((t) => new RegExp(`\\b${t}\\b`).test(norm));
+}
+
+// Heuristic: does a send failure look like the agent's AI budget ran dry? The gateway's
+// wording isn't under our control, so match the family of phrasings rather than one string.
+// A false positive still shows a helpful card with the real path to fixing most outages.
+function isOutOfCreditsError(message: string): boolean {
+  return /budget|credit|insufficient|quota|payment required|\b402\b/i.test(message);
 }
 
 export function ChatView({
@@ -179,7 +187,23 @@ export function ChatView({
           <div className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-gradient-to-t from-background to-transparent" />
         )}
         <div className={cn("mx-auto w-full", showWelcome ? "max-w-2xl" : "max-w-3xl")} aria-live="polite">
-          {error && <p className="mb-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</p>}
+          {error &&
+            (isOutOfCreditsError(error) ? (
+              <div className="mb-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
+                <p className="font-semibold">Your agent is out of AI credits.</p>
+                <p className="mt-0.5">
+                  Add credits and this conversation picks up right where you left off.
+                </p>
+                <Link
+                  href="/dashboard/billing"
+                  className="mt-1.5 inline-block font-semibold underline underline-offset-2"
+                >
+                  Add credits
+                </Link>
+              </div>
+            ) : (
+              <p className="mb-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</p>
+            ))}
         </div>
         <ChatComposer
           agentId={agentId}

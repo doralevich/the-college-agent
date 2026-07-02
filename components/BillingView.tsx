@@ -116,7 +116,89 @@ export function BillingView({ hasAgent = false }: { hasAgent?: boolean }) {
 
       {!loading && hasAgent && <CreditsCard />}
 
+      {!loading && data?.canManage && <InvoicesCard />}
+
       {!loading && hasAgent && <FilesCard />}
+    </div>
+  );
+}
+
+type InvoiceRow = {
+  id: string;
+  created: number; // unix seconds
+  amount_cents: number;
+  status: string | null;
+  number: string | null;
+  pdf: string | null;
+};
+
+const INVOICE_STATUS: Record<string, { label: string; className: string }> = {
+  paid: { label: "Paid", className: "bg-primary/10 text-primary" },
+  open: { label: "Open", className: "bg-amber-100 text-amber-700" },
+  void: { label: "Void", className: "bg-muted text-muted-foreground" },
+  uncollectible: { label: "Unpaid", className: "bg-destructive/10 text-destructive" },
+};
+
+// Stripe invoices for the plan purchase and monthly hosting. Credit top-ups are one-time
+// payments (they show in the AI-credits history above), so the two lists don't overlap.
+function InvoicesCard() {
+  const [invoices, setInvoices] = useState<InvoiceRow[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch<{ invoices: InvoiceRow[] }>("/api/billing/invoices")
+      .then((d) => {
+        if (!cancelled) setInvoices(d.invoices);
+      })
+      .catch(() => {}); // supplementary card — the portal still lists invoices if this fails
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!invoices || invoices.length === 0) return null;
+
+  return (
+    <div className="rounded-xl border p-6">
+      <h2 className="text-base font-medium">Invoices</h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Receipts for your plan and monthly hosting.
+      </p>
+      <ul className="mt-4 space-y-2">
+        {invoices.map((inv) => {
+          const status = inv.status ? INVOICE_STATUS[inv.status] : null;
+          return (
+            <li key={inv.id} className="flex items-center justify-between gap-3 text-sm">
+              <span className="min-w-0 truncate text-muted-foreground">
+                {new Date(inv.created * 1000).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+                {inv.number && ` · ${inv.number}`}
+              </span>
+              <span className="flex shrink-0 items-center gap-2 tabular-nums">
+                {status && (
+                  <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", status.className)}>
+                    {status.label}
+                  </span>
+                )}
+                {formatUSD(inv.amount_cents)}
+                {inv.pdf && (
+                  <a
+                    href={inv.pdf}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-primary underline underline-offset-2"
+                  >
+                    PDF
+                  </a>
+                )}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
