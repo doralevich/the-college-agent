@@ -50,14 +50,16 @@ export function SettingsHub({
       </div>
 
       {visible.length > 1 && (
-        <div className="inline-flex flex-wrap gap-1 rounded-full bg-secondary p-1">
+        // Four labels don't fit one pill row on a phone (they used to wrap mid-pill) —
+        // mobile gets a tidy 2x2 grid, sm+ keeps the iOS-style segmented row.
+        <div className="grid grid-cols-2 gap-1 rounded-2xl bg-secondary p-1 sm:inline-flex sm:rounded-full">
           {visible.map((s) => (
             <button
               key={s.id}
               type="button"
               onClick={() => setSection(s.id)}
               className={cn(
-                "rounded-full px-4 py-1.5 text-sm font-medium transition-colors",
+                "whitespace-nowrap rounded-full px-3 py-2 text-center text-sm font-medium transition-colors sm:px-4 sm:py-1.5",
                 active === s.id
                   ? "bg-background text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"

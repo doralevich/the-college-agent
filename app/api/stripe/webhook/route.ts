@@ -214,26 +214,38 @@ async function handleCreditsTopup(db: DB, session: Stripe.Checkout.Session) {
       // 1 cent = 10,000 micros.
       await agent37.setBudget(agentId, { topup_micros: amountCents * 10_000 });
     } catch (err) {
+      // Record WHY on the ledger row either way — failures must be diagnosable from the
+      // database, not just from function logs.
+      const reason =
+        err instanceof Agent37Error
+          ? `agent37 ${err.status} ${err.code}: ${err.message}`.slice(0, 500)
+          : String((err as Error)?.message ?? err).slice(0, 500);
+      if (tx) {
+        await db
+          .from("wallet_transactions")
+          .update({ failure_reason: reason, stripe_payment_intent_id: idOf(session.payment_intent) })
+          .eq("id", tx.id);
+      }
       // Box gone (agent deleted between checkout and webhook): settle the row as failed so
       // support can refund, instead of leaving Stripe retrying forever.
       if (err instanceof Agent37Error && err.status === 404) {
         console.error("[stripe webhook] credits topup: agent gone", agentId, session.id);
-        if (tx) {
-          await db
-            .from("wallet_transactions")
-            .update({ status: "failed", stripe_payment_intent_id: idOf(session.payment_intent) })
-            .eq("id", tx.id);
-        }
+        if (tx) await db.from("wallet_transactions").update({ status: "failed" }).eq("id", tx.id);
         return;
       }
-      throw err; // transient — 500 so Stripe retries the delivery
+      console.error("[stripe webhook] credits topup: budget call failed", agentId, session.id, reason);
+      throw err; // 500 so Stripe retries the delivery (row keeps the recorded reason)
     }
   }
 
   if (tx) {
     await db
       .from("wallet_transactions")
-      .update({ status: "succeeded", stripe_payment_intent_id: idOf(session.payment_intent) })
+      .update({
+        status: "succeeded",
+        stripe_payment_intent_id: idOf(session.payment_intent),
+        failure_reason: null,
+      })
       .eq("id", tx.id);
   }
 }

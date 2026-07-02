@@ -87,25 +87,43 @@ export const POST = route(async () => {
 
   // One-time starter credits included with the plan. The ledger's partial unique index
   // (one 'starter' row per user, ever) makes this idempotent: deleting and rebuilding an
-  // agent doesn't mint another grant, so the insert failing (conflict) just means the
-  // student already got theirs. If the budget call itself fails, the ledger row is removed
-  // so a later re-provision can retry the grant; the monthly floor keeps the box usable.
-  const { data: starterRow } = await db
+  // agent doesn't mint another grant. A failed grant stays on the ledger as status
+  // 'failed' with the error recorded, and the next provision retries it.
+  const { data: starterRow, error: starterInsErr } = await db
     .from("wallet_transactions")
     .insert({
       user_id: user.id,
       amount_cents: DEFAULT_AGENT.starterCreditsUsd * 100,
       type: "starter",
-      status: "succeeded",
+      status: "pending",
     })
     .select("id")
     .maybeSingle();
-  if (starterRow) {
+  // Conflict → they already have a starter row; retry it only if it previously failed.
+  let starterId = starterRow?.id as string | undefined;
+  if (!starterId && starterInsErr) {
+    const { data: existing } = await db
+      .from("wallet_transactions")
+      .select("id, status")
+      .eq("user_id", user.id)
+      .eq("type", "starter")
+      .maybeSingle();
+    if (existing && existing.status !== "succeeded") starterId = existing.id as string;
+  }
+  if (starterId) {
     try {
       await agent37.setBudget(agent.id, { topup_micros: usdToMicros(DEFAULT_AGENT.starterCreditsUsd) });
+      await db
+        .from("wallet_transactions")
+        .update({ status: "succeeded", failure_reason: null })
+        .eq("id", starterId);
     } catch (e) {
-      console.error("[provision:starter-credits]", agent.id, e);
-      await db.from("wallet_transactions").delete().eq("id", starterRow.id);
+      const reason = String((e as Error)?.message ?? e).slice(0, 500);
+      console.error("[provision:starter-credits]", agent.id, reason);
+      await db
+        .from("wallet_transactions")
+        .update({ status: "failed", failure_reason: reason })
+        .eq("id", starterId);
     }
   }
 
