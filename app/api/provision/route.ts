@@ -85,6 +85,30 @@ export const POST = route(async () => {
     throw new ApiError(500, "db_error", insErr.message);
   }
 
+  // One-time starter credits included with the plan. The ledger's partial unique index
+  // (one 'starter' row per user, ever) makes this idempotent: deleting and rebuilding an
+  // agent doesn't mint another grant, so the insert failing (conflict) just means the
+  // student already got theirs. If the budget call itself fails, the ledger row is removed
+  // so a later re-provision can retry the grant; the monthly floor keeps the box usable.
+  const { data: starterRow } = await db
+    .from("wallet_transactions")
+    .insert({
+      user_id: user.id,
+      amount_cents: DEFAULT_AGENT.starterCreditsUsd * 100,
+      type: "starter",
+      status: "succeeded",
+    })
+    .select("id")
+    .maybeSingle();
+  if (starterRow) {
+    try {
+      await agent37.setBudget(agent.id, { topup_micros: usdToMicros(DEFAULT_AGENT.starterCreditsUsd) });
+    } catch (e) {
+      console.error("[provision:starter-credits]", agent.id, e);
+      await db.from("wallet_transactions").delete().eq("id", starterRow.id);
+    }
+  }
+
   // Best-effort: install/config Hermes + Telegram + persona, then start the gateway.
   // If this fails the agent still exists (operator fallback finishes it in /admin).
   const { configured, detail: configDetail } = await configureAgentFromIntake(agent.id, onboard, setup);
