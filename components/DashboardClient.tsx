@@ -356,6 +356,9 @@ function normalizeDashboardTab(
 ): DashboardTabId {
   if (requestedTab === "agents" && hasAgent) return "agent";
   if (requestedTab === "agent" && !hasAgent) return "agents";
+  // Files was removed from the sidebar but stays reachable by URL — Billing's
+  // "Open your files" links here so students can download everything they own.
+  if (requestedTab === "files" && hasAgent) return "files";
   if (requestedTab && tabs.some((t) => t.id === requestedTab)) return requestedTab;
   // Welcome is the default whenever it's available (every paid student) — it covers
   // both the conversational onboarding (pre-agent) and the static greeting (post-agent).
