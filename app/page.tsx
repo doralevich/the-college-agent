@@ -166,7 +166,7 @@ export default function Home() {
               Apollo[Claw] College Edition
             </div>
             <h1 className="hero-h1" style={{ color: "#fff", textAlign: "left" }}>
-              AI personal agent for college students.
+              AI personal agent<br />for college<br />students.
             </h1>
             <p className="hero-sub" style={{ textAlign: "left" }}>
               Your own student AI assistant. Named. Trained on your voice. Built around your schedule, classes,
@@ -390,7 +390,6 @@ export default function Home() {
         .hero-h1 {
           font-size: clamp(34px, 5vw, 64px); font-weight: 800; line-height: 1.02;
           letter-spacing: -.035em; color: #fff; margin-bottom: 20px;
-          white-space: nowrap;
         }
         .hero-sub {
           font-size: clamp(16px, 1.4vw, 19px); line-height: 1.7;
