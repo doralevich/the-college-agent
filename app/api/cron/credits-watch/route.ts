@@ -131,6 +131,49 @@ async function sweepOne(db: DB, ent: EntRow, summary: Record<string, number>) {
     }
   }
 
+  // Reconcile paid-but-pending top-ups (a webhook delivery that kept failing): verify the
+  // payment with Stripe directly, then deliver the credits and settle the row. Abandoned
+  // checkouts expire out to 'failed' once Stripe says the session expired unpaid.
+  const fifteenMinAgo = new Date(Date.now() - 15 * 60_000).toISOString();
+  const { data: pendingTopups } = await db
+    .from("wallet_transactions")
+    .select("id, amount_cents, stripe_session_id")
+    .eq("user_id", ent.user_id)
+    .eq("type", "topup")
+    .eq("status", "pending")
+    .not("stripe_session_id", "is", null)
+    .lt("created_at", fifteenMinAgo)
+    .limit(3);
+  for (const t of pendingTopups ?? []) {
+    try {
+      const session = await getStripe().checkout.sessions.retrieve(t.stripe_session_id as string);
+      if (session.payment_status === "paid") {
+        await agent37.setBudget(agentId, { topup_micros: (t.amount_cents as number) * 10_000 });
+        await db
+          .from("wallet_transactions")
+          .update({
+            status: "succeeded",
+            failure_reason: null,
+            stripe_payment_intent_id:
+              typeof session.payment_intent === "string"
+                ? session.payment_intent
+                : (session.payment_intent?.id ?? null),
+          })
+          .eq("id", t.id);
+        summary.recharges += 1;
+      } else if (session.status === "expired") {
+        await db
+          .from("wallet_transactions")
+          .update({ status: "failed", failure_reason: "checkout expired unpaid" })
+          .eq("id", t.id);
+      }
+    } catch (e) {
+      const reason = String((e as Error)?.message ?? e).slice(0, 500);
+      console.error("[credits-watch] pending topup reconcile failed", ent.email, reason);
+      await db.from("wallet_transactions").update({ failure_reason: reason }).eq("id", t.id);
+    }
+  }
+
   const budget = await agent37.getBudget(agentId);
   let remainingCents = Math.floor(
     (budget.monthly_remaining_micros + budget.topup_remaining_micros) / 10_000

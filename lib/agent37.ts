@@ -159,10 +159,30 @@ export const agent37 = {
     ),
 
   getBudget: (id: string) => call<Budget>(`/instances/${id}/budget`),
-  // Operator-adjustable cap / top-up (College Agent addition). Verified live in Phase 8;
-  // if the endpoint is unsupported, the budget route surfaces the Agent37Error.
-  setBudget: (id: string, body: { monthly_cap_micros?: number; topup_micros?: number }) =>
-    call<Budget>(`/instances/${id}/budget`, { method: "POST", body: JSON.stringify(body) }),
+  // Operator-adjustable cap / top-up. The budget subresource's write verb is undocumented
+  // and POST 405s in production (July 2026). Try the RESTful update verbs in order, and if
+  // the server rejects the body shape, retry with the create-time field spelling
+  // (`credit_micros`, per the public docs) — first success wins.
+  setBudget: async (id: string, body: { monthly_cap_micros?: number; topup_micros?: number }) => {
+    const bodies: Record<string, number | undefined>[] = [body];
+    if (body.topup_micros != null) {
+      bodies.push({ ...body, credit_micros: body.topup_micros, topup_micros: undefined });
+    }
+    let lastErr: unknown = new Agent37Error(500, "error", "setBudget: no attempt made");
+    for (const method of ["PATCH", "PUT"]) {
+      for (const candidate of bodies) {
+        try {
+          return await call<Budget>(`/instances/${id}/budget`, { method, body: JSON.stringify(candidate) });
+        } catch (err) {
+          lastErr = err;
+          if (err instanceof Agent37Error && err.status === 405) break; // wrong verb — next method
+          if (err instanceof Agent37Error && (err.status === 400 || err.status === 422)) continue; // body shape — next spelling
+          throw err;
+        }
+      }
+    }
+    throw lastErr;
+  },
   getUsage: (id: string, month?: string) =>
     call<Usage>(`/instances/${id}/usage${month ? `?month=${encodeURIComponent(month)}` : ""}`),
 
