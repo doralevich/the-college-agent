@@ -5,11 +5,11 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 const NAV_LINKS = [
+  { label: "For Students", href: "/for-students" },
   { label: "How It Works", href: "#how-it-works" },
-  { label: "Before & After", href: "#before-after" },
   { label: "Blog", href: "/blog" },
   { label: "Ambassador", href: "/ambassador" },
-  { label: "FAQ", href: "#faq" },
+  { label: "FAQ", href: "/faq" },
 ];
 
 export default function Nav() {
