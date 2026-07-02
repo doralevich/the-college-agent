@@ -24,6 +24,7 @@ type CreditsData = {
     tools_micros: number;
   } | null;
   transactions: { id: string; amount_cents: number; type: string; status: string; created_at: string }[];
+  autoRecharge: { enabled: boolean; threshold_cents: number; amount_cents: number } | null;
 };
 
 const TOPUP_PRESETS_CENTS = [1000, 2500, 5000];
@@ -138,6 +139,8 @@ export function CreditsView() {
             </div>
           </div>
 
+          {data.autoRecharge && <AutoRechargeCard initial={data.autoRecharge} />}
+
           {data.transactions.length > 0 && (
             <div className="rounded-2xl border p-6">
               <div className="text-sm font-medium">History</div>
@@ -179,6 +182,129 @@ export function CreditsView() {
           )}
         </>
       )}
+    </div>
+  );
+}
+
+const THRESHOLD_PRESETS_CENTS = [500, 1000, 1500];
+const AMOUNT_PRESETS_CENTS = [1000, 2500, 5000];
+
+// Set-and-forget refills: when the balance drops below the threshold, the hourly sweep
+// charges the card saved with the subscription and adds the chosen amount.
+function AutoRechargeCard({
+  initial,
+}: {
+  initial: { enabled: boolean; threshold_cents: number; amount_cents: number };
+}) {
+  const [enabled, setEnabled] = useState(initial.enabled);
+  const [threshold, setThreshold] = useState(initial.threshold_cents);
+  const [amount, setAmount] = useState(initial.amount_cents);
+  const [saving, setSaving] = useState(false);
+
+  async function save(next: { enabled: boolean; threshold_cents: number; amount_cents: number }) {
+    setSaving(true);
+    try {
+      await apiFetch("/api/billing/auto-recharge", {
+        method: "POST",
+        body: JSON.stringify(next),
+      });
+      setEnabled(next.enabled);
+      setThreshold(next.threshold_cents);
+      setAmount(next.amount_cents);
+      toast.success(next.enabled ? "Auto-recharge is on." : "Auto-recharge is off.");
+    } catch (e) {
+      toast.error((e as Error).message || "Couldn't update auto-recharge.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="rounded-2xl border p-6">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-base font-medium">Auto-recharge</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {enabled
+              ? `On. When your balance drops below ${formatUSD(threshold)}, we add ${formatUSD(amount)} automatically.`
+              : "Never run dry: we top you up automatically when your balance gets low."}
+          </p>
+        </div>
+        <Button
+          variant={enabled ? "outline" : "default"}
+          size="sm"
+          disabled={saving}
+          onClick={() => save({ enabled: !enabled, threshold_cents: threshold, amount_cents: amount })}
+        >
+          {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+          {enabled ? "Turn off" : "Turn on"}
+        </Button>
+      </div>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <PresetPicker
+          label="When balance drops below"
+          value={threshold}
+          options={THRESHOLD_PRESETS_CENTS}
+          disabled={saving}
+          onChange={(v) => {
+            if (enabled) save({ enabled, threshold_cents: v, amount_cents: amount });
+            else setThreshold(v);
+          }}
+        />
+        <PresetPicker
+          label="Add"
+          value={amount}
+          options={AMOUNT_PRESETS_CENTS}
+          disabled={saving}
+          onChange={(v) => {
+            if (enabled) save({ enabled, threshold_cents: threshold, amount_cents: v });
+            else setAmount(v);
+          }}
+        />
+      </div>
+      <p className="mt-3 text-xs text-muted-foreground">
+        Charges the card saved with your subscription. Turns itself off after three failed
+        charges.
+      </p>
+    </div>
+  );
+}
+
+function PresetPicker({
+  label,
+  value,
+  options,
+  disabled,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  options: number[];
+  disabled: boolean;
+  onChange: (v: number) => void;
+}) {
+  return (
+    <div>
+      <div className="text-xs font-medium text-muted-foreground">{label}</div>
+      <div className="mt-1.5 inline-flex gap-1 rounded-full bg-secondary p-1">
+        {options.map((cents) => (
+          <button
+            key={cents}
+            type="button"
+            disabled={disabled}
+            onClick={() => onChange(cents)}
+            className={cn(
+              "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+              value === cents
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            {formatUSD(cents)}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

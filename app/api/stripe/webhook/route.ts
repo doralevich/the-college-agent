@@ -143,6 +143,21 @@ async function handleCheckoutCompleted(db: DB, session: Stripe.Checkout.Session)
     if (entErr) throw new Error(`entitlement upsert failed: ${entErr.message}`);
   }
 
+  // Capture the card saved with the hosting subscription so credits auto-recharge can
+  // charge it off-session later. Best-effort: without it, auto-recharge just stays
+  // unavailable until the student re-saves a card in the billing portal.
+  if (entEmail && subscriptionId) {
+    try {
+      const sub = await getStripe().subscriptions.retrieve(subscriptionId);
+      const pm = idOf(sub.default_payment_method as string | { id: string } | null);
+      if (pm) {
+        await db.from("entitlements").update({ stripe_payment_method_id: pm }).eq("email", entEmail);
+      }
+    } catch (err) {
+      console.error("[stripe webhook] payment method capture failed", err);
+    }
+  }
+
   // For freshly-auto-created accounts, ship a magic-link sign-in email. Best-effort —
   // the entitlement is already active and the student could sign in normally (password
   // reset) if delivery hiccups.

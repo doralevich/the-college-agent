@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/credits-watch",
+      "schedule": "0 * * * *"
+    }
+  ]
+}
