@@ -13,7 +13,8 @@ export const GET = route(async () => {
   const { supabase, user } = await requireUser();
   const db = createAdminClient();
 
-  const [setupRes, msRes, txRes] = await Promise.all([
+  const email = (user.email ?? "").toLowerCase();
+  const [setupRes, msRes, txRes, entRes] = await Promise.all([
     db.from("setup_submissions").select("anthropic_key, openai_key").eq("user_id", user.id).maybeSingle(),
     db.from("memberships").select("workspace_id").eq("user_id", user.id).limit(1),
     // RLS-scoped read — the self-select policy limits this to the caller's own rows.
@@ -22,6 +23,13 @@ export const GET = route(async () => {
       .select("id, amount_cents, type, status, created_at")
       .order("created_at", { ascending: false })
       .limit(12),
+    email
+      ? db
+          .from("entitlements")
+          .select("auto_recharge_enabled, auto_recharge_threshold_cents, auto_recharge_amount_cents")
+          .eq("email", email)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
 
   const setup = setupRes.data as { anthropic_key: string | null; openai_key: string | null } | null;
@@ -67,5 +75,18 @@ export const GET = route(async () => {
     }
   }
 
-  return json({ byo, credits, transactions: txRes.data ?? [] });
+  const ent = entRes.data as {
+    auto_recharge_enabled: boolean;
+    auto_recharge_threshold_cents: number;
+    auto_recharge_amount_cents: number;
+  } | null;
+  const autoRecharge = ent
+    ? {
+        enabled: ent.auto_recharge_enabled,
+        threshold_cents: ent.auto_recharge_threshold_cents,
+        amount_cents: ent.auto_recharge_amount_cents,
+      }
+    : null;
+
+  return json({ byo, credits, transactions: txRes.data ?? [], autoRecharge });
 });
