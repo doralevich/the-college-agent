@@ -204,20 +204,22 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
   const shell = (
     <div className="flex h-dvh flex-col">
       {/* Mobile top bar — the sidebar is hidden on phones and lives behind this menu. */}
-      <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-4 md:hidden">
+      <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b bg-background px-4 md:hidden">
+        {/* Sized by WIDTH so the wordmark keeps its 10:1 aspect — forcing a height inside
+            a flex row squeezed and distorted it. */}
         <Image
           src="/logo-college-agent.svg"
           alt="The College Agent"
           width={310}
           height={30}
           priority
-          className="h-8 w-auto"
+          className="h-auto w-full max-w-[290px]"
         />
         <button
           type="button"
           onClick={() => setNavOpenAt(pathname)}
           aria-label="Open menu"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary"
+          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary"
         >
           <Menu className="h-5 w-5" />
         </button>
@@ -325,13 +327,15 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
             onClick={closeMobileNav}
           />
           <div className="absolute left-0 top-0 flex h-full w-72 max-w-[85vw] flex-col overflow-y-auto border-r bg-background p-4 shadow-xl">
-            <div className="flex items-center justify-between px-1 py-1">
+            <div className="flex items-center justify-between gap-3 px-1 py-1">
+              {/* Width-sized (see the top bar note) and modest — the drawer is narrow and
+                  the big top-bar logo is already visible behind the backdrop. */}
               <Image
                 src="/logo-college-agent.svg"
                 alt="The College Agent"
                 width={310}
                 height={30}
-                className="h-8 w-auto"
+                className="h-auto w-44"
               />
               <button
                 type="button"
