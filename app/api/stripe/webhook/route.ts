@@ -1,4 +1,5 @@
 import type Stripe from "stripe";
+import { agent37, Agent37Error } from "@/lib/agent37";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/client";
 import { sendOrderSummaryEmail, type OrderForEmail } from "@/lib/email/order-summary";
@@ -72,6 +73,13 @@ export async function POST(req: Request) {
 async function handleCheckoutCompleted(db: DB, session: Stripe.Checkout.Session) {
   // Only fulfill genuinely-paid sessions.
   if (session.payment_status !== "paid" && session.payment_status !== "no_payment_required") return;
+
+  // AI-credits top-up (mode: payment, started by /api/billing/topup): credit the box
+  // budget and settle the ledger row. Nothing else about the account changes.
+  if (session.metadata?.type === "credits_topup") {
+    await handleCreditsTopup(db, session);
+    return;
+  }
 
   const orderId = session.metadata?.order_id ?? session.client_reference_id ?? null;
   const email = (session.customer_details?.email ?? session.customer_email ?? "").toLowerCase();
@@ -168,6 +176,50 @@ async function handleCheckoutCompleted(db: DB, session: Stripe.Checkout.Session)
     } catch (err) {
       console.error("[stripe webhook] notify failed", err);
     }
+  }
+}
+
+// Settle an AI-credits top-up: push the credit onto the student's box budget, then mark
+// the pending ledger row succeeded. Ordered so a replay after a partial failure is safe:
+// an already-succeeded row short-circuits before re-crediting.
+async function handleCreditsTopup(db: DB, session: Stripe.Checkout.Session) {
+  const { data: tx } = await db
+    .from("wallet_transactions")
+    .select("id, status, amount_cents")
+    .eq("stripe_session_id", session.id)
+    .maybeSingle();
+  if (tx?.status === "succeeded") return; // replayed after the credit already landed
+
+  // Ledger row may be missing (its insert failed at checkout time) — fall back to metadata.
+  const amountCents = tx?.amount_cents ?? Number(session.metadata?.amount_cents ?? 0);
+  const agentId = session.metadata?.agent37_id || null;
+
+  if (agentId && amountCents > 0) {
+    try {
+      // 1 cent = 10,000 micros.
+      await agent37.setBudget(agentId, { topup_micros: amountCents * 10_000 });
+    } catch (err) {
+      // Box gone (agent deleted between checkout and webhook): settle the row as failed so
+      // support can refund, instead of leaving Stripe retrying forever.
+      if (err instanceof Agent37Error && err.status === 404) {
+        console.error("[stripe webhook] credits topup: agent gone", agentId, session.id);
+        if (tx) {
+          await db
+            .from("wallet_transactions")
+            .update({ status: "failed", stripe_payment_intent_id: idOf(session.payment_intent) })
+            .eq("id", tx.id);
+        }
+        return;
+      }
+      throw err; // transient — 500 so Stripe retries the delivery
+    }
+  }
+
+  if (tx) {
+    await db
+      .from("wallet_transactions")
+      .update({ status: "succeeded", stripe_payment_intent_id: idOf(session.payment_intent) })
+      .eq("id", tx.id);
   }
 }
 

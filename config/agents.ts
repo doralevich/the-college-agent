@@ -38,7 +38,13 @@ export const DEFAULT_AGENT = {
   template: "college-agent",
   // Basic shape — the default/floor when no plan is known (e.g. admin box with no order).
   ...HOSTING_SHAPES.basic,
-  monthlyCapUsd: 20,
+  // A small recurring allowance so an agent is never completely bricked between top-ups.
+  // Real spending power comes from CREDITS: the one-time starter grant below plus the
+  // top-ups students buy in Settings -> Billing. (Was 20 when every box ran on a free
+  // recurring platform allowance; the credits model replaces that.)
+  monthlyCapUsd: 1,
+  // One-time AI credits included with the plan, granted when the agent is provisioned.
+  starterCreditsUsd: 20,
 } as const;
 
 export const PORTS = {

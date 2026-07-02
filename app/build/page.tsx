@@ -227,6 +227,7 @@ export default function BuildPage() {
 
                   <ul className="ca-features">
                     <li><span className="ca-check"><CheckIcon /></span>Your own AI Agent, built and set up for you</li>
+                    <li><span className="ca-check"><CheckIcon /></span>$20 in AI credits included to get you started</li>
                     <li><span className="ca-check"><CheckIcon /></span>Works on the web and Telegram, any device</li>
                     <li><span className="ca-check"><CheckIcon /></span>Connect your calendar, email, Canvas, and more</li>
                     <li><span className="ca-check"><CheckIcon /></span>Cancel anytime, pause over summer</li>
@@ -239,7 +240,8 @@ export default function BuildPage() {
                   <p className="ca-trust">Secure checkout by Stripe</p>
 
                   <p className="ca-apinote">
-                    <InfoIcon /> AI usage (API costs) is billed separately based on what you use.
+                    <InfoIcon /> Your first $20 of AI usage is included. After that, AI usage is
+                    billed based on what you use.
                   </p>
                 </div>
 
