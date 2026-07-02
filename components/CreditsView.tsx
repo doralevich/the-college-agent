@@ -139,6 +139,8 @@ export function CreditsView() {
             </div>
           </div>
 
+          <UsageHistoryCard />
+
           {data.autoRecharge && <AutoRechargeCard initial={data.autoRecharge} />}
 
           {data.transactions.length > 0 && (
@@ -181,6 +183,82 @@ export function CreditsView() {
             </div>
           )}
         </>
+      )}
+    </div>
+  );
+}
+
+type UsageMonth = { period: string; total_micros: number };
+
+// "2026-07" -> "Jul". UTC-parsed so the label can't slip a month in western timezones.
+function monthLabel(period: string): string {
+  const [y, m] = period.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString("en-US", {
+    month: "short",
+    timeZone: "UTC",
+  });
+}
+
+// Six months of metered usage as a small bar chart. One series in the brand green
+// (validated against both the light and dark surfaces); hovering a month reveals its
+// dollar value; the baseline is the only axis chrome at this size.
+function UsageHistoryCard() {
+  const [months, setMonths] = useState<UsageMonth[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch<{ months: UsageMonth[] }>("/api/billing/usage-history")
+      .then((d) => {
+        if (!cancelled) setMonths(d.months);
+      })
+      .catch(() => {}); // supplementary card — the balance figures above still stand alone
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!months || months.length === 0) return null;
+
+  const max = Math.max(...months.map((m) => m.total_micros));
+  const allZero = max === 0;
+
+  return (
+    <div className="rounded-2xl border p-6">
+      <h3 className="text-base font-medium">Monthly usage</h3>
+      <p className="mt-1 text-sm text-muted-foreground">
+        What your agent spent each month, over the last six months.
+      </p>
+      {allZero ? (
+        <p className="mt-4 text-sm text-muted-foreground">
+          No usage yet. Once you start chatting, months show up here.
+        </p>
+      ) : (
+        <div role="img" aria-label="Bar chart of monthly AI usage for the last six months" className="mt-5">
+          <div className="flex h-28 items-end gap-2 border-b">
+            {months.map((m) => {
+              const pct = max > 0 ? (m.total_micros / max) * 100 : 0;
+              return (
+                <div key={m.period} className="group relative flex h-full flex-1 items-end justify-center">
+                  <span className="pointer-events-none absolute -top-1 hidden -translate-y-full rounded-md bg-foreground px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-background group-hover:block">
+                    {usd(m.total_micros)}
+                  </span>
+                  <div
+                    aria-label={`${monthLabel(m.period)}: ${usd(m.total_micros)}`}
+                    className="w-full max-w-9 rounded-t-[4px] bg-primary transition-opacity group-hover:opacity-80"
+                    style={{ height: `${Math.max(pct, m.total_micros > 0 ? 3 : 1.5)}%` }}
+                  />
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-1.5 flex gap-2">
+            {months.map((m) => (
+              <div key={m.period} className="flex-1 text-center text-[10px] font-medium text-muted-foreground">
+                {monthLabel(m.period)}
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );

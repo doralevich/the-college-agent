@@ -41,6 +41,19 @@
   --border: hsl(220 13% 88%);
   --input: hsl(220 13% 88%);
   --ring: hsl(120 39% 39%);
+
+  /* Hand-styled Welcome/intake surfaces (WelcomeView, ConversationalOnboard). Their
+     inline styles read these so the wizard follows day/night with the rest of the app. */
+  --ca-green: #2d7a3a;
+  --ca-green-deep: #1b5e2a;      /* hover fill on green CTAs — stays deep in both modes */
+  --ca-green-text: #1b5e2a;      /* brand-green TEXT — flips light in dark mode */
+  --ca-green-soft: #e8f1e6;
+  --ca-paper: #f6f8f3;
+  --ca-card: #ffffff;
+  --ca-ink: #1a2421;
+  --ca-ink-soft: #5c6660;
+  --ca-line: #dee6da;
+  --ca-error: #b23636;
 }
 
 .dark {
@@ -69,6 +82,17 @@
   --border: hsl(220 20% 20%);
   --input: hsl(220 20% 20%);
   --ring: hsl(120 36% 46%);
+
+  --ca-green: #4c9f5c;
+  --ca-green-deep: #23703a;
+  --ca-green-text: #8fcb9b;
+  --ca-green-soft: #1e2b22;
+  --ca-paper: hsl(222 44% 7%);
+  --ca-card: hsl(222 36% 10%);
+  --ca-ink: #f2f5f3;
+  --ca-ink-soft: #a3ada7;
+  --ca-line: hsl(220 20% 20%);
+  --ca-error: #e5726b;
 }
 
 @theme inline {
