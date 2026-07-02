@@ -37,7 +37,7 @@ function formatPrice(cents: number): string {
 }
 
 export default function BuildPage() {
-  const [step, setStep] = useState<"plan" | "info">("plan");
+  const [step, setStep] = useState<"welcome" | "plan" | "info">("welcome");
   const [info, setInfo] = useState<InfoForm>({
     firstName: "",
     lastName: "",
@@ -75,6 +75,12 @@ export default function BuildPage() {
   const regularPrice = formatPrice(REGULAR_PLAN_AMOUNT_CENTS);
   const hostingPrice = formatPrice(HOSTING_AMOUNT_CENTS);
   const savings = formatPrice(REGULAR_PLAN_AMOUNT_CENTS - INTRO_PLAN_AMOUNT_CENTS);
+
+  function continueToPlan() {
+    setError(null);
+    setStep("plan");
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   function continueToInfo() {
     setError(null);
@@ -147,6 +153,45 @@ export default function BuildPage() {
       <main style={{ paddingTop: 72 }}>
         <section className="ca-checkout">
           <div className="ca-panel">
+
+            {step === "welcome" && (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/thecollegeagent.png"
+                  alt="The College Agent"
+                  className="ca-welcome-bot"
+                />
+                <p className="ca-eyebrow">Welcome</p>
+                <h2 className="ca-h2">Meet your College Agent.</h2>
+                <p className="ca-sub">
+                  A personal AI agent built around your classes, your calendar, and your life —
+                  in your corner from syllabus week to graduation.
+                </p>
+
+                <ul className="ca-welcome-points">
+                  <li>
+                    <span className="ca-check"><CheckIcon /></span>
+                    <span><b>Knows your world.</b> Your classes, deadlines, professors, and goals — not generic chatbot answers.</span>
+                  </li>
+                  <li>
+                    <span className="ca-check"><CheckIcon /></span>
+                    <span><b>Works where you are.</b> On the web and Telegram, connected to your calendar, email, and Canvas.</span>
+                  </li>
+                  <li>
+                    <span className="ca-check"><CheckIcon /></span>
+                    <span><b>Ready in minutes.</b> Answer a few questions and your agent is live within 30 minutes.</span>
+                  </li>
+                </ul>
+
+                <div className="ca-welcome-cta-wrap">
+                  <button type="button" className="ca-cta" onClick={continueToPlan}>
+                    See pricing
+                  </button>
+                  <p className="ca-trust">One plan. Everything included.</p>
+                </div>
+              </>
+            )}
 
             {step === "plan" && (
               <>
@@ -490,6 +535,34 @@ export default function BuildPage() {
           border-radius: 999px;
         }
 
+        .ca-welcome-bot {
+          display: block;
+          width: 132px;
+          height: auto;
+          margin: 0 auto 22px;
+          filter: drop-shadow(0 14px 28px rgba(45,122,58,.22));
+        }
+        .ca-welcome-points {
+          list-style: none;
+          margin: 30px auto 34px;
+          padding: 0;
+          max-width: 520px;
+          text-align: left;
+        }
+        .ca-welcome-points li {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          font-size: 15.5px;
+          line-height: 1.6;
+          color: var(--ca-ink);
+          padding: 10px 0;
+        }
+        .ca-welcome-points b { font-weight: 600; }
+        .ca-welcome-cta-wrap {
+          max-width: 380px;
+          margin: 0 auto;
+        }
         .ca-features { list-style: none; margin: 0 0 28px; padding: 0; }
         .ca-features li {
           display: flex;
