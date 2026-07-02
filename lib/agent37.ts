@@ -218,10 +218,12 @@ export const agent37 = {
   // later tool calls bill as usage). ----
   // Search or browse the app catalog. Omit `search` for the default popularity-ranked page; a
   // `search` must be >= 3 chars (the v1 route 400s a shorter query) and `limit` clamps to 24.
-  listIntegrationToolkits: (id: string, opts: { search?: string; limit?: number } = {}) => {
+  // `cursor` (from a previous response's nextCursor) pages through the un-searched catalog.
+  listIntegrationToolkits: (id: string, opts: { search?: string; limit?: number; cursor?: string } = {}) => {
     const params = new URLSearchParams();
     if (opts.search) params.set("search", opts.search);
     if (opts.limit) params.set("limit", String(opts.limit));
+    if (opts.cursor) params.set("cursor", opts.cursor);
     const qs = params.toString();
     return call<IntegrationToolkitsResult>(`/instances/${id}/integrations/toolkits${qs ? `?${qs}` : ""}`);
   },

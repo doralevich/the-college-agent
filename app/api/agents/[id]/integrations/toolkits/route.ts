@@ -11,7 +11,8 @@ export const GET = route(async (request: Request, { params }: Ctx) => {
   await requireAgentAccess(id, "member");
   const url = new URL(request.url);
   const search = url.searchParams.get("search")?.trim() || undefined;
+  const cursor = url.searchParams.get("cursor")?.trim() || undefined;
   const limitRaw = Number(url.searchParams.get("limit"));
   const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.min(24, Math.floor(limitRaw)) : undefined;
-  return json(await agent37.listIntegrationToolkits(id, { search, limit }));
+  return json(await agent37.listIntegrationToolkits(id, { search, limit, cursor }));
 });
