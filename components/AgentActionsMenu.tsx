@@ -188,7 +188,7 @@ export function AgentActionsMenu({
               <Button
                 variant="outline"
                 size="icon"
-                className="h-8 w-8 rounded-full border-amber-400 text-amber-500 hover:bg-amber-50 hover:text-amber-600"
+                className="h-8 w-8 rounded-full border-amber-400 text-amber-500 hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-500/10"
                 disabled={transitional || busy}
                 onClick={() => action("update", "Updating")}
                 aria-label="Update agent (update available)"

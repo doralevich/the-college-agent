@@ -189,13 +189,13 @@ export function ChatView({
         <div className={cn("mx-auto w-full", showWelcome ? "max-w-2xl" : "max-w-3xl")} aria-live="polite">
           {error &&
             (isOutOfCreditsError(error) ? (
-              <div className="mb-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
+              <div className="mb-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2.5 text-xs text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
                 <p className="font-semibold">Your agent is out of AI credits.</p>
                 <p className="mt-0.5">
                   Add credits and this conversation picks up right where you left off.
                 </p>
                 <Link
-                  href="/dashboard/billing"
+                  href="/dashboard/credits"
                   className="mt-1.5 inline-block font-semibold underline underline-offset-2"
                 >
                   Add credits
