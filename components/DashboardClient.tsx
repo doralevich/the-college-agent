@@ -4,9 +4,10 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Blocks, Bot, Check, Home, Loader2, LogOut, MessageSquare, RotateCcw, Settings2, Sparkles } from "lucide-react";
+import { Blocks, Bot, Check, Coins, Home, Loader2, LogOut, MessageSquare, RotateCcw, Settings2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "@/lib/supabase/client";
+import { usd } from "@/lib/format";
 import { dashboardPath, parseDashboardRoute, type DashboardTabId } from "@/lib/dashboard-tabs";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { apiFetch } from "@/lib/api";
@@ -188,6 +189,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
         {hasAgent && <ChatSidebar />}
 
         <div className="mt-auto space-y-2 pt-4">
+          {hasAgent && <CreditsPill />}
           <div className="truncate px-3 text-xs text-muted-foreground">{userEmail}</div>
           <Button variant="ghost" className="w-full justify-start" onClick={signOut}>
             <LogOut className="h-4 w-4" />
@@ -339,6 +341,54 @@ function NavLink({
     >
       <Icon className="h-4 w-4" style={iconColor ? { color: iconColor } : undefined} />
       <span className="flex-1 text-left">{label}</span>
+    </Link>
+  );
+}
+
+// Ambient credits indicator at the bottom of the sidebar: green when healthy, amber under
+// $5, red under $1. Clicking lands on Settings -> Billing where top-ups live. Hidden for
+// BYO accounts (their AI spend isn't ours to show) and while the balance hasn't loaded.
+function CreditsPill() {
+  const [remainingMicros, setRemainingMicros] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch<{ byo: unknown; credits: { remaining_micros: number } | null }>("/api/billing/credits")
+      .then((d) => {
+        if (!cancelled && !d.byo && d.credits) setRemainingMicros(d.credits.remaining_micros);
+      })
+      .catch(() => {}); // ambient chrome — never toast over a balance hiccup
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (remainingMicros === null) return null;
+  const dollars = remainingMicros / 1_000_000;
+  const low = dollars < 5;
+  const critical = dollars < 1;
+  const href = dashboardPath("billing");
+
+  return (
+    <Link
+      href={href}
+      prefetch={false}
+      scroll={false}
+      onNavigate={(e) => {
+        e.preventDefault();
+        updateDashboardHistory(href, "push");
+      }}
+      className={cn(
+        "flex items-center justify-between gap-2 rounded-md px-3 py-2 text-xs font-medium transition-colors hover:bg-[#E8F1E6]",
+        critical ? "text-destructive" : low ? "text-amber-700" : "text-muted-foreground"
+      )}
+      title={low ? "Credits are running low. Tap to top up." : "AI credits. Tap to manage."}
+    >
+      <span className="flex items-center gap-2">
+        <Coins className={cn("h-3.5 w-3.5", critical ? "text-destructive" : low ? "text-amber-600" : "text-[#2D7A3A]")} />
+        {low ? "Credits low" : "AI credits"}
+      </span>
+      <span className="tabular-nums">{usd(remainingMicros)}</span>
     </Link>
   );
 }
