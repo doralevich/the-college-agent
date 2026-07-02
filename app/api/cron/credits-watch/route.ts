@@ -102,6 +102,35 @@ async function sweepOne(db: DB, ent: EntRow, summary: Record<string, number>) {
   }
 
   summary.checked += 1;
+
+  // Self-heal: a starter grant that failed at provisioning retries here every sweep until
+  // it lands, recording the live error each time it doesn't.
+  const { data: starterRows } = await db
+    .from("wallet_transactions")
+    .select("id, amount_cents")
+    .eq("user_id", ent.user_id)
+    .eq("type", "starter")
+    .neq("status", "succeeded")
+    .limit(1);
+  const starter = starterRows?.[0] as { id: string; amount_cents: number } | undefined;
+  if (starter) {
+    try {
+      await agent37.setBudget(agentId, { topup_micros: starter.amount_cents * 10_000 });
+      await db
+        .from("wallet_transactions")
+        .update({ status: "succeeded", failure_reason: null })
+        .eq("id", starter.id);
+      summary.recharges += 1;
+    } catch (e) {
+      const reason = String((e as Error)?.message ?? e).slice(0, 500);
+      console.error("[credits-watch] starter retry failed", ent.email, reason);
+      await db
+        .from("wallet_transactions")
+        .update({ status: "failed", failure_reason: reason })
+        .eq("id", starter.id);
+    }
+  }
+
   const budget = await agent37.getBudget(agentId);
   let remainingCents = Math.floor(
     (budget.monthly_remaining_micros + budget.topup_remaining_micros) / 10_000
