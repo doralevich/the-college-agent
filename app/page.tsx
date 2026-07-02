@@ -5,7 +5,7 @@ import Explainer from "./components/Explainer";
 import ChatBot from "./components/ChatBot";
 import Nav from "./components/Nav";
 import IntegrationGlobe from "./components/IntegrationGlobe";
-import { BookOpenCheck, BriefcaseBusiness, CalendarDays, FileText, GraduationCap, Mail, Network, NotebookTabs, ShieldCheck, Sparkles } from "lucide-react";
+import { BookOpenCheck, BriefcaseBusiness, GraduationCap, Mail, Network, NotebookTabs, ShieldCheck, Sparkles } from "lucide-react";
 
 const CALENDLY = "https://calendly.com/therealdaveo/apolloai";
 
@@ -16,43 +16,38 @@ export const metadata: Metadata = {
 const AGENT_WAYS = [
   {
     icon: GraduationCap,
-    title: "Student Life",
-    desc: "A personalized assistant that knows the student, their goals, and how they actually work day to day.",
+    title: "Your First 30 Days",
+    desc: "Load your class schedule, syllabi, deadlines, professor info, and clubs. Build a weekly rhythm before things get chaotic.",
   },
   {
     icon: BookOpenCheck,
-    title: "Academic Planning",
-    desc: "Tracks classes, assignments, teachers, tests, textbooks, and what needs attention next.",
-  },
-  {
-    icon: CalendarDays,
-    title: "College Schedule",
-    desc: "Keeps the week organized across class time, study blocks, deadlines, meetings, and campus commitments.",
-  },
-  {
-    icon: BriefcaseBusiness,
-    title: "Internships",
-    desc: "Helps manage target roles, deadlines, outreach, resumes, applications, interviews, and follow-ups.",
+    title: "Assignments & Deadlines",
+    desc: "Every syllabus becomes tasks, reminders, study blocks, and check-ins. Nothing lives only in your head.",
   },
   {
     icon: NotebookTabs,
-    title: "Study Guides",
-    desc: "Turns notes, textbooks, and class materials into organized study guides, review plans, and prep checklists.",
-  },
-  {
-    icon: FileText,
-    title: "Writing Support",
-    desc: "Helps outline papers, organize research, clean up drafts, and keep citations and sources in order.",
+    title: "Study Planning",
+    desc: "Turns exams, readings, papers, and problem sets into a realistic weekly plan. No more waiting until it's urgent.",
   },
   {
     icon: Mail,
-    title: "Communication",
-    desc: "Drafts polished emails to professors, advisors, recruiters, classmates, and internship contacts.",
+    title: "Professor & Advisor Comms",
+    desc: "Drafts polished emails to professors, TAs, advisors, and administrators. Ask the right questions without sounding sloppy.",
   },
   {
     icon: Network,
-    title: "Career Network",
-    desc: "Builds a smarter contact system for alumni, family connections, mentors, and finance career conversations.",
+    title: "Social & Campus Life",
+    desc: "Tracks clubs, events, applications, deadlines, and follow-ups. Get involved without overcommitting.",
+  },
+  {
+    icon: BriefcaseBusiness,
+    title: "Career Foundation, Early",
+    desc: "Resume, LinkedIn, internship tracking, and summer planning from freshman year. By sophomore year you're not starting cold.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Parent Peace of Mind",
+    desc: "Not surveillance. It supports independence while making sure there's a system.",
   },
 ];
 
@@ -175,9 +170,10 @@ export default function Home() {
         <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px" }}>
           <div style={{ textAlign: "center", marginBottom: 38 }}>
             <span className="mono-label">What It Does</span>
-            <h2 className="section-title ways-title">Ways Your Agent Can Work for You</h2>
+            <h2 className="section-title ways-title">Your personal college operating system.</h2>
             <p className="section-sub" style={{ maxWidth: 720, margin: "14px auto 0" }}>
-              Not ChatGPT. Not Claude. This is your own personalized assistant, built around your classes, teachers, tests, textbooks, goals, and schedule.
+              Not another chatbot. Not homework help. The thing that quietly keeps your college life
+              organized from day one.
             </p>
           </div>
           <div className="uc-grid">
