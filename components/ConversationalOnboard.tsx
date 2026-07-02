@@ -12,15 +12,19 @@ import majorsData from "@/data/college-agent-majors.json";
 // POST the exact same payload shape the legacy form submits — the provisioner and
 // SOUL.md build path stay unchanged.
 
+// Resolved through the --ca-* variables in app/agent-ui.css so the wizard follows
+// day/night mode. greenText is for brand-green TEXT (flips light in dark mode);
+// greenDeep is the CTA hover FILL (stays deep in both).
 const T = {
-  green: "#2D7A3A",
-  greenDeep: "#1B5E2A",
-  greenSoft: "#E8F1E6",
-  paper: "#F6F8F3",
-  card: "#FFFFFF",
-  ink: "#1A2421",
-  inkSoft: "#5C6660",
-  line: "#DEE6DA",
+  green: "var(--ca-green)",
+  greenDeep: "var(--ca-green-deep)",
+  greenText: "var(--ca-green-text)",
+  greenSoft: "var(--ca-green-soft)",
+  paper: "var(--ca-paper)",
+  card: "var(--ca-card)",
+  ink: "var(--ca-ink)",
+  inkSoft: "var(--ca-ink-soft)",
+  line: "var(--ca-line)",
 };
 
 const FONTS_HREF =
@@ -718,7 +722,7 @@ export function ConversationalOnboard({
             alignItems: "center",
             gap: 8,
             background: T.greenSoft,
-            color: T.greenDeep,
+            color: T.greenText,
             fontSize: 12,
             fontWeight: 600,
             letterSpacing: "0.06em",
@@ -853,7 +857,7 @@ export function ConversationalOnboard({
             />
           )}
 
-          {error && <p style={{ marginTop: 14, fontSize: 13, color: "#B23636" }}>{error}</p>}
+          {error && <p style={{ marginTop: 14, fontSize: 13, color: "var(--ca-error)" }}>{error}</p>}
         </div>
 
         <div
@@ -1264,7 +1268,7 @@ function Input({
                   height: 20,
                   borderRadius: 5,
                   border: `1.5px solid ${selected ? T.green : T.line}`,
-                  background: selected ? T.green : "#FFFFFF",
+                  background: selected ? T.green : T.card,
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -1322,7 +1326,7 @@ function Input({
                   height: 20,
                   borderRadius: "50%",
                   border: `1.5px solid ${selected ? T.green : T.line}`,
-                  background: "#FFFFFF",
+                  background: T.card,
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",

@@ -10,15 +10,19 @@ import { ConversationalOnboard, type OnboardPrefill } from "@/components/Convers
 // Brand tokens, copy, and behavior come from the build brief — keep it tight to
 // that spec; the only dynamic bit is the student's first name.
 
+// Values resolve through the --ca-* variables in app/agent-ui.css, so this hand-styled
+// surface follows day/night mode with the rest of the app. greenText is for brand-green
+// TEXT (flips light in dark mode); greenDeep is the CTA hover FILL (stays deep).
 const t = {
-  green: "#2D7A3A",
-  greenDeep: "#1B5E2A",
-  greenSoft: "#E8F1E6",
-  paper: "#F6F8F3",
-  card: "#FFFFFF",
-  ink: "#1A2421",
-  inkSoft: "#5C6660",
-  line: "#DEE6DA",
+  green: "var(--ca-green)",
+  greenDeep: "var(--ca-green-deep)",
+  greenText: "var(--ca-green-text)",
+  greenSoft: "var(--ca-green-soft)",
+  paper: "var(--ca-paper)",
+  card: "var(--ca-card)",
+  ink: "var(--ca-ink)",
+  inkSoft: "var(--ca-ink-soft)",
+  line: "var(--ca-line)",
 };
 
 const FONTS_HREF =
@@ -202,7 +206,7 @@ export function WelcomeView({
                   height: 30,
                   borderRadius: "50%",
                   background: t.greenSoft,
-                  color: t.greenDeep,
+                  color: t.greenText,
                   fontFamily: "'Fraunces', Georgia, serif",
                   fontWeight: 600,
                   fontSize: 15,
@@ -331,7 +335,7 @@ function PostOnboardCta({ hasAgent, onOpenChat }: { hasAgent: boolean; onOpenCha
           : "Click to spin up your agent. Takes about a minute."}
       </p>
       {error && (
-        <p style={{ marginTop: 8, fontSize: 13, color: "#B23636" }}>{error}</p>
+        <p style={{ marginTop: 8, fontSize: 13, color: "var(--ca-error)" }}>{error}</p>
       )}
     </div>
   );

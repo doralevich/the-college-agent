@@ -153,10 +153,10 @@ export default function Home() {
         overflow: "hidden",
       }}>
         <div className="hero-glow" />
-        <div style={{
+        <div className="hero-row" style={{
           position: "relative", zIndex: 1,
           maxWidth: 1160, margin: "0 auto", padding: "0 24px",
-          display: "flex", alignItems: "center", justifyContent: "space-between",
+          alignItems: "center", justifyContent: "space-between",
           gap: 48,
         }}>
           {/* LEFT: text */}
@@ -165,14 +165,14 @@ export default function Home() {
               <span style={{ color: "var(--green)", fontSize: 14 }}>&#9670;</span>
               Apollo[Claw] College Edition
             </div>
-            <h1 className="hero-h1" style={{ color: "#fff", textAlign: "left" }}>
-              AI personal agent<br />for college<br />students.
+            <h1 className="hero-h1" style={{ color: "#fff" }}>
+              AI personal agent <br />for college <br />students.
             </h1>
-            <p className="hero-sub" style={{ textAlign: "left" }}>
+            <p className="hero-sub">
               Your own student AI assistant. Named. Trained on your voice. Built around your schedule, classes,
               notes, deadlines, study plans, professor emails, internships, and goals. Not ChatGPT. Yours.
             </p>
-            <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 28 }}>
+            <div className="hero-cta-row" style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 28 }}>
               <a href="/build" className="btn-purple">Build My Agent</a>
               <a href="#how-it-works" className="btn-outline">See How It Works</a>
             </div>
@@ -250,7 +250,7 @@ export default function Home() {
               Select &rarr; Configure &rarr; Live
             </h2>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px 48px", maxWidth: 1000, margin: "0 auto" }}>
+          <div className="process-grid">
             {[
               { n: "1", phase: "Step 1", title: "Tell Us About Yourself", desc: "Fill out a quick profile with your school, year, and the goals you want your agent to tackle. Takes under two minutes." },
               { n: "2", phase: "Step 2", title: "Build Your Agent", desc: "Choose your agent tier (The Undergraduate, The Graduate, or The Scholar), your hosting plan, support level, and onboarding experience. Standard or White Glove." },
@@ -449,7 +449,14 @@ export default function Home() {
         .uc-card h3 { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 9px; letter-spacing: -.01em; }
         .uc-card p { font-size: 13px; line-height: 1.62; color: rgba(11,23,41,.62); }
 
+        /* HERO layout — the row is a class (not inline) so the mobile stack below can win. */
+        .hero-row { display: flex; }
+
         /* PROCESS */
+        .process-grid {
+          display: grid; grid-template-columns: 1fr 1fr;
+          gap: 32px 48px; max-width: 1000px; margin: 0 auto;
+        }
         .proc-circle {
           width: 42px; height: 42px; border-radius: 50%;
           background: rgba(61,139,61,.2); border: 2px solid var(--green); color: #fff;
@@ -486,13 +493,19 @@ export default function Home() {
           .hero-mascot { max-width: 280px; }
         }
         @media (max-width: 640px) {
+          /* Stack the hero: mascot on top, centered copy, natural headline wrapping. */
+          .hero-row { flex-direction: column; gap: 30px; text-align: center; }
           .hero-h1 { white-space: normal; font-size: clamp(34px, 10vw, 52px); }
-          .hero-mascot-wrap { flex: 0 0 200px; order: -1; margin: 0 auto; }
+          .hero-h1 br { display: none; }
+          .hero-sub { margin-bottom: 28px; }
+          .hero-cta-row { justify-content: center; }
+          .hero-mascot-wrap { flex: 0 0 auto; order: -1; margin: 0 auto; }
           .hero-mascot { max-width: 200px; }
           .dual-grid { grid-template-columns: 1fr; }
           .uc-grid { grid-template-columns: 1fr; }
           .stat-grid { grid-template-columns: repeat(2, 1fr); }
           .int-menu-grid { grid-template-columns: 1fr 1fr; }
+          .process-grid { grid-template-columns: 1fr; gap: 26px; }
         }
       `}</style>
     </>
