@@ -40,12 +40,16 @@ function classIsToday(days: string): boolean {
 export function ChatView({
   firstName,
   classes = [],
+  accent,
 }: {
   // Student's first name from the intake — greets them on the empty state.
   firstName?: string | null;
   // Structured class list from the intake; classes matching today's weekday show
   // as a "Today: ..." line under the greeting.
   classes?: ClassInfo[];
+  // School brand color (or the College Agent green fallback) — renders as a faint
+  // wash from the top of the pane so the chat feels like the student's school.
+  accent?: string;
 }) {
   const {
     agentId,
@@ -111,9 +115,15 @@ export function ChatView({
   const greetName = firstName?.trim() || "there";
 
   return (
-    <div className="relative flex h-full min-h-0 flex-col" {...att.dragHandlers}>
+    <div
+      className="relative flex h-full min-h-0 flex-col"
+      // A faint top wash in the school's color (~9% alpha hex suffix), dissolving to
+      // transparent. Subtle by design: identity, not decoration.
+      style={accent ? { background: `linear-gradient(180deg, ${accent}17 0%, transparent 360px)` } : undefined}
+      {...att.dragHandlers}
+    >
       {att.dragOver && <DropOverlay />}
-      <header className="flex h-16 shrink-0 items-center justify-between border-b bg-background px-6 md:px-10">
+      <header className="flex h-16 shrink-0 items-center justify-between border-b bg-background/80 px-6 backdrop-blur-sm md:px-10">
         <div className="min-w-0">
           <h1 className="truncate text-base font-semibold text-foreground">{headerTitle}</h1>
         </div>

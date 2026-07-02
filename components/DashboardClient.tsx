@@ -42,11 +42,14 @@ type Props = {
   // Structured class list from the intake (name/days/time) — the Chat empty state
   // uses it for the "Today: ..." schedule line in the greeting.
   classes: ChatClassInfo[];
+  // School brand color (falls back to College Agent green) — drives the faded wash
+  // behind the chat pane and the sidebar's active accent.
+  schoolAccent: string;
 };
 
 export type ChatClassInfo = { name: string; days: string; time: string };
 
-export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstName, agentName, avatarUrl, userId, onboardPrefill, classes }: Props) {
+export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstName, agentName, avatarUrl, userId, onboardPrefill, classes, schoolAccent }: Props) {
   const hasAgent = !!agentId;
   const { userEmail } = useWorkspace();
   const router = useRouter();
@@ -141,7 +144,8 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
 
   const shell = (
     <div className="flex h-screen">
-      <aside className="flex w-64 shrink-0 flex-col border-r bg-card p-4">
+      {/* Soft brand-green tint so the rail reads as its own surface, not more white page. */}
+      <aside className="flex w-64 shrink-0 flex-col border-r p-4" style={{ background: "#F3F7F1" }}>
         <div className="px-1 py-1">
           <Image
             src="/logo-college-agent.svg"
@@ -198,7 +202,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
             composer draft, and the model selection survive leaving and returning to the tab. */}
         {hasAgent && chatOpened && (
           <div className={cn("h-full", !isChat && "hidden")}>
-            <ChatView firstName={firstName} classes={classes} />
+            <ChatView firstName={firstName} classes={classes} accent={schoolAccent} />
           </div>
         )}
         {/* Files mirrors Chat: full-height, kept MOUNTED (just hidden) so the current directory,
@@ -328,7 +332,9 @@ function NavLink({
       aria-current={isActive ? "page" : undefined}
       className={cn(
         "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-        isActive ? "bg-secondary text-secondary-foreground" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+        isActive
+          ? "bg-[#E0EDDC] text-[#1B5E2A]"
+          : "text-muted-foreground hover:bg-[#E8F1E6] hover:text-foreground"
       )}
     >
       <Icon className="h-4 w-4" style={iconColor ? { color: iconColor } : undefined} />
