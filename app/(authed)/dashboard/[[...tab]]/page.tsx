@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getUserWorkspaces } from "@/lib/workspaces";
 import { parseDashboardRoute } from "@/lib/dashboard-tabs";
 import { DashboardClient } from "@/components/DashboardClient";
+import { schoolAccentColor } from "@/lib/school-colors";
 
 type Props = {
   params: Promise<{ tab?: string[] }>;
@@ -69,6 +70,10 @@ export default async function DashboardPage({ params }: Props) {
   // Chat greeting uses it to surface "Today: ..." on the empty state; day matching
   // happens client-side so it follows the student's local clock, not the server's.
   const questionnaire = (onboardRes.data?.questionnaire ?? null) as Record<string, unknown> | null;
+  // School accent — the faded wash behind Chat defaults to the student's school color.
+  const schoolAccent = schoolAccentColor(
+    typeof questionnaire?.school === "string" ? (questionnaire.school as string) : null
+  );
   const rawClasses = Array.isArray(questionnaire?.classes) ? (questionnaire.classes as unknown[]) : [];
   const classes = rawClasses
     .filter((c): c is Record<string, unknown> => !!c && typeof c === "object")
@@ -115,6 +120,7 @@ export default async function DashboardPage({ params }: Props) {
       userId={user.id}
       onboardPrefill={onboardPrefill}
       classes={classes}
+      schoolAccent={schoolAccent}
     />
   );
 }
