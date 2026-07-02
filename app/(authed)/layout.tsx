@@ -3,12 +3,15 @@
 // routes only — the hand-rolled marketing site (app/globals.css) is untouched.
 import "../agent-ui.css";
 import { Toaster } from "sonner";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 export default function AuthedLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-background text-foreground antialiased">
-      {children}
-      <Toaster richColors position="top-center" />
-    </div>
+    <ThemeProvider>
+      <div className="min-h-screen bg-background text-foreground antialiased">
+        {children}
+        <Toaster richColors position="top-center" />
+      </div>
+    </ThemeProvider>
   );
 }

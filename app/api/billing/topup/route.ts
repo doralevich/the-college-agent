@@ -65,8 +65,8 @@ export const POST = route(async (req) => {
       agent37_id: agentId,
       amount_cents: String(amountCents),
     },
-    success_url: `${origin}/dashboard/billing?topup=success`,
-    cancel_url: `${origin}/dashboard/billing?topup=canceled`,
+    success_url: `${origin}/dashboard/credits?topup=success`,
+    cancel_url: `${origin}/dashboard/credits?topup=canceled`,
   });
   if (!session.url) throw new ApiError(502, "stripe_error", "Stripe did not return a checkout URL");
 

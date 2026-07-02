@@ -4,14 +4,16 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { AgentsView } from "@/components/AgentsView";
 import { BillingView } from "@/components/BillingView";
+import { CreditsView } from "@/components/CreditsView";
 import { SettingsView } from "@/components/SettingsView";
 
-// Settings now hosts the surfaces that used to be their own sidebar tabs: the
-// workspace settings (General), Your Agent, and Billing. The sidebar links only
-// to Settings; deep links to /dashboard/billing and /dashboard/agent still work
-// because DashboardClient maps those routes to the matching initialSection here.
+// Settings hosts the surfaces that used to be their own sidebar tabs: the workspace
+// settings (General), Your Agent, Subscription (plan + hosting + invoices), and Usage
+// Credits (AI credits + top-ups). The sidebar links only to Settings; deep links to
+// /dashboard/billing, /dashboard/credits, and /dashboard/agent still work because
+// DashboardClient maps those routes to the matching initialSection here.
 
-export type SettingsSection = "general" | "agent" | "billing";
+export type SettingsSection = "general" | "agent" | "subscription" | "credits";
 
 export function SettingsHub({
   initialSection = "general",
@@ -31,33 +33,34 @@ export function SettingsHub({
   const sections: { id: SettingsSection; label: string; show: boolean }[] = [
     { id: "general", label: "General", show: true },
     { id: "agent", label: "Your Agent", show: hasAgent },
-    { id: "billing", label: "Billing", show: paid },
+    { id: "subscription", label: "Subscription", show: paid },
+    { id: "credits", label: "Usage Credits", show: hasAgent },
   ];
   const visible = sections.filter((s) => s.show);
   // If the requested section isn't available (e.g. billing before paying), fall back.
   const active = visible.some((s) => s.id === section) ? section : "general";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
         <p className="text-sm text-muted-foreground">
-          Your workspace, your agent, and your billing in one place.
+          Your workspace, your agent, your subscription, and your credits.
         </p>
       </div>
 
       {visible.length > 1 && (
-        <div className="flex gap-1 border-b">
+        <div className="inline-flex flex-wrap gap-1 rounded-full bg-secondary p-1">
           {visible.map((s) => (
             <button
               key={s.id}
               type="button"
               onClick={() => setSection(s.id)}
               className={cn(
-                "-mb-px border-b-2 px-4 py-2 text-sm font-medium transition-colors",
+                "rounded-full px-4 py-1.5 text-sm font-medium transition-colors",
                 active === s.id
-                  ? "border-primary text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
               )}
             >
               {s.label}
@@ -68,8 +71,10 @@ export function SettingsHub({
 
       {active === "agent" && hasAgent ? (
         <AgentsView firstName={firstName} onOpenChat={onOpenChat} />
-      ) : active === "billing" && paid ? (
-        <BillingView hasAgent={hasAgent} />
+      ) : active === "subscription" && paid ? (
+        <BillingView />
+      ) : active === "credits" && hasAgent ? (
+        <CreditsView />
       ) : (
         <SettingsView />
       )}

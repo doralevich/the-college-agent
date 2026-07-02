@@ -4,9 +4,10 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Blocks, Bot, Check, Home, Loader2, LogOut, MessageSquare, RotateCcw, Settings2, Sparkles } from "lucide-react";
+import { Blocks, Bot, Check, Coins, Home, Loader2, LogOut, MessageSquare, RotateCcw, Settings2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "@/lib/supabase/client";
+import { usd } from "@/lib/format";
 import { dashboardPath, parseDashboardRoute, type DashboardTabId } from "@/lib/dashboard-tabs";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { apiFetch } from "@/lib/api";
@@ -144,8 +145,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
 
   const shell = (
     <div className="flex h-screen">
-      {/* Soft brand-green tint so the rail reads as its own surface, not more white page. */}
-      <aside className="flex w-64 shrink-0 flex-col border-r p-4" style={{ background: "#F3F7F1" }}>
+      <aside className="flex w-64 shrink-0 flex-col border-r bg-background p-4">
         <div className="px-1 py-1">
           <Image
             src="/logo-college-agent.svg"
@@ -188,6 +188,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
         {hasAgent && <ChatSidebar />}
 
         <div className="mt-auto space-y-2 pt-4">
+          {hasAgent && <CreditsPill />}
           <div className="truncate px-3 text-xs text-muted-foreground">{userEmail}</div>
           <Button variant="ghost" className="w-full justify-start" onClick={signOut}>
             <LogOut className="h-4 w-4" />
@@ -215,13 +216,24 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
         {!isChat && !isFiles && (
           <div className="h-full overflow-y-auto">
             <div className="mx-auto w-full max-w-6xl p-6 md:px-10 md:py-8">
-              {active === "settings" || (paid && (active === "billing" || active === "agent" || active === "agents")) ? (
-                // One hub for Settings + Your Agent + Billing. Keyed by route so a deep link
-                // to /dashboard/billing opens on the right section even when the hub is
-                // already mounted on another one.
+              {active === "settings" ||
+              (paid && (active === "billing" || active === "agent" || active === "agents")) ||
+              (hasAgent && active === "credits") ? (
+                // One hub for Settings + Your Agent + Subscription + Usage Credits. Keyed by
+                // route so deep links (/dashboard/billing, /dashboard/credits,
+                // /dashboard/agent) open on the right section even when the hub is already
+                // mounted on another one.
                 <SettingsHub
                   key={active}
-                  initialSection={active === "billing" ? "billing" : active === "agent" || active === "agents" ? "agent" : "general"}
+                  initialSection={
+                    active === "billing"
+                      ? "subscription"
+                      : active === "credits"
+                        ? "credits"
+                        : active === "agent" || active === "agents"
+                          ? "agent"
+                          : "general"
+                  }
                   hasAgent={hasAgent}
                   paid={paid}
                   firstName={firstName}
@@ -331,14 +343,71 @@ function NavLink({
       }}
       aria-current={isActive ? "page" : undefined}
       className={cn(
-        "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+        "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
         isActive
-          ? "bg-[#E0EDDC] text-[#1B5E2A]"
-          : "text-muted-foreground hover:bg-[#E8F1E6] hover:text-foreground"
+          ? "bg-secondary text-foreground"
+          : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
       )}
     >
       <Icon className="h-4 w-4" style={iconColor ? { color: iconColor } : undefined} />
       <span className="flex-1 text-left">{label}</span>
+    </Link>
+  );
+}
+
+// Ambient credits indicator at the bottom of the sidebar: green when healthy, amber under
+// $5, red under $1. Clicking lands on Settings -> Billing where top-ups live. Hidden for
+// BYO accounts (their AI spend isn't ours to show) and while the balance hasn't loaded.
+function CreditsPill() {
+  const [remainingMicros, setRemainingMicros] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch<{ byo: unknown; credits: { remaining_micros: number } | null }>("/api/billing/credits")
+      .then((d) => {
+        if (!cancelled && !d.byo && d.credits) setRemainingMicros(d.credits.remaining_micros);
+      })
+      .catch(() => {}); // ambient chrome — never toast over a balance hiccup
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (remainingMicros === null) return null;
+  const dollars = remainingMicros / 1_000_000;
+  const low = dollars < 5;
+  const critical = dollars < 1;
+  const href = dashboardPath("credits");
+
+  return (
+    <Link
+      href={href}
+      prefetch={false}
+      scroll={false}
+      onNavigate={(e) => {
+        e.preventDefault();
+        updateDashboardHistory(href, "push");
+      }}
+      className={cn(
+        "flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-colors hover:bg-secondary/60",
+        critical
+          ? "text-destructive"
+          : low
+            ? "text-amber-700 dark:text-amber-400"
+            : "text-muted-foreground"
+      )}
+      title={low ? "Credits are running low. Tap to top up." : "AI credits. Tap to manage."}
+    >
+      <span className="flex items-center gap-2">
+        <Coins
+          className={cn(
+            "h-3.5 w-3.5",
+            critical ? "text-destructive" : low ? "text-amber-600 dark:text-amber-400" : "text-primary"
+          )}
+        />
+        {low ? "Credits low" : "AI credits"}
+      </span>
+      <span className="tabular-nums">{usd(remainingMicros)}</span>
     </Link>
   );
 }
@@ -356,9 +425,12 @@ function normalizeDashboardTab(
 ): DashboardTabId {
   if (requestedTab === "agents" && hasAgent) return "agent";
   if (requestedTab === "agent" && !hasAgent) return "agents";
-  // Files was removed from the sidebar but stays reachable by URL — Billing's
-  // "Open your files" links here so students can download everything they own.
+  // Files was removed from the sidebar but stays reachable by URL so students can
+  // browse and download everything their agent keeps for them.
   if (requestedTab === "files" && hasAgent) return "files";
+  // Usage Credits lives inside Settings; the sidebar pill and chat top-up links
+  // deep-link here.
+  if (requestedTab === "credits" && hasAgent) return "credits";
   if (requestedTab && tabs.some((t) => t.id === requestedTab)) return requestedTab;
   // Welcome is the default whenever it's available (every paid student) — it covers
   // both the conversational onboarding (pre-agent) and the static greeting (post-agent).

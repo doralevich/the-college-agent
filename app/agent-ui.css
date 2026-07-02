@@ -3,47 +3,111 @@
  * admin). Imported ONLY by the authed route-group layout — NOT the root layout —
  * so Tailwind's preflight + utilities never reach the hand-rolled marketing site
  * (app/globals.css). Palette is re-skinned to The College Agent: green primary,
- * navy foreground, cream surfaces.
+ * navy foreground, cream surfaces — with a navy-based dark theme flipped by the
+ * `.dark` class on <html> (managed by next-themes; students pick light/dark/system
+ * in Settings -> General).
  */
 @import "tailwindcss";
 @plugin "tailwindcss-animate";
 
-@theme {
+/* Class-based dark mode: `dark:` utilities apply under `.dark` on <html>. */
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  color-scheme: light;
+
   /* Surfaces */
-  --color-background: hsl(0 0% 100%);
-  --color-foreground: hsl(220 49% 8%);          /* navy #0b1220 */
-
-  --color-card: hsl(0 0% 100%);
-  --color-card-foreground: hsl(220 49% 8%);
-
-  --color-popover: hsl(0 0% 100%);
-  --color-popover-foreground: hsl(220 49% 8%);
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(220 49% 8%);                /* navy #0b1220 */
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(220 49% 8%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(220 49% 8%);
 
   /* Brand */
-  --color-primary: hsl(120 39% 39%);            /* college green #3d8b3d */
-  --color-primary-foreground: hsl(0 0% 100%);
+  --primary: hsl(120 39% 39%);                  /* college green #3d8b3d */
+  --primary-foreground: hsl(0 0% 100%);
+  --accent: hsl(120 39% 39%);
+  --accent-foreground: hsl(0 0% 100%);
 
-  --color-accent: hsl(120 39% 39%);
-  --color-accent-foreground: hsl(0 0% 100%);
+  --secondary: hsl(45 11% 93%);                 /* cream #f2f1ed */
+  --secondary-foreground: hsl(220 49% 12%);
+  --muted: hsl(45 11% 93%);
+  --muted-foreground: hsl(220 12% 40%);
 
-  --color-secondary: hsl(45 11% 93%);           /* cream #f2f1ed */
-  --color-secondary-foreground: hsl(220 49% 12%);
+  --destructive: hsl(0 70% 50%);
+  --destructive-foreground: hsl(0 0% 100%);
 
-  --color-muted: hsl(45 11% 93%);
-  --color-muted-foreground: hsl(220 12% 40%);
+  --border: hsl(220 13% 88%);
+  --input: hsl(220 13% 88%);
+  --ring: hsl(120 39% 39%);
+}
 
-  --color-destructive: hsl(0 70% 50%);          /* red */
-  --color-destructive-foreground: hsl(0 0% 100%);
+.dark {
+  color-scheme: dark;
 
-  --color-border: hsl(220 13% 88%);
-  --color-input: hsl(220 13% 88%);
-  --color-ring: hsl(120 39% 39%);
+  --background: hsl(222 44% 7%);                /* brand navy, deepened */
+  --foreground: hsl(210 25% 96%);
+  --card: hsl(222 36% 10%);
+  --card-foreground: hsl(210 25% 96%);
+  --popover: hsl(222 36% 10%);
+  --popover-foreground: hsl(210 25% 96%);
 
-  /* Radius */
-  --radius: 10px;
-  --radius-lg: 12px;
-  --radius-md: 8px;
-  --radius-sm: 6px;
+  --primary: hsl(120 36% 46%);                  /* green, lifted for dark contrast */
+  --primary-foreground: hsl(0 0% 100%);
+  --accent: hsl(120 36% 46%);
+  --accent-foreground: hsl(0 0% 100%);
+
+  --secondary: hsl(221 26% 16%);
+  --secondary-foreground: hsl(210 20% 90%);
+  --muted: hsl(221 26% 16%);
+  --muted-foreground: hsl(218 12% 65%);
+
+  --destructive: hsl(0 62% 56%);
+  --destructive-foreground: hsl(0 0% 100%);
+
+  --border: hsl(220 20% 20%);
+  --input: hsl(220 20% 20%);
+  --ring: hsl(120 36% 46%);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Radius — an Apple-leaning curve scale. Bumping the shared tokens rounds every
+     rounded-* utility in the authed surface at once (cards, buttons, inputs). */
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
 
   /* Fonts (reuse the root layout's next/font CSS vars). --font-body/-display match
      the class names used by the ported shadcn components. */

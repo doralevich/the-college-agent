@@ -82,7 +82,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${ibmPlexMono.variable}`}>
+    // suppressHydrationWarning: next-themes sets the theme class on <html> before
+    // hydration (authed surface only), which React would otherwise flag as a mismatch.
+    <html lang="en" className={`${inter.variable} ${ibmPlexMono.variable}`} suppressHydrationWarning>
       <body>
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-3KS91J2QK3"
