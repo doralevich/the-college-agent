@@ -52,6 +52,12 @@ async function parseAgent37<T>(res: Response, augment402 = false): Promise<T> {
       // Almost always an unfunded wallet at create/start time — point the operator at billing.
       message = `${message} (Agent37 payment required: fund your wallet under Cloud → Billing in the dashboard, then retry.)`;
     }
+    if (res.status === 405) {
+      // Surface which verbs the endpoint DOES accept — this is diagnosis gold when the
+      // write contract is undocumented.
+      const allow = res.headers.get("allow");
+      if (allow) message = `${message} (allow: ${allow})`;
+    }
     throw new Agent37Error(res.status, err.code || "error", message);
   }
 
@@ -177,6 +183,27 @@ export const agent37 = {
           lastErr = err;
           if (err instanceof Agent37Error && err.status === 405) break; // wrong verb — next method
           if (err instanceof Agent37Error && (err.status === 400 || err.status === 422)) continue; // body shape — next spelling
+          throw err;
+        }
+      }
+    }
+    // The budget subresource may be read-only; some APIs expose top-ups as an action
+    // endpoint instead. A missing action path (404/405) must NOT escape as the final
+    // error — a 404 here means "no such route", not "no such agent" (a truly-gone agent
+    // already threw 404 from the base attempts above), so keep the base error instead.
+    if (body.topup_micros != null) {
+      for (const candidate of bodies) {
+        try {
+          return await call<Budget>(`/instances/${id}/budget/topup`, {
+            method: "POST",
+            body: JSON.stringify(candidate),
+          });
+        } catch (err) {
+          if (err instanceof Agent37Error && (err.status === 404 || err.status === 405)) break;
+          if (err instanceof Agent37Error && (err.status === 400 || err.status === 422)) {
+            lastErr = err;
+            continue;
+          }
           throw err;
         }
       }
