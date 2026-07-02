@@ -58,6 +58,15 @@ export function AgentsView({ firstName, onOpenChat }: { firstName: string | null
 
   return (
     <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-medium">Your Agent</h2>
+        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+          This is your personal AI agent: a private assistant that runs on its own cloud computer,
+          around the clock, built from your intake answers. Here you can check that it&apos;s
+          healthy, rename it, open its files, or start over with a fresh one.
+        </p>
+      </div>
+
       {loading ? (
         <p className="text-sm text-muted-foreground">Loading...</p>
       ) : agents.length === 0 ? (
@@ -120,6 +129,56 @@ export function AgentsView({ firstName, onOpenChat }: { firstName: string | null
           </table>
         </div>
       )}
+
+      {!loading && agents.length > 0 && <AgentKey />}
+    </div>
+  );
+}
+
+// A plain-language legend for the table above — students shouldn't have to guess what
+// "running" or "2 vCPU" means, or what the icon buttons do.
+function AgentKey() {
+  return (
+    <div className="rounded-xl border bg-muted/30 p-5">
+      <h3 className="text-sm font-semibold">What everything means</h3>
+      <dl className="mt-3 space-y-3 text-sm">
+        <KeyRow term="Name">
+          Your agent&apos;s name. Click it to rename your agent anytime.
+        </KeyRow>
+        <KeyRow term="Status">
+          <span className="font-medium text-foreground">running</span> means your agent is live
+          and ready to chat. Anything else (starting, provisioning) means it&apos;s coming online;
+          give it a minute and it will sort itself out.
+        </KeyRow>
+        <KeyRow term="Resources">
+          The dedicated cloud computer your agent runs on: processor, memory, and disk. This is
+          what your monthly hosting pays for.
+        </KeyRow>
+        <KeyRow term="Chat">
+          Opens a conversation with your agent right here in the dashboard.
+        </KeyRow>
+        <KeyRow term="File browser">
+          The files your agent keeps for you: notes, plans, and documents. View or download
+          anything, anytime.
+        </KeyRow>
+        <KeyRow term="Terminal">
+          A direct window into your agent&apos;s computer, for advanced users. You&apos;ll never
+          need it day to day.
+        </KeyRow>
+        <KeyRow term="More (…) menu">
+          Restart, stop, or delete your agent. Deleting clears your intake answers so you can
+          redo them and build a fresh agent; your account and billing stay intact.
+        </KeyRow>
+      </dl>
+    </div>
+  );
+}
+
+function KeyRow({ term, children }: { term: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-0.5 sm:flex-row sm:gap-4">
+      <dt className="w-32 shrink-0 font-medium">{term}</dt>
+      <dd className="text-muted-foreground">{children}</dd>
     </div>
   );
 }

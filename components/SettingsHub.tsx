@@ -69,7 +69,7 @@ export function SettingsHub({
       {active === "agent" && hasAgent ? (
         <AgentsView firstName={firstName} onOpenChat={onOpenChat} />
       ) : active === "billing" && paid ? (
-        <BillingView />
+        <BillingView hasAgent={hasAgent} />
       ) : (
         <SettingsView />
       )}

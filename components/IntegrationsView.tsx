@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Check, ExternalLink, Loader2, Plug, Plus, Search, Unplug } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Check, ExternalLink, Loader2, Plug, Plus, Search, Star, Unplug } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
-import { DEFAULT_INTEGRATION_TOOLKITS } from "@/lib/integration-catalog";
+import { DEFAULT_INTEGRATION_TOOLKITS, FAVORITE_INTEGRATION_SLUGS } from "@/lib/integration-catalog";
 import { cn } from "@/lib/utils";
 import type {
   IntegrationConnection,
@@ -43,6 +43,27 @@ function isActive(c: IntegrationConnection): boolean {
 function isToolkitConnected(conns: IntegrationConnection[], slug: string): boolean {
   return conns.some((c) => connToolkitSlug(c) === slug.toLowerCase() && isActive(c));
 }
+
+// Case/underscore/space-insensitive match against a toolkit's name, slug, or description,
+// so "one drive", "onedrive", and "OneDrive" all find the one_drive toolkit.
+function matchesQuery(t: IntegrationToolkit, q: string): boolean {
+  const needle = q.toLowerCase().replace(/[\s_]+/g, "");
+  return (
+    t.name.toLowerCase().replace(/[\s_]+/g, "").includes(needle) ||
+    t.slug.toLowerCase().replace(/[\s_]+/g, "").includes(needle) ||
+    (t.description ?? "").toLowerCase().replace(/[\s_]+/g, "").includes(needle)
+  );
+}
+
+// The curated catalog split into the pinned Favorites row and everything else,
+// preserving FAVORITE_INTEGRATION_SLUGS order for the pinned set.
+const FAVORITE_TOOLKITS: IntegrationToolkit[] = FAVORITE_INTEGRATION_SLUGS.map((slug) =>
+  DEFAULT_INTEGRATION_TOOLKITS.find((t) => toolkitKey(t.slug) === toolkitKey(slug))
+).filter((t): t is IntegrationToolkit => !!t);
+
+const OTHER_TOOLKITS: IntegrationToolkit[] = DEFAULT_INTEGRATION_TOOLKITS.filter(
+  (t) => !FAVORITE_INTEGRATION_SLUGS.some((slug) => toolkitKey(slug) === toolkitKey(t.slug))
+);
 
 // The Integrations tab: connect third-party apps (Gmail, GitHub, Slack…) to the student's agent.
 // Browse searches the catalog (popular apps by default); Connected manages the linked accounts.
@@ -160,9 +181,65 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
 
   const activeConnections = connections.filter((c) => !c.isDisabled);
   const q = search.trim();
-  const tooShort = q.length > 0 && q.length < MIN_SEARCH;
-  const visibleToolkits = q.length === 0 ? DEFAULT_INTEGRATION_TOOLKITS : toolkits;
-  const showLoadingToolkits = q.length >= MIN_SEARCH && loadingToolkits;
+
+  // Filtering is instant and local over the curated catalog from the first character; a 3+ char
+  // query ALSO searches the full remote catalog (1,000+ apps) and appends whatever the curated
+  // list doesn't already show once the live results land.
+  const localMatches = useMemo(
+    () => (q ? DEFAULT_INTEGRATION_TOOLKITS.filter((t) => matchesQuery(t, q)) : []),
+    [q]
+  );
+  const remoteExtras = useMemo(() => {
+    if (q.length < MIN_SEARCH || loadingToolkits) return [];
+    const shown = new Set(localMatches.map((t) => toolkitKey(t.slug)));
+    return toolkits.filter((t) => !shown.has(toolkitKey(t.slug)));
+  }, [q, localMatches, toolkits, loadingToolkits]);
+  const searchResults = [...localMatches, ...remoteExtras];
+  const searchingRemote = q.length >= MIN_SEARCH && loadingToolkits;
+
+  // One card, used by the Favorites row, the All-apps grid, and search results.
+  const renderCard = (t: IntegrationToolkit) => {
+    const connected = isToolkitConnected(connections, t.slug);
+    const key = toolkitKey(t.slug);
+    const isPending = pendingSlug === key;
+    return (
+      <div
+        key={t.slug}
+        className="flex items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-secondary/40"
+      >
+        <ToolkitLogo logo={t.logo} name={t.name} />
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-sm font-medium">{t.name}</div>
+          {t.description && (
+            <div className="truncate text-xs text-muted-foreground">{t.description}</div>
+          )}
+        </div>
+        {connected ? (
+          <Badge variant="success" className="shrink-0 gap-1">
+            <Check className="h-3 w-3" />
+            Added
+          </Badge>
+        ) : isPending ? (
+          <Button size="sm" variant="outline" className="h-8 shrink-0 px-3 text-xs" disabled>
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            Waiting
+          </Button>
+        ) : (
+          <Button asChild size="sm" variant="outline" className="h-8 shrink-0 px-3 text-xs">
+            <a
+              href={connectRedirectHref(agentId, t.slug)}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => startPolling(t.slug)}
+            >
+              Connect
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          </Button>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="max-w-5xl space-y-6">
@@ -193,68 +270,45 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
             />
           </div>
 
-          {tooShort ? (
-            <p className="px-1 text-sm text-muted-foreground">Type at least {MIN_SEARCH} characters to search.</p>
+          {q.length === 0 ? (
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <div className="flex items-center gap-1.5 px-1 text-xs font-medium text-muted-foreground">
+                  <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                  Favorites
+                </div>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {FAVORITE_TOOLKITS.map(renderCard)}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="px-1 text-xs font-medium text-muted-foreground">All apps</div>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {OTHER_TOOLKITS.map(renderCard)}
+                </div>
+                <p className="px-1 pt-1 text-xs text-muted-foreground">
+                  Looking for something else? Search above to reach 1,000+ more apps.
+                </p>
+              </div>
+            </div>
           ) : (
             <div className="space-y-2">
-              <div className="px-1 text-xs font-medium text-muted-foreground">
-                {q.length === 0 ? "Popular integrations" : "Search results"}
-              </div>
-              {showLoadingToolkits ? (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="h-[68px] animate-pulse rounded-xl border bg-muted/40" />
-                  ))}
-                </div>
-              ) : visibleToolkits.length === 0 ? (
+              <div className="px-1 text-xs font-medium text-muted-foreground">Search results</div>
+              {searchResults.length === 0 && !searchingRemote ? (
                 <p className="px-1 py-8 text-center text-sm text-muted-foreground">
                   No apps found for “{q}”.
+                  {q.length < MIN_SEARCH && " Keep typing to search the full catalog."}
                 </p>
               ) : (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {visibleToolkits.map((t) => {
-                    const connected = isToolkitConnected(connections, t.slug);
-                    const key = toolkitKey(t.slug);
-                    const isPending = pendingSlug === key;
-                    return (
-                      <div
-                        key={t.slug}
-                        className="flex items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-secondary/40"
-                      >
-                        <ToolkitLogo logo={t.logo} name={t.name} />
-                        <div className="min-w-0 flex-1">
-                          <div className="truncate text-sm font-medium">{t.name}</div>
-                          {t.description && (
-                            <div className="truncate text-xs text-muted-foreground">{t.description}</div>
-                          )}
-                        </div>
-                        {connected ? (
-                          <Badge variant="success" className="shrink-0 gap-1">
-                            <Check className="h-3 w-3" />
-                            Added
-                          </Badge>
-                        ) : isPending ? (
-                          <Button size="sm" variant="outline" className="h-8 shrink-0 px-3 text-xs" disabled>
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            Waiting
-                          </Button>
-                        ) : (
-                          <Button asChild size="sm" variant="outline" className="h-8 shrink-0 px-3 text-xs">
-                            <a
-                              href={connectRedirectHref(agentId, t.slug)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={() => startPolling(t.slug)}
-                            >
-                              Connect
-                              <ExternalLink className="h-3.5 w-3.5" />
-                            </a>
-                          </Button>
-                        )}
-                      </div>
-                    );
-                  })}
+                  {searchResults.map(renderCard)}
                 </div>
+              )}
+              {searchingRemote && (
+                <p className="flex items-center gap-1.5 px-1 text-xs text-muted-foreground">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Searching the full catalog…
+                </p>
               )}
             </div>
           )}
