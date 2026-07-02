@@ -4,7 +4,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Check, ExternalLink, Loader2, Plug, Plus, Search, Star, Unplug } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
-import { DEFAULT_INTEGRATION_TOOLKITS, FAVORITE_INTEGRATION_SLUGS } from "@/lib/integration-catalog";
+import {
+  DEFAULT_INTEGRATION_TOOLKITS,
+  FAVORITE_INTEGRATION_SLUGS,
+  INTEGRATION_CATEGORIES,
+} from "@/lib/integration-catalog";
 import { cn } from "@/lib/utils";
 import type {
   IntegrationConnection,
@@ -55,15 +59,12 @@ function matchesQuery(t: IntegrationToolkit, q: string): boolean {
   );
 }
 
-// The curated catalog split into the pinned Favorites row and everything else,
-// preserving FAVORITE_INTEGRATION_SLUGS order for the pinned set.
+// The pinned Favorites row, in FAVORITE_INTEGRATION_SLUGS order. Favorites also appear in
+// their category below (like an app store's featured shelf) — the row is quick access,
+// the categories are the organized catalog.
 const FAVORITE_TOOLKITS: IntegrationToolkit[] = FAVORITE_INTEGRATION_SLUGS.map((slug) =>
   DEFAULT_INTEGRATION_TOOLKITS.find((t) => toolkitKey(t.slug) === toolkitKey(slug))
 ).filter((t): t is IntegrationToolkit => !!t);
-
-const OTHER_TOOLKITS: IntegrationToolkit[] = DEFAULT_INTEGRATION_TOOLKITS.filter(
-  (t) => !FAVORITE_INTEGRATION_SLUGS.some((slug) => toolkitKey(slug) === toolkitKey(t.slug))
-);
 
 // The Integrations tab: connect third-party apps (Gmail, GitHub, Slack…) to the student's agent.
 // Browse searches the catalog (popular apps by default); Connected manages the linked accounts.
@@ -77,6 +78,14 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
   const [loadingConns, setLoadingConns] = useState(true);
   const [pendingSlug, setPendingSlug] = useState<string | null>(null);
   const [disconnecting, setDisconnecting] = useState<string | null>(null);
+
+  // "Show more apps": pages through the full remote catalog (popularity-ranked) below the
+  // curated categories. Fetched on demand, deduped against everything already on screen;
+  // the button hides once the upstream cursor is exhausted (or a page adds nothing new).
+  const [extraApps, setExtraApps] = useState<IntegrationToolkit[]>([]);
+  const [extraCursor, setExtraCursor] = useState<string | null>(null);
+  const [extraLoaded, setExtraLoaded] = useState(false);
+  const [loadingExtra, setLoadingExtra] = useState(false);
 
   const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -164,6 +173,30 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
     }, POLL_INTERVAL_MS);
   }
 
+  async function loadMoreApps() {
+    setLoadingExtra(true);
+    try {
+      const params = new URLSearchParams({ limit: String(BROWSE_LIMIT) });
+      if (extraCursor) params.set("cursor", extraCursor);
+      const res = await apiFetch<IntegrationToolkitsResult>(
+        `/api/agents/${agentId}/integrations/toolkits?${params}`
+      );
+      const seen = new Set(
+        [...DEFAULT_INTEGRATION_TOOLKITS, ...extraApps].map((t) => toolkitKey(t.slug))
+      );
+      const fresh = res.items.filter((t) => !seen.has(toolkitKey(t.slug)));
+      setExtraApps((prev) => [...prev, ...fresh]);
+      // Stop offering "load more" when the catalog is exhausted, or when paging isn't
+      // actually advancing (a whole page of already-seen apps).
+      setExtraCursor(res.items.length > 0 && fresh.length > 0 ? (res.nextCursor ?? null) : null);
+      setExtraLoaded(true);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setLoadingExtra(false);
+    }
+  }
+
   async function disconnect(connectedAccountId: string) {
     setDisconnecting(connectedAccountId);
     try {
@@ -243,19 +276,26 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
 
   return (
     <div className="max-w-5xl space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">Integrations</h1>
-        <div className="inline-flex rounded-lg border bg-card p-0.5 text-sm">
-          <SubTabButton active={tab === "browse"} onClick={() => setTab("browse")}>
-            Browse
-          </SubTabButton>
-          <SubTabButton active={tab === "connected"} onClick={() => setTab("connected")}>
-            Connected
-            {activeConnections.length > 0 && (
-              <span className="ml-1.5 text-xs text-muted-foreground">{activeConnections.length}</span>
-            )}
-          </SubTabButton>
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight">Integrations</h1>
+          <div className="inline-flex rounded-lg border bg-card p-0.5 text-sm">
+            <SubTabButton active={tab === "browse"} onClick={() => setTab("browse")}>
+              Browse
+            </SubTabButton>
+            <SubTabButton active={tab === "connected"} onClick={() => setTab("connected")}>
+              Connected
+              {activeConnections.length > 0 && (
+                <span className="ml-1.5 text-xs text-muted-foreground">{activeConnections.length}</span>
+              )}
+            </SubTabButton>
+          </div>
         </div>
+        <p className="max-w-2xl text-sm text-muted-foreground">
+          Integrations connect your agent to the apps you already use. Once an app is connected,
+          your agent can work in it for you: check Canvas deadlines, draft Gmail replies, add
+          events to your calendar, or pull a file from Drive when you ask.
+        </p>
       </div>
 
       {tab === "browse" ? (
@@ -272,6 +312,11 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
 
           {q.length === 0 ? (
             <div className="space-y-6">
+              <p className="rounded-lg border bg-muted/30 px-4 py-3 text-xs text-muted-foreground">
+                Connecting takes about 30 seconds: click Connect, sign in to the app in the tab
+                that opens, and you&apos;re done. Your agent can then use that app on your behalf.
+                Disconnect any app anytime from the Connected tab.
+              </p>
               <div className="space-y-2">
                 <div className="flex items-center gap-1.5 px-1 text-xs font-medium text-muted-foreground">
                   <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
@@ -281,14 +326,39 @@ export function IntegrationsView({ agentId }: { agentId: string }) {
                   {FAVORITE_TOOLKITS.map(renderCard)}
                 </div>
               </div>
-              <div className="space-y-2">
-                <div className="px-1 text-xs font-medium text-muted-foreground">All apps</div>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {OTHER_TOOLKITS.map(renderCard)}
+              {INTEGRATION_CATEGORIES.map((cat) => (
+                <div key={cat.title} className="space-y-2">
+                  <div className="px-1 text-xs font-medium text-muted-foreground">{cat.title}</div>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {cat.toolkits.map(renderCard)}
+                  </div>
                 </div>
-                <p className="px-1 pt-1 text-xs text-muted-foreground">
-                  Looking for something else? Search above to reach 1,000+ more apps.
-                </p>
+              ))}
+              <div className="space-y-2">
+                {extraApps.length > 0 && (
+                  <>
+                    <div className="px-1 text-xs font-medium text-muted-foreground">
+                      More from the app store
+                    </div>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {extraApps.map(renderCard)}
+                    </div>
+                  </>
+                )}
+                {!extraLoaded || extraCursor ? (
+                  <Button variant="outline" className="w-full" disabled={loadingExtra} onClick={loadMoreApps}>
+                    {loadingExtra ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Plus className="h-4 w-4" />
+                    )}
+                    {extraLoaded ? "Load more apps" : "Show more apps"}
+                  </Button>
+                ) : (
+                  <p className="px-1 pt-1 text-center text-xs text-muted-foreground">
+                    That&apos;s everything we can list here. Search above to find any of 1,000+ apps.
+                  </p>
+                )}
               </div>
             </div>
           ) : (
