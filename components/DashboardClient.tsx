@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Blocks, Bot, Check, Coins, Home, Loader2, LogOut, MessageSquare, RotateCcw, Settings2, Sparkles } from "lucide-react";
+import { Blocks, Bot, Check, Coins, Home, Loader2, LogOut, Menu, MessageSquare, RotateCcw, Settings2, Sparkles, X } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "@/lib/supabase/client";
 import { usd } from "@/lib/format";
@@ -134,6 +134,13 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
   const isChat = active === "chat";
   const isFiles = active === "files";
 
+  // Mobile nav drawer. Open state is "opened at this pathname" — navigating anywhere
+  // (tab, thread, credits pill) changes the pathname and the drawer closes by derivation,
+  // no effect needed. Clicking a nav link on the SAME path closes it explicitly.
+  const [navOpenAt, setNavOpenAt] = useState<string | null>(null);
+  const mobileNavOpen = navOpenAt !== null && navOpenAt === pathname;
+  const closeMobileNav = () => setNavOpenAt(null);
+
   // Chat/Files mount lazily on first open, then stay mounted (just hidden) so drafts, streams,
   // current directories, and scroll survive tab switches without paying their initial fetches on
   // dashboards where the student never opens them. Latched during render rather than in an effect,
@@ -143,61 +150,95 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
   const [filesOpened, setFilesOpened] = useState(false);
   if (isFiles && !filesOpened) setFilesOpened(true);
 
+  // Everything below the logo in the sidebar — shared between the fixed desktop rail and
+  // the mobile drawer so the two can't drift. Clicking any nav link closes the drawer
+  // (harmless no-op on desktop).
+  const sidebarBody = (
+    <>
+      {tabs.length > 0 && (
+        <nav
+          className="mt-5 flex flex-col gap-1"
+          onClick={(e) => {
+            if ((e.target as HTMLElement).closest("a")) closeMobileNav();
+          }}
+        >
+          {tabs.map((t) => {
+            const Icon = t.icon;
+            const isActive = active === t.id;
+            return t.id === "chat" ? (
+              <ChatTabButton
+                key={t.id}
+                Icon={Icon}
+                label={t.label}
+                isActive={isActive}
+                href={dashboardPath(t.id)}
+              />
+            ) : (
+              <NavLink
+                key={t.id}
+                Icon={Icon}
+                label={t.label}
+                isActive={isActive}
+                href={dashboardPath(t.id)}
+                iconColor={t.iconColor}
+              />
+            );
+          })}
+        </nav>
+      )}
+
+      {/* Keep the thread rail visible across dashboard tabs; selecting a thread returns to Chat. */}
+      {hasAgent && <ChatSidebar />}
+
+      <div className="mt-auto space-y-2 pt-4">
+        {hasAgent && <CreditsPill />}
+        <div className="truncate px-3 text-xs text-muted-foreground">{userEmail}</div>
+        <Button variant="ghost" className="w-full justify-start" onClick={signOut}>
+          <LogOut className="h-4 w-4" />
+          Sign out
+        </Button>
+      </div>
+    </>
+  );
+
   const shell = (
-    <div className="flex h-screen">
-      <aside className="flex w-64 shrink-0 flex-col border-r bg-background p-4">
-        <div className="px-1 py-1">
-          <Image
-            src="/logo-college-agent.svg"
-            alt="The College Agent"
-            width={310}
-            height={30}
-            priority
-            className="h-auto w-full"
-          />
-        </div>
+    <div className="flex h-dvh flex-col">
+      {/* Mobile top bar — the sidebar is hidden on phones and lives behind this menu. */}
+      <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-4 md:hidden">
+        <Image
+          src="/logo-college-agent.svg"
+          alt="The College Agent"
+          width={310}
+          height={30}
+          priority
+          className="h-7 w-auto"
+        />
+        <button
+          type="button"
+          onClick={() => setNavOpenAt(pathname)}
+          aria-label="Open menu"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+      </header>
 
-        {tabs.length > 0 && (
-          <nav className="mt-5 flex flex-col gap-1">
-            {tabs.map((t) => {
-              const Icon = t.icon;
-              const isActive = active === t.id;
-              return t.id === "chat" ? (
-                <ChatTabButton
-                  key={t.id}
-                  Icon={Icon}
-                  label={t.label}
-                  isActive={isActive}
-                  href={dashboardPath(t.id)}
-                />
-              ) : (
-                <NavLink
-                  key={t.id}
-                  Icon={Icon}
-                  label={t.label}
-                  isActive={isActive}
-                  href={dashboardPath(t.id)}
-                  iconColor={t.iconColor}
-                />
-              );
-            })}
-          </nav>
-        )}
+      <div className="flex min-h-0 flex-1">
+        <aside className="hidden w-64 shrink-0 flex-col border-r bg-background p-4 md:flex">
+          <div className="px-1 py-1">
+            <Image
+              src="/logo-college-agent.svg"
+              alt="The College Agent"
+              width={310}
+              height={30}
+              priority
+              className="h-auto w-full"
+            />
+          </div>
+          {sidebarBody}
+        </aside>
 
-        {/* Keep the thread rail visible across dashboard tabs; selecting a thread returns to Chat. */}
-        {hasAgent && <ChatSidebar />}
-
-        <div className="mt-auto space-y-2 pt-4">
-          {hasAgent && <CreditsPill />}
-          <div className="truncate px-3 text-xs text-muted-foreground">{userEmail}</div>
-          <Button variant="ghost" className="w-full justify-start" onClick={signOut}>
-            <LogOut className="h-4 w-4" />
-            Sign out
-          </Button>
-        </div>
-      </aside>
-
-      <main className="min-w-0 flex-1 overflow-hidden">
+        <main className="min-w-0 flex-1 overflow-hidden">
         {/* Chat owns its full height (scrolling messages + pinned composer) — no page padding.
             It stays MOUNTED (just hidden) across tab switches so an in-flight first turn, the
             composer draft, and the model selection survive leaving and returning to the tab. */}
@@ -271,7 +312,40 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
             </div>
           </div>
         )}
-      </main>
+        </main>
+      </div>
+
+      {/* Mobile nav drawer: backdrop + the same sidebar content as the desktop rail. */}
+      {mobileNavOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <button
+            type="button"
+            aria-label="Close menu"
+            className="absolute inset-0 bg-black/40"
+            onClick={closeMobileNav}
+          />
+          <div className="absolute left-0 top-0 flex h-full w-72 max-w-[85vw] flex-col overflow-y-auto border-r bg-background p-4 shadow-xl">
+            <div className="flex items-center justify-between px-1 py-1">
+              <Image
+                src="/logo-college-agent.svg"
+                alt="The College Agent"
+                width={310}
+                height={30}
+                className="h-7 w-auto"
+              />
+              <button
+                type="button"
+                onClick={closeMobileNav}
+                aria-label="Close menu"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            {sidebarBody}
+          </div>
+        </div>
+      )}
     </div>
   );
 
