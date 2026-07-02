@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Blocks, Bot, Check, CreditCard, Home, Loader2, LogOut, MessageSquare, RotateCcw, Settings2, Sparkles } from "lucide-react";
+import { Blocks, Bot, Check, Home, Loader2, LogOut, MessageSquare, RotateCcw, Settings2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "@/lib/supabase/client";
 import { dashboardPath, parseDashboardRoute, type DashboardTabId } from "@/lib/dashboard-tabs";
@@ -12,9 +12,7 @@ import { useWorkspace } from "@/components/WorkspaceProvider";
 import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { AgentsView } from "@/components/AgentsView";
-import { SettingsView } from "@/components/SettingsView";
-import { BillingView } from "@/components/BillingView";
+import { SettingsHub } from "@/components/SettingsHub";
 import { ChatProvider, useChatContext } from "@/components/chat/ChatProvider";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { ChatView } from "@/components/chat/ChatView";
@@ -89,14 +87,14 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
     ...(hasAgent
       ? [
           { id: "chat" as DashboardTabId, label: "Chat", icon: MessageSquare },
-          { id: "agent" as DashboardTabId, label: "Your Agent", icon: Bot },
           { id: "integrations" as DashboardTabId, label: "Integrations", icon: Blocks, iconColor: "#3B82F6" },
           { id: "shortcuts" as DashboardTabId, label: "Shortcuts", icon: Sparkles, iconColor: "#F59E0B" },
         ]
       : paid
         ? []
         : [{ id: "agents" as DashboardTabId, label: "Agents", icon: Bot }]),
-    ...(paid ? [{ id: "billing" as DashboardTabId, label: "Billing", icon: CreditCard }] : []),
+    // Your Agent and Billing live INSIDE Settings now (SettingsHub sections); their old
+    // /dashboard/agent and /dashboard/billing routes deep-link to the matching section.
     { id: "settings", label: "Settings", icon: Settings2 },
   ];
 
@@ -213,10 +211,18 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
         {!isChat && !isFiles && (
           <div className="h-full overflow-y-auto">
             <div className="mx-auto w-full max-w-6xl p-6 md:px-10 md:py-8">
-              {active === "settings" ? (
-                <SettingsView />
-              ) : active === "billing" ? (
-                <BillingView />
+              {active === "settings" || (paid && (active === "billing" || active === "agent" || active === "agents")) ? (
+                // One hub for Settings + Your Agent + Billing. Keyed by route so a deep link
+                // to /dashboard/billing opens on the right section even when the hub is
+                // already mounted on another one.
+                <SettingsHub
+                  key={active}
+                  initialSection={active === "billing" ? "billing" : active === "agent" || active === "agents" ? "agent" : "general"}
+                  hasAgent={hasAgent}
+                  paid={paid}
+                  firstName={firstName}
+                  onOpenChat={() => openDashboardTab("chat")}
+                />
               ) : active === "integrations" && agentId ? (
                 <IntegrationsView agentId={agentId} />
               ) : active === "shortcuts" && hasAgent ? (
@@ -234,12 +240,17 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
                 />
               ) : !paid ? (
                 <BuildCta />
-              ) : hasAgent ? (
-                <AgentsView firstName={firstName} onOpenChat={() => openDashboardTab("chat")} />
               ) : provisioning || provisionFailed ? (
                 <Provisioning failed={provisionFailed} onRetry={provision} />
-              ) : (
+              ) : !hasAgent ? (
                 <StepsView onboardDone={onboardDone} setupDone={setupDone} onCreate={provision} />
+              ) : (
+                <SettingsHub
+                  hasAgent={hasAgent}
+                  paid={paid}
+                  firstName={firstName}
+                  onOpenChat={() => openDashboardTab("chat")}
+                />
               )}
             </div>
           </div>
