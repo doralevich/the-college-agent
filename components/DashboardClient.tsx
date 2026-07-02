@@ -211,7 +211,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
           width={310}
           height={30}
           priority
-          className="h-6 w-auto"
+          className="h-7 w-auto"
         />
         <button
           type="button"
@@ -331,7 +331,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
                 alt="The College Agent"
                 width={310}
                 height={30}
-                className="h-6 w-auto"
+                className="h-7 w-auto"
               />
               <button
                 type="button"
