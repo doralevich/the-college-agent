@@ -153,25 +153,42 @@ export default function Home() {
         overflow: "hidden",
       }}>
         <div className="hero-glow" />
-        <div style={{ position: "relative", zIndex: 1, textAlign: "center", maxWidth: 1160, margin: "0 auto", padding: "0 24px" }}>
-          <div className="hero-badge">
-            <span style={{ color: "var(--green)", fontSize: 14 }}>&#9670;</span>
-            Apollo[Claw] College Edition
+        <div style={{
+          position: "relative", zIndex: 1,
+          maxWidth: 1160, margin: "0 auto", padding: "0 24px",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          gap: 48,
+        }}>
+          {/* LEFT: text */}
+          <div style={{ flex: "1 1 480px", minWidth: 0 }}>
+            <div className="hero-badge">
+              <span style={{ color: "var(--green)", fontSize: 14 }}>&#9670;</span>
+              Apollo[Claw] College Edition
+            </div>
+            <h1 className="hero-h1" style={{ color: "#fff", textAlign: "left" }}>
+              AI personal agent for college students.
+            </h1>
+            <p className="hero-sub" style={{ textAlign: "left" }}>
+              Your own student AI assistant. Named. Trained on your voice. Built around your schedule, classes,
+              notes, deadlines, study plans, professor emails, internships, and goals. Not ChatGPT. Yours.
+            </p>
+            <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 28 }}>
+              <a href="/build" className="btn-purple">Build My Agent</a>
+              <a href="#how-it-works" className="btn-outline">See How It Works</a>
+            </div>
+            <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.3)", letterSpacing: ".04em" }}>
+              Built on Apollo[Claw] infrastructure. Live in 30 minutes.
+            </p>
           </div>
-          <h1 className="hero-h1" style={{ color: "#fff" }}>
-            AI personal agent for college students.
-          </h1>
-          <p className="hero-sub">
-            Your own student AI assistant. Named. Trained on your voice. Built around your schedule, classes,
-            notes, deadlines, study plans, professor emails, internships, and goals. Not ChatGPT. Yours.
-          </p>
-          <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap", marginBottom: 28 }}>
-            <a href="/build" className="btn-purple">Build My Agent</a>
-            <a href="#how-it-works" className="btn-outline">See How It Works</a>
+
+          {/* RIGHT: mascot */}
+          <div className="hero-mascot-wrap">
+            <img
+              src="/mascot.webp"
+              alt="The College Agent mascot"
+              className="hero-mascot"
+            />
           </div>
-          <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.3)", letterSpacing: ".04em" }}>
-            Built on Apollo[Claw] infrastructure. Live in 30 minutes.
-          </p>
         </div>
       </section>
 
@@ -377,7 +394,19 @@ export default function Home() {
         }
         .hero-sub {
           font-size: clamp(16px, 1.4vw, 19px); line-height: 1.7;
-          color: rgba(255,255,255,.65); max-width: 680px; margin: 0 auto 36px;
+          color: rgba(255,255,255,.65); max-width: 680px; margin: 0 0 36px;
+        }
+        .hero-mascot-wrap {
+          flex: 0 0 420px; display: flex; align-items: center; justify-content: center;
+        }
+        .hero-mascot {
+          width: 100%; max-width: 420px; height: auto;
+          filter: drop-shadow(0 24px 48px rgba(0,0,0,.35));
+          animation: mascot-float 4s ease-in-out infinite;
+        }
+        @keyframes mascot-float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-12px); }
         }
 
         /* DUAL BUYER */
@@ -454,9 +483,13 @@ export default function Home() {
           .stat-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,.15); padding-bottom: 20px; }
           .stat-item:last-child { border-bottom: none; }
           .int-menu-grid { grid-template-columns: repeat(2, 1fr); }
+          .hero-mascot-wrap { flex: 0 0 280px; }
+          .hero-mascot { max-width: 280px; }
         }
         @media (max-width: 640px) {
           .hero-h1 { white-space: normal; font-size: clamp(34px, 10vw, 52px); }
+          .hero-mascot-wrap { flex: 0 0 200px; order: -1; margin: 0 auto; }
+          .hero-mascot { max-width: 200px; }
           .dual-grid { grid-template-columns: 1fr; }
           .uc-grid { grid-template-columns: 1fr; }
           .stat-grid { grid-template-columns: repeat(2, 1fr); }
