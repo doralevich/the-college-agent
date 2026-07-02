@@ -29,7 +29,7 @@ export default async function DashboardPage({ params }: Props) {
 
   const [entRes, onboardRes, setupRes, agentRes, leadRes] = await Promise.all([
     db.from("entitlements").select("status").eq("email", email).maybeSingle(),
-    db.from("onboard_submissions").select("first_name, agent_name, avatar_url").eq("user_id", user.id).maybeSingle(),
+    db.from("onboard_submissions").select("first_name, agent_name, avatar_url, questionnaire").eq("user_id", user.id).maybeSingle(),
     db.from("setup_submissions").select("user_id", { count: "exact", head: true }).eq("user_id", user.id),
     // Each student has a single agent; grab its id (oldest first) so the dashboard can target
     // it for the Chat tab. null when none yet -> chat tab hidden, funnel shown.
@@ -64,6 +64,20 @@ export default async function DashboardPage({ params }: Props) {
     ((agentRes.data?.name as string | undefined) ?? null);
   const firstName = (onboardRes.data?.first_name as string | undefined) ?? null;
   const avatarUrl = (onboardRes.data?.avatar_url as string | undefined) ?? null;
+
+  // The structured class list from the intake wizard (name/days/time per class). The
+  // Chat greeting uses it to surface "Today: ..." on the empty state; day matching
+  // happens client-side so it follows the student's local clock, not the server's.
+  const questionnaire = (onboardRes.data?.questionnaire ?? null) as Record<string, unknown> | null;
+  const rawClasses = Array.isArray(questionnaire?.classes) ? (questionnaire.classes as unknown[]) : [];
+  const classes = rawClasses
+    .filter((c): c is Record<string, unknown> => !!c && typeof c === "object")
+    .map((c) => ({
+      name: String(c.name ?? "").trim(),
+      days: String(c.days ?? "").trim(),
+      time: String(c.time ?? "").trim(),
+    }))
+    .filter((c) => c.name);
 
   // Prefill the conversational onboarding from the /build lead row so we don't re-ask the
   // student for fields they already gave us. The component drops any step whose value is
@@ -100,6 +114,7 @@ export default async function DashboardPage({ params }: Props) {
       avatarUrl={avatarUrl}
       userId={user.id}
       onboardPrefill={onboardPrefill}
+      classes={classes}
     />
   );
 }
