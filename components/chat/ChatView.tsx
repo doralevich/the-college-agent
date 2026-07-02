@@ -152,7 +152,9 @@ export function ChatView({
         onScroll={onScroll}
         className={cn(
           "min-h-0",
-          showWelcome ? "flex flex-1 flex-col items-center justify-end px-4 pb-6" : "flex-1 overflow-y-auto"
+          showWelcome
+            ? "flex flex-1 flex-col items-center justify-end px-4 pb-6"
+            : "flex-1 overflow-y-auto overflow-x-hidden"
         )}
       >
         {loadingHistory ? (

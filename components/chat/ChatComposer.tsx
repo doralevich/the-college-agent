@@ -95,7 +95,11 @@ export function ChatComposer({ agentId, isStreaming, att, onSend, onStop, large 
         placeholder="Ask anything..."
         className={cn(
           "w-full resize-none bg-transparent px-5 pb-2 pt-4 text-foreground placeholder:text-muted-foreground focus:outline-none",
-          large ? "min-h-[76px] max-h-[180px] text-[15px] leading-6" : "min-h-[44px] max-h-[160px] text-sm leading-relaxed"
+          // 16px on phones — anything smaller makes iOS Safari zoom-and-pan the page when
+          // the composer is focused (and it can stay panned after the keyboard closes).
+          large
+            ? "min-h-[76px] max-h-[180px] text-base leading-6 sm:text-[15px]"
+            : "min-h-[44px] max-h-[160px] text-base leading-relaxed sm:text-sm"
         )}
       />
       <AttachmentTray files={att.files} onRemove={att.removeFile} onRetry={att.retryFile} />

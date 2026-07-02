@@ -964,6 +964,8 @@ export function ConversationalOnboard({
           .ca-onboard-card h1.ca-q-prompt { font-size: 16px !important; line-height: 1.4 !important; }
           .ca-q-footer { padding-top: 10px !important; padding-bottom: 12px !important; }
           .ca-q-hint { padding-top: 4px !important; padding-bottom: 10px !important; font-size: 11px !important; }
+          /* 16px inputs on phones or iOS Safari zooms-and-pans the page on focus. */
+          .ca-onboard-input { font-size: 16px !important; }
         }
       `}</style>
     </div>
