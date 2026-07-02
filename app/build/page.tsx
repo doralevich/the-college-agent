@@ -165,14 +165,14 @@ export default function BuildPage() {
                 <p className="ca-eyebrow">Welcome</p>
                 <h2 className="ca-h2">Meet your College Agent.</h2>
                 <p className="ca-sub">
-                  A personal AI agent built around your classes, your calendar, and your life —
-                  in your corner from syllabus week to graduation.
+                  Not another chatbot. Not homework help. A personal AI agent built around your
+                  classes, your calendar, and your life, in your corner from day one to graduation.
                 </p>
 
                 <ul className="ca-welcome-points">
                   <li>
                     <span className="ca-check"><CheckIcon /></span>
-                    <span><b>Knows your world.</b> Your classes, deadlines, professors, and goals — not generic chatbot answers.</span>
+                    <span><b>Knows your world.</b> Your classes, deadlines, professors, and goals. No generic chatbot answers.</span>
                   </li>
                   <li>
                     <span className="ca-check"><CheckIcon /></span>
@@ -206,7 +206,7 @@ export default function BuildPage() {
                   <div className="ca-promo" role="status">
                     <span className="ca-promo-pill">Intro pricing</span>
                     <span>
-                      {planPrice} through {INTRO_CUTOFF_LABEL} — save {savings} vs the {regularPrice} regular price.
+                      {planPrice} through {INTRO_CUTOFF_LABEL}. Save {savings} vs the {regularPrice} regular price.
                     </span>
                   </div>
                 )}

@@ -41,9 +41,14 @@ type Props = {
   // Optional prefill from the pre-payment /build lead-capture form, so the conversational
   // onboarding can skip questions we already asked. null when no lead row exists.
   onboardPrefill: OnboardPrefill | null;
+  // Structured class list from the intake (name/days/time) — the Chat empty state
+  // uses it for the "Today: ..." schedule line in the greeting.
+  classes: ChatClassInfo[];
 };
 
-export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstName, agentName, avatarUrl, userId, onboardPrefill }: Props) {
+export type ChatClassInfo = { name: string; days: string; time: string };
+
+export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstName, agentName, avatarUrl, userId, onboardPrefill, classes }: Props) {
   const hasAgent = !!agentId;
   const { userEmail } = useWorkspace();
   const router = useRouter();
@@ -195,7 +200,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
             composer draft, and the model selection survive leaving and returning to the tab. */}
         {hasAgent && chatOpened && (
           <div className={cn("h-full", !isChat && "hidden")}>
-            <ChatView />
+            <ChatView firstName={firstName} classes={classes} />
           </div>
         )}
         {/* Files mirrors Chat: full-height, kept MOUNTED (just hidden) so the current directory,

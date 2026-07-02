@@ -63,7 +63,7 @@ const SUCCESS_OPTIONS = [
   "Protect my mental health",
   "Strengthen a key relationship",
   "Step into a leadership role",
-  "Launch a side hustle or org",
+  "Start something of my own",
   "Save money or pay down debt",
   "Travel somewhere meaningful",
   "Show up consistently and finish what I start",
@@ -258,7 +258,7 @@ const STEPS: Step[] = [
     required: true,
     tier: 2,
   },
-  { kind: "multi", key: "responseStyle", prompt: "How do you want me to sound? Pick any that fit and I'll blend them.", options: VOICE_OPTIONS, required: true, tier: 2 },
+  { kind: "multi", key: "responseStyle", prompt: "How do you want me to communicate with you? Pick any styles that fit and I'll blend them.", options: VOICE_OPTIONS, required: true, tier: 2 },
   { kind: "multi", key: "checkinFrequency", prompt: "How often should I check in with you? Pick any that fit.", options: CHECKIN_OPTIONS, required: true, tier: 2 },
   {
     kind: "classList",

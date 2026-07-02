@@ -11,11 +11,42 @@ import { useChat } from "./useChat";
 import { useChatAttachments } from "./useChatAttachments";
 
 // The conversation pane, rendered full-height in the dashboard main when the Chat tab is active.
-// Empty state = a centered heading + big composer; once there are messages it becomes a scrolling
+// Empty state = a centered greeting + big composer; once there are messages it becomes a scrolling
 // transcript with the composer docked at the bottom. The composer is kept at a STABLE position in
 // the tree across both states so it never remounts (preserving the draft, model, and effort
 // selection through the first send).
-export function ChatView() {
+
+type ClassInfo = { name: string; days: string; time: string };
+
+// Per-weekday tokens matched (whole-word, case-insensitive) against the free-text `days`
+// a student typed for each class ("Mon / Wed / Fri", "Tues & Thurs", "Friday"). Compact
+// no-separator forms like "MWF" won't match — acceptable for a greeting garnish.
+const DAY_TOKENS: string[][] = [
+  ["sun", "sunday"],
+  ["mon", "monday"],
+  ["tue", "tues", "tuesday"],
+  ["wed", "weds", "wednesday"],
+  ["thu", "thur", "thurs", "thursday"],
+  ["fri", "friday"],
+  ["sat", "saturday"],
+];
+
+function classIsToday(days: string): boolean {
+  const tokens = DAY_TOKENS[new Date().getDay()];
+  const norm = days.toLowerCase();
+  return tokens.some((t) => new RegExp(`\\b${t}\\b`).test(norm));
+}
+
+export function ChatView({
+  firstName,
+  classes = [],
+}: {
+  // Student's first name from the intake — greets them on the empty state.
+  firstName?: string | null;
+  // Structured class list from the intake; classes matching today's weekday show
+  // as a "Today: ..." line under the greeting.
+  classes?: ClassInfo[];
+}) {
   const {
     agentId,
     sessions,
@@ -69,6 +100,16 @@ export function ChatView() {
   );
   const headerTitle = activeTitle || (activeSessionId ? "Chat" : "New chat");
 
+  // Greeting bits for the empty state. Computed client-side so the time of day and
+  // "today" follow the student's local clock. Memoized per mount — a chat session
+  // won't straddle a greeting boundary in any way worth re-rendering for.
+  const timeOfDay = useMemo(() => {
+    const h = new Date().getHours();
+    return h < 12 ? "good morning" : h < 17 ? "good afternoon" : "good evening";
+  }, []);
+  const todaysClasses = useMemo(() => classes.filter((c) => c.days && classIsToday(c.days)), [classes]);
+  const greetName = firstName?.trim() || "there";
+
   return (
     <div className="relative flex h-full min-h-0 flex-col" {...att.dragHandlers}>
       {att.dragOver && <DropOverlay />}
@@ -103,9 +144,20 @@ export function ChatView() {
         ) : messages.length > 0 ? (
           <ChatMessages messages={messages} isStreaming={isStreaming} />
         ) : (
-          <h1 className="text-[26px] font-semibold tracking-tight text-foreground sm:text-[30px]">
-            What can I help with?
-          </h1>
+          <div className="flex flex-col items-center gap-2 text-center">
+            <h1 className="text-[26px] font-semibold tracking-tight text-foreground sm:text-[30px]">
+              Hi {greetName}, {timeOfDay}.
+            </h1>
+            {todaysClasses.length > 0 && (
+              <p className="max-w-xl text-sm text-muted-foreground">
+                Today:{" "}
+                {todaysClasses
+                  .map((c) => (c.time ? `${c.name} at ${c.time}` : c.name))
+                  .join(" · ")}
+              </p>
+            )}
+            <p className="text-lg text-foreground/75">How can I help you today?</p>
+          </div>
         )}
       </div>
 
