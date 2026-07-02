@@ -6,9 +6,9 @@ import { createClient } from "@/lib/supabase/client";
 
 const NAV_LINKS = [
   { label: "For Students", href: "/for-students" },
+  { label: "For Parents", href: "/for-parents" },
   { label: "How It Works", href: "#how-it-works" },
   { label: "Blog", href: "/blog" },
-  { label: "Ambassador", href: "/ambassador" },
   { label: "FAQ", href: "/faq" },
 ];
 
