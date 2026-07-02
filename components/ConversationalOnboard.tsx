@@ -422,6 +422,13 @@ export function ConversationalOnboard({
   // is complete even though the student never sees those questions.
   const [form, setForm] = useState<FormState>(() => seedFormFromPrefill(EMPTY, prefill));
   const [stepIdx, setStepIdx] = useState(0);
+
+  // Every step change returns the viewport to the top of the wizard — on phones the
+  // options list can leave you scrolled halfway down when you tap Next.
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    rootRef.current?.scrollIntoView({ block: "start" });
+  }, [stepIdx]);
   const [restored, setRestored] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -702,6 +709,8 @@ export function ConversationalOnboard({
 
   return (
     <div
+      ref={rootRef}
+      className="ca-onboard-root"
       style={{
         minHeight: "100%",
         background: `radial-gradient(120% 80% at 50% -10%, ${T.greenSoft} 0%, transparent 55%), ${T.paper}`,
@@ -769,7 +778,7 @@ export function ConversationalOnboard({
       >
         {/* Progress bar — a rounded pill inside the top padding so the card's
             corner radius never clips it. */}
-        <div style={{ padding: "24px 44px 0" }}>
+        <div className="ca-progress-wrap" style={{ padding: "24px 44px 0" }}>
           <div style={{ height: 8, background: T.greenSoft, borderRadius: 999, overflow: "hidden" }}>
             <div
               style={{
@@ -783,10 +792,12 @@ export function ConversationalOnboard({
           </div>
         </div>
 
-        <div style={{ padding: "28px 44px", minHeight: 320, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          {/* Mascot + question header, side by side. */}
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 26 }}>
+        <div className="ca-q-body" style={{ padding: "28px 44px", minHeight: 320, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          {/* Mascot + question header: side by side on desktop, a small icon stacked on
+              top with the question full-width on phones (see the media block below). */}
+          <div className="ca-q-row" style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 26 }}>
             <div
+              className="ca-q-mascot"
               style={{
                 flex: "0 0 auto",
                 width: 52,
@@ -803,14 +814,15 @@ export function ConversationalOnboard({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={avatarPreview} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               ) : (
-                <Image src="/thecollegeagent.png" alt="" width={52} height={52} style={{ objectFit: "contain" }} />
+                <Image src="/thecollegeagent.png" alt="" width={52} height={52} style={{ objectFit: "contain", width: "100%", height: "100%" }} />
               )}
             </div>
-            <div style={{ flex: 1, paddingTop: 2 }}>
+            <div style={{ flex: 1, paddingTop: 2, minWidth: 0 }}>
               <div style={{ fontSize: 12, fontWeight: 600, color: T.inkSoft, letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 8 }}>
                 Question {Math.min(stepIdx + 1, visibleSteps.length)} of {visibleSteps.length}
               </div>
               <h1
+                className="ca-q-prompt"
                 style={{
                   fontFamily: "'DM Sans', system-ui, sans-serif",
                   fontSize: 18,
@@ -861,6 +873,7 @@ export function ConversationalOnboard({
         </div>
 
         <div
+          className="ca-q-footer"
           style={{
             display: "flex",
             justifyContent: "space-between",
@@ -920,7 +933,7 @@ export function ConversationalOnboard({
           </button>
         </div>
 
-        <div style={{ padding: "10px 44px 18px", textAlign: "center", fontSize: 12, color: T.inkSoft }}>
+        <div className="ca-q-hint" style={{ padding: "10px 44px 18px", textAlign: "center", fontSize: 12, color: T.inkSoft }}>
           Saves automatically. Close this tab and come back any time.
         </div>
       </div>
@@ -930,11 +943,27 @@ export function ConversationalOnboard({
         .ca-onboard-cta:focus-visible { outline: 3px solid ${T.greenSoft}; outline-offset: 3px; }
         .ca-onboard-back:hover:not(:disabled) { background: ${T.greenSoft}; color: ${T.ink}; }
         @media (max-width: 560px) {
+          /* Compact single-column layout: small mascot on top, question full width, no
+             header paragraph — the question and its options fit the top of the screen. */
+          .ca-onboard-root { padding: 18px 12px 28px !important; }
+          .ca-onboard-header { margin-bottom: 12px !important; }
+          .ca-onboard-header > div { margin-bottom: 8px !important; }
+          .ca-onboard-header h1 { font-size: 22px !important; margin-bottom: 0 !important; }
+          .ca-onboard-header p { display: none !important; }
           .ca-onboard-card { border-radius: 14px !important; }
           .ca-onboard-card h1 { font-size: 22px !important; }
-          .ca-onboard-card > div { padding-left: 22px !important; padding-right: 22px !important; }
-          .ca-onboard-header h1 { font-size: 26px !important; }
-          .ca-onboard-header p { font-size: 15px !important; }
+          .ca-onboard-card > div { padding-left: 20px !important; padding-right: 20px !important; }
+          .ca-progress-wrap { padding-top: 14px !important; }
+          .ca-q-body {
+            min-height: 0 !important;
+            padding-top: 16px !important; padding-bottom: 16px !important;
+            justify-content: flex-start !important;
+          }
+          .ca-q-row { display: block !important; margin-bottom: 14px !important; }
+          .ca-q-mascot { width: 34px !important; height: 34px !important; margin: 0 auto 10px !important; }
+          .ca-onboard-card h1.ca-q-prompt { font-size: 16px !important; line-height: 1.4 !important; }
+          .ca-q-footer { padding-top: 10px !important; padding-bottom: 12px !important; }
+          .ca-q-hint { padding-top: 4px !important; padding-bottom: 10px !important; font-size: 11px !important; }
         }
       `}</style>
     </div>
