@@ -165,51 +165,35 @@ export const agent37 = {
     ),
 
   getBudget: (id: string) => call<Budget>(`/instances/${id}/budget`),
-  // Operator-adjustable cap / top-up. The budget subresource's write verb is undocumented
-  // and POST 405s in production (July 2026). Try the RESTful update verbs in order, and if
-  // the server rejects the body shape, retry with the create-time field spelling
-  // (`credit_micros`, per the public docs) — first success wins.
-  setBudget: async (id: string, body: { monthly_cap_micros?: number; topup_micros?: number }) => {
-    const bodies: Record<string, number | undefined>[] = [body];
-    if (body.topup_micros != null) {
-      bodies.push({ ...body, credit_micros: body.topup_micros, topup_micros: undefined });
-    }
+  // Adjust the monthly cap on an instance budget. (Verb undocumented; PATCH with PUT
+  // fallback — top-ups have their own action endpoint below and must NOT go through here.)
+  setBudget: async (id: string, body: { monthly_cap_micros?: number }) => {
     let lastErr: unknown = new Agent37Error(500, "error", "setBudget: no attempt made");
     for (const method of ["PATCH", "PUT"]) {
-      for (const candidate of bodies) {
-        try {
-          return await call<Budget>(`/instances/${id}/budget`, { method, body: JSON.stringify(candidate) });
-        } catch (err) {
-          lastErr = err;
-          if (err instanceof Agent37Error && err.status === 405) break; // wrong verb — next method
-          if (err instanceof Agent37Error && (err.status === 400 || err.status === 422)) continue; // body shape — next spelling
-          throw err;
-        }
-      }
-    }
-    // The budget subresource is read-only (every verb 405s, no Allow header). This API's
-    // writes are POST *actions* (/start, /stop, /resize, /update, /exec) — try the
-    // plausible top-up actions the same way. A missing action path (404/405) must NOT
-    // escape as the final error — a 404 here means "no such route", not "no such agent"
-    // (a truly-gone agent already threw 404 from the base attempts above).
-    if (body.topup_micros != null) {
-      for (const path of [`/instances/${id}/topup`, `/instances/${id}/budget/topup`]) {
-        for (const candidate of bodies) {
-          try {
-            return await call<Budget>(path, { method: "POST", body: JSON.stringify(candidate) });
-          } catch (err) {
-            if (err instanceof Agent37Error && (err.status === 404 || err.status === 405)) break;
-            if (err instanceof Agent37Error && (err.status === 400 || err.status === 422)) {
-              lastErr = err;
-              continue;
-            }
-            throw err;
-          }
-        }
+      try {
+        return await call<Budget>(`/instances/${id}/budget`, { method, body: JSON.stringify(body) });
+      } catch (err) {
+        lastErr = err;
+        if (err instanceof Agent37Error && err.status === 405) continue;
+        throw err;
       }
     }
     throw lastErr;
   },
+  // Add one-time headroom (credits) to an instance budget:
+  //   POST /v1/instances/{id}/budget/top-up  { amount_micros, idempotency_key }
+  // (docs: agents-api/budgets#add-one-time-headroom — note the HYPHEN in top-up).
+  // Repeating a request with the same idempotency key returns the current budget without
+  // adding again, so webhook retries and cron sweeps can never double-credit. Callers pass
+  // a stable key (the ledger row id / payment intent id).
+  topUpBudget: (id: string, amountMicros: number, idempotencyKey?: string) =>
+    call<Budget>(`/instances/${id}/budget/top-up`, {
+      method: "POST",
+      body: JSON.stringify({
+        amount_micros: Math.round(amountMicros),
+        ...(idempotencyKey ? { idempotency_key: idempotencyKey.slice(0, 64) } : {}),
+      }),
+    }),
   getUsage: (id: string, month?: string) =>
     call<Usage>(`/instances/${id}/usage${month ? `?month=${encodeURIComponent(month)}` : ""}`),
 

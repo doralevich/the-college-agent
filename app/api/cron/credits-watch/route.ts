@@ -115,7 +115,7 @@ async function sweepOne(db: DB, ent: EntRow, summary: Record<string, number>) {
   const starter = starterRows?.[0] as { id: string; amount_cents: number } | undefined;
   if (starter) {
     try {
-      await agent37.setBudget(agentId, { topup_micros: starter.amount_cents * 10_000 });
+      await agent37.topUpBudget(agentId, starter.amount_cents * 10_000, starter.id);
       await db
         .from("wallet_transactions")
         .update({ status: "succeeded", failure_reason: null })
@@ -148,7 +148,7 @@ async function sweepOne(db: DB, ent: EntRow, summary: Record<string, number>) {
     try {
       const session = await getStripe().checkout.sessions.retrieve(t.stripe_session_id as string);
       if (session.payment_status === "paid") {
-        await agent37.setBudget(agentId, { topup_micros: (t.amount_cents as number) * 10_000 });
+        await agent37.topUpBudget(agentId, (t.amount_cents as number) * 10_000, t.id as string);
         await db
           .from("wallet_transactions")
           .update({
@@ -218,7 +218,7 @@ async function sweepOne(db: DB, ent: EntRow, summary: Record<string, number>) {
             status: "succeeded",
             stripe_payment_intent_id: pi.id,
           });
-          await agent37.setBudget(agentId, { topup_micros: amount * 10_000 });
+          await agent37.topUpBudget(agentId, amount * 10_000, pi.id);
           if (ent.auto_recharge_failures > 0) {
             await db.from("entitlements").update({ auto_recharge_failures: 0 }).eq("email", ent.email);
           }

@@ -20,12 +20,20 @@ export const PATCH = route(async (request: Request, { params }: Ctx) => {
   await requirePlatformAdmin();
 
   const body = await readJson<{ monthly_cap_usd?: number; topup_usd?: number }>(request);
-  const patch: { monthly_cap_micros?: number; topup_micros?: number } = {};
-  if (typeof body.monthly_cap_usd === "number") patch.monthly_cap_micros = usdToMicros(body.monthly_cap_usd);
-  if (typeof body.topup_usd === "number") patch.topup_micros = usdToMicros(body.topup_usd);
-  if (Object.keys(patch).length === 0) {
+  const hasCap = typeof body.monthly_cap_usd === "number";
+  const hasTopup = typeof body.topup_usd === "number";
+  if (!hasCap && !hasTopup) {
     throw new ApiError(400, "invalid_request", "Provide monthly_cap_usd and/or topup_usd");
   }
 
-  return json(await agent37.setBudget(id, patch));
+  // Caps and top-ups are different upstream calls: caps update the budget subresource,
+  // top-ups go through the one-time-headroom action. Return the freshest budget.
+  let budget = null;
+  if (hasCap) {
+    budget = await agent37.setBudget(id, { monthly_cap_micros: usdToMicros(body.monthly_cap_usd as number) });
+  }
+  if (hasTopup) {
+    budget = await agent37.topUpBudget(id, usdToMicros(body.topup_usd as number));
+  }
+  return json(budget);
 });

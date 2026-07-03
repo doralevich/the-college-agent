@@ -211,8 +211,13 @@ async function handleCreditsTopup(db: DB, session: Stripe.Checkout.Session) {
 
   if (agentId && amountCents > 0) {
     try {
-      // 1 cent = 10,000 micros.
-      await agent37.setBudget(agentId, { topup_micros: amountCents * 10_000 });
+      // 1 cent = 10,000 micros. The ledger row id (or checkout session tail) is the
+      // idempotency key, so redelivered webhooks can never double-credit.
+      await agent37.topUpBudget(
+        agentId,
+        amountCents * 10_000,
+        tx ? (tx.id as string) : session.id.slice(-64)
+      );
     } catch (err) {
       // Record WHY on the ledger row either way — failures must be diagnosable from the
       // database, not just from function logs.
