@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { AddToPhone } from "@/components/AddToPhone";
 import { Button } from "@/components/ui/button";
 import { dashboardPath } from "@/lib/dashboard-tabs";
 
@@ -69,11 +70,14 @@ const STEPS: Step[] = [
 export function NowWhatView({
   onOpenChat,
   avatarUrl,
+  agentName,
 }: {
   onOpenChat: () => void;
   // The agent's intake avatar; it sits to the right of the welcome bubble as the
   // "speaker" of this page. Default mascot when the student didn't pick one.
   avatarUrl?: string | null;
+  // The student's name for their agent — personalizes the add-to-phone card.
+  agentName?: string | null;
 }) {
   return (
     <div className="mx-auto max-w-3xl space-y-8">
@@ -122,6 +126,8 @@ export function NowWhatView({
           </li>
         ))}
       </ol>
+
+      <AddToPhone agentName={agentName} />
 
       <div className="rounded-xl border bg-card p-6">
         <h2 className="text-base font-semibold">That's it. The rest is conversation.</h2>
