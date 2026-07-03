@@ -137,6 +137,27 @@ export default function ForParentsPage() {
           </div>
         </section>
 
+        {/* WHAT PARENTS WORRY ABOUT MOST */}
+        <section style={{ background: "var(--cream2)", padding: "72px 0" }}>
+          <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "var(--green)", marginBottom: 14, display: "block" }}>Common Parent Concerns</span>
+            <h2 style={{ fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 800, color: "var(--navy)", marginBottom: 28, letterSpacing: "-.025em" }}>
+              What Parents Worry About Most — And What The Agent Solves
+            </h2>
+            {([
+              { worry: "Will they miss important deadlines?", answer: "The College Agent surfaces every deadline — assignment submissions, exam dates, internship application windows, registration dates — weeks in advance. Your student sees what's coming before it becomes urgent. Nothing falls through the cracks because there's always a system tracking it." },
+              { worry: "Will they get internship experience before graduation?", answer: "This is the biggest career-readiness gap, and it's exactly what The College Agent is built to close. Starting freshman year, the agent helps your student build awareness of their target industries, identify opportunities, and approach recruiting season junior year with a full pipeline already in motion — not starting from scratch." },
+              { worry: "Will they know how to communicate professionally?", answer: "College is where students learn to send professional emails, talk to professors, reach out to advisors, and network with recruiters. The College Agent drafts all of these messages in your student's voice — professional, polished, and appropriate. Over time, your student internalizes what good communication looks like." },
+              { worry: "Is this just going to do their work for them?", answer: "No. The College Agent manages logistics, surfaces information, and drafts communications — but it doesn't attend class, take exams, or write papers for your student. It handles the organizational infrastructure so your student can focus on learning, connecting, and performing." },
+            ] as { worry: string; answer: string }[]).map(({ worry, answer }) => (
+              <div key={worry} style={{ marginBottom: 28, background: "#fff", borderRadius: 14, padding: "28px 32px", border: "1px solid rgba(11,23,41,.07)", boxShadow: "0 4px 16px rgba(11,23,41,.04)" }}>
+                <h3 style={{ fontSize: 17, fontWeight: 800, color: "var(--navy)", marginBottom: 12, letterSpacing: "-.01em" }}>{worry}</h3>
+                <p style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(11,23,41,.7)", margin: 0 }}>{answer}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* BENEFITS */}
         <section style={{ background: "#fff", padding: "72px 0" }}>
           <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>

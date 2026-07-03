@@ -298,6 +298,48 @@ export default function ForStudentsPage() {
           </div>
         </section>
 
+        {/* WHAT YOUR FIRST SEMESTER LOOKS LIKE WITH AI */}
+        <section style={{ background: "#fff", padding: "72px 0" }}>
+          <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
+            <span className="mono-label-green">Your First Semester With AI</span>
+            <h2 style={{ fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 800, color: "var(--navy)", marginBottom: 20, letterSpacing: "-.025em" }}>
+              What Your First Semester Looks Like With AI
+            </h2>
+            <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
+              Week one of freshman year is chaotic for almost every student. You have syllabi to read, professors to email, a social calendar filling up, and zero structure for how to handle any of it. Most students get through it by sheer adrenaline — and start falling behind by week four.
+            </p>
+            <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
+              With The College Agent, your first semester looks different. Before classes start, you load your schedule. Your agent builds your week — blocking study time, surfacing deadlines, flagging office hours. Your first professor email is drafted before you have to ask. Your first exam review guide is ready two weeks before the test.
+            </p>
+            <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
+              By midterms, you&apos;re not cramming — you&apos;ve been reviewing consistently. By the end of the semester, your agent knows your class load, your professors, your work style, and your goals. That&apos;s infrastructure most students never build. You have it from day one.
+            </p>
+          </div>
+        </section>
+
+        {/* FROM FRESHMAN TO SENIOR: extended timeline */}
+        <section style={{ background: "var(--cream2)", padding: "72px 0" }}>
+          <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
+            <div style={{ textAlign: "center", marginBottom: 48 }}>
+              <span className="mono-label-green">The Full Journey</span>
+              <h2 style={{ fontSize: "clamp(26px, 3vw, 40px)", fontWeight: 800, lineHeight: 1.08, letterSpacing: "-.02em", color: "var(--navy)" }}>From Freshman to Senior: Your AI College Journey</h2>
+            </div>
+            <div style={{ display: "grid", gap: 28 }}>
+              {([
+                { year: "Freshman Year", desc: "Get your bearings — with AI doing the heavy lifting. Your agent organizes your first semester, tracks every assignment, drafts professor emails, and starts building the study habits that will carry you through four years. You focus on making friends and finding your footing; your agent keeps the academics on track." },
+                { year: "Sophomore Year", desc: "Start thinking bigger. Your agent tracks academic progress, helps you find clubs and leadership roles that strengthen your resume, and begins surfacing internship opportunities for the summer ahead. By the end of sophomore year, most students using The College Agent have already applied to at least one competitive program — before most of their peers have even thought about it." },
+                { year: "Junior Year", desc: "Internship season — the year that defines your resume before graduation. Your agent manages your full recruiting pipeline: target companies, application deadlines, outreach emails, interview prep. By the end of junior year, you have real experience on your resume, a network you've built intentionally, and a clear picture of where you want to go." },
+                { year: "Senior Year", desc: "Cross the finish line ready. Your agent helps you turn your internship experience into a career plan — full-time applications, networking, LinkedIn positioning, and the transition from student to professional. By senior year, your agent has three years of context on you. It's not a generic tool anymore — it's your personal advisor for the biggest transition of your young career." },
+              ] as { year: string; desc: string }[]).map(({ year, desc }) => (
+                <div key={year} style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
+                  <div style={{ background: "rgba(61,139,61,.1)", border: "2px solid var(--green)", borderRadius: 8, padding: "8px 14px", fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: "var(--green)", letterSpacing: ".08em", whiteSpace: "nowrap", flexShrink: 0 }}>{year}</div>
+                  <p style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(11,23,41,.7)", margin: 0 }}>{desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* CTA */}
         <section className="dark-section" style={{ padding: "72px 0" }}>
           <div style={{ maxWidth: 680, margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
