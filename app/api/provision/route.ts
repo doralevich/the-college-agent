@@ -112,7 +112,8 @@ export const POST = route(async () => {
   }
   if (starterId) {
     try {
-      await agent37.setBudget(agent.id, { topup_micros: usdToMicros(DEFAULT_AGENT.starterCreditsUsd) });
+      // Ledger row id doubles as the idempotency key — a re-provision retry can't double-grant.
+      await agent37.topUpBudget(agent.id, usdToMicros(DEFAULT_AGENT.starterCreditsUsd), starterId);
       await db
         .from("wallet_transactions")
         .update({ status: "succeeded", failure_reason: null })
