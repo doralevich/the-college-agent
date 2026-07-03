@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Nav from "../components/Nav";
+import { PageHero } from "../components/PageHero";
 import { Footer } from "../components/Footer";
 import { categoryLabel, getCollegeAgentPosts } from "@/lib/sanity-blog";
 
@@ -26,17 +27,12 @@ export default async function BlogPage() {
   return (
     <>
       <Nav />
-      <main>
-        <section className="dark-section" style={{ padding: "118px 0 72px" }}>
-          <div style={{ maxWidth: 1060, margin: "0 auto", padding: "0 24px" }}>
-            <span className="blog-kicker">College Agent Blog</span>
-            <h1 className="blog-index-title">AI that helps college feel manageable.</h1>
-            <p className="blog-index-sub">
-              Real student stories about staying organized, getting through finals, managing internship
-              season, and using The College Agent as a support system for everyday campus life.
-            </p>
-          </div>
-        </section>
+      <main style={{ paddingTop: 72 }}>
+        <PageHero
+          label="College Agent Blog"
+          title="AI that helps college feel manageable."
+          sub="Real student stories about staying organized, getting through finals, managing internship season, and using The College Agent as a support system for everyday campus life."
+        />
 
         <section style={{ background: "var(--cream2)", padding: "52px 0 80px" }}>
           <div className="blog-grid">

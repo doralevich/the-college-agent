@@ -167,7 +167,7 @@ export default function Home() {
               Apollo[Claw] College Edition
             </div>
             <h1 className="hero-h1" style={{ color: "#fff" }}>
-              Your Personal AI Agent <br />For Your College Years <br />...and then some!
+              Your personal AI agent <br />for your college years <br />...and then some!
             </h1>
             <p className="hero-sub">
               Your own student AI assistant. Named. Trained on your voice. Built around your schedule, classes,

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Nav from "../components/Nav";
+import { PageHero } from "../components/PageHero";
 import { Footer } from "../components/Footer";
 import { BookOpenCheck, BriefcaseBusiness, CalendarDays, GraduationCap, ShieldCheck, TrendingUp } from "lucide-react";
 
@@ -60,24 +61,16 @@ export default function ForParentsPage() {
   return (
     <>
       <Nav />
-      <main style={{ paddingTop: 100, minHeight: "100vh" }}>
+      <main style={{ paddingTop: 72, minHeight: "100vh" }}>
 
         {/* HERO */}
-        <section className="dark-section" style={{ padding: "80px 0 70px" }}>
-          <div style={{ maxWidth: 860, margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "var(--green)", marginBottom: 16, display: "block" }}>For Parents</span>
-            <h1 style={{ fontSize: "clamp(30px, 4vw, 52px)", fontWeight: 800, color: "#fff", lineHeight: 1.06, letterSpacing: "-.035em", marginBottom: 20 }}>
-              Give your student a four-year advantage.
-            </h1>
-            <p style={{ fontSize: "clamp(16px, 1.3vw, 18px)", lineHeight: 1.75, color: "rgba(255,255,255,.7)", maxWidth: 640, margin: "0 auto 36px" }}>
-              You&apos;re not buying another app. You&apos;re giving your student a personal AI companion that keeps them organized, accountable, and career-ready — from move-in day to graduation.
-            </p>
-            <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
-              <a href="/build" className="btn-green">Build Their Agent</a>
-              <a href="/for-students" className="btn-outline">See the Student View</a>
-            </div>
-          </div>
-        </section>
+        <PageHero
+          label="For Parents"
+          title="Give your student a four-year advantage."
+          sub="You're not buying another app. You're giving your student a personal AI companion that keeps them organized, accountable, and career-ready, from move-in day to graduation."
+          primary={{ label: "Build Their Agent", href: "/build" }}
+          secondary={{ label: "See the Student View", href: "/for-students" }}
+        />
 
         {/* THE REAL PROBLEM */}
         <section style={{ background: "#fff", padding: "72px 0" }}>

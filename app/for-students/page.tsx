@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Nav from "../components/Nav";
+import { PageHero } from "../components/PageHero";
 import { Footer } from "../components/Footer";
 import { BookOpenCheck, BriefcaseBusiness, CalendarDays, Network, NotebookTabs, Sparkles } from "lucide-react";
 
@@ -177,23 +178,13 @@ export default function ForStudentsPage() {
       <main style={{ paddingTop: 72, minHeight: "100vh" }}>
 
         {/* HERO */}
-        <section className="dark-section" style={{ padding: "80px 0 70px", overflow: "hidden" }}>
-          <div className="hero-glow" />
-          <div style={{ position: "relative", zIndex: 1, textAlign: "center", maxWidth: 860, margin: "0 auto", padding: "0 24px" }}>
-            <span className="mono-label-light">For College Students</span>
-            <h1 style={{ fontSize: "clamp(32px, 4.5vw, 56px)", fontWeight: 800, color: "#fff", lineHeight: 1.06, letterSpacing: "-.035em", marginBottom: 20 }}>
-              Your Personal AI Agent For Your College Years...and then some!
-            </h1>
-            <p style={{ fontSize: "clamp(16px, 1.4vw, 19px)", lineHeight: 1.7, color: "rgba(255,255,255,.65)", maxWidth: 640, margin: "0 auto 36px" }}>
-              The College Agent is an AI companion that knows you: your classes, your goals, your
-              schedule, your voice. It gets smarter every semester.
-            </p>
-            <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
-              <a href="/build" className="btn-green">Build My Agent</a>
-              <a href="#everything" className="btn-outline-light">See Everything It Does</a>
-            </div>
-          </div>
-        </section>
+        <PageHero
+          label="For College Students"
+          title="Your personal AI agent for your college years...and then some!"
+          sub="The College Agent is an AI companion that knows you: your classes, your goals, your schedule, your voice. It gets smarter every semester."
+          primary={{ label: "Build My Agent", href: "/build" }}
+          secondary={{ label: "See Everything It Does", href: "#everything" }}
+        />
 
         {/* COLLEGE OPERATING SYSTEM: the "most effective uses" framing */}
         <section style={{ background: "#fff", padding: "72px 0" }}>
