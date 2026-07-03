@@ -6,9 +6,24 @@ import ChatBot from "./components/ChatBot";
 import Nav from "./components/Nav";
 import IntegrationGlobe from "./components/IntegrationGlobe";
 import { Footer } from "./components/Footer";
-import { BookOpenCheck, BriefcaseBusiness, GraduationCap, Mail, Network, NotebookTabs, ShieldCheck, Sparkles } from "lucide-react";
+import { BookOpenCheck, Blocks, BriefcaseBusiness, GraduationCap, Mail, Network, NotebookTabs, ShieldCheck, Sparkles } from "lucide-react";
+import { categoryLabel, getCollegeAgentPosts } from "@/lib/sanity-blog";
+import {
+  INTRO_PLAN_AMOUNT_CENTS,
+  REGULAR_PLAN_AMOUNT_CENTS,
+  HOSTING_AMOUNT_CENTS,
+  introPromoActive,
+} from "@/lib/pricing/intro-cutoff";
 
 const CALENDLY = "https://calendly.com/therealdaveo/apolloai";
+
+// Re-render every 5 minutes so the "most recent posts" section rotates on its own as
+// new posts publish (and pricing flips automatically when the intro window closes).
+export const revalidate = 300;
+
+function price(cents: number): string {
+  return "$" + (cents / 100).toLocaleString("en-US", { maximumFractionDigits: 0 });
+}
 
 export const metadata: Metadata = {
   title: "The College Agent — Your Personal AI for All 4 Years of College",
@@ -20,42 +35,60 @@ export const metadata: Metadata = {
 const AGENT_WAYS = [
   {
     icon: GraduationCap,
-    title: "Your First 30 Days",
-    desc: "Load your class schedule, syllabi, deadlines, professor info, and clubs. Build a weekly rhythm before things get chaotic.",
+    title: "Owns Your Schedule",
+    desc: "Every class, section, and deadline on your calendar. It can pull semester dates straight from your school's site and knows what Tuesday looks like before you do.",
   },
   {
     icon: BookOpenCheck,
-    title: "Assignments & Deadlines",
-    desc: "Every syllabus becomes tasks, reminders, study blocks, and check-ins. Nothing lives only in your head.",
+    title: "Never Misses a Deadline",
+    desc: "Hand it a syllabus and every assignment, quiz, and exam becomes a tracked deadline with reminders that start early, not the night before.",
   },
   {
     icon: NotebookTabs,
-    title: "Study Planning",
-    desc: "Turns exams, readings, papers, and problem sets into a realistic weekly plan. No more waiting until it's urgent.",
+    title: "Builds Your Study Plan",
+    desc: "What to study, when, and for how long. Practice questions, chapter quizzes, and check-ins that adjust when life happens.",
   },
   {
     icon: Mail,
-    title: "Professor & Advisor Comms",
-    desc: "Drafts polished emails to professors, TAs, advisors, and administrators. Ask the right questions without sounding sloppy.",
+    title: "Writes in Your Voice",
+    desc: "Drafts to professors, TAs, advisors, and recruiters that sound like you on your best day. You approve, it handles the rest.",
   },
   {
     icon: Network,
-    title: "Social & Campus Life",
-    desc: "Tracks clubs, events, applications, deadlines, and follow-ups. Get involved without overcommitting.",
+    title: "Runs Your Life, Not Just School",
+    desc: "Flights home, birthdays, budgets, gym routine, club deadlines, plans with friends. One agent keeping every list so you don't have to.",
   },
   {
     icon: BriefcaseBusiness,
-    title: "Career Foundation, Early",
-    desc: "Resume, LinkedIn, internship tracking, and summer planning from freshman year. By sophomore year you're not starting cold.",
+    title: "Gets You Hired",
+    desc: "Resume, LinkedIn, internship pipeline, interview prep. It works your career from freshman year so junior year isn't a cold start.",
+  },
+  {
+    icon: Blocks,
+    title: "Connected to Everything",
+    desc: "Canvas, Gmail, Google Calendar, Outlook, Drive, Notion, and thousands more. It doesn't just give advice. It takes action.",
   },
   {
     icon: ShieldCheck,
-    title: "Parent Peace of Mind",
-    desc: "Not surveillance. It supports independence while making sure there's a system.",
+    title: "On Duty 24/7",
+    desc: "It runs in the cloud around the clock. Message it at 2 AM from your phone and it answers, checks, plans, and reminds.",
   },
 ];
 
-const jsonLd = {
+// The proof: things a student can literally type at their agent on day one.
+const POWER_ASKS = [
+  "Pull my fall schedule from the school site onto my calendar.",
+  "Quiz me on Chapter 7 before Friday's test.",
+  "Draft an email asking Professor Chen about my grade.",
+  "Find the best flights to Miami for the first week of August.",
+  "What's due this week?",
+  "Remind me about Mom's birthday and help me pick a gift.",
+];
+
+function buildJsonLd() {
+  const planPrice = ((introPromoActive() ? INTRO_PLAN_AMOUNT_CENTS : REGULAR_PLAN_AMOUNT_CENTS) / 100).toFixed(0);
+  const hostingPrice = (HOSTING_AMOUNT_CENTS / 100).toFixed(0);
+  return {
   "@context": "https://schema.org",
   "@graph": [
     {
@@ -72,10 +105,8 @@ const jsonLd = {
         "AI for college students, AI study companion, personal AI agent for students, AI college planner, AI class schedule manager, AI internship prep, college life AI, AI study partner",
       areaServed: "United States",
       offers: [
-        { "@type": "Offer", name: "Hermes Starter", price: "199", priceCurrency: "USD" },
-        { "@type": "Offer", name: "Hermes Pro", price: "399", priceCurrency: "USD" },
-        { "@type": "Offer", name: "OpenClaw Starter", price: "199", priceCurrency: "USD" },
-        { "@type": "Offer", name: "OpenClaw Pro", price: "399", priceCurrency: "USD" },
+        { "@type": "Offer", name: "The College Agent (one-time build)", price: planPrice, priceCurrency: "USD" },
+        { "@type": "Offer", name: "Cloud hosting (monthly)", price: hostingPrice, priceCurrency: "USD" },
       ],
     },
     {
@@ -130,15 +161,25 @@ const jsonLd = {
           name: "What does The College Agent cost?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "The College Agent offers flexible plans. Visit thecollegeagent.ai/build to see current pricing.",
+            text: `The College Agent is $${planPrice} one-time to build your agent, plus $${hostingPrice}/month cloud hosting, with $20 of AI usage credits included. There is a 7-day money-back guarantee. Visit thecollegeagent.ai/build to get started.`,
           },
         },
       ],
     },
   ],
-};
+  };
+}
 
-export default function Home() {
+export default async function Home() {
+  const jsonLd = buildJsonLd();
+
+  // Three most recent posts, newest first. The blog index sorts oldest-first for its own
+  // reasons; here recency is the whole point, so re-sort and slice.
+  const recentPosts = (await getCollegeAgentPosts())
+    .slice()
+    .sort((a, b) => new Date(b.publishedAt ?? 0).getTime() - new Date(a.publishedAt ?? 0).getTime())
+    .slice(0, 3);
+
   return (
     <>
       <script
@@ -220,8 +261,9 @@ export default function Home() {
             <span className="mono-label">What It Does</span>
             <h2 className="section-title ways-title">Your personal college operating system.</h2>
             <p className="section-sub" style={{ maxWidth: 720, margin: "14px auto 0" }}>
-              Not another chatbot. Not homework help. The thing that quietly keeps your college life
-              organized from day one.
+              A real agent with real capabilities: it reads your syllabi, watches your deadlines,
+              drafts your emails, plans your weeks, and takes action in the tools you already use.
+              All day, every day, for all four years.
             </p>
           </div>
           <div className="uc-grid">
@@ -232,6 +274,22 @@ export default function Home() {
                 <p>{desc}</p>
               </div>
             ))}
+          </div>
+
+          {/* The proof band: not categories, actual sentences you can say to it. */}
+          <div className="asks-band">
+            <div className="asks-head">
+              <span className="mono-label" style={{ color: "rgba(61,139,61,.85)", marginBottom: 8 }}>Say It. It&apos;s Handled.</span>
+              <h3>Real things students ask on day one.</h3>
+            </div>
+            <div className="asks-grid">
+              {POWER_ASKS.map((ask) => (
+                <div key={ask} className="ask-chip">&ldquo;{ask}&rdquo;</div>
+              ))}
+            </div>
+            <div style={{ textAlign: "center", marginTop: 26 }}>
+              <a href="/build" className="btn-purple">Build My Agent</a>
+            </div>
           </div>
         </div>
       </section>
@@ -253,10 +311,10 @@ export default function Home() {
           </div>
           <div className="process-grid">
             {[
-              { n: "1", phase: "Step 1", title: "Tell Us About Yourself", desc: "Fill out a quick profile with your school, year, and the goals you want your agent to tackle. Takes under two minutes." },
-              { n: "2", phase: "Step 2", title: "Build Your Agent", desc: "Choose your agent tier (The Undergraduate, The Graduate, or The Scholar), your hosting plan, support level, and onboarding experience. Standard or White Glove." },
-              { n: "3", phase: "Step 3", title: "Complete Your Onboarding Form", desc: "After checkout, you'll receive a personalized onboarding form. This is where your agent gets its identity: your communication style, your schedule, your tools, your goals." },
-              { n: "4", phase: "Step 4", title: "Your Agent Goes Live", desc: "Once your completed onboarding form is submitted, our proprietary software develops and spins up your agent, live in 30 minutes. White Glove includes a dedicated 60-minute deep-dive call before your form goes in." },
+              { n: "1", phase: "Step 1", title: "Sign Up", desc: "Two minutes at thecollegeagent.ai/build: your name, school email, and phone. No account to create first, no password to invent." },
+              { n: "2", phase: "Step 2", title: "One Plan, Everything Included", desc: `${price(introPromoActive() ? INTRO_PLAN_AMOUNT_CENTS : REGULAR_PLAN_AMOUNT_CENTS)} one-time to build your agent plus ${price(HOSTING_AMOUNT_CENTS)}/month hosting, with $20 of AI credits included. Secure checkout by Stripe and a 7-day money-back guarantee.` },
+              { n: "3", phase: "Step 3", title: "Five-Minute Intake", desc: "Name your agent, give it a face, and tell it about your school, your classes, and how you like to work. It saves as you go." },
+              { n: "4", phase: "Step 4", title: "Your Agent Comes to Life", desc: "Live within 30 minutes: personalized with everything you shared, in your dashboard and on Telegram. Feed it a syllabus and watch it go." },
             ].map((step) => (
               <div key={step.n} style={{ display: "flex", gap: 20 }}>
                 <div className="proc-circle" style={{ flexShrink: 0 }}>{step.n}</div>
@@ -270,6 +328,14 @@ export default function Home() {
               </div>
             ))}
           </div>
+          <div style={{ textAlign: "center", marginTop: 40 }}>
+            <a
+              href="/how-it-works"
+              style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: "rgba(61,139,61,.9)", textDecoration: "underline", textUnderlineOffset: 4 }}
+            >
+              The full process, step by step
+            </a>
+          </div>
           <style>{`
             @media (max-width: 680px) {
               #how-it-works .proc-grid { grid-template-columns: 1fr; }
@@ -282,7 +348,52 @@ export default function Home() {
       {/* INTEGRATIONS */}
       <IntegrationGlobe />
 
-      {/* SUPPORT PLANS */}
+      {/* MOST RECENT BLOG POSTS — rotates automatically as new posts publish (ISR above). */}
+      {recentPosts.length > 0 && (
+        <section style={{ background: "var(--cream2)", padding: "72px 0 76px" }}>
+          <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px" }}>
+            <div style={{ textAlign: "center", marginBottom: 36 }}>
+              <span className="mono-label">From the Blog</span>
+              <h2 className="section-title">Most recent posts</h2>
+            </div>
+            <div className="home-blog-grid">
+              {recentPosts.map((post) => (
+                <article key={post._id} className="home-blog-card">
+                  <a href={`/blog/${post.slug.current}`} aria-label={post.title}>
+                    {post.featuredImageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={post.featuredImageUrl} alt="" className="home-blog-image" />
+                    ) : (
+                      <div className="home-blog-image home-blog-image-fallback" />
+                    )}
+                  </a>
+                  <div className="home-blog-body">
+                    <div className="home-blog-meta">
+                      <span className="home-blog-cat">{categoryLabel(post.category)}</span>
+                      {post.publishedAt && (
+                        <span className="home-blog-date">
+                          {new Date(post.publishedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                        </span>
+                      )}
+                    </div>
+                    <h3><a href={`/blog/${post.slug.current}`}>{post.title}</a></h3>
+                    {post.excerpt ? <p>{post.excerpt}</p> : null}
+                    <a className="home-blog-link" href={`/blog/${post.slug.current}`}>Read article</a>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <div style={{ textAlign: "center", marginTop: 34 }}>
+              <a
+                href="/blog"
+                style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: "rgba(61,139,61,.9)", textDecoration: "underline", textUnderlineOffset: 4 }}
+              >
+                See all posts
+              </a>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* FAQ */}
       <FAQ />
@@ -417,6 +528,55 @@ export default function Home() {
         .uc-card h3 { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 9px; letter-spacing: -.01em; }
         .uc-card p { font-size: 13px; line-height: 1.62; color: rgba(11,23,41,.62); }
 
+        /* POWER ASKS */
+        .asks-band {
+          margin-top: 44px; background: var(--navy); border-radius: 22px;
+          padding: 44px 36px 40px; overflow: hidden; position: relative;
+        }
+        .asks-head { text-align: center; margin-bottom: 26px; }
+        .asks-head h3 {
+          font-size: clamp(20px, 2.4vw, 28px); font-weight: 800; color: #fff;
+          letter-spacing: -.02em;
+        }
+        .asks-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .ask-chip {
+          background: rgba(255,255,255,.06); border: 1px solid rgba(61,139,61,.35);
+          border-radius: 12px; padding: 14px 16px;
+          font-size: 14px; line-height: 1.55; color: rgba(255,255,255,.85); font-style: italic;
+        }
+
+        /* HOME BLOG */
+        .home-blog-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+        .home-blog-card {
+          background: #fff; border: 1px solid rgba(11,23,41,.08); border-radius: 16px;
+          overflow: hidden; box-shadow: 0 10px 32px rgba(11,23,41,.05);
+          display: flex; flex-direction: column;
+        }
+        .home-blog-image { width: 100%; height: 170px; object-fit: cover; display: block; }
+        .home-blog-image-fallback {
+          background: linear-gradient(135deg, rgba(61,139,61,.85), var(--navy));
+        }
+        .home-blog-body { padding: 20px 22px 22px; display: flex; flex-direction: column; flex: 1; }
+        .home-blog-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .home-blog-cat {
+          font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+          text-transform: uppercase; letter-spacing: .08em; color: var(--green);
+          background: rgba(61,139,61,.1); padding: 3px 9px; border-radius: 99px;
+        }
+        .home-blog-date { font-family: var(--font-mono); font-size: 11px; color: rgba(11,23,41,.4); }
+        .home-blog-body h3 { font-size: 17px; font-weight: 800; line-height: 1.3; letter-spacing: -.01em; margin-bottom: 8px; }
+        .home-blog-body h3 a { color: var(--navy); text-decoration: none; }
+        .home-blog-body h3 a:hover { color: var(--green); }
+        .home-blog-body p {
+          font-size: 13.5px; line-height: 1.65; color: rgba(11,23,41,.6); margin-bottom: 14px;
+          display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .home-blog-link {
+          margin-top: auto; font-family: var(--font-mono); font-size: 11.5px; font-weight: 600;
+          letter-spacing: .05em; text-transform: uppercase; color: var(--green);
+          text-decoration: underline; text-underline-offset: 3px;
+        }
+
         /* HERO layout — the row is a class (not inline) so the mobile stack below can win. */
         .hero-row { display: flex; }
 
@@ -453,6 +613,8 @@ export default function Home() {
         @media (max-width: 900px) {
           .ways-title { white-space: normal; }
           .uc-grid { grid-template-columns: repeat(2, 1fr); }
+          .asks-grid { grid-template-columns: repeat(2, 1fr); }
+          .home-blog-grid { grid-template-columns: 1fr; max-width: 520px; margin: 0 auto; }
           .stat-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; }
           .stat-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,.15); padding-bottom: 20px; }
           .stat-item:last-child { border-bottom: none; }
@@ -471,6 +633,8 @@ export default function Home() {
           .hero-mascot { max-width: 200px; }
           .dual-grid { grid-template-columns: 1fr; }
           .uc-grid { grid-template-columns: 1fr; }
+          .asks-grid { grid-template-columns: 1fr; }
+          .asks-band { padding: 34px 22px 32px; }
           .stat-grid { grid-template-columns: repeat(2, 1fr); }
           .int-menu-grid { grid-template-columns: 1fr 1fr; }
           .process-grid { grid-template-columns: 1fr; gap: 26px; }
