@@ -96,12 +96,14 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
     ...(paid ? [{ id: "welcome" as DashboardTabId, label: "Welcome", icon: Home }] : []),
     ...(hasAgent
       ? [
-          { id: "chat" as DashboardTabId, label: "Chat", icon: MessageSquare },
+          // David's ordering: orientation first (Now what?, Checklist), then Chat, then
+          // the plumbing (Integrations, Shortcuts, API Credits).
           { id: "now-what" as DashboardTabId, label: "Now what?", icon: Compass, iconColor: "#8B5CF6" },
           { id: "checklist" as DashboardTabId, label: "Checklist", icon: ListChecks, iconColor: "#14B8A6" },
+          { id: "chat" as DashboardTabId, label: "Chat", icon: MessageSquare },
           { id: "integrations" as DashboardTabId, label: "Integrations", icon: Blocks, iconColor: "#3B82F6" },
           { id: "shortcuts" as DashboardTabId, label: "Shortcuts", icon: Sparkles, iconColor: "#F59E0B" },
-          { id: "credits" as DashboardTabId, label: "Credits", icon: Coins, iconColor: "#EAB308" },
+          { id: "credits" as DashboardTabId, label: "API Credits", icon: Coins, iconColor: "#EAB308" },
         ]
       : paid
         ? []

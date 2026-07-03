@@ -59,19 +59,31 @@ export const GET = route(async () => {
   } | null = null;
 
   if (agentId && !byo) {
-    try {
-      const [budget, usage] = await Promise.all([agent37.getBudget(agentId), agent37.getUsage(agentId)]);
+    // Fetched separately on purpose: a usage read failing (fresh agent with no usage
+    // rows yet, legacy budget shapes) must not blank the balance too — that's how the
+    // Credits tab ends up showing a bare dash. Budget is the balance; usage is garnish.
+    const [budgetRes, usageRes] = await Promise.allSettled([
+      agent37.getBudget(agentId),
+      agent37.getUsage(agentId),
+    ]);
+    if (budgetRes.status === "fulfilled") {
+      const budget = budgetRes.value;
+      const usage = usageRes.status === "fulfilled" ? usageRes.value : null;
       credits = {
         // Spendable now: what's left of the monthly floor plus remaining top-up credits.
-        remaining_micros: budget.monthly_remaining_micros + budget.topup_remaining_micros,
-        spent_micros: usage.total_micros,
-        llm_micros: usage.by_integration.llm.cost_micros,
-        search_micros: usage.by_integration.brave.cost_micros,
-        tools_micros: usage.by_integration.composio.cost_micros,
+        // Legacy (pre-credits) budgets can miss fields — default each leg to 0 rather
+        // than let a single undefined turn the whole balance into NaN.
+        remaining_micros: (budget.monthly_remaining_micros ?? 0) + (budget.topup_remaining_micros ?? 0),
+        spent_micros: usage?.total_micros ?? 0,
+        llm_micros: usage?.by_integration?.llm?.cost_micros ?? 0,
+        search_micros: usage?.by_integration?.brave?.cost_micros ?? 0,
+        tools_micros: usage?.by_integration?.composio?.cost_micros ?? 0,
       };
-    } catch (e) {
-      // Balance is a nice-to-have on this screen; don't fail the whole payload over it.
-      console.error("[billing:credits]", agentId, e);
+    } else {
+      console.error("[billing:credits] budget", agentId, budgetRes.reason);
+    }
+    if (usageRes.status === "rejected") {
+      console.error("[billing:credits] usage", agentId, usageRes.reason);
     }
   }
 

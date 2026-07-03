@@ -89,14 +89,18 @@ export default function ChatBot() {
     <>
       {/* BUBBLE */}
       <button
-        className="chat-bubble"
+        className={`chat-bubble${open ? " is-open" : ""}`}
         onClick={() => setOpen((o) => !o)}
         aria-label="Chat with us"
       >
         {open ? (
           <span style={{ fontSize: 16, lineHeight: 1, fontWeight: 700 }}>✕</span>
         ) : (
-          <span className="chat-bubble-label">Ask us anything</span>
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/thecollegeagent.png" alt="" className="chat-bubble-bot" />
+            <span className="chat-bubble-label">Help Me</span>
+          </>
         )}
       </button>
 
@@ -163,13 +167,15 @@ export default function ChatBot() {
           background: var(--green); color: #fff;
           border: none; border-radius: 99px;
           display: flex; align-items: center; gap: 8px;
-          padding: 14px 20px; cursor: pointer;
+          padding: 10px 18px 10px 12px; cursor: pointer;
           box-shadow: 0 8px 28px rgba(61,139,61,.35);
           font-family: var(--font-inter, Inter, sans-serif);
           transition: transform .15s, box-shadow .15s;
         }
         .chat-bubble:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(61,139,61,.4); }
         .chat-bubble-label { font-size: 13px; font-weight: 700; letter-spacing: .02em; }
+        .chat-bubble-bot { width: 26px; height: 26px; object-fit: contain; display: block; }
+        .chat-bubble.is-open { padding: 14px 16px; }
 
         .chat-panel {
           position: fixed; bottom: 100px; right: 28px; z-index: 9998;
