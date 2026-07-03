@@ -32,6 +32,137 @@ const T = {
 const NAME_SUGGESTIONS = ["Aggie", "Sage", "Frankie"];
 const SURPRISE_NAMES = ["Iris", "Atlas", "Juno", "Milo", "Scout", "Pepper", "Nova", "Ace", "Willow", "Ziggy"];
 
+// The 20 brand avatar presets (public/avatars, sliced from David's board). Picking one is
+// converted to a File and rides the exact same upload path as a custom image.
+const AVATAR_PRESETS = Array.from(
+  { length: 20 },
+  (_, i) => `/avatars/preset-${String(i + 1).padStart(2, "0")}.webp`
+);
+
+function AvatarPicker({
+  avatarFile,
+  avatarPreview,
+  disabled,
+  setAvatar,
+}: {
+  avatarFile: File | null;
+  avatarPreview: string | null;
+  disabled: boolean;
+  setAvatar: (f: File | null) => void;
+}) {
+  const [selected, setSelected] = useState<number | null>(null);
+  const [picking, setPicking] = useState<number | null>(null);
+
+  async function pick(i: number) {
+    if (disabled || picking !== null) return;
+    setPicking(i);
+    try {
+      const res = await fetch(AVATAR_PRESETS[i]);
+      if (!res.ok) throw new Error("preset fetch failed");
+      const blob = await res.blob();
+      setAvatar(new File([blob], `preset-${String(i + 1).padStart(2, "0")}.webp`, { type: blob.type || "image/webp" }));
+      setSelected(i);
+    } catch {
+      /* leave the current avatar untouched */
+    } finally {
+      setPicking(null);
+    }
+  }
+
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
+        <div style={{ width: 56, height: 56, borderRadius: "50%", overflow: "hidden", background: T.greenSoft, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          {avatarPreview ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={avatarPreview} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            <Image src="/thecollegeagent.png" alt="" width={56} height={56} style={{ objectFit: "contain" }} />
+          )}
+        </div>
+        <label
+          style={{
+            cursor: disabled ? "not-allowed" : "pointer",
+            fontFamily: "'DM Sans', system-ui, sans-serif",
+            fontSize: 13,
+            fontWeight: 600,
+            color: T.green,
+            border: `1.5px solid ${T.green}`,
+            borderRadius: 10,
+            padding: "8px 14px",
+          }}
+        >
+          {avatarFile ? "Choose a different image" : "Upload your own"}
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            disabled={disabled}
+            onChange={(e) => {
+              const f = e.target.files?.[0] ?? null;
+              if (f) {
+                setAvatar(f);
+                setSelected(null);
+              }
+              e.target.value = "";
+            }}
+            style={{ display: "none" }}
+          />
+        </label>
+        {avatarFile && (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => {
+              setAvatar(null);
+              setSelected(null);
+            }}
+            style={{
+              background: "transparent",
+              border: "none",
+              color: T.inkSoft,
+              fontSize: 13,
+              cursor: "pointer",
+              textDecoration: "underline",
+              textUnderlineOffset: 2,
+            }}
+          >
+            Remove
+          </button>
+        )}
+      </div>
+
+      <div style={{ fontSize: 12, fontWeight: 600, color: T.inkSoft, letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 10 }}>
+        Or pick one of ours
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(52px, 1fr))", gap: 10 }}>
+        {AVATAR_PRESETS.map((src, i) => (
+          <button
+            key={src}
+            type="button"
+            disabled={disabled}
+            onClick={() => pick(i)}
+            aria-label={`Avatar option ${i + 1}`}
+            style={{
+              padding: 0,
+              border: `2.5px solid ${selected === i ? T.green : "transparent"}`,
+              borderRadius: "50%",
+              overflow: "hidden",
+              aspectRatio: "1",
+              background: T.greenSoft,
+              cursor: disabled ? "not-allowed" : "pointer",
+              opacity: picking !== null && picking !== i ? 0.6 : 1,
+              transition: "border-color .12s, opacity .12s",
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={src} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const FONTS_HREF =
   "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=DM+Sans:wght@400;500;600;700&display=swap";
 
@@ -1204,59 +1335,12 @@ function Input({
   }
   if (step.kind === "image") {
     return (
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        <div style={{ width: 56, height: 56, borderRadius: "50%", overflow: "hidden", background: T.greenSoft, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          {avatarPreview ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={avatarPreview} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          ) : (
-            <Image src="/thecollegeagent.png" alt="" width={56} height={56} style={{ objectFit: "contain" }} />
-          )}
-        </div>
-        <label
-          style={{
-            cursor: disabled ? "not-allowed" : "pointer",
-            fontFamily: "'DM Sans', system-ui, sans-serif",
-            fontSize: 13,
-            fontWeight: 600,
-            color: T.green,
-            border: `1.5px solid ${T.green}`,
-            borderRadius: 10,
-            padding: "8px 14px",
-          }}
-        >
-          {avatarFile ? "Choose a different image" : "Upload an image"}
-          <input
-            type="file"
-            accept="image/png,image/jpeg,image/webp"
-            disabled={disabled}
-            onChange={(e) => {
-              const f = e.target.files?.[0] ?? null;
-              if (f) setAvatar(f);
-              e.target.value = "";
-            }}
-            style={{ display: "none" }}
-          />
-        </label>
-        {avatarFile && (
-          <button
-            type="button"
-            disabled={disabled}
-            onClick={() => setAvatar(null)}
-            style={{
-              background: "transparent",
-              border: "none",
-              color: T.inkSoft,
-              fontSize: 13,
-              cursor: "pointer",
-              textDecoration: "underline",
-              textUnderlineOffset: 2,
-            }}
-          >
-            Remove
-          </button>
-        )}
-      </div>
+      <AvatarPicker
+        avatarFile={avatarFile}
+        avatarPreview={avatarPreview}
+        disabled={disabled}
+        setAvatar={setAvatar}
+      />
     );
   }
   if (step.kind === "text") {
