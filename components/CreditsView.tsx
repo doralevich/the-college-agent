@@ -99,7 +99,10 @@ export function CreditsView() {
           <Loader2 className="h-4 w-4 animate-spin" /> Loading credits…
         </div>
       ) : !data ? null : data.byo ? (
-        <ByoCard provider={data.byo.provider} />
+        <>
+          <ByoCard provider={data.byo.provider} />
+          <ByoSwitchCard mode="to-platform" />
+        </>
       ) : (
         <>
           <div className="rounded-2xl border">
@@ -145,6 +148,8 @@ export function CreditsView() {
           {data.alerts && <AlertsCard initial={data.alerts} />}
 
           {data.autoRecharge && <AutoRechargeCard initial={data.autoRecharge} />}
+
+          <ByoSwitchCard mode="to-byo" />
 
           {data.transactions.length > 0 && (
             <div className="rounded-2xl border p-6">
@@ -430,6 +435,110 @@ function PresetPicker({
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+// Advanced: move the agent between platform credits and the student's own API key.
+// The switch reconfigures the live box (takes up to a minute), then reloads the page so
+// every card reflects the new mode. Deliberately quiet — most students never need this.
+function ByoSwitchCard({ mode }: { mode: "to-byo" | "to-platform" }) {
+  const [open, setOpen] = useState(false);
+  const [provider, setProvider] = useState<"anthropic" | "openai">("anthropic");
+  const [key, setKey] = useState("");
+  const [switching, setSwitching] = useState(false);
+
+  async function doSwitch() {
+    setSwitching(true);
+    try {
+      await apiFetch("/api/billing/byo", {
+        method: "POST",
+        body: JSON.stringify(mode === "to-platform" ? { provider: "platform" } : { provider, key: key.trim() }),
+      });
+      toast.success(
+        mode === "to-platform"
+          ? "Switched back to platform credits."
+          : "Switched to your own API key."
+      );
+      window.location.reload();
+    } catch (e) {
+      toast.error((e as Error).message || "Couldn't switch. Your agent is unchanged.");
+      setSwitching(false);
+    }
+  }
+
+  if (mode === "to-platform") {
+    return (
+      <div className="rounded-2xl border p-6">
+        <h3 className="text-base font-medium">Switch back to platform credits</h3>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Your agent goes back to running on credits from us: usage tracking, low-balance
+          alerts, and top-ups all come back on. Your API key is removed from the agent.
+        </p>
+        <Button variant="outline" className="mt-4" disabled={switching} onClick={doSwitch}>
+          {switching && <Loader2 className="h-4 w-4 animate-spin" />}
+          {switching ? "Reconfiguring your agent…" : "Switch to platform credits"}
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-2xl border p-6">
+      <h3 className="text-base font-medium">Advanced: use your own API key</h3>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Have your own Anthropic or OpenAI account? Your agent can run on it instead of
+        credits. You handle that bill and its limits yourself; credits stay here for
+        whenever you switch back.
+      </p>
+      {!open ? (
+        <Button variant="outline" className="mt-4" onClick={() => setOpen(true)}>
+          Set up
+        </Button>
+      ) : (
+        <div className="mt-4 space-y-3">
+          <div className="inline-flex gap-1 rounded-full bg-secondary p-1">
+            {(["anthropic", "openai"] as const).map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setProvider(p)}
+                className={cn(
+                  "rounded-full px-4 py-1.5 text-sm font-medium transition-colors",
+                  provider === p
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {p === "anthropic" ? "Anthropic" : "OpenAI"}
+              </button>
+            ))}
+          </div>
+          <input
+            type="password"
+            value={key}
+            onChange={(e) => setKey(e.target.value)}
+            placeholder={provider === "anthropic" ? "sk-ant-..." : "sk-..."}
+            autoComplete="off"
+            className="w-full rounded-lg border bg-background px-3 py-2 text-base md:text-sm"
+          />
+          <div className="flex items-center gap-2">
+            <Button disabled={switching || key.trim().length < 20} onClick={doSwitch}>
+              {switching && <Loader2 className="h-4 w-4 animate-spin" />}
+              {switching ? "Reconfiguring your agent…" : "Switch to my key"}
+            </Button>
+            {!switching && (
+              <Button variant="ghost" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Takes up to a minute. Your key is stored securely and only ever lives on your
+            agent&apos;s own machine.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
