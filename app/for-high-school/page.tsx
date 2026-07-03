@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Nav from "../components/Nav";
+import { PageHero } from "../components/PageHero";
 import { Footer } from "../components/Footer";
 import { BookOpenCheck, CalendarDays, GraduationCap, NotebookTabs, Sparkles, TrendingUp } from "lucide-react";
 
@@ -61,25 +62,16 @@ export default function ForHighSchoolPage() {
   return (
     <>
       <Nav />
-      <main style={{ paddingTop: 100, minHeight: "100vh" }}>
+      <main style={{ paddingTop: 72, minHeight: "100vh" }}>
 
         {/* HERO */}
-        <section className="dark-section" style={{ padding: "80px 0 70px", overflow: "hidden", position: "relative" }}>
-          <div className="hero-glow" />
-          <div style={{ position: "relative", zIndex: 1, textAlign: "center", maxWidth: 860, margin: "0 auto", padding: "0 24px" }}>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "rgba(255,255,255,.5)", marginBottom: 16, display: "block" }}>For High School Students</span>
-            <h1 style={{ fontSize: "clamp(30px, 4.5vw, 54px)", fontWeight: 800, color: "#fff", lineHeight: 1.06, letterSpacing: "-.035em", marginBottom: 20 }}>
-              Get ready for college before you get there.
-            </h1>
-            <p style={{ fontSize: "clamp(16px, 1.4vw, 18px)", lineHeight: 1.75, color: "rgba(255,255,255,.65)", maxWidth: 640, margin: "0 auto 36px" }}>
-              The students who thrive in college don&apos;t figure it out after they arrive. They start building the habits, skills, and plans that will define their college years while they&apos;re still in high school. That&apos;s what The College Agent is for.
-            </p>
-            <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
-              <a href="/build" className="btn-green">Start Now</a>
-              <a href="/study" className="btn-outline-light">AI Study Tools</a>
-            </div>
-          </div>
-        </section>
+        <PageHero
+          label="For High School Students"
+          title="Get ready for college before you get there."
+          sub="The students who thrive in college don't figure it out after they arrive. They start building the habits, skills, and plans that will define their college years while they're still in high school. That's what The College Agent is for."
+          primary={{ label: "Start Now", href: "/build" }}
+          secondary={{ label: "AI Study Tools", href: "/study" }}
+        />
 
         {/* WHY START EARLY */}
         <section style={{ background: "#fff", padding: "72px 0" }}>

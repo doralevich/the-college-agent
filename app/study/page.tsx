@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Nav from "../components/Nav";
+import { PageHero } from "../components/PageHero";
 import { Footer } from "../components/Footer";
 import { BookOpenCheck, Clock, FileText, NotebookTabs, Sparkles, TrendingUp } from "lucide-react";
 
@@ -63,25 +64,16 @@ export default function StudyPage() {
   return (
     <>
       <Nav />
-      <main style={{ paddingTop: 100, minHeight: "100vh" }}>
+      <main style={{ paddingTop: 72, minHeight: "100vh" }}>
 
         {/* HERO */}
-        <section className="dark-section" style={{ padding: "80px 0 70px", overflow: "hidden", position: "relative" }}>
-          <div className="hero-glow" />
-          <div style={{ position: "relative", zIndex: 1, textAlign: "center", maxWidth: 860, margin: "0 auto", padding: "0 24px" }}>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "rgba(255,255,255,.5)", marginBottom: 16, display: "block" }}>AI Study Companion</span>
-            <h1 style={{ fontSize: "clamp(30px, 4.5vw, 54px)", fontWeight: 800, color: "#fff", lineHeight: 1.06, letterSpacing: "-.035em", marginBottom: 20 }}>
-              Study smarter. Retain more. Stress less.
-            </h1>
-            <p style={{ fontSize: "clamp(16px, 1.4vw, 18px)", lineHeight: 1.75, color: "rgba(255,255,255,.65)", maxWidth: 640, margin: "0 auto 36px" }}>
-              The College Agent turns your raw notes, slides, and readings into structured study guides, review schedules, and practice questions — personalized to your classes and your exam dates.
-            </p>
-            <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
-              <a href="/build" className="btn-green">Build My Study Agent</a>
-              <a href="/for-students#everything" className="btn-outline-light">See Everything It Does</a>
-            </div>
-          </div>
-        </section>
+        <PageHero
+          label="AI Study Companion"
+          title="Study smarter. Retain more. Stress less."
+          sub="The College Agent turns your raw notes, slides, and readings into structured study guides, review schedules, and practice questions, personalized to your classes and your exam dates."
+          primary={{ label: "Build My Study Agent", href: "/build" }}
+          secondary={{ label: "See Everything It Does", href: "/for-students#everything" }}
+        />
 
         {/* THE PROBLEM */}
         <section style={{ background: "#fff", padding: "72px 0" }}>
