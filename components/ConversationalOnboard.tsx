@@ -27,6 +27,11 @@ const T = {
   line: "var(--ca-line)",
 };
 
+// Agent-name suggestions (spec: "Aggie · Sage · Frankie · Surprise me"). Surprise me
+// draws from the wider pool so repeat taps keep producing fresh options.
+const NAME_SUGGESTIONS = ["Aggie", "Sage", "Frankie"];
+const SURPRISE_NAMES = ["Iris", "Atlas", "Juno", "Milo", "Scout", "Pepper", "Nova", "Ace", "Willow", "Ziggy"];
+
 const FONTS_HREF =
   "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=DM+Sans:wght@400;500;600;700&display=swap";
 
@@ -431,6 +436,10 @@ export function ConversationalOnboard({
   }, [stepIdx]);
   const [restored, setRestored] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  // Flips after a successful submit + provision: the wizard's final frame is the
+  // "That's it" completion pane with the Open chat CTA (per the onboarding spec),
+  // not a silent bounce into the dashboard.
+  const [completed, setCompleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Files don't serialize cleanly to localStorage, so avatar lives in component state
   // only — students who refresh mid-flow keep their text answers but re-pick the image.
@@ -695,7 +704,10 @@ export function ConversationalOnboard({
         router.refresh();
         return;
       }
-      router.refresh();
+      // Success: show the completion pane. Open chat does a full navigation so the
+      // server re-reads hasAgent and lands on the live Chat tab.
+      setSubmitting(false);
+      setCompleted(true);
     } catch (e) {
       setError((e as Error).message);
       setSubmitting(false);
@@ -703,8 +715,8 @@ export function ConversationalOnboard({
   }
 
   const progress = useMemo(
-    () => Math.round(((stepIdx + (submitting ? 1 : 0)) / visibleSteps.length) * 100),
-    [stepIdx, submitting, visibleSteps.length],
+    () => (completed ? 100 : Math.round(((stepIdx + (submitting ? 1 : 0)) / visibleSteps.length) * 100)),
+    [stepIdx, submitting, completed, visibleSteps.length],
   );
 
   return (
@@ -792,6 +804,76 @@ export function ConversationalOnboard({
           </div>
         </div>
 
+        {completed ? (
+          // The spec's completion moment: distinct from the chat opening hello, one CTA.
+          <div
+            className="ca-q-body"
+            style={{
+              padding: "44px 44px 48px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                width: 72,
+                height: 72,
+                borderRadius: "50%",
+                background: T.greenSoft,
+                overflow: "hidden",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 18,
+              }}
+            >
+              {avatarPreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={avatarPreview} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <Image src="/thecollegeagent.png" alt="" width={72} height={72} style={{ objectFit: "contain", width: "100%", height: "100%" }} />
+              )}
+            </div>
+            <h1
+              style={{
+                fontFamily: "'Fraunces', Georgia, serif",
+                fontSize: 28,
+                fontWeight: 600,
+                lineHeight: 1.2,
+                color: T.ink,
+                margin: "0 0 10px",
+              }}
+            >
+              That&apos;s it. You&apos;re all set up.
+            </h1>
+            <p style={{ fontSize: 15, lineHeight: 1.6, color: T.inkSoft, maxWidth: 420, margin: "0 0 26px" }}>
+              {displayBotName} is live and already knows your classes, your goals, and how you
+              like to work. The first conversation is where it gets good.
+            </p>
+            <button
+              type="button"
+              className="ca-onboard-cta"
+              onClick={() => window.location.assign("/dashboard/chat")}
+              style={{
+                border: "none",
+                cursor: "pointer",
+                fontFamily: "'DM Sans', system-ui, sans-serif",
+                fontSize: 15,
+                fontWeight: 600,
+                color: "#fff",
+                background: T.green,
+                padding: "13px 34px",
+                borderRadius: 10,
+                transition: "background .15s",
+              }}
+            >
+              Open chat
+            </button>
+          </div>
+        ) : (
+        <>
         <div className="ca-q-body" style={{ padding: "28px 44px", minHeight: 320, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           {/* Mascot + question header: side by side on desktop, a small icon stacked on
               top with the question full-width on phones (see the media block below). */}
@@ -936,6 +1018,8 @@ export function ConversationalOnboard({
         <div className="ca-q-hint" style={{ padding: "10px 44px 18px", textAlign: "center", fontSize: 12, color: T.inkSoft }}>
           Saves automatically. Close this tab and come back any time.
         </div>
+        </>
+        )}
       </div>
 
       <style>{`
@@ -1177,7 +1261,7 @@ function Input({
   }
   if (step.kind === "text") {
     const value = form[step.key] as string;
-    return (
+    const input = (
       <input
         type={step.inputType ?? "text"}
         autoFocus
@@ -1200,6 +1284,42 @@ function Input({
           transition: "border-color .15s, box-shadow .15s",
         }}
       />
+    );
+    if (step.key !== "agentName") return input;
+    // Name suggestion chips (per the onboarding spec) — tap to fill, still editable.
+    const chipStyle = (selected: boolean): React.CSSProperties => ({
+      border: `1.5px solid ${selected ? T.green : T.line}`,
+      background: selected ? T.greenSoft : T.card,
+      color: selected ? T.greenText : T.ink,
+      fontFamily: "'DM Sans', system-ui, sans-serif",
+      fontSize: 14,
+      fontWeight: 500,
+      padding: "8px 16px",
+      borderRadius: 999,
+      cursor: disabled ? "not-allowed" : "pointer",
+      transition: "border-color .12s, background .12s",
+    });
+    return (
+      <div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+          {NAME_SUGGESTIONS.map((n) => (
+            <button key={n} type="button" disabled={disabled} onClick={() => setField("agentName", n)} style={chipStyle(value.trim() === n)}>
+              {n}
+            </button>
+          ))}
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() =>
+              setField("agentName", SURPRISE_NAMES[Math.floor(Math.random() * SURPRISE_NAMES.length)])
+            }
+            style={chipStyle(false)}
+          >
+            Surprise me
+          </button>
+        </div>
+        {input}
+      </div>
     );
   }
   if (step.kind === "textarea") {
