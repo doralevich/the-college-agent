@@ -21,6 +21,9 @@ type Body = {
   // Referral share code from /build?ref=... — friend's first hosting month free,
   // referrer gets a $25 credit when this checkout completes.
   ref?: string;
+  // Explicit Terms & Conditions acceptance from the /build checkbox. Required:
+  // the acceptance timestamp is recorded on the session + subscription metadata.
+  termsAccepted?: boolean;
 };
 
 export const POST = route(async (req) => {
@@ -41,6 +44,10 @@ export const POST = route(async (req) => {
 
   if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     throw new ApiError(400, "invalid_request", "Valid email is required");
+  }
+
+  if (body.termsAccepted !== true) {
+    throw new ApiError(400, "terms_not_accepted", "Please agree to the Terms & Conditions to continue.");
   }
 
   const firstName = (body.firstName ?? "").trim();
@@ -72,6 +79,9 @@ export const POST = route(async (req) => {
   if (userId) metadata.user_id = userId;
   if (firstName) metadata.first_name = firstName;
   if (lastName) metadata.last_name = lastName;
+  // Proof of clickwrap acceptance, kept alongside the order in Stripe.
+  metadata.terms_accepted_at = new Date().toISOString();
+  metadata.terms_version = "2026-07-03";
 
   const stripe = getStripe();
 
