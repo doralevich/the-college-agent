@@ -117,15 +117,7 @@ export function ChecklistView({ userId, firstName, intake }: Props) {
           <ArrowLeft className="h-4 w-4" />
           Back to checklist
         </button>
-        <ConversationalOnboard
-          userId={userId}
-          knownFirstName={firstName}
-          prefill={null}
-          onSaveExit={() => {
-            setEditing(false);
-            router.refresh(); // answers persist on every change; just step back out
-          }}
-        />
+        <ConversationalOnboard userId={userId} knownFirstName={firstName} prefill={null} />
       </div>
     );
   }

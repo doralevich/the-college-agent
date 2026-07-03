@@ -360,31 +360,39 @@ export default async function Home() {
               <h2 className="section-title">Most recent posts</h2>
             </div>
             <div className="home-blog-grid">
-              {recentPosts.map((post) => (
-                <article key={post._id} className="home-blog-card">
-                  <a href={`/blog/${post.slug.current}`} aria-label={post.title}>
-                    {post.featuredImageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={post.featuredImageUrl} alt="" className="home-blog-image" />
-                    ) : (
-                      <div className="home-blog-image home-blog-image-fallback" />
-                    )}
-                  </a>
-                  <div className="home-blog-body">
-                    <div className="home-blog-meta">
-                      <span className="home-blog-cat">{categoryLabel(post.category)}</span>
-                      {post.publishedAt && (
-                        <span className="home-blog-date">
-                          {new Date(post.publishedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                        </span>
+              {recentPosts.map((post) => {
+                const hasImage = Boolean(post.featuredImageUrl);
+                return (
+                  <article key={post._id} className="home-blog-card">
+                    <a href={`/blog/${post.slug.current}`} aria-label={post.title}>
+                      {hasImage ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={post.featuredImageUrl} alt="" className="home-blog-image" />
+                      ) : (
+                        // No featured image yet: the header block carries the category
+                        // and title itself instead of sitting there blank green.
+                        <div className="home-blog-image home-blog-image-fallback">
+                          <span className="home-blog-fallback-cat">{categoryLabel(post.category)}</span>
+                          <span className="home-blog-fallback-title">{post.title}</span>
+                        </div>
                       )}
+                    </a>
+                    <div className="home-blog-body">
+                      <div className="home-blog-meta">
+                        {hasImage && <span className="home-blog-cat">{categoryLabel(post.category)}</span>}
+                        {post.publishedAt && (
+                          <span className="home-blog-date">
+                            {new Date(post.publishedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                          </span>
+                        )}
+                      </div>
+                      {hasImage && <h3><a href={`/blog/${post.slug.current}`}>{post.title}</a></h3>}
+                      {post.excerpt ? <p>{post.excerpt}</p> : null}
+                      <a className="home-blog-link" href={`/blog/${post.slug.current}`}>Read article</a>
                     </div>
-                    <h3><a href={`/blog/${post.slug.current}`}>{post.title}</a></h3>
-                    {post.excerpt ? <p>{post.excerpt}</p> : null}
-                    <a className="home-blog-link" href={`/blog/${post.slug.current}`}>Read article</a>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
             <div style={{ textAlign: "center", marginTop: 34 }}>
               <a
@@ -557,7 +565,18 @@ export default async function Home() {
         }
         .home-blog-image { width: 100%; height: 170px; object-fit: cover; display: block; }
         .home-blog-image-fallback {
-          background: linear-gradient(135deg, rgba(61,139,61,.85), var(--navy));
+          background: linear-gradient(135deg, rgba(61,139,61,.9), var(--navy));
+          display: flex; flex-direction: column; justify-content: flex-end;
+          gap: 8px; padding: 16px 18px;
+        }
+        .home-blog-fallback-cat {
+          font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+          text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,.75);
+        }
+        .home-blog-fallback-title {
+          color: #fff; font-size: 18px; font-weight: 800; line-height: 1.3;
+          letter-spacing: -.01em;
+          display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
         }
         .home-blog-body { padding: 20px 22px 22px; display: flex; flex-direction: column; flex: 1; }
         .home-blog-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }

@@ -85,10 +85,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
   // Before there's an agent that whole block collapses to a single "Agents" item (which hosts the
   // build CTA when unpaid, the setup checklist once paid). Billing appears once they've paid
   // (there's a subscription to show / manage).
-  // `iconColor` (optional) tints just the icon — used to make Integrations / Shortcuts
-  // stand out from the otherwise-muted sidebar. Labels stay in the default text color so
-  // the row still reads as a single nav item, not a colored chip.
-  const tabs: { id: DashboardTabId; label: string; icon: typeof Bot; iconColor?: string }[] = [
+  const tabs: { id: DashboardTabId; label: string; icon: typeof Bot }[] = [
     // Welcome shows for any paid student — it's the conversational onboarding pre-agent
     // and the persistent greeting + Open Chat CTA post-agent. The rest of the agent-bound
     // surfaces (Chat, Your Agent) only appear after the agent is provisioned. Files has
@@ -97,13 +94,14 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
     ...(hasAgent
       ? [
           // David's ordering: orientation first (Now what?, Checklist), then Chat, then
-          // the plumbing (Integrations, Shortcuts, API Credits).
-          { id: "now-what" as DashboardTabId, label: "Now what?", icon: Compass, iconColor: "#8B5CF6" },
-          { id: "checklist" as DashboardTabId, label: "Checklist", icon: ListChecks, iconColor: "#14B8A6" },
+          // the plumbing (Integrations, Shortcuts, API Credits). Icons stay monochrome
+          // (Apple-style uniform sidebar, per David).
+          { id: "now-what" as DashboardTabId, label: "Now what?", icon: Compass },
+          { id: "checklist" as DashboardTabId, label: "Checklist", icon: ListChecks },
           { id: "chat" as DashboardTabId, label: "Chat", icon: MessageSquare },
-          { id: "integrations" as DashboardTabId, label: "Integrations", icon: Blocks, iconColor: "#3B82F6" },
-          { id: "shortcuts" as DashboardTabId, label: "Shortcuts", icon: Sparkles, iconColor: "#F59E0B" },
-          { id: "credits" as DashboardTabId, label: "API Credits", icon: Coins, iconColor: "#EAB308" },
+          { id: "integrations" as DashboardTabId, label: "Integrations", icon: Blocks },
+          { id: "shortcuts" as DashboardTabId, label: "Shortcuts", icon: Sparkles },
+          { id: "credits" as DashboardTabId, label: "API Credits", icon: Coins },
         ]
       : paid
         ? []
@@ -219,7 +217,6 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
                 label={t.label}
                 isActive={isActive}
                 href={dashboardPath(t.id)}
-                iconColor={t.iconColor}
               />
             );
           })}
@@ -452,14 +449,12 @@ function NavLink({
   isActive,
   href,
   onClick,
-  iconColor,
 }: {
   Icon: typeof Bot;
   label: string;
   isActive: boolean;
   href: string;
   onClick?: () => void;
-  iconColor?: string;
 }) {
   return (
     <Link
@@ -479,7 +474,7 @@ function NavLink({
           : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
       )}
     >
-      <Icon className="h-4 w-4" style={iconColor ? { color: iconColor } : undefined} />
+      <Icon className="h-4 w-4" />
       <span className="flex-1 text-left">{label}</span>
     </Link>
   );
