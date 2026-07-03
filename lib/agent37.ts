@@ -187,24 +187,24 @@ export const agent37 = {
         }
       }
     }
-    // The budget subresource may be read-only; some APIs expose top-ups as an action
-    // endpoint instead. A missing action path (404/405) must NOT escape as the final
-    // error — a 404 here means "no such route", not "no such agent" (a truly-gone agent
-    // already threw 404 from the base attempts above), so keep the base error instead.
+    // The budget subresource is read-only (every verb 405s, no Allow header). This API's
+    // writes are POST *actions* (/start, /stop, /resize, /update, /exec) — try the
+    // plausible top-up actions the same way. A missing action path (404/405) must NOT
+    // escape as the final error — a 404 here means "no such route", not "no such agent"
+    // (a truly-gone agent already threw 404 from the base attempts above).
     if (body.topup_micros != null) {
-      for (const candidate of bodies) {
-        try {
-          return await call<Budget>(`/instances/${id}/budget/topup`, {
-            method: "POST",
-            body: JSON.stringify(candidate),
-          });
-        } catch (err) {
-          if (err instanceof Agent37Error && (err.status === 404 || err.status === 405)) break;
-          if (err instanceof Agent37Error && (err.status === 400 || err.status === 422)) {
-            lastErr = err;
-            continue;
+      for (const path of [`/instances/${id}/topup`, `/instances/${id}/budget/topup`]) {
+        for (const candidate of bodies) {
+          try {
+            return await call<Budget>(path, { method: "POST", body: JSON.stringify(candidate) });
+          } catch (err) {
+            if (err instanceof Agent37Error && (err.status === 404 || err.status === 405)) break;
+            if (err instanceof Agent37Error && (err.status === 400 || err.status === 422)) {
+              lastErr = err;
+              continue;
+            }
+            throw err;
           }
-          throw err;
         }
       }
     }
