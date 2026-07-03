@@ -576,10 +576,28 @@ export function ConversationalOnboard({
   const [stepIdx, setStepIdx] = useState(0);
 
   // Every step change returns the viewport to the top of the wizard — on phones the
-  // options list can leave you scrolled halfway down when you tap Next.
+  // options list can leave you scrolled halfway down when you tap Next. Besides
+  // scrollIntoView we zero every scrollable ancestor AND the window, then re-assert
+  // twice: iOS Safari offsets the page while the keyboard is up and restores that
+  // offset as it collapses, which can undo a single scroll fired too early.
   const rootRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
-    rootRef.current?.scrollIntoView({ block: "start" });
+    const toTop = () => {
+      const root = rootRef.current;
+      if (!root) return;
+      root.scrollIntoView({ block: "start" });
+      for (let node = root.parentElement; node; node = node.parentElement) {
+        if (node.scrollTop > 0) node.scrollTop = 0;
+      }
+      window.scrollTo(0, 0);
+    };
+    toTop();
+    const raf = requestAnimationFrame(toTop);
+    const late = setTimeout(toTop, 300); // after the iOS keyboard finishes closing
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(late);
+    };
   }, [stepIdx]);
   const [restored, setRestored] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -594,7 +612,6 @@ export function ConversationalOnboard({
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   // Draft class being filled out before it lands in form.classes.
   const [classDraft, setClassDraft] = useState<ClassEntry>(EMPTY_CLASS);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   const displayFirstName = (form.firstName?.trim() || knownFirstName?.trim() || "there");
   const displayBotName = (form.agentName?.trim() || "Your College Agent");
@@ -671,12 +688,6 @@ export function ConversationalOnboard({
       /* quota / disabled — non-fatal, user just won't get resume */
     }
   }, [storageKey, stepIdx, form, restored]);
-
-  // Auto-scroll to the bottom whenever the visible conversation grows.
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  }, [stepIdx, submitting]);
 
   // If the visible list shrinks (e.g. student switched from yes to no on deep-dive),
   // clamp the cursor so we don't index off the end.
