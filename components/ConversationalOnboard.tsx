@@ -209,14 +209,22 @@ const SUCCESS_OPTIONS = [
   "Show up consistently and finish what I start",
 ];
 
-// Trimmed to the realistic v1 set from the spec (each requires its own OAuth,
-// so don't promise more than we can wire). Selected labels land on the onboard
+// Everything here is wired in the Integrations tab (Composio catalog), so the
+// intake can promise the full set. Selected labels land on the onboard
 // submission for the Integrations tab to spotlight.
 const INTEGRATION_OPTIONS = [
+  "Canvas",
+  "Blackbaud",
+  "Google Classroom",
   "Google Calendar",
   "Gmail",
-  "Canvas",
+  "Outlook",
   "School email",
+  "Microsoft Teams",
+  "Google Drive",
+  "Dropbox",
+  "Notion",
+  "Todoist",
 ];
 
 const PRIORITY_OPTIONS = [
@@ -400,6 +408,14 @@ const STEPS: Step[] = [
   },
   { kind: "multi", key: "responseStyle", prompt: "How do you want me to communicate with you? Pick any styles that fit and I'll blend them.", options: VOICE_OPTIONS, required: true, tier: 2 },
   { kind: "multi", key: "checkinFrequency", prompt: "How often should I check in with you? Pick any that fit.", options: CHECKIN_OPTIONS, required: true, tier: 2 },
+  {
+    kind: "multi",
+    key: "integrationsWanted",
+    prompt:
+      "Do you use Canvas? We connect with Canvas, Blackbaud, Google Classroom, Gmail, your calendar, and thousands more. Pick the tools you already use and I'll help you hook them up once we're done. You can browse the whole stack later in the Integrations tab.",
+    options: INTEGRATION_OPTIONS,
+    tier: 2,
+  },
   {
     kind: "classList",
     key: "classes",
@@ -866,7 +882,9 @@ export function ConversationalOnboard({
         alignItems: "center",
       }}
     >
-      {/* Welcome header above the wizard card. */}
+      {/* Welcome header above the wizard card — first page only. Once the student moves
+          past the intro it disappears, so every later question sits higher on the screen. */}
+      {stepIdx === 0 && !completed && (
       <div className="ca-onboard-header" style={{ width: "100%", maxWidth: 620, textAlign: "center", marginBottom: 24 }}>
         <div
           style={{
@@ -904,6 +922,7 @@ export function ConversationalOnboard({
           like to work, so your agent is personalized from day one. It saves as you go.
         </p>
       </div>
+      )}
 
       <div
         className="ca-onboard-card"
@@ -1157,6 +1176,10 @@ export function ConversationalOnboard({
         .ca-onboard-cta:hover:not(:disabled) { background: ${T.greenDeep}; }
         .ca-onboard-cta:focus-visible { outline: 3px solid ${T.greenSoft}; outline-offset: 3px; }
         .ca-onboard-back:hover:not(:disabled) { background: ${T.greenSoft}; color: ${T.ink}; }
+        /* Long checkbox lists read as two columns once there's room; phones stay one column. */
+        @media (min-width: 561px) {
+          .ca-options-2col { display: grid !important; grid-template-columns: 1fr 1fr; column-gap: 12px; }
+        }
         @media (max-width: 560px) {
           /* Compact single-column layout: small mascot on top, question full width, no
              header paragraph — the question and its options fit the top of the screen. */
@@ -1460,8 +1483,13 @@ function Input({
     const atLimit = !!step.max && value.length >= step.max;
     // Vertical aligned checkbox list: square checkbox on the left, label on the
     // right, full row is the click target. Reads as a standard form, not a pill row.
+    // Long lists (7+) split into two columns on wider screens (see .ca-options-2col
+    // in the styled-jsx block) so they don't scroll forever on desktop.
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <div
+        className={step.options.length >= 7 ? "ca-options-2col" : undefined}
+        style={{ display: "flex", flexDirection: "column", gap: 2 }}
+      >
         {step.options.map((opt) => {
           const selected = value.includes(opt);
           const tooMany = atLimit && !selected;

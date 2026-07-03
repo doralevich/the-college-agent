@@ -317,7 +317,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
               ) : active === "shortcuts" && hasAgent ? (
                 <ShortcutsView />
               ) : active === "now-what" && hasAgent ? (
-                <NowWhatView onOpenChat={() => openDashboardTab("chat")} />
+                <NowWhatView onOpenChat={() => openDashboardTab("chat")} avatarUrl={avatarUrl} />
               ) : active === "welcome" && paid ? (
                 <WelcomeView
                   firstName={firstName}
