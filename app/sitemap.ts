@@ -18,7 +18,7 @@ const publicRoutes: { route: string; priority: number; changeFrequency: "weekly"
   { route: "/ambassador/apply", priority: 0.7, changeFrequency: "monthly" },
   { route: "/blog", priority: 0.8, changeFrequency: "weekly" },
   { route: "/build", priority: 0.7, changeFrequency: "monthly" },
-  { route: "/onboard", priority: 0.7, changeFrequency: "monthly" },
+  // /onboard has no page — intentionally excluded from sitemap (404s)
   { route: "/privacy", priority: 0.5, changeFrequency: "monthly" },
   { route: "/setup", priority: 0.5, changeFrequency: "monthly" },
   { route: "/terms", priority: 0.5, changeFrequency: "monthly" },
