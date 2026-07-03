@@ -184,6 +184,32 @@ async function handleCheckoutCompleted(db: DB, session: Stripe.Checkout.Session)
     }
   }
 
+  // Extra AI credits bought at checkout (the optional add-on on /build). Recorded as a
+  // pending top-up on the ledger; provisioning delivers it once the agent exists, and
+  // the hourly cron reconciles any miss. The session-id lookup keeps webhook retries
+  // from double-recording.
+  const extraCents = Number(session.metadata?.extra_credits_cents ?? 0);
+  if (userId && Number.isFinite(extraCents) && extraCents > 0) {
+    const { data: existingTopup } = await db
+      .from("wallet_transactions")
+      .select("id")
+      .eq("stripe_session_id", session.id)
+      .eq("type", "topup")
+      .maybeSingle();
+    if (!existingTopup) {
+      const { error: topupErr } = await db.from("wallet_transactions").insert({
+        user_id: userId,
+        amount_cents: Math.round(extraCents),
+        type: "topup",
+        status: "pending",
+        stripe_session_id: session.id,
+        stripe_payment_intent_id: paymentIntentId,
+      });
+      // They paid for these credits — throw so Stripe retries the webhook.
+      if (topupErr) throw new Error(`extra-credits ledger insert failed: ${topupErr.message}`);
+    }
+  }
+
   // Referral reward: the friend already got their discount at checkout; credit the
   // referrer one hosting month. Throws on transient failures so Stripe retries —
   // the referrals row (unique per session) makes retries single-credit.

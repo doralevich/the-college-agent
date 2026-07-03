@@ -24,7 +24,13 @@ type Body = {
   // Explicit Terms & Conditions acceptance from the /build checkbox. Required:
   // the acceptance timestamp is recorded on the session + subscription metadata.
   termsAccepted?: boolean;
+  // Optional extra AI credits picked on the plan card ($10/$25/$50). Added as a
+  // one-time line item; the webhook records it and provisioning delivers it.
+  extraCreditsCents?: number;
 };
+
+// Only these add-on amounts exist in the UI; anything else is ignored, never billed.
+const EXTRA_CREDITS_ALLOWED_CENTS = [1000, 2500, 5000];
 
 export const POST = route(async (req) => {
   const body = await readJson<Body>(req);
@@ -83,6 +89,11 @@ export const POST = route(async (req) => {
   metadata.terms_accepted_at = new Date().toISOString();
   metadata.terms_version = "2026-07-03";
 
+  const extraCreditsCents = EXTRA_CREDITS_ALLOWED_CENTS.includes(Number(body.extraCreditsCents))
+    ? Number(body.extraCreditsCents)
+    : 0;
+  if (extraCreditsCents > 0) metadata.extra_credits_cents = String(extraCreditsCents);
+
   const stripe = getStripe();
 
   // Referred signup: validate the code, refuse self-referrals, and swap the promo-code
@@ -112,6 +123,19 @@ export const POST = route(async (req) => {
     line_items: [
       { price: hostingPriceId, quantity: 1 },
       { price: planPriceId, quantity: 1 },
+      // One-time add-on billed on the first invoice alongside the plan fee.
+      ...(extraCreditsCents > 0
+        ? [
+            {
+              price_data: {
+                currency: "usd",
+                product_data: { name: "Extra AI usage credits" },
+                unit_amount: extraCreditsCents,
+              },
+              quantity: 1,
+            },
+          ]
+        : []),
     ],
     customer_email: email,
     metadata,

@@ -128,6 +128,31 @@ export const POST = route(async () => {
     }
   }
 
+  // Extra credits bought at checkout (and any other paid top-up that arrived before a
+  // box existed): pending session-stamped rows deliver now. The row id is the
+  // idempotency key, and rows left pending fall through to the hourly cron, which
+  // re-verifies payment with Stripe before retrying.
+  const { data: pendingTopups } = await db
+    .from("wallet_transactions")
+    .select("id, amount_cents")
+    .eq("user_id", user.id)
+    .eq("type", "topup")
+    .eq("status", "pending")
+    .not("stripe_session_id", "is", null);
+  for (const t of pendingTopups ?? []) {
+    try {
+      await agent37.topUpBudget(agent.id, (t.amount_cents as number) * 10_000, t.id as string);
+      await db
+        .from("wallet_transactions")
+        .update({ status: "succeeded", failure_reason: null })
+        .eq("id", t.id);
+    } catch (e) {
+      const reason = String((e as Error)?.message ?? e).slice(0, 500);
+      console.error("[provision:extra-credits]", agent.id, reason);
+      await db.from("wallet_transactions").update({ failure_reason: reason }).eq("id", t.id);
+    }
+  }
+
   // Best-effort: install/config Hermes + Telegram + persona, then start the gateway.
   // If this fails the agent still exists (operator fallback finishes it in /admin).
   const { configured, detail: configDetail } = await configureAgentFromIntake(agent.id, onboard, setup);
