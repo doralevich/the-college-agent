@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { CalendarCheck2, FileText, LifeBuoy, ListChecks, TrendingUp, BookOpen } from "lucide-react";
+import { Award, CalendarCheck2, Check, FileText, LifeBuoy, ListChecks, Rocket, TrendingUp, BookOpen } from "lucide-react";
 import Nav from "../components/Nav";
 import { Footer } from "../components/Footer";
 
@@ -52,6 +52,51 @@ const GAINED = [
   "Hands-on exposure to AI and emerging technology",
   "Communication and professional networking skills",
   "The opportunity to earn commissions",
+];
+
+// The pitch, in checkboxes: what the role does, what it accomplishes, what lands on
+// your resume, and the head start on agent technology.
+const PROGRAM_PERKS = [
+  {
+    icon: ListChecks,
+    title: "What You'll Actually Do",
+    items: [
+      "Launch The College Agent on your campus",
+      "Run live demos in dorms, clubs, and classes",
+      "Share your personal link and watch it convert",
+      "Give feedback that shapes the product roadmap",
+    ],
+  },
+  {
+    icon: Award,
+    title: "What It Accomplishes",
+    items: [
+      "Real sales, marketing, and leadership experience",
+      "Commissions on every signup you drive",
+      "Direct mentorship from the founding team",
+      "A network of ambassadors across the country",
+    ],
+  },
+  {
+    icon: FileText,
+    title: "What Goes On Your Resume",
+    items: [
+      "Campus Ambassador at an AI startup",
+      "Growth results you can quantify in interviews",
+      "Event planning and public speaking reps",
+      "The exact experience recruiters are hunting for",
+    ],
+  },
+  {
+    icon: Rocket,
+    title: "Get Ahead of the World",
+    items: [
+      "Daily, hands-on fluency with AI agents",
+      "Your own College Agent working for you",
+      "First access to new features and releases",
+      "The story every internship interview wants to hear",
+    ],
+  },
 ];
 
 export default function AmbassadorPage() {
@@ -149,10 +194,46 @@ export default function AmbassadorPage() {
             <div className="program-banner">
               <h2 className="program-banner-title">The Ambassador Program</h2>
               <p>
-                The College Agent Ambassador Program combines leadership, innovation, and
-                opportunity — giving students the chance to represent an emerging AI platform
-                while developing valuable professional skills.
+                This is a real role with real output. You launch the newest agent technology on
+                your campus, build proof you can sell, lead, and grow something, and get paid
+                while you do it.
               </p>
+            </div>
+
+            <div className="perk-grid">
+              {PROGRAM_PERKS.map(({ icon: Icon, title, items }) => (
+                <div key={title} className="perk-card">
+                  <div className="perk-head">
+                    <div className="perk-icon"><Icon size={20} strokeWidth={2} /></div>
+                    <h3>{title}</h3>
+                  </div>
+                  <ul className="check-list">
+                    {items.map((item) => (
+                      <li key={item}>
+                        <span className="check-box"><Check size={13} strokeWidth={3} /></span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+
+            {/* Fundraisers: the org angle — clubs and teams earn on every signup. */}
+            <div className="fundraiser-band">
+              <div className="fundraiser-copy">
+                <span className="fundraiser-kicker">For Clubs, Teams &amp; Greek Life</span>
+                <h3>Create fundraisers. Earn for your organization.</h3>
+                <p>
+                  Run The College Agent as a fundraiser for your club, team, sorority,
+                  fraternity, or student org. Your group gets its own link, and every signup
+                  earns money for the organization. Fund the season, the formal, or the service
+                  trip by sharing a tool your classmates will actually use.
+                </p>
+              </div>
+              <div className="fundraiser-cta">
+                <a href="/ambassador/apply" className="btn-purple">Start a Fundraiser</a>
+              </div>
             </div>
           </div>
         </section>
@@ -809,6 +890,123 @@ export default function AmbassadorPage() {
         }
         .program-banner p + p {
           margin-top: 14px;
+        }
+        .perk-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 18px;
+          margin-top: 40px;
+        }
+        .perk-card {
+          background: #fff;
+          border: 1px solid rgba(11,23,41,.08);
+          border-top: 2px solid var(--green);
+          border-radius: 14px;
+          padding: 26px 26px 22px;
+          box-shadow: 0 14px 44px rgba(11,23,41,.05);
+        }
+        .perk-head {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 16px;
+        }
+        .perk-icon {
+          flex-shrink: 0;
+          width: 38px;
+          height: 38px;
+          border-radius: 10px;
+          background: rgba(61,139,61,.1);
+          color: var(--green);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .perk-head h3 {
+          font-size: 18px;
+          font-weight: 800;
+          color: var(--navy);
+          margin: 0;
+          line-height: 1.25;
+        }
+        .check-list {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .check-list li {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          font-size: 14.5px;
+          color: rgba(11,23,41,.72);
+          line-height: 1.55;
+        }
+        .check-box {
+          flex: 0 0 auto;
+          width: 19px;
+          height: 19px;
+          border-radius: 5px;
+          background: var(--green);
+          color: #fff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-top: 2px;
+        }
+        .fundraiser-band {
+          margin-top: 22px;
+          background: var(--navy);
+          border-radius: 16px;
+          padding: 38px 36px;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 28px;
+          align-items: center;
+        }
+        .fundraiser-kicker {
+          display: block;
+          font-family: var(--font-mono);
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: .1em;
+          text-transform: uppercase;
+          color: rgba(61,139,61,.95);
+          margin-bottom: 12px;
+        }
+        .fundraiser-copy h3 {
+          font-size: clamp(22px, 2.6vw, 30px);
+          font-weight: 800;
+          color: #fff;
+          line-height: 1.15;
+          margin: 0 0 12px;
+        }
+        .fundraiser-copy p {
+          font-size: 15px;
+          color: rgba(255,255,255,.68);
+          line-height: 1.7;
+          margin: 0;
+          max-width: 640px;
+        }
+        .fundraiser-cta {
+          flex-shrink: 0;
+        }
+        @media (max-width: 820px) {
+          .perk-grid {
+            grid-template-columns: 1fr;
+          }
+          .fundraiser-band {
+            grid-template-columns: 1fr;
+            text-align: center;
+            padding: 32px 24px;
+          }
+          .fundraiser-copy p {
+            margin-left: auto;
+            margin-right: auto;
+          }
         }
         .who-bullets {
           padding-left: 24px;
