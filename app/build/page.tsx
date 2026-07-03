@@ -334,12 +334,6 @@ export default function BuildPage() {
                     />
                   </label>
 
-                  <div className="ca-plan-recap">
-                    <span className="ca-plan-recap-value">
-                      The College Agent &middot; {planPrice} one-time + {hostingPrice}/mo hosting
-                    </span>
-                  </div>
-
                   <label className="ca-terms">
                     <input
                       type="checkbox"
@@ -655,30 +649,6 @@ export default function BuildPage() {
         .ca-field input:focus {
           border-color: var(--ca-green);
           box-shadow: 0 0 0 3px rgba(45, 122, 58, 0.15);
-        }
-        .ca-plan-recap {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          padding: 12px 14px;
-          background: var(--ca-green-tint);
-          border: 1px solid rgba(45, 122, 58, 0.2);
-          border-radius: 10px;
-          margin: 4px 0 6px;
-          flex-wrap: wrap;
-        }
-        .ca-plan-recap-label {
-          font-family: var(--ca-mono);
-          font-size: 10px;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: var(--ca-green-dark);
-        }
-        .ca-plan-recap-value {
-          flex: 1;
-          font-size: 13px;
-          font-weight: 600;
-          color: var(--ca-ink);
         }
         @media (max-width: 480px) {
           .ca-row { grid-template-columns: 1fr; }
