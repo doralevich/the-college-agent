@@ -1745,16 +1745,43 @@ function Input({
 // "10:00 AM - 10:50 AM"), so the stored payload and the SOUL.md build path are
 // identical to what free-typing produced.
 const DAY_OPTIONS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const TIME_OPTIONS: string[] = (() => {
-  const out: string[] = [];
-  for (let mins = 7 * 60; mins <= 22 * 60; mins += 15) {
-    const h24 = Math.floor(mins / 60);
-    const m = mins % 60;
-    const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
-    out.push(`${h12}:${String(m).padStart(2, "0")} ${h24 < 12 ? "AM" : "PM"}`);
+
+// Native time inputs hold "HH:MM" (24h); the stored strings stay human ("1:05 PM").
+// Class times are fluid (10:00-10:50 lectures, 9:05 starts), so no fixed increments.
+function fmtTime(value: string): string {
+  if (!value) return "";
+  const [h24, m] = value.split(":").map(Number);
+  if (Number.isNaN(h24) || Number.isNaN(m)) return "";
+  const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+  return `${h12}:${String(m).padStart(2, "0")} ${h24 < 12 ? "AM" : "PM"}`;
+}
+
+// Real schedules are fluid: lecture Mon/Wed at 10, Friday lab at 1:30, a discussion
+// section somewhere else. Each class holds any number of meeting blocks, each with its
+// own days and start/end.
+type MeetingBlock = { days: string[]; start: string; end: string };
+const EMPTY_BLOCK: MeetingBlock = { days: [], start: "", end: "" };
+
+function blockTime(b: MeetingBlock): string {
+  const start = fmtTime(b.start);
+  const end = fmtTime(b.end);
+  return start && end ? `${start} - ${end}` : start || end;
+}
+
+// One block keeps the classic split (days="Mon / Wed", time="10:00 AM - 10:50 AM");
+// several blocks pair days with their own times, joined with " and " (";" already
+// separates whole classes in the legacy payload).
+function serializeBlocks(blocks: MeetingBlock[]): { days: string; time: string } {
+  const real = blocks.filter((b) => b.days.length > 0 || b.start || b.end);
+  if (real.length === 0) return { days: "", time: "" };
+  if (real.length === 1) {
+    return { days: real[0].days.join(" / "), time: blockTime(real[0]) };
   }
-  return out;
-})();
+  return {
+    days: real.map((b) => [b.days.join(" / "), blockTime(b)].filter(Boolean).join(" ")).join(" and "),
+    time: "",
+  };
+}
 
 function ClassListInput({
   classes,
@@ -1779,18 +1806,30 @@ function ClassListInput({
   ];
   const canAdd = !!draft.name.trim();
 
-  const selectedDays = draft.days.split(" / ").filter(Boolean);
-  function toggleDay(day: string) {
-    const next = selectedDays.includes(day)
-      ? selectedDays.filter((d) => d !== day)
-      : [...selectedDays, day];
-    // Join in canonical week order no matter the tap order.
-    setDraft({ ...draft, days: DAY_OPTIONS.filter((d) => next.includes(d)).join(" / ") });
+  // Meeting blocks live here; every change re-serializes into the draft's days/time
+  // strings so the parent's addClass consumes them unchanged. When a class lands in
+  // the list the parent clears the draft, and this resets the blocks alongside it.
+  const [blocks, setBlocks] = useState<MeetingBlock[]>([{ ...EMPTY_BLOCK }]);
+  const classCount = classes.length;
+  useEffect(() => {
+    setBlocks([{ ...EMPTY_BLOCK }]);
+  }, [classCount]);
+
+  function updateBlocks(next: MeetingBlock[]) {
+    setBlocks(next);
+    const s = serializeBlocks(next);
+    setDraft({ ...draft, days: s.days, time: s.time });
   }
 
-  const [startTime = "", endTime = ""] = draft.time.split(" - ");
-  function setTime(start: string, end: string) {
-    setDraft({ ...draft, time: start && end ? `${start} - ${end}` : start || end });
+  function patchBlock(idx: number, patch: Partial<MeetingBlock>) {
+    updateBlocks(blocks.map((b, i) => (i === idx ? { ...b, ...patch } : b)));
+  }
+
+  function toggleDay(idx: number, day: string) {
+    const cur = blocks[idx].days;
+    const next = cur.includes(day) ? cur.filter((d) => d !== day) : [...cur, day];
+    // Keep canonical week order no matter the tap order.
+    patchBlock(idx, { days: DAY_OPTIONS.filter((d) => next.includes(d)) });
   }
 
   const inputStyle: React.CSSProperties = {
@@ -1879,68 +1918,120 @@ function ClassListInput({
           </label>
         ))}
 
-        {/* Days: tap the days it meets — no typing. */}
-        <div style={{ gridColumn: "1 / -1", display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: T.inkSoft }}>
-          Days
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-            {DAY_OPTIONS.map((day) => {
-              const on = selectedDays.includes(day);
-              return (
+        {/* When it meets: any number of day/time blocks, because lecture, lab, and
+            discussion rarely share a time slot. */}
+        <div style={{ gridColumn: "1 / -1", display: "flex", flexDirection: "column", gap: 8, fontSize: 12, color: T.inkSoft }}>
+          When it meets
+          {blocks.map((block, bi) => (
+            <div
+              key={bi}
+              style={{
+                border: `1px solid ${T.line}`,
+                borderRadius: 10,
+                padding: "10px 10px 12px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 8,
+                position: "relative",
+              }}
+            >
+              {blocks.length > 1 && (
                 <button
-                  key={day}
                   type="button"
                   disabled={disabled}
-                  onClick={() => toggleDay(day)}
-                  aria-pressed={on}
+                  onClick={() => updateBlocks(blocks.filter((_, i) => i !== bi))}
+                  aria-label="Remove this meeting time"
                   style={{
-                    fontFamily: "'DM Sans', system-ui, sans-serif",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    padding: "7px 12px",
-                    borderRadius: 999,
-                    border: `1.5px solid ${on ? T.green : T.line}`,
-                    background: on ? T.green : T.card,
-                    color: on ? "#fff" : T.ink,
+                    position: "absolute",
+                    top: 6,
+                    right: 6,
+                    border: "none",
+                    background: "transparent",
+                    color: T.inkSoft,
                     cursor: disabled ? "not-allowed" : "pointer",
-                    transition: "background .12s, color .12s, border-color .12s",
+                    padding: 4,
+                    borderRadius: 6,
+                    display: "flex",
                   }}
                 >
-                  {day}
+                  <X style={{ width: 13, height: 13 }} />
                 </button>
-              );
-            })}
-          </div>
+              )}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, paddingRight: blocks.length > 1 ? 22 : 0 }}>
+                {DAY_OPTIONS.map((day) => {
+                  const on = block.days.includes(day);
+                  return (
+                    <button
+                      key={day}
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => toggleDay(bi, day)}
+                      aria-pressed={on}
+                      style={{
+                        fontFamily: "'DM Sans', system-ui, sans-serif",
+                        fontSize: 12.5,
+                        fontWeight: 600,
+                        padding: "6px 11px",
+                        borderRadius: 999,
+                        border: `1.5px solid ${on ? T.green : T.line}`,
+                        background: on ? T.green : T.card,
+                        color: on ? "#fff" : T.ink,
+                        cursor: disabled ? "not-allowed" : "pointer",
+                        transition: "background .12s, color .12s, border-color .12s",
+                      }}
+                    >
+                      {day}
+                    </button>
+                  );
+                })}
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  Starts
+                  <input
+                    type="time"
+                    value={block.start}
+                    disabled={disabled}
+                    onChange={(e) => patchBlock(bi, { start: e.target.value })}
+                    style={inputStyle}
+                  />
+                </label>
+                <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  Ends
+                  <input
+                    type="time"
+                    value={block.end}
+                    disabled={disabled}
+                    onChange={(e) => patchBlock(bi, { end: e.target.value })}
+                    style={inputStyle}
+                  />
+                </label>
+              </div>
+            </div>
+          ))}
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => updateBlocks([...blocks, { ...EMPTY_BLOCK }])}
+            style={{
+              alignSelf: "flex-start",
+              border: "none",
+              background: "transparent",
+              color: T.greenText,
+              fontFamily: "'DM Sans', system-ui, sans-serif",
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: disabled ? "not-allowed" : "pointer",
+              padding: "2px 0",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 5,
+            }}
+          >
+            <Plus style={{ width: 13, height: 13 }} />
+            Add another day &amp; time (like a Friday lab)
+          </button>
         </div>
-
-        {/* Time: pick start and end from dropdowns (15-minute steps). */}
-        <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: T.inkSoft }}>
-          Starts
-          <select
-            value={startTime}
-            disabled={disabled}
-            onChange={(e) => setTime(e.target.value, endTime)}
-            style={{ ...inputStyle, appearance: "auto", cursor: disabled ? "not-allowed" : "pointer" }}
-          >
-            <option value="">Select...</option>
-            {TIME_OPTIONS.map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </select>
-        </label>
-        <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: T.inkSoft }}>
-          Ends
-          <select
-            value={endTime}
-            disabled={disabled}
-            onChange={(e) => setTime(startTime, e.target.value)}
-            style={{ ...inputStyle, appearance: "auto", cursor: disabled ? "not-allowed" : "pointer" }}
-          >
-            <option value="">Select...</option>
-            {TIME_OPTIONS.map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </select>
-        </label>
 
         {textFields.slice(2).map((f) => (
           <label key={f.key} style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: T.inkSoft }}>
