@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Nav from "../components/Nav";
+import { Footer } from "../components/Footer";
 import { BookOpenCheck, BriefcaseBusiness, CalendarDays, Network, NotebookTabs, Sparkles } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "AI for College Students — The College Agent",
   description:
-    "The only AI built for your whole college experience — classes, studying, internships, social life, and career planning. Grows with you from freshman year to graduation.",
+    "The only AI built for your whole college experience: classes, studying, internships, social life, and career planning. It grows with you from before freshman year to after graduation.",
   keywords: [
     "AI for college students",
     "AI study companion",
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "AI for College Students — The College Agent",
     description:
-      "The only AI built for your whole college experience — classes, studying, internships, social life, and career planning. Grows with you from freshman year to graduation.",
+      "The only AI built for your whole college experience: classes, studying, internships, social life, and career planning. It grows with you from before freshman year to after graduation.",
     url: "https://thecollegeagent.ai/for-students",
   },
 };
@@ -27,7 +28,7 @@ const FEATURES = [
   {
     icon: CalendarDays,
     title: "Class Schedule Management",
-    desc: "Your agent knows every class, every professor, every deadline. It keeps your semester organized so nothing slips — assignments, exams, office hours, and drop-add deadlines included.",
+    desc: "Your agent knows every class, every professor, every deadline. It keeps your semester organized so nothing slips: assignments, exams, office hours, and drop-add deadlines included.",
   },
   {
     icon: NotebookTabs,
@@ -37,7 +38,7 @@ const FEATURES = [
   {
     icon: BriefcaseBusiness,
     title: "Internship Tracking",
-    desc: "From target company research to offer negotiation — your agent manages your entire internship pipeline. Deadlines, outreach emails, application status, and interview prep, all in one place.",
+    desc: "From target company research to offer negotiation, your agent manages your entire internship pipeline. Deadlines, outreach emails, application status, and interview prep, all in one place.",
   },
   {
     icon: Network,
@@ -47,12 +48,125 @@ const FEATURES = [
   {
     icon: Sparkles,
     title: "Social Life Balance",
-    desc: "College isn't just academics. Your agent helps you balance study time with the social and extracurricular commitments that matter — clubs, events, leadership roles, and downtime.",
+    desc: "College isn't just academics. Your agent helps you balance study time with the social and extracurricular commitments that matter: clubs, events, leadership roles, and downtime.",
   },
   {
     icon: BookOpenCheck,
     title: "Academic Communication",
-    desc: "Professor emails. Advisor meeting requests. Club outreach. Recruiter cold emails. Your agent drafts every message in your voice — polished, professional, and ready to send.",
+    desc: "Professor emails. Advisor meeting requests. Club outreach. Recruiter cold emails. Your agent drafts every message in your voice, polished, professional, and ready to send.",
+  },
+];
+
+// "Most effective uses" — the college-operating-system framing, in second person.
+const EFFECTIVE_USES = [
+  {
+    title: "First 30 days",
+    desc: "Load your class schedule, syllabi, deadlines, professor info, clubs, and orientation items. Build a weekly rhythm before things get chaotic.",
+  },
+  {
+    title: "Assignment and deadline tracking",
+    desc: "Every syllabus becomes tasks, reminders, study blocks, and check-ins. Nothing lives only in your head.",
+  },
+  {
+    title: "Study planning",
+    desc: "Turns exams, readings, papers, and problem sets into a realistic weekly plan. Helps you avoid the classic freshman mistake: waiting until it is urgent.",
+  },
+  {
+    title: "Professor and advisor communication",
+    desc: "Drafts polished emails to professors, TAs, advisors, and administrators. Helps you ask the right questions without sounding sloppy.",
+  },
+  {
+    title: "Social and campus involvement",
+    desc: "Tracks clubs, events, applications, deadlines, and follow-ups. Helps you get involved without overcommitting.",
+  },
+  {
+    title: "Career foundation early",
+    desc: "Start your resume, LinkedIn, internship tracker, alumni connections, and summer planning from freshman year. By sophomore year, you are not starting cold.",
+  },
+  {
+    title: "Parent peace of mind",
+    desc: "Not surveillance. Your agent supports your independence while making sure you have a system. You run your life; everyone sleeps better.",
+  },
+];
+
+// The complete catalog, life stage by life stage. This is the "name them all" section:
+// every area the agent covers, from before freshman year to after graduation.
+const JOURNEY = [
+  {
+    stage: "Before College",
+    desc: "Choosing schools, applications and essays, scholarship deadlines, campus visit planning, packing lists, and move-in logistics. Your agent starts working before you ever set foot on campus.",
+  },
+  {
+    stage: "Freshman Year",
+    desc: "Get your bearings. Your agent organizes your first semester, tracks assignments, drafts professor emails, keeps your quiz and test schedule, and builds the study habits that carry you through.",
+  },
+  {
+    stage: "Sophomore Year",
+    desc: "Start thinking bigger. Your agent tracks academic progress, helps you find clubs and leadership roles that strengthen your resume, and begins surfacing internship opportunities for the summer ahead.",
+  },
+  {
+    stage: "Junior Year",
+    desc: "Internship season. Your agent manages your full recruiting pipeline: target companies, application deadlines, outreach emails, interview prep. By the end of the year, you have real experience to show for it.",
+  },
+  {
+    stage: "Senior Year",
+    desc: "Cross the finish line ready. Your agent turns your experience into a career plan: full-time applications, networking, LinkedIn positioning, and the transition from student to professional.",
+  },
+  {
+    stage: "After Graduation",
+    desc: "It doesn't stop at the cap toss. Job search, first apartment logistics, grad school applications, alumni networking, and staying organized in your first role. Your agent already knows your whole story.",
+  },
+];
+
+// "Let's name them all" — every area, grouped so the list stays scannable.
+const EVERYTHING = [
+  {
+    title: "Academics",
+    items: [
+      "Class list, days, times, and professors",
+      "Syllabus uploads that become deadlines",
+      "Quiz and test schedules",
+      "Assignment and paper due dates",
+      "Study plans, guides, and practice questions",
+      "Class notes, organized and searchable",
+      "Grade goals per class",
+      "Office hours and advisor meetings",
+      "Add/drop, registration, and finals week",
+    ],
+  },
+  {
+    title: "Life & People",
+    items: [
+      "Social events, in detail",
+      "Friends and plans with them",
+      "Family birthdays and anniversaries",
+      "Roommates and shared logistics",
+      "Travel planning, visits, and flights",
+      "Gym and workout routines",
+      "Sleep and wake-up schedules",
+      "Stress resets and downtime",
+    ],
+  },
+  {
+    title: "Money & Work",
+    items: [
+      "Budgets and money goals",
+      "Part-time work shifts",
+      "Scholarship and aid deadlines",
+      "Textbook and supply hunting",
+      "Subscriptions and recurring bills",
+    ],
+  },
+  {
+    title: "Career & Beyond",
+    items: [
+      "Internship pipeline, end to end",
+      "Resume and cover letters",
+      "LinkedIn profile and networking",
+      "Interview prep and follow-ups",
+      "Grad school research and applications",
+      "Job search after graduation",
+    ],
   },
 ];
 
@@ -60,7 +174,7 @@ export default function ForStudentsPage() {
   return (
     <>
       <Nav />
-      <main style={{ paddingTop: 100, minHeight: "100vh" }}>
+      <main style={{ paddingTop: 72, minHeight: "100vh" }}>
 
         {/* HERO */}
         <section className="dark-section" style={{ padding: "80px 0 70px", overflow: "hidden" }}>
@@ -68,14 +182,40 @@ export default function ForStudentsPage() {
           <div style={{ position: "relative", zIndex: 1, textAlign: "center", maxWidth: 860, margin: "0 auto", padding: "0 24px" }}>
             <span className="mono-label-light">For College Students</span>
             <h1 style={{ fontSize: "clamp(32px, 4.5vw, 56px)", fontWeight: 800, color: "#fff", lineHeight: 1.06, letterSpacing: "-.035em", marginBottom: 20 }}>
-              Your personal AI for all 4 years of college.
+              Your Personal AI Agent For Your College Years...and then some!
             </h1>
             <p style={{ fontSize: "clamp(16px, 1.4vw, 19px)", lineHeight: 1.7, color: "rgba(255,255,255,.65)", maxWidth: 640, margin: "0 auto 36px" }}>
-              Not ChatGPT. Not a generic study app. The College Agent is an AI companion that knows you — your classes, your goals, your schedule, your voice — and gets smarter every semester.
+              The College Agent is an AI companion that knows you: your classes, your goals, your
+              schedule, your voice. It gets smarter every semester.
             </p>
             <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
               <a href="/build" className="btn-green">Build My Agent</a>
-              <a href="/study" className="btn-outline-light">AI Study Companion</a>
+              <a href="#everything" className="btn-outline-light">See Everything It Does</a>
+            </div>
+          </div>
+        </section>
+
+        {/* COLLEGE OPERATING SYSTEM: the "most effective uses" framing */}
+        <section style={{ background: "#fff", padding: "72px 0" }}>
+          <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 24px" }}>
+            <div style={{ textAlign: "center", marginBottom: 48 }}>
+              <span className="mono-label-green">Most Effective Uses</span>
+              <h2 className="section-title">Your personal college operating system.</h2>
+              <p className="section-sub" style={{ maxWidth: 640, margin: "14px auto 0" }}>
+                Not &ldquo;another chatbot.&rdquo; Not &ldquo;homework help.&rdquo; It&apos;s the
+                thing that quietly keeps your college life organized from day one.
+              </p>
+            </div>
+            <div style={{ display: "grid", gap: 26 }}>
+              {EFFECTIVE_USES.map(({ title, desc }, i) => (
+                <div key={title} style={{ display: "flex", gap: 18, alignItems: "flex-start" }}>
+                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(61,139,61,.1)", border: "2px solid var(--green)", color: "var(--green)", fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>{i + 1}</div>
+                  <div>
+                    <h3 style={{ fontSize: 16, fontWeight: 800, color: "var(--navy)", margin: "0 0 5px", letterSpacing: "-.01em" }}>{title}</h3>
+                    <p style={{ fontSize: 14.5, lineHeight: 1.7, color: "rgba(11,23,41,.68)", margin: 0 }}>{desc}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -102,26 +242,55 @@ export default function ForStudentsPage() {
           </div>
         </section>
 
-        {/* 4-YEAR JOURNEY */}
-        <section style={{ background: "#fff", padding: "72px 0" }}>
+        {/* THE FULL JOURNEY: before college through after graduation */}
+        <section id="everything" style={{ background: "#fff", padding: "72px 0", scrollMarginTop: 90 }}>
           <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
             <div style={{ textAlign: "center", marginBottom: 48 }}>
-              <span className="mono-label-green">The 4-Year Plan</span>
-              <h2 className="section-title">Start strong. Finish ready.</h2>
+              <span className="mono-label-green">Everything It Does</span>
+              <h2 className="section-title">It grows with you as you grow.</h2>
+              <p className="section-sub" style={{ maxWidth: 680, margin: "14px auto 0" }}>
+                From before your first campus tour to after you toss the cap. Name a part of
+                student life and your agent handles it.
+              </p>
             </div>
             <div style={{ display: "grid", gap: 32 }}>
-              {[
-                { year: "Freshman Year", desc: "Get your bearings. Your agent helps you organize your first semester, track assignments, draft professor emails, and build the study habits that will carry you through four years." },
-                { year: "Sophomore Year", desc: "Start thinking bigger. Your agent tracks academic progress, helps you find clubs and leadership roles that strengthen your resume, and begins surfacing internship opportunities for the summer ahead." },
-                { year: "Junior Year", desc: "Internship season. Your agent manages your full recruiting pipeline — target companies, application deadlines, outreach emails, interview prep. By the end of the year, you have real experience to show for it." },
-                { year: "Senior Year", desc: "Cross the finish line ready. Your agent helps you turn your internship experience into a career plan — full-time applications, networking, LinkedIn positioning, and the transition from student to professional." },
-              ].map(({ year, desc }) => (
-                <div key={year} style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
-                  <div style={{ background: "rgba(61,139,61,.1)", border: "2px solid var(--green)", borderRadius: 8, padding: "8px 14px", fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: "var(--green)", letterSpacing: ".08em", whiteSpace: "nowrap", flexShrink: 0 }}>{year}</div>
+              {JOURNEY.map(({ stage, desc }) => (
+                <div key={stage} style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
+                  <div style={{ background: "rgba(61,139,61,.1)", border: "2px solid var(--green)", borderRadius: 8, padding: "8px 14px", fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: "var(--green)", letterSpacing: ".08em", whiteSpace: "nowrap", flexShrink: 0 }}>{stage}</div>
                   <p style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(11,23,41,.7)", margin: 0 }}>{desc}</p>
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* NAME THEM ALL: the complete feature catalog */}
+        <section style={{ background: "var(--cream2)", padding: "72px 0 80px" }}>
+          <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px" }}>
+            <div style={{ textAlign: "center", marginBottom: 48 }}>
+              <span className="mono-label-green">The Complete List</span>
+              <h2 className="section-title">Name it. Your agent handles it.</h2>
+            </div>
+            <div className="everything-grid">
+              {EVERYTHING.map(({ title, items }) => (
+                <div key={title} className="feat-card">
+                  <h3 style={{ marginBottom: 14 }}>{title}</h3>
+                  <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 9 }}>
+                    {items.map((item) => (
+                      <li key={item} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 13.5, lineHeight: 1.5, color: "rgba(11,23,41,.72)" }}>
+                        <span aria-hidden style={{ color: "var(--green)", fontWeight: 700, flexShrink: 0, lineHeight: 1.5 }}>&#10003;</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+            <p style={{ textAlign: "center", marginTop: 36, fontSize: 14, lineHeight: 1.7, color: "rgba(11,23,41,.6)", maxWidth: 720, marginLeft: "auto", marginRight: "auto" }}>
+              And it plugs into the tools you already use: Canvas, Blackbaud, Google Classroom,
+              Gmail, Google Calendar, Outlook, Microsoft Teams, Google Drive, Dropbox, Notion,
+              Todoist, LinkedIn, Spotify, YouTube, and thousands more.
+            </p>
           </div>
         </section>
 
@@ -142,6 +311,8 @@ export default function ForStudentsPage() {
         </section>
 
       </main>
+
+      <Footer />
 
       <style>{`
         .dark-section { background: var(--navy, #0b1729); }
@@ -194,8 +365,10 @@ export default function ForStudentsPage() {
           transition: border-color .15s, background .15s; cursor: pointer; text-decoration: none;
         }
         .btn-outline-light:hover { border-color: #fff; background: rgba(255,255,255,.07); }
+        .everything-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; align-items: start; }
+        @media (max-width: 1000px) { .everything-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 900px) { .feat-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 600px) { .feat-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 600px) { .feat-grid, .everything-grid { grid-template-columns: 1fr; } }
       `}</style>
     </>
   );

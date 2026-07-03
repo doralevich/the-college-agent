@@ -68,7 +68,7 @@ export function NewsletterSignup() {
             fontSize: 12,
             fontWeight: 600,
             letterSpacing: ".04em",
-            color: "#0B1729",
+            color: "#fff",
             background: "var(--green)",
             border: "none",
             borderRadius: 8,

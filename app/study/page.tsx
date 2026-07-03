@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Nav from "../components/Nav";
+import { Footer } from "../components/Footer";
 import { BookOpenCheck, Clock, FileText, NotebookTabs, Sparkles, TrendingUp } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -77,7 +78,7 @@ export default function StudyPage() {
             </p>
             <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
               <a href="/build" className="btn-green">Build My Study Agent</a>
-              <a href="/for-students" className="btn-outline-light">Full Feature Overview</a>
+              <a href="/for-students#everything" className="btn-outline-light">See Everything It Does</a>
             </div>
           </div>
         </section>
@@ -143,6 +144,8 @@ export default function StudyPage() {
         </section>
 
       </main>
+
+      <Footer />
 
       <style>{`
         .dark-section { background: var(--navy, #0b1729); }

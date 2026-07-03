@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Nav from "../components/Nav";
+import { Footer } from "../components/Footer";
 import { BookOpenCheck, CalendarDays, GraduationCap, NotebookTabs, Sparkles, TrendingUp } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -144,6 +145,8 @@ export default function ForHighSchoolPage() {
         </section>
 
       </main>
+
+      <Footer />
 
       <style>{`
         .dark-section { background: var(--navy, #0b1729); }

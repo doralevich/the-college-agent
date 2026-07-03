@@ -1,4 +1,5 @@
 import Nav from "../components/Nav";
+import { Footer } from "../components/Footer";
 
 export default function TermsPage() {
   return (
@@ -97,6 +98,8 @@ export default function TermsPage() {
           </Section>
         </div>
       </main>
+
+      <Footer />
       <style>{`
         main p { font-size: 15px; line-height: 1.8; color: rgba(11,23,41,.7); margin-bottom: 14px; }
         main ul { padding-left: 20px; margin-bottom: 14px; }

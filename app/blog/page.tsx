@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Nav from "../components/Nav";
+import { Footer } from "../components/Footer";
 import { categoryLabel, getCollegeAgentPosts } from "@/lib/sanity-blog";
 
 export const revalidate = 300;
@@ -63,6 +64,8 @@ export default async function BlogPage() {
           </div>
         </section>
       </main>
+
+      <Footer />
       <BlogStyles />
     </>
   );
