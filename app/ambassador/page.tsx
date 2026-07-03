@@ -31,29 +31,6 @@ const STUDENT_USES = [
   { icon: LifeBuoy,       title: "Academic Support",    desc: "Ask anything, anytime — clear explanations when you're stuck on a concept." },
 ];
 
-const LOOKING_FOR = [
-  "Are respected and well-connected within their university community",
-  "Demonstrate strong communication and relationship-building skills",
-  "Are passionate about helping fellow students succeed",
-  "Have an interest in AI, innovation, and emerging technology",
-  "Want to gain meaningful leadership and professional experience",
-];
-
-const INCLUDED = [
-  "Your own custom College Agent built specifically for your success",
-  "Ambassador Toolkit",
-  "Onboarding & training",
-  "Direct access to the College Agent team",
-];
-
-const GAINED = [
-  "Leadership experience",
-  "Resume-building experience",
-  "Hands-on exposure to AI and emerging technology",
-  "Communication and professional networking skills",
-  "The opportunity to earn commissions",
-];
-
 // The pitch, in checkboxes: what the role does, what it accomplishes, what lands on
 // your resume, and the head start on agent technology.
 const PROGRAM_PERKS = [
@@ -233,32 +210,6 @@ export default function AmbassadorPage() {
               </div>
               <div className="fundraiser-cta">
                 <a href="/ambassador/apply" className="btn-purple">Start a Fundraiser</a>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="affiliate-section who-section">
-          <div className="affiliate-shell who-shell">
-            <div className="who-left">
-              <h4>We&apos;re looking for students who:</h4>
-              <ul className="bullet-list who-bullets">
-                {LOOKING_FOR.map((item) => <li key={item}>{item}</li>)}
-              </ul>
-              <a href="/ambassador/apply" className="btn-purple who-cta">Apply Now</a>
-            </div>
-            <div className="who-right">
-              <div className="info-card">
-                <h3 className="info-card-title">What&apos;s Included</h3>
-                <ul className="bullet-list">
-                  {INCLUDED.map((item) => <li key={item}>{item}</li>)}
-                </ul>
-              </div>
-              <div className="info-card">
-                <h3 className="info-card-title">What You&apos;ll Gain</h3>
-                <ul className="bullet-list">
-                  {GAINED.map((item) => <li key={item}>{item}</li>)}
-                </ul>
               </div>
             </div>
           </div>
@@ -852,23 +803,6 @@ export default function AmbassadorPage() {
           line-height: 1.7;
           margin: 0;
         }
-        .who-shell {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) minmax(320px, 1fr);
-          gap: 48px;
-          align-items: start;
-        }
-        .who-section {
-          padding-top: 0;
-          margin-top: -28px;
-        }
-        .who-left h4 {
-          font-size: 20px;
-          font-weight: 700;
-          color: var(--navy);
-          line-height: 1.3;
-          margin: 0 0 18px;
-        }
         .program-banner {
           text-align: center;
           max-width: 760px;
@@ -1008,27 +942,6 @@ export default function AmbassadorPage() {
             margin-right: auto;
           }
         }
-        .who-bullets {
-          padding-left: 24px;
-          margin-bottom: 0;
-        }
-        .who-cta {
-          display: inline-block;
-          margin-top: 20px;
-          font-size: 14px;
-          padding: 14px 32px;
-        }
-        .who-right {
-          display: flex;
-          flex-direction: column;
-          gap: 20px;
-        }
-        @media (max-width: 820px) {
-          .who-shell {
-            grid-template-columns: 1fr;
-            gap: 32px;
-          }
-        }
         .two-col-section {
           display: grid;
           grid-template-columns: 1fr 1.1fr;
@@ -1046,45 +959,6 @@ export default function AmbassadorPage() {
           display: flex;
           flex-direction: column;
           gap: 16px;
-        }
-        .info-card {
-          background: #fff;
-          border: 1px solid rgba(11,23,41,.08);
-          border-top: 2px solid var(--green);
-          border-radius: 12px;
-          padding: 24px 24px 20px;
-        }
-        .info-card-title {
-          font-size: 20px;
-          font-weight: 800;
-          color: var(--navy);
-          margin: 0 0 14px;
-          line-height: 1.25;
-        }
-        .bullet-list {
-          list-style: none;
-          padding: 0;
-          margin: 0;
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-        }
-        .bullet-list li {
-          position: relative;
-          padding-left: 22px;
-          font-size: 14.5px;
-          color: rgba(11,23,41,.72);
-          line-height: 1.55;
-        }
-        .bullet-list li::before {
-          content: "";
-          position: absolute;
-          left: 0;
-          top: 9px;
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: var(--green);
         }
         .commissions-section {
           background: rgba(61,139,61,.04);
