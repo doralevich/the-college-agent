@@ -5,6 +5,7 @@ import Explainer from "./components/Explainer";
 import ChatBot from "./components/ChatBot";
 import Nav from "./components/Nav";
 import IntegrationGlobe from "./components/IntegrationGlobe";
+import { Footer } from "./components/Footer";
 import { BookOpenCheck, BriefcaseBusiness, GraduationCap, Mail, Network, NotebookTabs, ShieldCheck, Sparkles } from "lucide-react";
 
 const CALENDLY = "https://calendly.com/therealdaveo/apolloai";
@@ -153,10 +154,10 @@ export default function Home() {
         overflow: "hidden",
       }}>
         <div className="hero-glow" />
-        <div style={{
+        <div className="hero-row" style={{
           position: "relative", zIndex: 1,
           maxWidth: 1160, margin: "0 auto", padding: "0 24px",
-          display: "flex", alignItems: "center", justifyContent: "space-between",
+          alignItems: "center", justifyContent: "space-between",
           gap: 48,
         }}>
           {/* LEFT: text */}
@@ -165,13 +166,14 @@ export default function Home() {
               <span style={{ color: "var(--green)", fontSize: 14 }}>&#9670;</span>
               Apollo[Claw] College Edition
             </div>
-            <h1 className="hero-h1" style={{ color: "#fff", textAlign: "left" }}>
-              AI personal agent<br />for college<br />students.
+            <h1 className="hero-h1" style={{ color: "#fff" }}>
+              Your personal AI agent <br />for your college years <br />...and then some!
             </h1>
-            <p className="hero-sub" style={{ textAlign: "left" }}>
-              The personal AI agent built for AI for college students — named, trained on your voice, and built around your schedule, classes, notes, deadlines, study plans, professor emails, internships, and goals across all 4 years of college. Not ChatGPT. Yours.
+            <p className="hero-sub">
+              Your own student AI assistant. Named. Trained on your voice. Built around your schedule, classes,
+              notes, deadlines, study plans, professor emails, internships, and goals. It grows with you as you grow.
             </p>
-            <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 28 }}>
+            <div className="hero-cta-row" style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 28 }}>
               <a href="/build" className="btn-purple">Build My Agent</a>
               <a href="#how-it-works" className="btn-outline">See How It Works</a>
             </div>
@@ -201,13 +203,13 @@ export default function Home() {
             <div className="dual-card dual-card-student">
               <div className="dual-icon"><Sparkles size={24} strokeWidth={1.9} /></div>
               <span className="dual-tag dual-tag-student">For Students</span>
-              <h2>Your own AI operator for college.</h2>
+              <h2>Your personal AI agent.</h2>
               <p>It knows your classes, deadlines, professors, goals, and communication style. It helps you stay ahead academically, prepare for internships, write better emails, and stop letting important things slip.</p>
             </div>
             <div className="dual-card dual-card-parent">
               <div className="dual-icon"><ShieldCheck size={24} strokeWidth={1.9} /></div>
               <span className="dual-tag dual-tag-parent">For Parents</span>
-              <h2>A four-year advantage, not another app.</h2>
+              <h2>A four-year advantage.</h2>
               <p>You are not buying tutoring hours or a generic AI subscription. You are giving your student a personalized support system that keeps them organized, accountable, and prepared for the opportunities that matter.</p>
             </div>
           </div>
@@ -252,7 +254,7 @@ export default function Home() {
               Select &rarr; Configure &rarr; Live
             </h2>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px 48px", maxWidth: 1000, margin: "0 auto" }}>
+          <div className="process-grid">
             {[
               { n: "1", phase: "Step 1", title: "Tell Us About Yourself", desc: "Fill out a quick profile with your school, year, and the goals you want your agent to tackle. Takes under two minutes." },
               { n: "2", phase: "Step 2", title: "Build Your Agent", desc: "Choose your agent tier (The Undergraduate, The Graduate, or The Scholar), your hosting plan, support level, and onboarding experience. Standard or White Glove." },
@@ -292,40 +294,7 @@ export default function Home() {
       <ChatBot />
 
       {/* FOOTER */}
-      <footer className="dark-section" style={{ padding: "48px 0" }}>
-        <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}>
-          <div>
-            <div style={{ fontFamily: "var(--font-inter, Inter, sans-serif)", fontSize: 18, fontWeight: 800, letterSpacing: "-.02em", color: "#fff" }}>
-              The College <span style={{ color: "var(--green)" }}>[Agent]</span>
-            </div>
-            <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8, fontFamily: "var(--font-mono)", fontSize: 10, color: "rgba(255,255,255,.35)", letterSpacing: ".06em" }}>
-              Powered by
-              <a href="https://apolloclaw.ai" target="_blank" rel="noopener noreferrer" aria-label="Apollo Claw" style={{ display: "inline-flex", alignItems: "center", borderRadius: 4, background: "#fff", padding: "4px 7px" }}>
-                <img src="/apollo-claw.svg" alt="Apollo Claw" style={{ height: 16, width: "auto" }} />
-              </a>
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
-            {[
-              { label: "Book a Consultation", href: CALENDLY },
-              { label: "Blog", href: "/blog" },
-              { label: "Ambassador Program", href: "/ambassador" },
-              { label: "Contact", href: "https://apolloclaw.ai/contact" },
-              { label: "Apollo[Claw]", href: "https://apolloclaw.ai" },
-              { label: "Privacy Policy", href: "/privacy" },
-              { label: "Terms & Conditions", href: "/terms" },
-            ].map((link) => (
-              <a key={link.label} href={link.href} target={link.href.startsWith("http") ? "_blank" : undefined} rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.4)", letterSpacing: ".04em", transition: "color .15s" }}>
-                {link.label}
-              </a>
-            ))}
-          </div>
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.25)", width: "100%", marginTop: 20, paddingTop: 20, borderTop: "1px solid rgba(255,255,255,.06)" }}>
-            &copy; 2025 Apollo[Claw]. All rights reserved. &nbsp;&middot;&nbsp; thecollegeagent.ai
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
       <style>{`
         /* SHARED TOKENS */
@@ -451,7 +420,14 @@ export default function Home() {
         .uc-card h3 { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 9px; letter-spacing: -.01em; }
         .uc-card p { font-size: 13px; line-height: 1.62; color: rgba(11,23,41,.62); }
 
+        /* HERO layout — the row is a class (not inline) so the mobile stack below can win. */
+        .hero-row { display: flex; }
+
         /* PROCESS */
+        .process-grid {
+          display: grid; grid-template-columns: 1fr 1fr;
+          gap: 32px 48px; max-width: 1000px; margin: 0 auto;
+        }
         .proc-circle {
           width: 42px; height: 42px; border-radius: 50%;
           background: rgba(61,139,61,.2); border: 2px solid var(--green); color: #fff;
@@ -488,13 +464,19 @@ export default function Home() {
           .hero-mascot { max-width: 280px; }
         }
         @media (max-width: 640px) {
+          /* Stack the hero: mascot on top, centered copy, natural headline wrapping. */
+          .hero-row { flex-direction: column; gap: 30px; text-align: center; }
           .hero-h1 { white-space: normal; font-size: clamp(34px, 10vw, 52px); }
-          .hero-mascot-wrap { flex: 0 0 200px; order: -1; margin: 0 auto; }
+          .hero-h1 br { display: none; }
+          .hero-sub { margin-bottom: 28px; }
+          .hero-cta-row { justify-content: center; }
+          .hero-mascot-wrap { flex: 0 0 auto; order: -1; margin: 0 auto; }
           .hero-mascot { max-width: 200px; }
           .dual-grid { grid-template-columns: 1fr; }
           .uc-grid { grid-template-columns: 1fr; }
           .stat-grid { grid-template-columns: repeat(2, 1fr); }
           .int-menu-grid { grid-template-columns: 1fr 1fr; }
+          .process-grid { grid-template-columns: 1fr; gap: 26px; }
         }
       `}</style>
     </>

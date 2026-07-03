@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Copy } from "lucide-react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { useTheme } from "next-themes";
+import { Copy, Monitor, Moon, Sun } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { apiFetch } from "@/lib/api";
 import { isActiveStatus } from "@/lib/format";
@@ -77,9 +79,11 @@ export function SettingsView() {
   return (
     <div className="max-w-xl space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
-        <p className="text-sm text-muted-foreground">{current.name}</p>
+        <h2 className="text-lg font-medium">General</h2>
+        <p className="mt-1 text-sm text-muted-foreground">{current.name}</p>
       </div>
+
+      <AppearancePicker />
 
       <div className="space-y-2">
         <Label htmlFor="ws-name">Workspace name</Label>
@@ -148,6 +152,55 @@ export function SettingsView() {
         destructive
         onConfirm={remove}
       />
+    </div>
+  );
+}
+
+const THEME_OPTIONS = [
+  { id: "light", label: "Day", Icon: Sun },
+  { id: "dark", label: "Night", Icon: Moon },
+  { id: "system", label: "Auto", Icon: Monitor },
+] as const;
+
+// Day / Night / Auto segmented control. The active selection paints only after mount —
+// the theme lives in localStorage, so the server can't know it and would mispaint it.
+const emptySubscribe = () => () => {};
+
+function AppearancePicker() {
+  const { theme, setTheme } = useTheme();
+  // Lint-safe hydration guard: false during SSR/hydration, true on the client after.
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
+
+  return (
+    <div className="space-y-2">
+      <Label>Appearance</Label>
+      <div className="inline-flex gap-1 rounded-full bg-secondary p-1">
+        {THEME_OPTIONS.map(({ id, label, Icon }) => {
+          const active = mounted && (theme ?? "system") === id;
+          return (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setTheme(id)}
+              aria-pressed={active}
+              className={cn(
+                "flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors",
+                active ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {label}
+            </button>
+          );
+        })}
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Auto follows your device&apos;s day and night setting.
+      </p>
     </div>
   );
 }

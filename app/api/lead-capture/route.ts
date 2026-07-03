@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { syncToMailchimp } from "@/lib/newsletter";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,6 +11,27 @@ export async function POST(req: NextRequest) {
   try {
     const data = await req.json();
 
+    // Every captured lead goes into Mailchimp too — both addresses, tagged so David
+    // can segment build leads from footer signups. Failures never block the capture:
+    // the row is stored unsynced and the hourly cron retries until it lands.
+    const schoolEmail = String(data.schoolEmail ?? "").trim().toLowerCase();
+    const personalEmail = String(data.personalEmail ?? "").trim().toLowerCase() || null;
+    const member = {
+      firstName: data.firstName as string | undefined,
+      lastName: data.lastName as string | undefined,
+      tags: ["build-lead"],
+    };
+    let mailchimpSynced = false;
+    try {
+      const results = await Promise.all([
+        schoolEmail ? syncToMailchimp(schoolEmail, member) : Promise.resolve(true),
+        personalEmail ? syncToMailchimp(personalEmail, member) : Promise.resolve(true),
+      ]);
+      mailchimpSynced = results.every(Boolean) && Boolean(schoolEmail || personalEmail);
+    } catch {
+      mailchimpSynced = false;
+    }
+
     const { error: dbError } = await supabase.from("leads").insert([{
       first_name: data.firstName,
       last_name: data.lastName,
@@ -18,6 +40,7 @@ export async function POST(req: NextRequest) {
       mobile: data.mobile || null,
       school: data.school || null,
       year: data.year || null,
+      mailchimp_synced: mailchimpSynced,
     }]);
 
     if (dbError) throw dbError;

@@ -1,10 +1,40 @@
 "use client";
 
 import { useState } from "react";
-import { Check, ChevronDown, ChevronRight, FileText, Image as ImageIcon, Loader2, Wrench } from "lucide-react";
+import Image from "next/image";
+import { Check, ChevronDown, ChevronRight, FileText, Image as ImageIcon, Loader2, User, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Markdown } from "./Markdown";
 import type { ChatMessage, MessageAttachment, ToolEvent } from "./types";
+
+// The agent's face beside its messages — the intake avatar (uploaded or preset) when one
+// exists, the default mascot otherwise. Storage URLs aren't in next/image's remote list,
+// so uploaded avatars render through a plain img (same idiom as WelcomeView).
+function AgentBadge({ src }: { src?: string | null }) {
+  return (
+    <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-background">
+      {src ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={src} alt="" className="h-full w-full object-cover" />
+      ) : (
+        <Image src="/thecollegeagent.png" alt="" width={28} height={28} className="h-full w-full object-contain p-0.5" />
+      )}
+    </span>
+  );
+}
+
+// The student's marker beside their messages: first initial in a brand-tinted circle
+// (a neutral person glyph if we somehow have no name or email to take a letter from).
+function UserBadge({ initial }: { initial: string }) {
+  return (
+    <span
+      aria-hidden
+      className="mt-0.5 flex h-7 w-7 shrink-0 select-none items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary"
+    >
+      {initial || <User className="h-3.5 w-3.5" />}
+    </span>
+  );
+}
 
 // Files that rode along with a user turn, shown as compact chips above the message bubble.
 function MessageAttachments({ attachments }: { attachments: MessageAttachment[] }) {
@@ -84,15 +114,27 @@ function TypingDots() {
   );
 }
 
-export function ChatMessages({ messages, isStreaming }: { messages: ChatMessage[]; isStreaming: boolean }) {
+export function ChatMessages({
+  messages,
+  isStreaming,
+  agentAvatarUrl,
+  userInitial = "",
+}: {
+  messages: ChatMessage[];
+  isStreaming: boolean;
+  // Intake avatar for the agent's messages; null falls back to the default mascot.
+  agentAvatarUrl?: string | null;
+  // Student's first initial for their message marker.
+  userInitial?: string;
+}) {
   return (
     <div className="mx-auto w-full max-w-2xl space-y-5 px-5 py-6">
       {messages.map((m, i) => {
         if (m.role === "user") {
           const attachments = m.attachments ?? [];
           return (
-            <div key={m.id} className="flex justify-end">
-              <div className="flex max-w-[85%] flex-col items-end gap-1.5">
+            <div key={m.id} className="flex items-start justify-end gap-2">
+              <div className="flex min-w-0 max-w-[85%] flex-col items-end gap-1.5">
                 {attachments.length > 0 && <MessageAttachments attachments={attachments} />}
                 {m.content && (
                   <div className="whitespace-pre-wrap break-words rounded-[18px] bg-secondary px-3.5 py-2 text-sm text-foreground">
@@ -100,6 +142,7 @@ export function ChatMessages({ messages, isStreaming }: { messages: ChatMessage[
                   </div>
                 )}
               </div>
+              <UserBadge initial={userInitial} />
             </div>
           );
         }
@@ -113,8 +156,9 @@ export function ChatMessages({ messages, isStreaming }: { messages: ChatMessage[
         const showDots = lastAssistant && isStreaming && !m.content;
 
         return (
-          <div key={m.id} className="flex justify-start">
-            <div className="min-w-0 max-w-full">
+          <div key={m.id} className="flex items-start justify-start gap-2.5">
+            <AgentBadge src={agentAvatarUrl} />
+            <div className="min-w-0 flex-1">
               {m.thinking && <ThinkingBlock content={m.thinking} live={lastAssistant && isStreaming && !m.content} />}
               {tools.length > 0 && (
                 <div className="mb-3 space-y-2">

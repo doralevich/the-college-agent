@@ -4,21 +4,26 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ConversationalOnboard, type OnboardPrefill } from "@/components/ConversationalOnboard";
+import { ReferralCard } from "@/components/ReferralCard";
 
 // First-run landing on the student dashboard. Greets as Frankenstein (the agent's
 // persona), lists the three things to do, and offers one big button into Chat.
 // Brand tokens, copy, and behavior come from the build brief — keep it tight to
 // that spec; the only dynamic bit is the student's first name.
 
+// Values resolve through the --ca-* variables in app/agent-ui.css, so this hand-styled
+// surface follows day/night mode with the rest of the app. greenText is for brand-green
+// TEXT (flips light in dark mode); greenDeep is the CTA hover FILL (stays deep).
 const t = {
-  green: "#2D7A3A",
-  greenDeep: "#1B5E2A",
-  greenSoft: "#E8F1E6",
-  paper: "#F6F8F3",
-  card: "#FFFFFF",
-  ink: "#1A2421",
-  inkSoft: "#5C6660",
-  line: "#DEE6DA",
+  green: "var(--ca-green)",
+  greenDeep: "var(--ca-green-deep)",
+  greenText: "var(--ca-green-text)",
+  greenSoft: "var(--ca-green-soft)",
+  paper: "var(--ca-paper)",
+  card: "var(--ca-card)",
+  ink: "var(--ca-ink)",
+  inkSoft: "var(--ca-ink-soft)",
+  line: "var(--ca-line)",
 };
 
 const FONTS_HREF =
@@ -105,6 +110,7 @@ export function WelcomeView({
       style={{
         minHeight: "100%",
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         padding: "32px 4px",
@@ -202,7 +208,7 @@ export function WelcomeView({
                   height: 30,
                   borderRadius: "50%",
                   background: t.greenSoft,
-                  color: t.greenDeep,
+                  color: t.greenText,
                   fontFamily: "'Fraunces', Georgia, serif",
                   fontWeight: 600,
                   fontSize: 15,
@@ -226,6 +232,14 @@ export function WelcomeView({
 
         {Cta}
       </div>
+
+      {/* Give a month, get a month — quiet, below the welcome card, only once there's
+          an agent worth telling friends about. */}
+      {hasAgent && (
+        <div style={{ width: "100%", maxWidth: 620, marginTop: 16 }}>
+          <ReferralCard />
+        </div>
+      )}
 
       <style>{`
         .ca-mascot {
@@ -331,7 +345,7 @@ function PostOnboardCta({ hasAgent, onOpenChat }: { hasAgent: boolean; onOpenCha
           : "Click to spin up your agent. Takes about a minute."}
       </p>
       {error && (
-        <p style={{ marginTop: 8, fontSize: 13, color: "#B23636" }}>{error}</p>
+        <p style={{ marginTop: 8, fontSize: 13, color: "var(--ca-error)" }}>{error}</p>
       )}
     </div>
   );

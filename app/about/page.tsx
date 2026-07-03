@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import Nav from "../components/Nav";
+import { Footer } from "../components/Footer";
 
 export const metadata: Metadata = {
-  title: "About The College Agent — AI Built for Your Entire College Journey",
+  title: "About The College Agent — AI built for your entire college journey",
   description:
     "The College Agent is a personal AI companion built by Apollo Claw to solve the real challenges college students face — from freshman orientation to senior career planning.",
   alternates: { canonical: "https://thecollegeagent.ai/about" },
   openGraph: {
-    title: "About The College Agent — AI Built for Your Entire College Journey",
+    title: "About The College Agent — AI built for your entire college journey",
     description:
       "The College Agent is a personal AI companion built by Apollo Claw to solve the real challenges college students face — from freshman orientation to senior career planning.",
     url: "https://thecollegeagent.ai/about",
@@ -35,7 +36,7 @@ export default function AboutPage() {
         <div style={{ maxWidth: 760, margin: "0 auto", padding: "48px 24px 100px" }}>
           <span className="mono-label">Our Mission</span>
           <h1 style={{ fontSize: "clamp(30px, 4vw, 48px)", fontWeight: 800, color: "var(--navy)", marginTop: 10, marginBottom: 20, lineHeight: 1.08, letterSpacing: "-.03em" }}>
-            AI Built for Your Entire College Journey
+            AI built for your entire college journey
           </h1>
           <p className="lead-text">
             College is one of the most important and overwhelming four-year stretches of a person&apos;s life. There are classes to manage, deadlines to hit, internships to land, connections to build, and a career to plan — all at once, with very little infrastructure to help you stay on top of it. The College Agent is the personal AI for college students that finally solves this.
@@ -134,6 +135,8 @@ export default function AboutPage() {
           </div>
         </div>
       </main>
+
+      <Footer />
 
       <style>{`
         .mono-label {

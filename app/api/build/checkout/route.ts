@@ -4,6 +4,7 @@ import { priceIdFor } from "@/lib/stripe/prices";
 import { currentPlanLookup, HOSTING_LOOKUP } from "@/lib/pricing/intro-cutoff";
 import { getOptionalUserId } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { ensureReferralCoupon, resolveReferralCode } from "@/lib/referral";
 
 // Anonymous-friendly Stripe Checkout entrypoint.
 // - Logged-in students: we pass user_id metadata so the webhook flips their
@@ -17,6 +18,12 @@ type Body = {
   email?: string;
   firstName?: string;
   lastName?: string;
+  // Referral share code from /build?ref=... — friend's first hosting month free,
+  // referrer gets a $25 credit when this checkout completes.
+  ref?: string;
+  // Explicit Terms & Conditions acceptance from the /build checkbox. Required:
+  // the acceptance timestamp is recorded on the session + subscription metadata.
+  termsAccepted?: boolean;
 };
 
 export const POST = route(async (req) => {
@@ -37,6 +44,10 @@ export const POST = route(async (req) => {
 
   if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     throw new ApiError(400, "invalid_request", "Valid email is required");
+  }
+
+  if (body.termsAccepted !== true) {
+    throw new ApiError(400, "terms_not_accepted", "Please agree to the Terms & Conditions to continue.");
   }
 
   const firstName = (body.firstName ?? "").trim();
@@ -68,11 +79,35 @@ export const POST = route(async (req) => {
   if (userId) metadata.user_id = userId;
   if (firstName) metadata.first_name = firstName;
   if (lastName) metadata.last_name = lastName;
+  // Proof of clickwrap acceptance, kept alongside the order in Stripe.
+  metadata.terms_accepted_at = new Date().toISOString();
+  metadata.terms_version = "2026-07-03";
 
   const stripe = getStripe();
+
+  // Referred signup: validate the code, refuse self-referrals, and swap the promo-code
+  // box for the referral coupon (Stripe won't allow both). Invalid/expired codes are
+  // silently ignored — never block a paying student over a bad ref.
+  let referralCoupon: string | null = null;
+  const refCode = (body.ref ?? "").trim();
+  if (refCode) {
+    const owner = await resolveReferralCode(refCode);
+    if (owner && owner.email !== email && owner.userId !== userId) {
+      try {
+        referralCoupon = await ensureReferralCoupon(stripe);
+        metadata.referral_code = refCode.toUpperCase();
+        metadata.referrer_user_id = owner.userId;
+      } catch (err) {
+        console.error("[build/checkout] referral coupon failed, continuing without", err);
+      }
+    }
+  }
+
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
-    allow_promotion_codes: true,
+    ...(referralCoupon
+      ? { discounts: [{ coupon: referralCoupon }] }
+      : { allow_promotion_codes: true }),
     payment_method_collection: "if_required",
     line_items: [
       { price: hostingPriceId, quantity: 1 },

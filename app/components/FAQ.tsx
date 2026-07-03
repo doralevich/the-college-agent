@@ -58,7 +58,9 @@ export default function FAQ() {
           <span className="mono-label">FAQ</span>
           <h2 className="section-title">Frequently Asked Questions</h2>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, alignItems: "start" }}>
+        {/* className is what the mobile media rule below targets — the grid collapses to one
+            column under 768px (the !important outranks this inline declaration). */}
+        <div className="faq-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, alignItems: "start" }}>
           {[col1, col2].map((col, ci) => (
             <div key={ci} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {col.map((faq) => {

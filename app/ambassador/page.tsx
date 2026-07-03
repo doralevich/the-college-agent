@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { CalendarCheck2, FileText, LifeBuoy, ListChecks, TrendingUp, BookOpen } from "lucide-react";
 import Nav from "../components/Nav";
+import { Footer } from "../components/Footer";
 
 export const metadata: Metadata = {
   title: "Become a College Agent Campus Ambassador | The College Agent",
@@ -66,7 +67,7 @@ export default function AmbassadorPage() {
                 <span style={{ color: "var(--green)", fontSize: 14 }}>&#9670;</span>
                 Campus Ambassador Program
               </div>
-              <h1>Become a College Agent Campus Ambassador.</h1>
+              <h1>Become a College Agent campus ambassador.</h1>
               <p className="hero-tagline">Help students succeed. Build your resume. Earn commissions.</p>
               <p>
                 Join a select group of student ambassadors representing one of the first AI platforms
@@ -199,6 +200,8 @@ export default function AmbassadorPage() {
           </div>
         </section>
       </main>
+
+      <Footer />
 
       <style>{`
         .affiliate-shell {

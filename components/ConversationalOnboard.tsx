@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Check, Loader2, Plus, Search, Send, X } from "lucide-react";
 import majorsData from "@/data/college-agent-majors.json";
+import ChatBot from "@/app/components/ChatBot";
 
 // Conversational replacement for /onboard. Frankenstein asks one question at a time;
 // the student answers with text or chip-picks. Each answer is persisted to
@@ -12,16 +13,160 @@ import majorsData from "@/data/college-agent-majors.json";
 // POST the exact same payload shape the legacy form submits — the provisioner and
 // SOUL.md build path stay unchanged.
 
+// Resolved through the --ca-* variables in app/agent-ui.css so the wizard follows
+// day/night mode. greenText is for brand-green TEXT (flips light in dark mode);
+// greenDeep is the CTA hover FILL (stays deep in both).
 const T = {
-  green: "#2D7A3A",
-  greenDeep: "#1B5E2A",
-  greenSoft: "#E8F1E6",
-  paper: "#F6F8F3",
-  card: "#FFFFFF",
-  ink: "#1A2421",
-  inkSoft: "#5C6660",
-  line: "#DEE6DA",
+  green: "var(--ca-green)",
+  greenDeep: "var(--ca-green-deep)",
+  greenText: "var(--ca-green-text)",
+  greenSoft: "var(--ca-green-soft)",
+  paper: "var(--ca-paper)",
+  card: "var(--ca-card)",
+  ink: "var(--ca-ink)",
+  inkSoft: "var(--ca-ink-soft)",
+  line: "var(--ca-line)",
 };
+
+// Agent-name suggestions: three strong starters as chips, and "Surprise me" draws from
+// the wider pool so repeat taps keep producing fresh options.
+const NAME_SUGGESTIONS = ["Ivy", "Max", "Luna"];
+const SURPRISE_NAMES = [
+  "Ace", "Atlas", "Blaze", "Chip", "Dash", "Duke", "Echo", "Ember", "Finn", "Indy",
+  "Jett", "Koda", "Leo", "Nico", "Nova", "Ozzy", "Phoenix", "Rex", "Rocket", "Rory",
+  "Scout", "Sunny", "Theo", "Turbo", "Ziggy", "Zoe",
+];
+
+// The 20 brand avatar presets (public/avatars, sliced from David's board). Picking one is
+// converted to a File and rides the exact same upload path as a custom image.
+const AVATAR_PRESETS = Array.from(
+  { length: 20 },
+  (_, i) => `/avatars/preset-${String(i + 1).padStart(2, "0")}.webp`
+);
+
+function AvatarPicker({
+  avatarFile,
+  avatarPreview,
+  disabled,
+  setAvatar,
+}: {
+  avatarFile: File | null;
+  avatarPreview: string | null;
+  disabled: boolean;
+  setAvatar: (f: File | null) => void;
+}) {
+  const [selected, setSelected] = useState<number | null>(null);
+  const [picking, setPicking] = useState<number | null>(null);
+
+  async function pick(i: number) {
+    if (disabled || picking !== null) return;
+    setPicking(i);
+    try {
+      const res = await fetch(AVATAR_PRESETS[i]);
+      if (!res.ok) throw new Error("preset fetch failed");
+      const blob = await res.blob();
+      setAvatar(new File([blob], `preset-${String(i + 1).padStart(2, "0")}.webp`, { type: blob.type || "image/webp" }));
+      setSelected(i);
+    } catch {
+      /* leave the current avatar untouched */
+    } finally {
+      setPicking(null);
+    }
+  }
+
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
+        <div style={{ width: 56, height: 56, borderRadius: "50%", overflow: "hidden", background: T.greenSoft, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          {avatarPreview ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={avatarPreview} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            <Image src="/thecollegeagent.png" alt="" width={56} height={56} style={{ objectFit: "contain" }} />
+          )}
+        </div>
+        <label
+          style={{
+            cursor: disabled ? "not-allowed" : "pointer",
+            fontFamily: "'DM Sans', system-ui, sans-serif",
+            fontSize: 13,
+            fontWeight: 600,
+            color: T.green,
+            border: `1.5px solid ${T.green}`,
+            borderRadius: 10,
+            padding: "8px 14px",
+          }}
+        >
+          {avatarFile ? "Choose a different image" : "Upload your own"}
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            disabled={disabled}
+            onChange={(e) => {
+              const f = e.target.files?.[0] ?? null;
+              if (f) {
+                setAvatar(f);
+                setSelected(null);
+              }
+              e.target.value = "";
+            }}
+            style={{ display: "none" }}
+          />
+        </label>
+        {avatarFile && (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => {
+              setAvatar(null);
+              setSelected(null);
+            }}
+            style={{
+              background: "transparent",
+              border: "none",
+              color: T.inkSoft,
+              fontSize: 13,
+              cursor: "pointer",
+              textDecoration: "underline",
+              textUnderlineOffset: 2,
+            }}
+          >
+            Remove
+          </button>
+        )}
+      </div>
+
+      <div style={{ fontSize: 12, fontWeight: 600, color: T.inkSoft, letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 10 }}>
+        Or pick one of ours
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(52px, 1fr))", gap: 10 }}>
+        {AVATAR_PRESETS.map((src, i) => (
+          <button
+            key={src}
+            type="button"
+            disabled={disabled}
+            onClick={() => pick(i)}
+            aria-label={`Avatar option ${i + 1}`}
+            style={{
+              padding: 0,
+              border: `2.5px solid ${selected === i ? T.green : "transparent"}`,
+              borderRadius: "50%",
+              overflow: "hidden",
+              aspectRatio: "1",
+              background: T.greenSoft,
+              cursor: disabled ? "not-allowed" : "pointer",
+              opacity: picking !== null && picking !== i ? 0.6 : 1,
+              transition: "border-color .12s, opacity .12s",
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={src} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 const FONTS_HREF =
   "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=DM+Sans:wght@400;500;600;700&display=swap";
@@ -69,14 +214,22 @@ const SUCCESS_OPTIONS = [
   "Show up consistently and finish what I start",
 ];
 
-// Trimmed to the realistic v1 set from the spec (each requires its own OAuth,
-// so don't promise more than we can wire). Selected labels land on the onboard
+// Everything here is wired in the Integrations tab (Composio catalog), so the
+// intake can promise the full set. Selected labels land on the onboard
 // submission for the Integrations tab to spotlight.
 const INTEGRATION_OPTIONS = [
+  "Canvas",
+  "Blackbaud",
+  "Google Classroom",
   "Google Calendar",
   "Gmail",
-  "Canvas",
+  "Outlook",
   "School email",
+  "Microsoft Teams",
+  "Google Drive",
+  "Dropbox",
+  "Notion",
+  "Todoist",
 ];
 
 const PRIORITY_OPTIONS = [
@@ -261,6 +414,14 @@ const STEPS: Step[] = [
   { kind: "multi", key: "responseStyle", prompt: "How do you want me to communicate with you? Pick any styles that fit and I'll blend them.", options: VOICE_OPTIONS, required: true, tier: 2 },
   { kind: "multi", key: "checkinFrequency", prompt: "How often should I check in with you? Pick any that fit.", options: CHECKIN_OPTIONS, required: true, tier: 2 },
   {
+    kind: "multi",
+    key: "integrationsWanted",
+    prompt:
+      "Do you use Canvas? We connect with Canvas, Blackbaud, Google Classroom, Gmail, your calendar, and thousands more. Pick the tools you already use and I'll help you hook them up once we're done. You can browse the whole stack later in the Integrations tab.",
+    options: INTEGRATION_OPTIONS,
+    tier: 2,
+  },
+  {
     kind: "classList",
     key: "classes",
     prompt: "Let's add your classes one at a time. Name, days, time, location, professor, class SKU. Add another until you're done.",
@@ -407,10 +568,15 @@ export function ConversationalOnboard({
   userId,
   knownFirstName,
   prefill,
+  onSaveExit,
 }: {
   userId: string;
   knownFirstName?: string | null;
   prefill?: OnboardPrefill | null;
+  // "Save and continue later": progress already persists on every change, so this is
+  // just the exit. Hosts that embed the wizard (Checklist edit) pass their own way out;
+  // without one the wizard shows its internal "saved, see you soon" pane.
+  onSaveExit?: () => void;
 }) {
   const router = useRouter();
   const storageKey = `ca-onboard-progress:${userId}`;
@@ -418,8 +584,39 @@ export function ConversationalOnboard({
   // is complete even though the student never sees those questions.
   const [form, setForm] = useState<FormState>(() => seedFormFromPrefill(EMPTY, prefill));
   const [stepIdx, setStepIdx] = useState(0);
+
+  // Every step change returns the viewport to the top of the wizard — on phones the
+  // options list can leave you scrolled halfway down when you tap Next. Besides
+  // scrollIntoView we zero every scrollable ancestor AND the window, then re-assert
+  // twice: iOS Safari offsets the page while the keyboard is up and restores that
+  // offset as it collapses, which can undo a single scroll fired too early.
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const toTop = () => {
+      const root = rootRef.current;
+      if (!root) return;
+      root.scrollIntoView({ block: "start" });
+      for (let node = root.parentElement; node; node = node.parentElement) {
+        if (node.scrollTop > 0) node.scrollTop = 0;
+      }
+      window.scrollTo(0, 0);
+    };
+    toTop();
+    const raf = requestAnimationFrame(toTop);
+    const late = setTimeout(toTop, 300); // after the iOS keyboard finishes closing
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(late);
+    };
+  }, [stepIdx]);
   const [restored, setRestored] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  // Flips after a successful submit + provision: the wizard's final frame is the
+  // "That's it" completion pane with the Open chat CTA (per the onboarding spec),
+  // not a silent bounce into the dashboard.
+  const [completed, setCompleted] = useState(false);
+  // "Save and continue later" landing pane (only when the host gave us no exit).
+  const [paused, setPaused] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Files don't serialize cleanly to localStorage, so avatar lives in component state
   // only — students who refresh mid-flow keep their text answers but re-pick the image.
@@ -427,7 +624,6 @@ export function ConversationalOnboard({
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   // Draft class being filled out before it lands in form.classes.
   const [classDraft, setClassDraft] = useState<ClassEntry>(EMPTY_CLASS);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   const displayFirstName = (form.firstName?.trim() || knownFirstName?.trim() || "there");
   const displayBotName = (form.agentName?.trim() || "Your College Agent");
@@ -504,12 +700,6 @@ export function ConversationalOnboard({
       /* quota / disabled — non-fatal, user just won't get resume */
     }
   }, [storageKey, stepIdx, form, restored]);
-
-  // Auto-scroll to the bottom whenever the visible conversation grows.
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  }, [stepIdx, submitting]);
 
   // If the visible list shrinks (e.g. student switched from yes to no on deep-dive),
   // clamp the cursor so we don't index off the end.
@@ -684,7 +874,10 @@ export function ConversationalOnboard({
         router.refresh();
         return;
       }
-      router.refresh();
+      // Success: show the completion pane. Open chat does a full navigation so the
+      // server re-reads hasAgent and lands on the live Chat tab.
+      setSubmitting(false);
+      setCompleted(true);
     } catch (e) {
       setError((e as Error).message);
       setSubmitting(false);
@@ -692,12 +885,14 @@ export function ConversationalOnboard({
   }
 
   const progress = useMemo(
-    () => Math.round(((stepIdx + (submitting ? 1 : 0)) / visibleSteps.length) * 100),
-    [stepIdx, submitting, visibleSteps.length],
+    () => (completed ? 100 : Math.round(((stepIdx + (submitting ? 1 : 0)) / visibleSteps.length) * 100)),
+    [stepIdx, submitting, completed, visibleSteps.length],
   );
 
   return (
     <div
+      ref={rootRef}
+      className="ca-onboard-root"
       style={{
         minHeight: "100%",
         background: `radial-gradient(120% 80% at 50% -10%, ${T.greenSoft} 0%, transparent 55%), ${T.paper}`,
@@ -710,15 +905,17 @@ export function ConversationalOnboard({
         alignItems: "center",
       }}
     >
-      {/* Welcome header above the wizard card. */}
-      <div className="ca-onboard-header" style={{ width: "100%", maxWidth: 620, textAlign: "center", marginBottom: 24 }}>
+      {/* Welcome header above the wizard card — first page only. Once the student moves
+          past the intro it disappears, so every later question sits higher on the screen. */}
+      {stepIdx === 0 && !completed && (
+      <div className="ca-onboard-header" style={{ width: "100%", maxWidth: 620, textAlign: "center", marginBottom: 18 }}>
         <div
           style={{
             display: "inline-flex",
             alignItems: "center",
             gap: 8,
             background: T.greenSoft,
-            color: T.greenDeep,
+            color: T.greenText,
             fontSize: 12,
             fontWeight: 600,
             letterSpacing: "0.06em",
@@ -748,6 +945,7 @@ export function ConversationalOnboard({
           like to work, so your agent is personalized from day one. It saves as you go.
         </p>
       </div>
+      )}
 
       <div
         className="ca-onboard-card"
@@ -765,7 +963,7 @@ export function ConversationalOnboard({
       >
         {/* Progress bar — a rounded pill inside the top padding so the card's
             corner radius never clips it. */}
-        <div style={{ padding: "24px 44px 0" }}>
+        <div className="ca-progress-wrap" style={{ padding: "18px 36px 0" }}>
           <div style={{ height: 8, background: T.greenSoft, borderRadius: 999, overflow: "hidden" }}>
             <div
               style={{
@@ -779,10 +977,150 @@ export function ConversationalOnboard({
           </div>
         </div>
 
-        <div style={{ padding: "28px 44px", minHeight: 320, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          {/* Mascot + question header, side by side. */}
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 26 }}>
+        {completed ? (
+          // The spec's completion moment: distinct from the chat opening hello, one CTA.
+          <div
+            className="ca-q-body"
+            style={{
+              padding: "44px 44px 48px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              textAlign: "center",
+            }}
+          >
             <div
+              style={{
+                width: 72,
+                height: 72,
+                borderRadius: "50%",
+                background: T.greenSoft,
+                overflow: "hidden",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 18,
+              }}
+            >
+              {avatarPreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={avatarPreview} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <Image src="/thecollegeagent.png" alt="" width={72} height={72} style={{ objectFit: "contain", width: "100%", height: "100%" }} />
+              )}
+            </div>
+            <h1
+              style={{
+                fontFamily: "'Fraunces', Georgia, serif",
+                fontSize: 28,
+                fontWeight: 600,
+                lineHeight: 1.2,
+                color: T.ink,
+                margin: "0 0 10px",
+              }}
+            >
+              That&apos;s it. You&apos;re all set up.
+            </h1>
+            <p style={{ fontSize: 15, lineHeight: 1.6, color: T.inkSoft, maxWidth: 420, margin: "0 0 26px" }}>
+              {displayBotName} is live and already knows your classes, your goals, and how you
+              like to work. The first conversation is where it gets good.
+            </p>
+            <button
+              type="button"
+              className="ca-onboard-cta"
+              onClick={() => window.location.assign("/dashboard/chat")}
+              style={{
+                border: "none",
+                cursor: "pointer",
+                fontFamily: "'DM Sans', system-ui, sans-serif",
+                fontSize: 15,
+                fontWeight: 600,
+                color: "#fff",
+                background: T.green,
+                padding: "13px 34px",
+                borderRadius: 10,
+                transition: "background .15s",
+              }}
+            >
+              Open chat
+            </button>
+          </div>
+        ) : paused ? (
+          // The "Save and continue later" landing: reassure, and offer the way back in.
+          <div
+            className="ca-q-body"
+            style={{
+              padding: "40px 36px 44px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                width: 72,
+                height: 72,
+                borderRadius: "50%",
+                background: T.greenSoft,
+                overflow: "hidden",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 18,
+              }}
+            >
+              {avatarPreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={avatarPreview} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <Image src="/thecollegeagent.png" alt="" width={72} height={72} style={{ objectFit: "contain", width: "100%", height: "100%" }} />
+              )}
+            </div>
+            <h1
+              style={{
+                fontFamily: "'Fraunces', Georgia, serif",
+                fontSize: 28,
+                fontWeight: 600,
+                lineHeight: 1.2,
+                color: T.ink,
+                margin: "0 0 10px",
+              }}
+            >
+              Saved. See you soon!
+            </h1>
+            <p style={{ fontSize: 15, lineHeight: 1.6, color: T.inkSoft, maxWidth: 420, margin: "0 0 26px" }}>
+              Your answers are safe. Come back any time and you&apos;ll pick up right where you
+              left off.
+            </p>
+            <button
+              type="button"
+              className="ca-onboard-cta"
+              onClick={() => setPaused(false)}
+              style={{
+                border: "none",
+                cursor: "pointer",
+                fontFamily: "'DM Sans', system-ui, sans-serif",
+                fontSize: 15,
+                fontWeight: 600,
+                color: "#fff",
+                background: T.green,
+                padding: "13px 34px",
+                borderRadius: 10,
+                transition: "background .15s",
+              }}
+            >
+              Pick up where I left off
+            </button>
+          </div>
+        ) : (
+        <>
+        <div className="ca-q-body" style={{ padding: "20px 36px", minHeight: 260, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          {/* Mascot + question header: side by side on desktop, a small icon stacked on
+              top with the question full-width on phones (see the media block below). */}
+          <div className="ca-q-row" style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 18 }}>
+            <div
+              className="ca-q-mascot"
               style={{
                 flex: "0 0 auto",
                 width: 52,
@@ -799,14 +1137,15 @@ export function ConversationalOnboard({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={avatarPreview} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               ) : (
-                <Image src="/thecollegeagent.png" alt="" width={52} height={52} style={{ objectFit: "contain" }} />
+                <Image src="/thecollegeagent.png" alt="" width={52} height={52} style={{ objectFit: "contain", width: "100%", height: "100%" }} />
               )}
             </div>
-            <div style={{ flex: 1, paddingTop: 2 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: T.inkSoft, letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 8 }}>
+            <div style={{ flex: 1, paddingTop: 2, minWidth: 0 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: T.inkSoft, letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 5 }}>
                 Question {Math.min(stepIdx + 1, visibleSteps.length)} of {visibleSteps.length}
               </div>
               <h1
+                className="ca-q-prompt"
                 style={{
                   fontFamily: "'DM Sans', system-ui, sans-serif",
                   fontSize: 18,
@@ -853,17 +1192,19 @@ export function ConversationalOnboard({
             />
           )}
 
-          {error && <p style={{ marginTop: 14, fontSize: 13, color: "#B23636" }}>{error}</p>}
+          {error && <p style={{ marginTop: 14, fontSize: 13, color: "var(--ca-error)" }}>{error}</p>}
         </div>
 
         <div
+          className="ca-q-footer"
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            padding: "16px 44px 20px",
+            padding: "12px 36px 14px",
             borderTop: `1px solid ${T.line}`,
             gap: 12,
+            flexWrap: "wrap",
           }}
         >
           <button
@@ -887,50 +1228,104 @@ export function ConversationalOnboard({
             ← Back
           </button>
 
-          <button
-            type="button"
-            onClick={advance}
-            disabled={submitting || (isRequired(current) && !isAnswered(current))}
-            className="ca-onboard-cta"
-            style={{
-              border: "none",
-              cursor: submitting || (isRequired(current) && !isAnswered(current)) ? "not-allowed" : "pointer",
-              fontFamily: "'DM Sans', system-ui, sans-serif",
-              fontSize: 15,
-              fontWeight: 600,
-              color: "#fff",
-              background: T.green,
-              padding: "12px 28px",
-              borderRadius: 10,
-              opacity: submitting || (isRequired(current) && !isAnswered(current)) ? 0.55 : 1,
-              transition: "background .15s, opacity .15s",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              flexShrink: 0,
-            }}
-          >
-            {submitting
-              ? <Loader2 className="animate-spin" style={{ width: 14, height: 14 }} />
-              : ctaLabel(current, isLast, form)}
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+            <button
+              type="button"
+              onClick={() => (onSaveExit ? onSaveExit() : setPaused(true))}
+              disabled={submitting}
+              className="ca-onboard-back ca-save-later"
+              style={{
+                background: "transparent",
+                border: `1.5px solid ${T.line}`,
+                color: T.inkSoft,
+                fontFamily: "'DM Sans', system-ui, sans-serif",
+                fontSize: 13.5,
+                fontWeight: 600,
+                padding: "11px 16px",
+                borderRadius: 10,
+                cursor: submitting ? "not-allowed" : "pointer",
+                opacity: submitting ? 0.4 : 1,
+              }}
+            >
+              Save and continue later
+            </button>
+
+            <button
+              type="button"
+              onClick={advance}
+              disabled={submitting || (isRequired(current) && !isAnswered(current))}
+              className="ca-onboard-cta"
+              style={{
+                border: "none",
+                cursor: submitting || (isRequired(current) && !isAnswered(current)) ? "not-allowed" : "pointer",
+                fontFamily: "'DM Sans', system-ui, sans-serif",
+                fontSize: 15,
+                fontWeight: 600,
+                color: "#fff",
+                background: T.green,
+                padding: "12px 28px",
+                borderRadius: 10,
+                opacity: submitting || (isRequired(current) && !isAnswered(current)) ? 0.55 : 1,
+                transition: "background .15s, opacity .15s",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                flexShrink: 0,
+              }}
+            >
+              {submitting
+                ? <Loader2 className="animate-spin" style={{ width: 14, height: 14 }} />
+                : ctaLabel(current, isLast, form)}
+            </button>
+          </div>
         </div>
 
-        <div style={{ padding: "10px 44px 18px", textAlign: "center", fontSize: 12, color: T.inkSoft }}>
+        <div className="ca-q-hint" style={{ padding: "8px 36px 14px", textAlign: "center", fontSize: 12, color: T.inkSoft }}>
           Saves automatically. Close this tab and come back any time.
         </div>
+        </>
+        )}
       </div>
+
+      {/* Questions mid-intake happen ("do I need my syllabus now?") — keep the same
+          Help Me widget from the marketing site one tap away. */}
+      <ChatBot />
 
       <style>{`
         .ca-onboard-cta:hover:not(:disabled) { background: ${T.greenDeep}; }
         .ca-onboard-cta:focus-visible { outline: 3px solid ${T.greenSoft}; outline-offset: 3px; }
         .ca-onboard-back:hover:not(:disabled) { background: ${T.greenSoft}; color: ${T.ink}; }
+        /* Long checkbox lists read as two columns once there's room; phones stay one column. */
+        @media (min-width: 561px) {
+          .ca-options-2col { display: grid !important; grid-template-columns: 1fr 1fr; column-gap: 12px; }
+        }
         @media (max-width: 560px) {
+          /* Compact single-column layout: small mascot on top, question full width, no
+             header paragraph — the question and its options fit the top of the screen. */
+          .ca-onboard-root { padding: 18px 12px 28px !important; }
+          .ca-onboard-header { margin-bottom: 12px !important; }
+          .ca-onboard-header > div { margin-bottom: 8px !important; }
+          .ca-onboard-header h1 { font-size: 22px !important; margin-bottom: 0 !important; }
+          .ca-onboard-header p { display: none !important; }
           .ca-onboard-card { border-radius: 14px !important; }
           .ca-onboard-card h1 { font-size: 22px !important; }
-          .ca-onboard-card > div { padding-left: 22px !important; padding-right: 22px !important; }
-          .ca-onboard-header h1 { font-size: 26px !important; }
-          .ca-onboard-header p { font-size: 15px !important; }
+          .ca-onboard-card > div { padding-left: 20px !important; padding-right: 20px !important; }
+          .ca-progress-wrap { padding-top: 14px !important; }
+          .ca-q-body {
+            min-height: 0 !important;
+            padding-top: 16px !important; padding-bottom: 16px !important;
+            justify-content: flex-start !important;
+          }
+          .ca-q-row { display: block !important; margin-bottom: 14px !important; }
+          .ca-q-mascot { width: 34px !important; height: 34px !important; margin: 0 auto 10px !important; }
+          .ca-onboard-card h1.ca-q-prompt { font-size: 16px !important; line-height: 1.4 !important; }
+          .ca-q-footer { padding-top: 10px !important; padding-bottom: 12px !important; }
+          .ca-q-footer .ca-onboard-back:first-child { padding: 9px 8px !important; }
+          .ca-save-later { padding: 9px 10px !important; font-size: 12px !important; }
+          .ca-q-footer .ca-onboard-cta { padding: 11px 16px !important; font-size: 14px !important; }
+          .ca-q-hint { padding-top: 4px !important; padding-bottom: 10px !important; font-size: 11px !important; }
+          /* 16px inputs on phones or iOS Safari zooms-and-pans the page on focus. */
+          .ca-onboard-input { font-size: 16px !important; }
         }
       `}</style>
     </div>
@@ -1085,64 +1480,17 @@ function Input({
   }
   if (step.kind === "image") {
     return (
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        <div style={{ width: 56, height: 56, borderRadius: "50%", overflow: "hidden", background: T.greenSoft, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          {avatarPreview ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={avatarPreview} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          ) : (
-            <Image src="/thecollegeagent.png" alt="" width={56} height={56} style={{ objectFit: "contain" }} />
-          )}
-        </div>
-        <label
-          style={{
-            cursor: disabled ? "not-allowed" : "pointer",
-            fontFamily: "'DM Sans', system-ui, sans-serif",
-            fontSize: 13,
-            fontWeight: 600,
-            color: T.green,
-            border: `1.5px solid ${T.green}`,
-            borderRadius: 10,
-            padding: "8px 14px",
-          }}
-        >
-          {avatarFile ? "Choose a different image" : "Upload an image"}
-          <input
-            type="file"
-            accept="image/png,image/jpeg,image/webp"
-            disabled={disabled}
-            onChange={(e) => {
-              const f = e.target.files?.[0] ?? null;
-              if (f) setAvatar(f);
-              e.target.value = "";
-            }}
-            style={{ display: "none" }}
-          />
-        </label>
-        {avatarFile && (
-          <button
-            type="button"
-            disabled={disabled}
-            onClick={() => setAvatar(null)}
-            style={{
-              background: "transparent",
-              border: "none",
-              color: T.inkSoft,
-              fontSize: 13,
-              cursor: "pointer",
-              textDecoration: "underline",
-              textUnderlineOffset: 2,
-            }}
-          >
-            Remove
-          </button>
-        )}
-      </div>
+      <AvatarPicker
+        avatarFile={avatarFile}
+        avatarPreview={avatarPreview}
+        disabled={disabled}
+        setAvatar={setAvatar}
+      />
     );
   }
   if (step.kind === "text") {
     const value = form[step.key] as string;
-    return (
+    const input = (
       <input
         type={step.inputType ?? "text"}
         autoFocus
@@ -1165,6 +1513,44 @@ function Input({
           transition: "border-color .15s, box-shadow .15s",
         }}
       />
+    );
+    if (step.key !== "agentName") return input;
+    // Name suggestion chips (per the onboarding spec) — tap to fill, still editable.
+    const chipStyle = (selected: boolean): React.CSSProperties => ({
+      border: `1.5px solid ${selected ? T.green : T.line}`,
+      background: selected ? T.greenSoft : T.card,
+      color: selected ? T.greenText : T.ink,
+      fontFamily: "'DM Sans', system-ui, sans-serif",
+      fontSize: 14,
+      fontWeight: 500,
+      padding: "8px 16px",
+      borderRadius: 999,
+      cursor: disabled ? "not-allowed" : "pointer",
+      transition: "border-color .12s, background .12s",
+    });
+    return (
+      <div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+          {NAME_SUGGESTIONS.map((n) => (
+            <button key={n} type="button" disabled={disabled} onClick={() => setField("agentName", n)} style={chipStyle(value.trim() === n)}>
+              {n}
+            </button>
+          ))}
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => {
+              // Never deal the name already showing — every tap feels like a re-roll.
+              const pool = SURPRISE_NAMES.filter((n) => n !== value.trim());
+              setField("agentName", pool[Math.floor(Math.random() * pool.length)]);
+            }}
+            style={chipStyle(false)}
+          >
+            Surprise me
+          </button>
+        </div>
+        {input}
+      </div>
     );
   }
   if (step.kind === "textarea") {
@@ -1221,8 +1607,13 @@ function Input({
     const atLimit = !!step.max && value.length >= step.max;
     // Vertical aligned checkbox list: square checkbox on the left, label on the
     // right, full row is the click target. Reads as a standard form, not a pill row.
+    // Long lists (7+) split into two columns on wider screens (see .ca-options-2col
+    // in the styled-jsx block) so they don't scroll forever on desktop.
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <div
+        className={step.options.length >= 7 ? "ca-options-2col" : undefined}
+        style={{ display: "flex", flexDirection: "column", gap: 2 }}
+      >
         {step.options.map((opt) => {
           const selected = value.includes(opt);
           const tooMany = atLimit && !selected;
@@ -1264,7 +1655,7 @@ function Input({
                   height: 20,
                   borderRadius: 5,
                   border: `1.5px solid ${selected ? T.green : T.line}`,
-                  background: selected ? T.green : "#FFFFFF",
+                  background: selected ? T.green : T.card,
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -1322,7 +1713,7 @@ function Input({
                   height: 20,
                   borderRadius: "50%",
                   border: `1.5px solid ${selected ? T.green : T.line}`,
-                  background: "#FFFFFF",
+                  background: T.card,
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",

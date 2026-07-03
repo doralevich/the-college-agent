@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
+import Link from "next/link";
 import { Loader2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useWorkspace } from "@/components/WorkspaceProvider";
 import { DropOverlay } from "./Attachments";
 import { ChatComposer } from "./ChatComposer";
 import { ChatMessages } from "./ChatMessages";
@@ -37,10 +39,18 @@ function classIsToday(days: string): boolean {
   return tokens.some((t) => new RegExp(`\\b${t}\\b`).test(norm));
 }
 
+// Heuristic: does a send failure look like the agent's AI budget ran dry? The gateway's
+// wording isn't under our control, so match the family of phrasings rather than one string.
+// A false positive still shows a helpful card with the real path to fixing most outages.
+function isOutOfCreditsError(message: string): boolean {
+  return /budget|credit|insufficient|quota|payment required|\b402\b/i.test(message);
+}
+
 export function ChatView({
   firstName,
   classes = [],
   accent,
+  avatarUrl,
 }: {
   // Student's first name from the intake — greets them on the empty state.
   firstName?: string | null;
@@ -50,7 +60,10 @@ export function ChatView({
   // School brand color (or the College Agent green fallback) — renders as a faint
   // wash from the top of the pane so the chat feels like the student's school.
   accent?: string;
+  // Intake avatar shown beside the agent's messages (default mascot when null).
+  avatarUrl?: string | null;
 }) {
+  const { userEmail } = useWorkspace();
   const {
     agentId,
     sessions,
@@ -113,6 +126,7 @@ export function ChatView({
   }, []);
   const todaysClasses = useMemo(() => classes.filter((c) => c.days && classIsToday(c.days)), [classes]);
   const greetName = firstName?.trim() || "there";
+  const userInitial = (firstName?.trim()?.[0] || userEmail?.[0] || "").toUpperCase();
 
   return (
     <div
@@ -144,7 +158,9 @@ export function ChatView({
         onScroll={onScroll}
         className={cn(
           "min-h-0",
-          showWelcome ? "flex flex-1 flex-col items-center justify-end px-4 pb-6" : "flex-1 overflow-y-auto"
+          showWelcome
+            ? "flex flex-1 flex-col items-center justify-end px-4 pb-6"
+            : "flex-1 overflow-y-auto overflow-x-hidden"
         )}
       >
         {loadingHistory ? (
@@ -152,7 +168,12 @@ export function ChatView({
             <Loader2 className="h-5 w-5 animate-spin" />
           </div>
         ) : messages.length > 0 ? (
-          <ChatMessages messages={messages} isStreaming={isStreaming} />
+          <ChatMessages
+            messages={messages}
+            isStreaming={isStreaming}
+            agentAvatarUrl={avatarUrl}
+            userInitial={userInitial}
+          />
         ) : (
           <div className="flex flex-col items-center gap-2 text-center">
             <h1 className="text-[26px] font-semibold tracking-tight text-foreground sm:text-[30px]">
@@ -179,7 +200,23 @@ export function ChatView({
           <div className="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-gradient-to-t from-background to-transparent" />
         )}
         <div className={cn("mx-auto w-full", showWelcome ? "max-w-2xl" : "max-w-3xl")} aria-live="polite">
-          {error && <p className="mb-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</p>}
+          {error &&
+            (isOutOfCreditsError(error) ? (
+              <div className="mb-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2.5 text-xs text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+                <p className="font-semibold">Your agent is out of AI credits.</p>
+                <p className="mt-0.5">
+                  Add credits and this conversation picks up right where you left off.
+                </p>
+                <Link
+                  href="/dashboard/credits"
+                  className="mt-1.5 inline-block font-semibold underline underline-offset-2"
+                >
+                  Add credits
+                </Link>
+              </div>
+            ) : (
+              <p className="mb-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</p>
+            ))}
         </div>
         <ChatComposer
           agentId={agentId}

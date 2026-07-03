@@ -143,6 +143,21 @@ async function handleCheckoutCompleted(db: DB, session: Stripe.Checkout.Session)
     if (entErr) throw new Error(`entitlement upsert failed: ${entErr.message}`);
   }
 
+  // Capture the card saved with the hosting subscription so credits auto-recharge can
+  // charge it off-session later. Best-effort: without it, auto-recharge just stays
+  // unavailable until the student re-saves a card in the billing portal.
+  if (entEmail && subscriptionId) {
+    try {
+      const sub = await getStripe().subscriptions.retrieve(subscriptionId);
+      const pm = idOf(sub.default_payment_method as string | { id: string } | null);
+      if (pm) {
+        await db.from("entitlements").update({ stripe_payment_method_id: pm }).eq("email", entEmail);
+      }
+    } catch (err) {
+      console.error("[stripe webhook] payment method capture failed", err);
+    }
+  }
+
   // For freshly-auto-created accounts, ship a magic-link sign-in email. Best-effort —
   // the entitlement is already active and the student could sign in normally (password
   // reset) if delivery hiccups.
@@ -169,6 +184,11 @@ async function handleCheckoutCompleted(db: DB, session: Stripe.Checkout.Session)
     }
   }
 
+  // Referral reward: the friend already got their discount at checkout; credit the
+  // referrer one hosting month. Throws on transient failures so Stripe retries —
+  // the referrals row (unique per session) makes retries single-credit.
+  await rewardReferrer(db, session, entEmail);
+
   // Best-effort post-payment notification — never let it fail the webhook.
   if (orderRow) {
     try {
@@ -177,6 +197,63 @@ async function handleCheckoutCompleted(db: DB, session: Stripe.Checkout.Session)
       console.error("[stripe webhook] notify failed", err);
     }
   }
+}
+
+// Credit the referrer $25 (one hosting month) on a completed referred signup. Stacking
+// is deliberate and uncapped: each referral is its own Stripe customer-balance credit,
+// and balances roll into future invoices automatically.
+async function rewardReferrer(db: DB, session: Stripe.Checkout.Session, referredEmail: string) {
+  const code = session.metadata?.referral_code;
+  const referrerUserId = session.metadata?.referrer_user_id;
+  if (!code || !referrerUserId) return;
+
+  // Claim the reward slot for this session. A webhook retry that already rewarded
+  // short-circuits on the existing row's status.
+  await db
+    .from("referrals")
+    .upsert(
+      [
+        {
+          code,
+          referrer_user_id: referrerUserId,
+          referred_email: referredEmail || "(unknown)",
+          stripe_session_id: session.id,
+        },
+      ],
+      { onConflict: "stripe_session_id", ignoreDuplicates: true }
+    );
+  const { data: row } = await db
+    .from("referrals")
+    .select("id, status")
+    .eq("stripe_session_id", session.id)
+    .maybeSingle();
+  if (!row || row.status === "rewarded") return;
+
+  // Find the referrer's Stripe customer through their entitlement (email-keyed).
+  const { data: userRes } = await db.auth.admin.getUserById(referrerUserId);
+  const referrerEmail = (userRes?.user?.email ?? "").toLowerCase();
+  const { data: ent } = referrerEmail
+    ? await db.from("entitlements").select("stripe_customer_id").eq("email", referrerEmail).maybeSingle()
+    : { data: null };
+  const customerId = (ent?.stripe_customer_id as string | null) ?? null;
+
+  if (!customerId) {
+    // Comped/allowlist referrer with no Stripe billing: nothing to credit against.
+    // Mark it so the card still counts the signup; don't retry forever.
+    await db.from("referrals").update({ status: "no_customer" }).eq("id", row.id);
+    return;
+  }
+
+  // Negative amount = credit toward the customer's next invoice(s).
+  await getStripe().customers.createBalanceTransaction(customerId, {
+    amount: -2500,
+    currency: "usd",
+    description: "Referral reward: a friend joined The College Agent",
+  });
+  await db
+    .from("referrals")
+    .update({ status: "rewarded", rewarded_at: new Date().toISOString() })
+    .eq("id", row.id);
 }
 
 // Settle an AI-credits top-up: push the credit onto the student's box budget, then mark
@@ -196,29 +273,46 @@ async function handleCreditsTopup(db: DB, session: Stripe.Checkout.Session) {
 
   if (agentId && amountCents > 0) {
     try {
-      // 1 cent = 10,000 micros.
-      await agent37.setBudget(agentId, { topup_micros: amountCents * 10_000 });
+      // 1 cent = 10,000 micros. The ledger row id (or checkout session tail) is the
+      // idempotency key, so redelivered webhooks can never double-credit.
+      await agent37.topUpBudget(
+        agentId,
+        amountCents * 10_000,
+        tx ? (tx.id as string) : session.id.slice(-64)
+      );
     } catch (err) {
+      // Record WHY on the ledger row either way — failures must be diagnosable from the
+      // database, not just from function logs.
+      const reason =
+        err instanceof Agent37Error
+          ? `agent37 ${err.status} ${err.code}: ${err.message}`.slice(0, 500)
+          : String((err as Error)?.message ?? err).slice(0, 500);
+      if (tx) {
+        await db
+          .from("wallet_transactions")
+          .update({ failure_reason: reason, stripe_payment_intent_id: idOf(session.payment_intent) })
+          .eq("id", tx.id);
+      }
       // Box gone (agent deleted between checkout and webhook): settle the row as failed so
       // support can refund, instead of leaving Stripe retrying forever.
       if (err instanceof Agent37Error && err.status === 404) {
         console.error("[stripe webhook] credits topup: agent gone", agentId, session.id);
-        if (tx) {
-          await db
-            .from("wallet_transactions")
-            .update({ status: "failed", stripe_payment_intent_id: idOf(session.payment_intent) })
-            .eq("id", tx.id);
-        }
+        if (tx) await db.from("wallet_transactions").update({ status: "failed" }).eq("id", tx.id);
         return;
       }
-      throw err; // transient — 500 so Stripe retries the delivery
+      console.error("[stripe webhook] credits topup: budget call failed", agentId, session.id, reason);
+      throw err; // 500 so Stripe retries the delivery (row keeps the recorded reason)
     }
   }
 
   if (tx) {
     await db
       .from("wallet_transactions")
-      .update({ status: "succeeded", stripe_payment_intent_id: idOf(session.payment_intent) })
+      .update({
+        status: "succeeded",
+        stripe_payment_intent_id: idOf(session.payment_intent),
+        failure_reason: null,
+      })
       .eq("id", tx.id);
   }
 }

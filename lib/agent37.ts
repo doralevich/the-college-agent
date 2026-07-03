@@ -52,6 +52,12 @@ async function parseAgent37<T>(res: Response, augment402 = false): Promise<T> {
       // Almost always an unfunded wallet at create/start time — point the operator at billing.
       message = `${message} (Agent37 payment required: fund your wallet under Cloud → Billing in the dashboard, then retry.)`;
     }
+    if (res.status === 405) {
+      // Surface which verbs the endpoint DOES accept — this is diagnosis gold when the
+      // write contract is undocumented.
+      const allow = res.headers.get("allow");
+      if (allow) message = `${message} (allow: ${allow})`;
+    }
     throw new Agent37Error(res.status, err.code || "error", message);
   }
 
@@ -159,10 +165,35 @@ export const agent37 = {
     ),
 
   getBudget: (id: string) => call<Budget>(`/instances/${id}/budget`),
-  // Operator-adjustable cap / top-up (College Agent addition). Verified live in Phase 8;
-  // if the endpoint is unsupported, the budget route surfaces the Agent37Error.
-  setBudget: (id: string, body: { monthly_cap_micros?: number; topup_micros?: number }) =>
-    call<Budget>(`/instances/${id}/budget`, { method: "POST", body: JSON.stringify(body) }),
+  // Adjust the monthly cap on an instance budget. (Verb undocumented; PATCH with PUT
+  // fallback — top-ups have their own action endpoint below and must NOT go through here.)
+  setBudget: async (id: string, body: { monthly_cap_micros?: number }) => {
+    let lastErr: unknown = new Agent37Error(500, "error", "setBudget: no attempt made");
+    for (const method of ["PATCH", "PUT"]) {
+      try {
+        return await call<Budget>(`/instances/${id}/budget`, { method, body: JSON.stringify(body) });
+      } catch (err) {
+        lastErr = err;
+        if (err instanceof Agent37Error && err.status === 405) continue;
+        throw err;
+      }
+    }
+    throw lastErr;
+  },
+  // Add one-time headroom (credits) to an instance budget:
+  //   POST /v1/instances/{id}/budget/top-up  { amount_micros, idempotency_key }
+  // (docs: agents-api/budgets#add-one-time-headroom — note the HYPHEN in top-up).
+  // Repeating a request with the same idempotency key returns the current budget without
+  // adding again, so webhook retries and cron sweeps can never double-credit. Callers pass
+  // a stable key (the ledger row id / payment intent id).
+  topUpBudget: (id: string, amountMicros: number, idempotencyKey?: string) =>
+    call<Budget>(`/instances/${id}/budget/top-up`, {
+      method: "POST",
+      body: JSON.stringify({
+        amount_micros: Math.round(amountMicros),
+        ...(idempotencyKey ? { idempotency_key: idempotencyKey.slice(0, 64) } : {}),
+      }),
+    }),
   getUsage: (id: string, month?: string) =>
     call<Usage>(`/instances/${id}/usage${month ? `?month=${encodeURIComponent(month)}` : ""}`),
 

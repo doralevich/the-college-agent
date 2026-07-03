@@ -65,6 +65,18 @@ export async function POST(req: NextRequest) {
     // Tie to the logged-in student (if any) so the dashboard checklist sees completion.
     const userId = await getOptionalUserId();
 
+    // Re-submits (the "edit intake" flow) usually don't carry a new avatar or resume —
+    // keep the stored files rather than nulling them out.
+    if (userId && (!resumeUrl || !avatarUrl)) {
+      const { data: existing } = await supabase
+        .from("onboard_submissions")
+        .select("resume_url, avatar_url")
+        .eq("user_id", userId)
+        .maybeSingle();
+      resumeUrl = resumeUrl || ((existing?.resume_url as string | undefined) ?? null);
+      avatarUrl = avatarUrl || ((existing?.avatar_url as string | undefined) ?? null);
+    }
+
     // Upsert on user_id: one row per signed-in student, so re-onboarding overwrites the
     // existing answers instead of stacking a new row. Anonymous submits (user_id null)
     // don't conflict and just insert.

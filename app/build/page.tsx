@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import BuildNav from "../components/BuildNav";
+import ChatBot from "../components/ChatBot";
 import {
   INTRO_CUTOFF_LABEL,
   INTRO_PLAN_AMOUNT_CENTS,
@@ -47,6 +48,22 @@ export default function BuildPage() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Checkout requires an explicit Terms acceptance — the API refuses sessions
+  // without it, and the acceptance timestamp rides the Stripe metadata.
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  // Referral code from ?ref=... — kept in localStorage so it survives the multi-step
+  // flow and a canceled-checkout round trip. Applied server-side at checkout.
+  const [ref, setRef] = useState<string>("");
+
+  useEffect(() => {
+    const fromUrl = new URLSearchParams(window.location.search).get("ref")?.trim() ?? "";
+    if (fromUrl) {
+      localStorage.setItem("ca-ref", fromUrl);
+      setRef(fromUrl);
+    } else {
+      setRef(localStorage.getItem("ca-ref") ?? "");
+    }
+  }, []);
 
   // The HTML snippet pulls Inter + IBM Plex Mono from Google Fonts. App Router
   // client components can't render <link> into <head>, so inject once on mount
@@ -98,6 +115,7 @@ export default function BuildPage() {
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(info.schoolEmail.trim())) return "Enter a valid school email.";
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(info.personalEmail.trim())) return "Enter a valid personal email.";
     if (!info.mobile.trim()) return "Phone number is required.";
+    if (!agreeTerms) return "Please agree to the Terms & Conditions to continue.";
     return null;
   }
 
@@ -133,6 +151,8 @@ export default function BuildPage() {
           email: info.schoolEmail.trim(),
           firstName: info.firstName.trim(),
           lastName: info.lastName.trim(),
+          termsAccepted: agreeTerms,
+          ...(ref ? { ref } : {}),
         }),
       });
       const body = await res.json().catch(() => ({}));
@@ -186,7 +206,7 @@ export default function BuildPage() {
 
                 <div className="ca-welcome-cta-wrap">
                   <button type="button" className="ca-cta" onClick={continueToPlan}>
-                    See pricing
+                    Let&apos;s get started
                   </button>
                   <p className="ca-trust">One plan. Everything included.</p>
                 </div>
@@ -224,6 +244,11 @@ export default function BuildPage() {
                   <p className="ca-savenote">
                     Plus {hostingPrice}/month for cloud hosting. Cancel hosting any time.
                   </p>
+                  {ref && (
+                    <p className="ca-savenote" style={{ color: "var(--ca-green)", fontWeight: 600 }}>
+                      Referral applied: your first month of hosting is free.
+                    </p>
+                  )}
 
                   <ul className="ca-features">
                     <li><span className="ca-check"><CheckIcon /></span>Your own AI Agent, built and set up for you</li>
@@ -231,10 +256,11 @@ export default function BuildPage() {
                     <li><span className="ca-check"><CheckIcon /></span>Works on the web and Telegram, any device</li>
                     <li><span className="ca-check"><CheckIcon /></span>Connect your calendar, email, Canvas, and more</li>
                     <li><span className="ca-check"><CheckIcon /></span>Cancel anytime, pause over summer</li>
+                    <li><span className="ca-check"><CheckIcon /></span>7-day money-back guarantee</li>
                   </ul>
 
                   <button type="button" className="ca-cta" onClick={continueToInfo}>
-                    Get started
+                    Let&apos;s do it!
                   </button>
 
                   <p className="ca-trust">Secure checkout by Stripe</p>
@@ -331,13 +357,28 @@ export default function BuildPage() {
                     </span>
                   </div>
 
+                  <label className="ca-terms">
+                    <input
+                      type="checkbox"
+                      checked={agreeTerms}
+                      onChange={(e) => setAgreeTerms(e.target.checked)}
+                      required
+                    />
+                    <span>
+                      I agree to the{" "}
+                      <a href="/terms" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions</a>,
+                      including the 7-day refund policy, and the{" "}
+                      <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
+                    </span>
+                  </label>
+
                   {error && <p className="ca-error" role="alert">{error}</p>}
 
-                  <button type="submit" className="ca-cta" disabled={loading} aria-busy={loading}>
+                  <button type="submit" className="ca-cta" disabled={loading || !agreeTerms} aria-busy={loading}>
                     {loading ? "Loading..." : "Continue to payment"}
                   </button>
 
-                  <p className="ca-trust">Secure checkout by Stripe</p>
+                  <p className="ca-trust">Secure checkout by Stripe &middot; 7-day money-back guarantee</p>
                 </form>
               </>
             )}
@@ -361,6 +402,9 @@ export default function BuildPage() {
           &copy; 2025 The College Agent. All rights reserved. &nbsp;&middot;&nbsp; thecollegeagent.ai
         </p>
       </footer>
+
+      {/* Checkout questions happen right here — keep the Help Me widget in reach. */}
+      <ChatBot />
 
       <style>{`
         .ca-checkout {
@@ -688,6 +732,30 @@ export default function BuildPage() {
           color: var(--ca-muted);
           text-align: center;
           margin: 16px 0 0;
+        }
+
+        .ca-terms {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          font-size: 13px;
+          line-height: 1.55;
+          color: var(--ca-body);
+          margin: 2px 0 4px;
+          cursor: pointer;
+        }
+        .ca-terms input {
+          flex: 0 0 auto;
+          width: 17px;
+          height: 17px;
+          margin-top: 2px;
+          accent-color: var(--ca-green);
+          cursor: pointer;
+        }
+        .ca-terms a {
+          color: var(--ca-green);
+          font-weight: 600;
+          text-decoration: underline;
         }
 
         .ca-apinote {

@@ -13,7 +13,8 @@ export const GET = route(async () => {
   const { supabase, user } = await requireUser();
   const db = createAdminClient();
 
-  const [setupRes, msRes, txRes] = await Promise.all([
+  const email = (user.email ?? "").toLowerCase();
+  const [setupRes, msRes, txRes, entRes] = await Promise.all([
     db.from("setup_submissions").select("anthropic_key, openai_key").eq("user_id", user.id).maybeSingle(),
     db.from("memberships").select("workspace_id").eq("user_id", user.id).limit(1),
     // RLS-scoped read — the self-select policy limits this to the caller's own rows.
@@ -22,6 +23,13 @@ export const GET = route(async () => {
       .select("id, amount_cents, type, status, created_at")
       .order("created_at", { ascending: false })
       .limit(12),
+    email
+      ? db
+          .from("entitlements")
+          .select("auto_recharge_enabled, auto_recharge_threshold_cents, auto_recharge_amount_cents, alert_threshold_cents")
+          .eq("email", email)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
 
   const setup = setupRes.data as { anthropic_key: string | null; openai_key: string | null } | null;
@@ -51,21 +59,48 @@ export const GET = route(async () => {
   } | null = null;
 
   if (agentId && !byo) {
-    try {
-      const [budget, usage] = await Promise.all([agent37.getBudget(agentId), agent37.getUsage(agentId)]);
+    // Fetched separately on purpose: a usage read failing (fresh agent with no usage
+    // rows yet, legacy budget shapes) must not blank the balance too — that's how the
+    // Credits tab ends up showing a bare dash. Budget is the balance; usage is garnish.
+    const [budgetRes, usageRes] = await Promise.allSettled([
+      agent37.getBudget(agentId),
+      agent37.getUsage(agentId),
+    ]);
+    if (budgetRes.status === "fulfilled") {
+      const budget = budgetRes.value;
+      const usage = usageRes.status === "fulfilled" ? usageRes.value : null;
       credits = {
         // Spendable now: what's left of the monthly floor plus remaining top-up credits.
-        remaining_micros: budget.monthly_remaining_micros + budget.topup_remaining_micros,
-        spent_micros: usage.total_micros,
-        llm_micros: usage.by_integration.llm.cost_micros,
-        search_micros: usage.by_integration.brave.cost_micros,
-        tools_micros: usage.by_integration.composio.cost_micros,
+        // Legacy (pre-credits) budgets can miss fields — default each leg to 0 rather
+        // than let a single undefined turn the whole balance into NaN.
+        remaining_micros: (budget.monthly_remaining_micros ?? 0) + (budget.topup_remaining_micros ?? 0),
+        spent_micros: usage?.total_micros ?? 0,
+        llm_micros: usage?.by_integration?.llm?.cost_micros ?? 0,
+        search_micros: usage?.by_integration?.brave?.cost_micros ?? 0,
+        tools_micros: usage?.by_integration?.composio?.cost_micros ?? 0,
       };
-    } catch (e) {
-      // Balance is a nice-to-have on this screen; don't fail the whole payload over it.
-      console.error("[billing:credits]", agentId, e);
+    } else {
+      console.error("[billing:credits] budget", agentId, budgetRes.reason);
+    }
+    if (usageRes.status === "rejected") {
+      console.error("[billing:credits] usage", agentId, usageRes.reason);
     }
   }
 
-  return json({ byo, credits, transactions: txRes.data ?? [] });
+  const ent = entRes.data as {
+    auto_recharge_enabled: boolean;
+    auto_recharge_threshold_cents: number;
+    auto_recharge_amount_cents: number;
+    alert_threshold_cents: number | null;
+  } | null;
+  const autoRecharge = ent
+    ? {
+        enabled: ent.auto_recharge_enabled,
+        threshold_cents: ent.auto_recharge_threshold_cents,
+        amount_cents: ent.auto_recharge_amount_cents,
+      }
+    : null;
+  const alerts = ent ? { threshold_cents: ent.alert_threshold_cents ?? 500 } : null;
+
+  return json({ byo, credits, transactions: txRes.data ?? [], autoRecharge, alerts });
 });

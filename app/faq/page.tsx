@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Nav from "../components/Nav";
+import { Footer } from "../components/Footer";
 
 export const metadata: Metadata = {
   title: "FAQ — The College Agent",
@@ -293,6 +294,8 @@ export default function FAQPage() {
           </div>
         </div>
       </main>
+
+      <Footer />
 
       <style>{`
         .faq-body p { font-size: 15px; line-height: 1.8; color: rgba(11,23,41,.7); margin-bottom: 14px; }

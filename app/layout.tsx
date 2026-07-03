@@ -40,6 +40,12 @@ export const metadata: Metadata = {
   ],
   applicationName: "The College Agent",
   category: "Education",
+  // Home-screen installs on iOS: real app title and no Safari chrome when launched.
+  appleWebApp: {
+    capable: true,
+    title: "College Agent",
+    statusBarStyle: "default",
+  },
   metadataBase: new URL("https://thecollegeagent.ai"),
   verification: {
     google: "5fRSMFjZatwPejPvw4h30ZVsT0ZbPagGU39YXJUVjn8",
@@ -82,7 +88,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${ibmPlexMono.variable}`}>
+    // suppressHydrationWarning: next-themes sets the theme class on <html> before
+    // hydration (authed surface only), which React would otherwise flag as a mismatch.
+    <html lang="en" className={`${inter.variable} ${ibmPlexMono.variable}`} suppressHydrationWarning>
       <body>
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-3KS91J2QK3"
