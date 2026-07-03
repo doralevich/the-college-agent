@@ -4,16 +4,14 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { AgentsView } from "@/components/AgentsView";
 import { BillingView } from "@/components/BillingView";
-import { CreditsView } from "@/components/CreditsView";
 import { SettingsView } from "@/components/SettingsView";
 
-// Settings hosts the surfaces that used to be their own sidebar tabs: the workspace
-// settings (General), Your Agent, Subscription (plan + hosting + invoices), and Usage
-// Credits (AI credits + top-ups). The sidebar links only to Settings; deep links to
-// /dashboard/billing, /dashboard/credits, and /dashboard/agent still work because
-// DashboardClient maps those routes to the matching initialSection here.
+// Settings hosts the workspace settings (General), Your Agent, and Subscription
+// (plan + hosting + invoices). Usage Credits graduated to its own sidebar tab
+// (/dashboard/credits); deep links to /dashboard/billing and /dashboard/agent still
+// work because DashboardClient maps those routes to the matching initialSection here.
 
-export type SettingsSection = "general" | "agent" | "subscription" | "credits";
+export type SettingsSection = "general" | "agent" | "subscription";
 
 export function SettingsHub({
   initialSection = "general",
@@ -34,7 +32,6 @@ export function SettingsHub({
     { id: "general", label: "General", show: true },
     { id: "agent", label: "Your Agent", show: hasAgent },
     { id: "subscription", label: "Subscription", show: paid },
-    { id: "credits", label: "Usage Credits", show: hasAgent },
   ];
   const visible = sections.filter((s) => s.show);
   // If the requested section isn't available (e.g. billing before paying), fall back.
@@ -45,13 +42,13 @@ export function SettingsHub({
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
         <p className="text-sm text-muted-foreground">
-          Your workspace, your agent, your subscription, and your credits.
+          Your workspace, your agent, and your subscription.
         </p>
       </div>
 
       {visible.length > 1 && (
-        // Four labels don't fit one pill row on a phone (they used to wrap mid-pill) —
-        // mobile gets a tidy 2x2 grid, sm+ keeps the iOS-style segmented row.
+        // Long labels don't fit one pill row on a phone (they used to wrap mid-pill) —
+        // mobile gets a tidy grid, sm+ keeps the iOS-style segmented row.
         <div className="grid grid-cols-2 gap-1 rounded-2xl bg-secondary p-1 sm:inline-flex sm:rounded-full">
           {visible.map((s) => (
             <button
@@ -75,8 +72,6 @@ export function SettingsHub({
         <AgentsView firstName={firstName} onOpenChat={onOpenChat} />
       ) : active === "subscription" && paid ? (
         <BillingView />
-      ) : active === "credits" && hasAgent ? (
-        <CreditsView />
       ) : (
         <SettingsView />
       )}
