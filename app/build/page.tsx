@@ -186,7 +186,7 @@ export default function BuildPage() {
 
                 <div className="ca-welcome-cta-wrap">
                   <button type="button" className="ca-cta" onClick={continueToPlan}>
-                    See pricing
+                    Let&apos;s get started
                   </button>
                   <p className="ca-trust">One plan. Everything included.</p>
                 </div>
@@ -234,7 +234,7 @@ export default function BuildPage() {
                   </ul>
 
                   <button type="button" className="ca-cta" onClick={continueToInfo}>
-                    Get started
+                    Let&apos;s do it!
                   </button>
 
                   <p className="ca-trust">Secure checkout by Stripe</p>

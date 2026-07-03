@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Compass } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { dashboardPath } from "@/lib/dashboard-tabs";
 
@@ -65,20 +66,40 @@ const STEPS: Step[] = [
   },
 ];
 
-export function NowWhatView({ onOpenChat }: { onOpenChat: () => void }) {
+export function NowWhatView({
+  onOpenChat,
+  avatarUrl,
+}: {
+  onOpenChat: () => void;
+  // The agent's intake avatar; it sits to the right of the welcome bubble as the
+  // "speaker" of this page. Default mascot when the student didn't pick one.
+  avatarUrl?: string | null;
+}) {
   return (
     <div className="mx-auto max-w-3xl space-y-8">
       <div>
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Compass className="h-5 w-5" />
+        <h1 className="text-3xl font-semibold tracking-tight">Now what?</h1>
+        <div className="mt-4 flex items-start gap-3">
+          <div className="relative min-w-0 flex-1 rounded-2xl rounded-tr-md bg-secondary/60 px-4 py-3.5 text-sm leading-relaxed text-foreground/90">
+            Welcome. Now that you have your agent, what do I do? Here are the first moves. You can
+            copy any example straight into Chat, or say it your own way.
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight">Now what?</h1>
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-background sm:h-14 sm:w-14">
+            {avatarUrl ? (
+              // Storage URLs aren't in next/image's remote list — plain img, as elsewhere.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <Image
+                src="/thecollegeagent.png"
+                alt=""
+                width={56}
+                height={56}
+                className="h-full w-full object-contain p-1"
+              />
+            )}
+          </span>
         </div>
-        <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
-          Welcome. Now that you have your agent, what do I do? Here are the first moves. You can
-          copy any example straight into Chat, or say it your own way.
-        </p>
       </div>
 
       <ol className="space-y-3">
