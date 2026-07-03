@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Check, Loader2, Plus, Search, Send, X } from "lucide-react";
 import majorsData from "@/data/college-agent-majors.json";
+import ChatBot from "@/app/components/ChatBot";
 
 // Conversational replacement for /onboard. Frankenstein asks one question at a time;
 // the student answers with text or chip-picks. Each answer is persisted to
@@ -27,10 +28,14 @@ const T = {
   line: "var(--ca-line)",
 };
 
-// Agent-name suggestions (spec: "Aggie · Sage · Frankie · Surprise me"). Surprise me
-// draws from the wider pool so repeat taps keep producing fresh options.
-const NAME_SUGGESTIONS = ["Aggie", "Sage", "Frankie"];
-const SURPRISE_NAMES = ["Iris", "Atlas", "Juno", "Milo", "Scout", "Pepper", "Nova", "Ace", "Willow", "Ziggy"];
+// Agent-name suggestions: three strong starters as chips, and "Surprise me" draws from
+// the wider pool so repeat taps keep producing fresh options.
+const NAME_SUGGESTIONS = ["Ivy", "Max", "Luna"];
+const SURPRISE_NAMES = [
+  "Ace", "Atlas", "Blaze", "Chip", "Dash", "Duke", "Echo", "Ember", "Finn", "Indy",
+  "Jett", "Koda", "Leo", "Nico", "Nova", "Ozzy", "Phoenix", "Rex", "Rocket", "Rory",
+  "Scout", "Sunny", "Theo", "Turbo", "Ziggy", "Zoe",
+];
 
 // The 20 brand avatar presets (public/avatars, sliced from David's board). Picking one is
 // converted to a File and rides the exact same upload path as a custom image.
@@ -563,10 +568,15 @@ export function ConversationalOnboard({
   userId,
   knownFirstName,
   prefill,
+  onSaveExit,
 }: {
   userId: string;
   knownFirstName?: string | null;
   prefill?: OnboardPrefill | null;
+  // "Save and continue later": progress already persists on every change, so this is
+  // just the exit. Hosts that embed the wizard (Checklist edit) pass their own way out;
+  // without one the wizard shows its internal "saved, see you soon" pane.
+  onSaveExit?: () => void;
 }) {
   const router = useRouter();
   const storageKey = `ca-onboard-progress:${userId}`;
@@ -605,6 +615,8 @@ export function ConversationalOnboard({
   // "That's it" completion pane with the Open chat CTA (per the onboarding spec),
   // not a silent bounce into the dashboard.
   const [completed, setCompleted] = useState(false);
+  // "Save and continue later" landing pane (only when the host gave us no exit).
+  const [paused, setPaused] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Files don't serialize cleanly to localStorage, so avatar lives in component state
   // only — students who refresh mid-flow keep their text answers but re-pick the image.
@@ -896,7 +908,7 @@ export function ConversationalOnboard({
       {/* Welcome header above the wizard card — first page only. Once the student moves
           past the intro it disappears, so every later question sits higher on the screen. */}
       {stepIdx === 0 && !completed && (
-      <div className="ca-onboard-header" style={{ width: "100%", maxWidth: 620, textAlign: "center", marginBottom: 24 }}>
+      <div className="ca-onboard-header" style={{ width: "100%", maxWidth: 620, textAlign: "center", marginBottom: 18 }}>
         <div
           style={{
             display: "inline-flex",
@@ -951,7 +963,7 @@ export function ConversationalOnboard({
       >
         {/* Progress bar — a rounded pill inside the top padding so the card's
             corner radius never clips it. */}
-        <div className="ca-progress-wrap" style={{ padding: "24px 44px 0" }}>
+        <div className="ca-progress-wrap" style={{ padding: "18px 36px 0" }}>
           <div style={{ height: 8, background: T.greenSoft, borderRadius: 999, overflow: "hidden" }}>
             <div
               style={{
@@ -1033,12 +1045,80 @@ export function ConversationalOnboard({
               Open chat
             </button>
           </div>
+        ) : paused ? (
+          // The "Save and continue later" landing: reassure, and offer the way back in.
+          <div
+            className="ca-q-body"
+            style={{
+              padding: "40px 36px 44px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                width: 72,
+                height: 72,
+                borderRadius: "50%",
+                background: T.greenSoft,
+                overflow: "hidden",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 18,
+              }}
+            >
+              {avatarPreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={avatarPreview} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <Image src="/thecollegeagent.png" alt="" width={72} height={72} style={{ objectFit: "contain", width: "100%", height: "100%" }} />
+              )}
+            </div>
+            <h1
+              style={{
+                fontFamily: "'Fraunces', Georgia, serif",
+                fontSize: 28,
+                fontWeight: 600,
+                lineHeight: 1.2,
+                color: T.ink,
+                margin: "0 0 10px",
+              }}
+            >
+              Saved. See you soon!
+            </h1>
+            <p style={{ fontSize: 15, lineHeight: 1.6, color: T.inkSoft, maxWidth: 420, margin: "0 0 26px" }}>
+              Your answers are safe. Come back any time and you&apos;ll pick up right where you
+              left off.
+            </p>
+            <button
+              type="button"
+              className="ca-onboard-cta"
+              onClick={() => setPaused(false)}
+              style={{
+                border: "none",
+                cursor: "pointer",
+                fontFamily: "'DM Sans', system-ui, sans-serif",
+                fontSize: 15,
+                fontWeight: 600,
+                color: "#fff",
+                background: T.green,
+                padding: "13px 34px",
+                borderRadius: 10,
+                transition: "background .15s",
+              }}
+            >
+              Pick up where I left off
+            </button>
+          </div>
         ) : (
         <>
-        <div className="ca-q-body" style={{ padding: "28px 44px", minHeight: 320, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div className="ca-q-body" style={{ padding: "20px 36px", minHeight: 260, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           {/* Mascot + question header: side by side on desktop, a small icon stacked on
               top with the question full-width on phones (see the media block below). */}
-          <div className="ca-q-row" style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 26 }}>
+          <div className="ca-q-row" style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 18 }}>
             <div
               className="ca-q-mascot"
               style={{
@@ -1061,7 +1141,7 @@ export function ConversationalOnboard({
               )}
             </div>
             <div style={{ flex: 1, paddingTop: 2, minWidth: 0 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: T.inkSoft, letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 8 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: T.inkSoft, letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 5 }}>
                 Question {Math.min(stepIdx + 1, visibleSteps.length)} of {visibleSteps.length}
               </div>
               <h1
@@ -1121,9 +1201,10 @@ export function ConversationalOnboard({
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            padding: "16px 44px 20px",
+            padding: "12px 36px 14px",
             borderTop: `1px solid ${T.line}`,
             gap: 12,
+            flexWrap: "wrap",
           }}
         >
           <button
@@ -1147,41 +1228,68 @@ export function ConversationalOnboard({
             ← Back
           </button>
 
-          <button
-            type="button"
-            onClick={advance}
-            disabled={submitting || (isRequired(current) && !isAnswered(current))}
-            className="ca-onboard-cta"
-            style={{
-              border: "none",
-              cursor: submitting || (isRequired(current) && !isAnswered(current)) ? "not-allowed" : "pointer",
-              fontFamily: "'DM Sans', system-ui, sans-serif",
-              fontSize: 15,
-              fontWeight: 600,
-              color: "#fff",
-              background: T.green,
-              padding: "12px 28px",
-              borderRadius: 10,
-              opacity: submitting || (isRequired(current) && !isAnswered(current)) ? 0.55 : 1,
-              transition: "background .15s, opacity .15s",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              flexShrink: 0,
-            }}
-          >
-            {submitting
-              ? <Loader2 className="animate-spin" style={{ width: 14, height: 14 }} />
-              : ctaLabel(current, isLast, form)}
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+            <button
+              type="button"
+              onClick={() => (onSaveExit ? onSaveExit() : setPaused(true))}
+              disabled={submitting}
+              className="ca-onboard-back ca-save-later"
+              style={{
+                background: "transparent",
+                border: `1.5px solid ${T.line}`,
+                color: T.inkSoft,
+                fontFamily: "'DM Sans', system-ui, sans-serif",
+                fontSize: 13.5,
+                fontWeight: 600,
+                padding: "11px 16px",
+                borderRadius: 10,
+                cursor: submitting ? "not-allowed" : "pointer",
+                opacity: submitting ? 0.4 : 1,
+              }}
+            >
+              Save and continue later
+            </button>
+
+            <button
+              type="button"
+              onClick={advance}
+              disabled={submitting || (isRequired(current) && !isAnswered(current))}
+              className="ca-onboard-cta"
+              style={{
+                border: "none",
+                cursor: submitting || (isRequired(current) && !isAnswered(current)) ? "not-allowed" : "pointer",
+                fontFamily: "'DM Sans', system-ui, sans-serif",
+                fontSize: 15,
+                fontWeight: 600,
+                color: "#fff",
+                background: T.green,
+                padding: "12px 28px",
+                borderRadius: 10,
+                opacity: submitting || (isRequired(current) && !isAnswered(current)) ? 0.55 : 1,
+                transition: "background .15s, opacity .15s",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                flexShrink: 0,
+              }}
+            >
+              {submitting
+                ? <Loader2 className="animate-spin" style={{ width: 14, height: 14 }} />
+                : ctaLabel(current, isLast, form)}
+            </button>
+          </div>
         </div>
 
-        <div className="ca-q-hint" style={{ padding: "10px 44px 18px", textAlign: "center", fontSize: 12, color: T.inkSoft }}>
+        <div className="ca-q-hint" style={{ padding: "8px 36px 14px", textAlign: "center", fontSize: 12, color: T.inkSoft }}>
           Saves automatically. Close this tab and come back any time.
         </div>
         </>
         )}
       </div>
+
+      {/* Questions mid-intake happen ("do I need my syllabus now?") — keep the same
+          Help Me widget from the marketing site one tap away. */}
+      <ChatBot />
 
       <style>{`
         .ca-onboard-cta:hover:not(:disabled) { background: ${T.greenDeep}; }
@@ -1212,6 +1320,9 @@ export function ConversationalOnboard({
           .ca-q-mascot { width: 34px !important; height: 34px !important; margin: 0 auto 10px !important; }
           .ca-onboard-card h1.ca-q-prompt { font-size: 16px !important; line-height: 1.4 !important; }
           .ca-q-footer { padding-top: 10px !important; padding-bottom: 12px !important; }
+          .ca-q-footer .ca-onboard-back:first-child { padding: 9px 8px !important; }
+          .ca-save-later { padding: 9px 10px !important; font-size: 12px !important; }
+          .ca-q-footer .ca-onboard-cta { padding: 11px 16px !important; font-size: 14px !important; }
           .ca-q-hint { padding-top: 4px !important; padding-bottom: 10px !important; font-size: 11px !important; }
           /* 16px inputs on phones or iOS Safari zooms-and-pans the page on focus. */
           .ca-onboard-input { font-size: 16px !important; }
@@ -1428,9 +1539,11 @@ function Input({
           <button
             type="button"
             disabled={disabled}
-            onClick={() =>
-              setField("agentName", SURPRISE_NAMES[Math.floor(Math.random() * SURPRISE_NAMES.length)])
-            }
+            onClick={() => {
+              // Never deal the name already showing — every tap feels like a re-roll.
+              const pool = SURPRISE_NAMES.filter((n) => n !== value.trim());
+              setField("agentName", pool[Math.floor(Math.random() * pool.length)]);
+            }}
             style={chipStyle(false)}
           >
             Surprise me

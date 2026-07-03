@@ -127,6 +127,18 @@ export function CreditsView() {
               </div>
             </div>
 
+            {!data.credits && (
+              <div className="flex items-center justify-between gap-3 border-b p-4">
+                <p className="text-sm text-muted-foreground">
+                  We couldn&apos;t reach your agent&apos;s balance just now. It usually comes right
+                  back.
+                </p>
+                <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+                  Retry
+                </Button>
+              </div>
+            )}
+
             <div className="p-6">
               <div className="text-sm font-medium">Add credits</div>
               <div className="mt-3 flex flex-wrap gap-2">

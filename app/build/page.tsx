@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import BuildNav from "../components/BuildNav";
+import ChatBot from "../components/ChatBot";
 import {
   INTRO_CUTOFF_LABEL,
   INTRO_PLAN_AMOUNT_CENTS,
@@ -401,6 +402,9 @@ export default function BuildPage() {
           &copy; 2025 The College Agent. All rights reserved. &nbsp;&middot;&nbsp; thecollegeagent.ai
         </p>
       </footer>
+
+      {/* Checkout questions happen right here — keep the Help Me widget in reach. */}
+      <ChatBot />
 
       <style>{`
         .ca-checkout {
