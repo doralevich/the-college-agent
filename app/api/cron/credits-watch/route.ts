@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/client";
 import { sendCreditsLowEmail } from "@/lib/email/credits-low";
 import { sendTelegramMessage } from "@/lib/telegram";
+import { syncToMailchimp } from "@/lib/newsletter";
 
 // Hourly credits sweep (Vercel cron, see vercel.json), protected by CRON_SECRET — Vercel
 // sends it as `Authorization: Bearer <CRON_SECRET>` automatically. For every active,
@@ -67,7 +68,26 @@ export async function GET(req: Request) {
       console.error("[credits-watch]", ent.email, e);
     }
   }
-  return Response.json(summary);
+  // Newsletter stragglers: rows that missed their Mailchimp mirror (key not yet
+  // configured, Mailchimp blip) get retried here until they land.
+  let newsletterSynced = 0;
+  try {
+    const { data: pending } = await db
+      .from("newsletter_signups")
+      .select("email")
+      .eq("mailchimp_synced", false)
+      .limit(50);
+    for (const row of pending ?? []) {
+      if (await syncToMailchimp(row.email as string)) {
+        await db.from("newsletter_signups").update({ mailchimp_synced: true }).eq("email", row.email);
+        newsletterSynced++;
+      }
+    }
+  } catch (e) {
+    console.error("[credits-watch] newsletter resync", e);
+  }
+
+  return Response.json({ ...summary, newsletterSynced });
 }
 
 async function sweepOne(db: DB, ent: EntRow, summary: Record<string, number>) {
