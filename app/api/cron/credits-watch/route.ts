@@ -87,7 +87,38 @@ export async function GET(req: Request) {
     console.error("[credits-watch] newsletter resync", e);
   }
 
-  return Response.json({ ...summary, newsletterSynced });
+  // Lead stragglers, same deal: build-flow leads that missed their Mailchimp mirror
+  // (including every lead captured before the sync existed) retry here until both of
+  // their addresses land.
+  let leadsSynced = 0;
+  try {
+    const { data: pendingLeads } = await db
+      .from("leads")
+      .select("id, first_name, last_name, school_email, personal_email")
+      .eq("mailchimp_synced", false)
+      .limit(50);
+    for (const lead of pendingLeads ?? []) {
+      const member = {
+        firstName: lead.first_name as string | null,
+        lastName: lead.last_name as string | null,
+        tags: ["build-lead"],
+      };
+      const school = String(lead.school_email ?? "").trim().toLowerCase();
+      const personal = String(lead.personal_email ?? "").trim().toLowerCase();
+      const oks = await Promise.all([
+        school ? syncToMailchimp(school, member) : Promise.resolve(true),
+        personal ? syncToMailchimp(personal, member) : Promise.resolve(true),
+      ]);
+      if (oks.every(Boolean) && (school || personal)) {
+        await db.from("leads").update({ mailchimp_synced: true }).eq("id", lead.id);
+        leadsSynced++;
+      }
+    }
+  } catch (e) {
+    console.error("[credits-watch] leads resync", e);
+  }
+
+  return Response.json({ ...summary, newsletterSynced, leadsSynced });
 }
 
 async function sweepOne(db: DB, ent: EntRow, summary: Record<string, number>) {

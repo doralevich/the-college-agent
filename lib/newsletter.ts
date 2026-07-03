@@ -1,12 +1,20 @@
 import "server-only";
 import { createHash } from "crypto";
 
-// Mailchimp mirror for newsletter signups. Shared by /api/newsletter (on signup) and
-// the hourly cron (resync of rows that missed their sync, e.g. before the API key
-// landed in the environment). Returns false instead of throwing so callers can store
-// the address regardless and retry later.
+// Mailchimp mirror for every address the site captures: newsletter signups
+// (/api/newsletter), build-flow leads (/api/lead-capture), and the hourly cron's
+// resync of rows that missed their sync (e.g. before the API key landed in the
+// environment). Returns false instead of throwing so callers can store the address
+// regardless and retry later.
 
-export async function syncToMailchimp(email: string): Promise<boolean> {
+export type MailchimpMemberOpts = {
+  firstName?: string | null;
+  lastName?: string | null;
+  // Audience tags for this member; defaults to the footer-signup tag.
+  tags?: string[];
+};
+
+export async function syncToMailchimp(email: string, opts: MailchimpMemberOpts = {}): Promise<boolean> {
   const apiKey = process.env.MAILCHIMP_API_KEY;
   // Audience ids aren't secrets (they ride every embedded Mailchimp form), so the
   // production list is the default — the API key is the only required env var.
@@ -19,6 +27,12 @@ export async function syncToMailchimp(email: string): Promise<boolean> {
   if (!dc) return false;
   const memberId = createHash("md5").update(email).digest("hex");
 
+  // Only FNAME/LNAME — they exist in every Mailchimp audience; exotic merge fields
+  // can 400 the whole PUT.
+  const mergeFields: Record<string, string> = {};
+  if (opts.firstName?.trim()) mergeFields.FNAME = opts.firstName.trim();
+  if (opts.lastName?.trim()) mergeFields.LNAME = opts.lastName.trim();
+
   try {
     const res = await fetch(`https://${dc}.api.mailchimp.com/3.0/lists/${audienceId}/members/${memberId}`, {
       method: "PUT",
@@ -29,7 +43,8 @@ export async function syncToMailchimp(email: string): Promise<boolean> {
       body: JSON.stringify({
         email_address: email,
         status_if_new: "subscribed",
-        tags: ["website-footer"],
+        ...(Object.keys(mergeFields).length ? { merge_fields: mergeFields } : {}),
+        tags: opts.tags ?? ["website-footer"],
       }),
     });
     if (!res.ok) {
