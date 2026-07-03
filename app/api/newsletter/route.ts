@@ -26,7 +26,9 @@ export const POST = route(async (req) => {
 
 async function syncToMailchimp(email: string): Promise<boolean> {
   const apiKey = process.env.MAILCHIMP_API_KEY;
-  const audienceId = process.env.MAILCHIMP_AUDIENCE_ID;
+  // Audience ids aren't secrets (they ride every embedded Mailchimp form), so the
+  // production list is the default — the API key is the only required env var.
+  const audienceId = process.env.MAILCHIMP_AUDIENCE_ID || "4c48dcc075";
   if (!apiKey || !audienceId) return false;
 
   // Datacenter rides the key suffix ("...-us21"). Member id is the md5 of the
