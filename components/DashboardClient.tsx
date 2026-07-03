@@ -15,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SettingsHub } from "@/components/SettingsHub";
 import { ChecklistView } from "@/components/ChecklistView";
+import { CreditsView } from "@/components/CreditsView";
+import { ReferralCard } from "@/components/ReferralCard";
 import { ChatProvider, useChatContext } from "@/components/chat/ChatProvider";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { ChatView } from "@/components/chat/ChatView";
@@ -99,6 +101,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
           { id: "checklist" as DashboardTabId, label: "Checklist", icon: ListChecks, iconColor: "#14B8A6" },
           { id: "integrations" as DashboardTabId, label: "Integrations", icon: Blocks, iconColor: "#3B82F6" },
           { id: "shortcuts" as DashboardTabId, label: "Shortcuts", icon: Sparkles, iconColor: "#F59E0B" },
+          { id: "credits" as DashboardTabId, label: "Credits", icon: Coins, iconColor: "#EAB308" },
         ]
       : paid
         ? []
@@ -293,23 +296,32 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
         {!isChat && !isFiles && (
           <div className="h-full overflow-y-auto">
             <div className="mx-auto w-full max-w-6xl p-6 md:px-10 md:py-8">
-              {active === "settings" ||
-              (paid && (active === "billing" || active === "agent" || active === "agents")) ||
-              (hasAgent && active === "credits") ? (
-                // One hub for Settings + Your Agent + Subscription + Usage Credits. Keyed by
-                // route so deep links (/dashboard/billing, /dashboard/credits,
-                // /dashboard/agent) open on the right section even when the hub is already
-                // mounted on another one.
+              {hasAgent && active === "credits" ? (
+                // Credits is its own tab: balance, top-ups, auto-recharge, alerts, usage,
+                // and the referral program in one place.
+                <div className="mx-auto max-w-xl space-y-8">
+                  <div>
+                    <h1 className="text-2xl font-semibold tracking-tight">Credits</h1>
+                    <p className="text-sm text-muted-foreground">
+                      Fund your agent's AI usage and earn free months by sharing.
+                    </p>
+                  </div>
+                  <CreditsView />
+                  <ReferralCard />
+                </div>
+              ) : active === "settings" ||
+                (paid && (active === "billing" || active === "agent" || active === "agents")) ? (
+                // One hub for Settings + Your Agent + Subscription. Keyed by route so deep
+                // links (/dashboard/billing, /dashboard/agent) open on the right section
+                // even when the hub is already mounted on another one.
                 <SettingsHub
                   key={active}
                   initialSection={
                     active === "billing"
                       ? "subscription"
-                      : active === "credits"
-                        ? "credits"
-                        : active === "agent" || active === "agents"
-                          ? "agent"
-                          : "general"
+                      : active === "agent" || active === "agents"
+                        ? "agent"
+                        : "general"
                   }
                   hasAgent={hasAgent}
                   paid={paid}
