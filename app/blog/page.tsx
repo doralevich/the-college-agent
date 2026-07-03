@@ -5,6 +5,25 @@ import { categoryLabel, getCollegeAgentPosts } from "@/lib/sanity-blog";
 
 export const revalidate = 300;
 
+const blogSchema = {
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  "@id": "https://thecollegeagent.ai/blog",
+  name: "The College Agent Blog",
+  description:
+    "AI tips, study strategies, internship advice, and college life guides for students using The College Agent.",
+  url: "https://thecollegeagent.ai/blog",
+};
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://thecollegeagent.ai" },
+    { "@type": "ListItem", position: 2, name: "Blog", item: "https://thecollegeagent.ai/blog" },
+  ],
+};
+
 export const metadata: Metadata = {
   title: "College Agent Blog | AI Tips for College Students",
   description:
@@ -24,6 +43,14 @@ export default async function BlogPage() {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <Nav />
       <main>
         <section className="dark-section" style={{ padding: "118px 0 72px" }}>

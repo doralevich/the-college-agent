@@ -22,6 +22,15 @@ export const metadata: Metadata = {
   },
 };
 
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://thecollegeagent.ai" },
+    { "@type": "ListItem", position: 2, name: "For Parents", item: "https://thecollegeagent.ai/for-parents" },
+  ],
+};
+
 const BENEFITS = [
   {
     icon: CalendarDays,
@@ -58,6 +67,10 @@ const BENEFITS = [
 export default function ForParentsPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <Nav />
       <main style={{ paddingTop: 100, minHeight: "100vh" }}>
 
@@ -69,7 +82,7 @@ export default function ForParentsPage() {
               Give your student a four-year advantage.
             </h1>
             <p style={{ fontSize: "clamp(16px, 1.3vw, 18px)", lineHeight: 1.75, color: "rgba(255,255,255,.7)", maxWidth: 640, margin: "0 auto 36px" }}>
-              You&apos;re not buying another app. You&apos;re giving your student a personal AI companion that keeps them organized, accountable, and career-ready — from move-in day to graduation.
+              You&apos;re not buying another app. You&apos;re giving your student a personal AI companion for college students that keeps them organized, accountable, and career-ready — from move-in day to graduation.
             </p>
             <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
               <a href="/build" className="btn-green">Build Their Agent</a>
@@ -97,8 +110,41 @@ export default function ForParentsPage() {
           </div>
         </section>
 
-        {/* BENEFITS */}
+        {/* WHAT PARENTS WORRY ABOUT MOST */}
         <section style={{ background: "var(--cream2)", padding: "72px 0" }}>
+          <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "var(--green)", marginBottom: 14, display: "block" }}>Common Parent Concerns</span>
+            <h2 style={{ fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 800, color: "var(--navy)", marginBottom: 28, letterSpacing: "-.025em" }}>
+              What Parents Worry About Most — And What The Agent Solves
+            </h2>
+            {[
+              {
+                worry: "Will they miss important deadlines?",
+                answer: "The College Agent surfaces every deadline — assignment submissions, exam dates, internship application windows, registration dates — weeks in advance. Your student sees what&apos;s coming before it becomes urgent. Nothing falls through the cracks because there&apos;s always a system tracking it.",
+              },
+              {
+                worry: "Will they get internship experience before graduation?",
+                answer: "This is the biggest career-readiness gap, and it&apos;s exactly what The College Agent is built to close. Starting freshman year, the agent helps your student build awareness of their target industries, identify opportunities, and approach recruiting season junior year with a full pipeline already in motion — not starting from scratch.",
+              },
+              {
+                worry: "Will they know how to communicate professionally?",
+                answer: "College is where students learn to send professional emails, talk to professors, reach out to advisors, and network with recruiters. The College Agent drafts all of these messages in your student&apos;s voice — professional, polished, and appropriate. Over time, your student doesn&apos;t just send better emails; they internalize what good communication looks like.",
+              },
+              {
+                worry: "Is this just going to do their work for them?",
+                answer: "No. The College Agent manages logistics, surfaces information, and drafts communications — but it doesn&apos;t attend class, take exams, or write papers for your student. It handles the organizational infrastructure so your student can focus on learning, connecting, and performing. Think of it as a system that removes friction, not a substitute for effort.",
+              },
+            ].map(({ worry, answer }) => (
+              <div key={worry} style={{ marginBottom: 32, background: "#fff", borderRadius: 14, padding: "28px 32px", border: "1px solid rgba(11,23,41,.07)", boxShadow: "0 4px 16px rgba(11,23,41,.04)" }}>
+                <h3 style={{ fontSize: 17, fontWeight: 800, color: "var(--navy)", marginBottom: 12, letterSpacing: "-.01em" }}>{worry}</h3>
+                <p style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(11,23,41,.7)", margin: 0 }}>{answer}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* BENEFITS */}
+        <section style={{ background: "#fff", padding: "72px 0" }}>
           <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
             <div style={{ textAlign: "center", marginBottom: 48 }}>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "var(--green)", marginBottom: 14, display: "block" }}>What the Agent Does</span>
@@ -119,7 +165,7 @@ export default function ForParentsPage() {
         </section>
 
         {/* ROI */}
-        <section style={{ background: "#fff", padding: "72px 0" }}>
+        <section style={{ background: "var(--cream2)", padding: "72px 0" }}>
           <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
             <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "var(--green)", marginBottom: 14, display: "block" }}>The Investment</span>
             <h2 style={{ fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 800, color: "var(--navy)", marginBottom: 20, letterSpacing: "-.025em" }}>
@@ -129,14 +175,29 @@ export default function ForParentsPage() {
               You&apos;re already investing $50,000 to $250,000 in your student&apos;s college education. The College Agent is what makes sure that investment pays off — by keeping your student organized, career-focused, and building real experience every semester, not just surviving each one.
             </p>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
+              Consider what parents typically spend on academic support: a private tutor runs $80–$150 per session. SAT prep programs cost $1,000–$3,000. College counselors charge $3,000–$10,000 for the admissions process alone. The College Agent covers academic organization, communication coaching, internship tracking, and career planning — across all four years — for a fraction of those individual costs.
+            </p>
+            <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
               One internship landed. One professor relationship built. One job offer received because the student was actually prepared. That&apos;s the ROI. And The College Agent is working toward that outcome from day one.
             </p>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 32 }}>
               Many parents purchase the agent as a gift — for freshman move-in, a birthday, or any moment they want to give their student a real edge. See current plans at <a href="/build" style={{ color: "var(--green)", textDecoration: "underline" }}>thecollegeagent.ai/build</a>.
             </p>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-              <a href="/build" className="btn-green">View Plans & Pricing</a>
+              <a href="/build" className="btn-green">View Plans &amp; Pricing</a>
               <a href="/faq" className="btn-outline-dark">Read the FAQ</a>
+            </div>
+          </div>
+        </section>
+
+        {/* INTERNAL LINKS */}
+        <section style={{ background: "#fff", padding: "48px 0" }}>
+          <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--navy)", marginBottom: 20, letterSpacing: "-.02em" }}>Explore More</h2>
+            <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+              <a href="/for-students" style={{ fontSize: 14, color: "var(--green)", textDecoration: "underline", fontWeight: 600 }}>The Student View →</a>
+              <a href="/about" style={{ fontSize: 14, color: "var(--green)", textDecoration: "underline", fontWeight: 600 }}>About The College Agent →</a>
+              <a href="/faq" style={{ fontSize: 14, color: "var(--green)", textDecoration: "underline", fontWeight: 600 }}>Frequently Asked Questions →</a>
             </div>
           </div>
         </section>
@@ -144,9 +205,10 @@ export default function ForParentsPage() {
       </main>
 
       <style>{`
+        .dark-section { background: var(--navy, #0b1729); }
         .ben-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
         .ben-card {
-          background: #fff; border: 1px solid rgba(11,23,41,.07); border-radius: 16px;
+          background: var(--cream2, #f8f7f4); border: 1px solid rgba(11,23,41,.07); border-radius: 16px;
           padding: 28px; box-shadow: 0 8px 28px rgba(11,23,41,.04);
         }
         .ben-icon {
@@ -164,6 +226,14 @@ export default function ForParentsPage() {
           transition: filter .15s; border: none; cursor: pointer; text-decoration: none;
         }
         .btn-green:hover { filter: brightness(1.1); }
+        .btn-outline {
+          display: inline-flex; align-items: center; justify-content: center;
+          background: transparent; color: #fff; font-size: 13px; font-weight: 700;
+          letter-spacing: .08em; text-transform: uppercase; padding: 13px 30px;
+          border-radius: 4px; border: 1.5px solid rgba(255,255,255,.35);
+          transition: border-color .15s, background .15s; cursor: pointer; text-decoration: none;
+        }
+        .btn-outline:hover { border-color: #fff; background: rgba(255,255,255,.07); }
         .btn-outline-dark {
           display: inline-flex; align-items: center; justify-content: center;
           background: transparent; color: var(--navy); font-size: 13px; font-weight: 700;

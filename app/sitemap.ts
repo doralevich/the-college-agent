@@ -3,6 +3,8 @@ import { getCollegeAgentPosts } from "@/lib/sanity-blog";
 
 const baseUrl = "https://thecollegeagent.ai";
 
+// Static public routes — includes all 14 landing pages (7 original + 7 new SEO landing pages)
+// Blog post URLs are dynamically added below via Sanity fetch.
 const publicRoutes: { route: string; priority: number; changeFrequency: "weekly" | "monthly" }[] = [
   { route: "", priority: 1, changeFrequency: "weekly" },
   { route: "/about", priority: 0.8, changeFrequency: "monthly" },

@@ -169,13 +169,15 @@ export default function Home() {
               AI personal agent<br />for college<br />students.
             </h1>
             <p className="hero-sub" style={{ textAlign: "left" }}>
-              Your own student AI assistant. Named. Trained on your voice. Built around your schedule, classes,
-              notes, deadlines, study plans, professor emails, internships, and goals. Not ChatGPT. Yours.
+              The personal AI agent built for AI for college students — named, trained on your voice, and built around your schedule, classes, notes, deadlines, study plans, professor emails, internships, and goals across all 4 years of college. Not ChatGPT. Yours.
             </p>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 28 }}>
               <a href="/build" className="btn-purple">Build My Agent</a>
               <a href="#how-it-works" className="btn-outline">See How It Works</a>
             </div>
+            <p style={{ fontSize: 14, lineHeight: 1.7, color: "rgba(255,255,255,.5)", maxWidth: 520, marginBottom: 0 }}>
+              Used by college students across the U.S. to manage classes, study smarter, land internships, and build their career — from freshman orientation to senior capstone.
+            </p>
             <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.3)", letterSpacing: ".04em" }}>
               Built on Apollo[Claw] infrastructure. Live in 30 minutes.
             </p>

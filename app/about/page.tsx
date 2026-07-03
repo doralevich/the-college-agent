@@ -14,9 +14,22 @@ export const metadata: Metadata = {
   },
 };
 
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://thecollegeagent.ai" },
+    { "@type": "ListItem", position: 2, name: "About", item: "https://thecollegeagent.ai/about" },
+  ],
+};
+
 export default function AboutPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <Nav />
       <main style={{ paddingTop: 100, minHeight: "100vh", background: "var(--cream2)" }}>
         <div style={{ maxWidth: 760, margin: "0 auto", padding: "48px 24px 100px" }}>
@@ -25,7 +38,7 @@ export default function AboutPage() {
             AI Built for Your Entire College Journey
           </h1>
           <p className="lead-text">
-            College is one of the most important and overwhelming four-year stretches of a person&apos;s life. There are classes to manage, deadlines to hit, internships to land, connections to build, and a career to plan — all at once, with very little infrastructure to help you stay on top of it.
+            College is one of the most important and overwhelming four-year stretches of a person&apos;s life. There are classes to manage, deadlines to hit, internships to land, connections to build, and a career to plan — all at once, with very little infrastructure to help you stay on top of it. The College Agent is the personal AI for college students that finally solves this.
           </p>
 
           <Section title="Why The College Agent Exists">
@@ -35,6 +48,24 @@ export default function AboutPage() {
             <p>
               College students needed something different — an AI that grows with them, remembers what matters, and gets smarter with every semester. That&apos;s what The College Agent is.
             </p>
+          </Section>
+
+          <Section title="The Problem We Solve">
+            <p>
+              The real problem in college isn&apos;t intelligence — it&apos;s infrastructure. The students who struggle academically, miss internship deadlines, and graduate without direction aren&apos;t usually the ones who don&apos;t work hard. They&apos;re the ones who didn&apos;t have a system.
+            </p>
+            <p>
+              College removes the scaffolding of high school — no parent checking your homework, no teacher reminding you about tomorrow&apos;s test, no forced schedule keeping you on track — and replaces it with complete autonomy at exactly the moment when the stakes are highest. Most students are not prepared for that transition. No one teaches them how to manage a semester, build a professional network, or plan a four-year career arc starting freshman year.
+            </p>
+            <p>
+              The College Agent is the infrastructure students were never given. It manages the logistics — deadlines, study schedules, communication, internship pipelines — so students can focus their energy on learning, connecting, and building the things that actually matter for their future.
+            </p>
+            <ul>
+              <li><strong>The academic problem:</strong> Syllabi, deadlines, and study plans that actually keep students ahead instead of constantly catching up.</li>
+              <li><strong>The communication problem:</strong> Professional emails to professors, advisors, and recruiters drafted in the student&apos;s own voice.</li>
+              <li><strong>The career problem:</strong> Internship tracking, LinkedIn positioning, and networking support starting freshman year — not junior year when it&apos;s almost too late.</li>
+              <li><strong>The organization problem:</strong> A single system that connects all of it, so nothing important falls through the cracks.</li>
+            </ul>
           </Section>
 
           <Section title="What Makes It Different from Generic AI">
@@ -52,9 +83,15 @@ export default function AboutPage() {
             </ul>
           </Section>
 
-          <Section title="The 4-Year Vision">
+          <Section title="4 Years, One Agent: The Long-Game Vision">
             <p>
-              Most tools help you today. The College Agent is built for the long game.
+              Most tools help you today. The College Agent is built for the long game — all 4 years of college, with one personal AI agent growing alongside you.
+            </p>
+            <p>
+              The vision behind The College Agent is simple: what if a student arrived at college with the same kind of organized, proactive support that high-performing professionals have? What if they had a system that tracked their academic progress, surfaced opportunities before they passed, drafted communications on their behalf, and helped them build a career foundation from day one of freshman year?
+            </p>
+            <p>
+              That&apos;s not a luxury. That&apos;s what it takes to actually make the most of four years of college. The students who graduate with strong GPA, real internship experience, an active professional network, and a clear career direction didn&apos;t just get lucky. They had systems. Now every student can have that system.
             </p>
             <p>
               By <strong>sophomore year</strong>, your agent knows your academic patterns, your strongest subjects, and which professors you work best with. It&apos;s helping you plan the semesters ahead, not just the week in front of you.
@@ -82,7 +119,18 @@ export default function AboutPage() {
           <div style={{ marginTop: 48, display: "flex", gap: 16, flexWrap: "wrap" }}>
             <a href="/build" className="btn-purple">Build My Agent</a>
             <a href="/for-students" className="btn-outline-dark">For Students</a>
+            <a href="/for-parents" className="btn-outline-dark">For Parents</a>
             <a href="/blog" className="btn-outline-dark">Read the Blog</a>
+          </div>
+
+          {/* INTERNAL LINKS */}
+          <div style={{ marginTop: 48, paddingTop: 32, borderTop: "1px solid rgba(11,23,41,.1)" }}>
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--navy)", marginBottom: 16, letterSpacing: "-.02em" }}>Explore More</h2>
+            <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+              <a href="/for-students" style={{ fontSize: 14, color: "var(--green)", textDecoration: "underline", fontWeight: 600 }}>AI for College Students →</a>
+              <a href="/for-parents" style={{ fontSize: 14, color: "var(--green)", textDecoration: "underline", fontWeight: 600 }}>For Parents →</a>
+              <a href="/faq" style={{ fontSize: 14, color: "var(--green)", textDecoration: "underline", fontWeight: 600 }}>Frequently Asked Questions →</a>
+            </div>
           </div>
         </div>
       </main>

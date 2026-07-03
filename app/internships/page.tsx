@@ -23,6 +23,15 @@ export const metadata: Metadata = {
   },
 };
 
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://thecollegeagent.ai" },
+    { "@type": "ListItem", position: 2, name: "AI Internship Prep", item: "https://thecollegeagent.ai/internships" },
+  ],
+};
+
 const PIPELINE_STAGES = [
   {
     icon: Network,
@@ -47,7 +56,7 @@ const PIPELINE_STAGES = [
   {
     icon: BriefcaseBusiness,
     title: "Interview Preparation",
-    desc: "Behavioral questions, company research, case prep. Your agent helps you walk into every interview knowing the company, knowing your stories, and knowing what they&apos;re looking for.",
+    desc: "Behavioral questions, company research, case prep. Your agent helps you walk into every interview knowing the company, knowing your stories, and knowing what they're looking for.",
   },
   {
     icon: TrendingUp,
@@ -59,6 +68,10 @@ const PIPELINE_STAGES = [
 export default function InternshipsPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <Nav />
       <main style={{ paddingTop: 100, minHeight: "100vh" }}>
 
@@ -71,7 +84,7 @@ export default function InternshipsPage() {
               Land your internship before junior year.
             </h1>
             <p style={{ fontSize: "clamp(16px, 1.4vw, 18px)", lineHeight: 1.75, color: "rgba(255,255,255,.65)", maxWidth: 640, margin: "0 auto 36px" }}>
-              The College Agent manages your entire internship pipeline — target companies, deadlines, outreach emails, applications, and interview prep — so you can focus on performing, not tracking.
+              The College Agent manages your entire internship pipeline — target companies, deadlines, outreach emails, applications, and interview prep — so you can focus on performing, not tracking. AI internship prep built for college students who want results.
             </p>
             <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
               <a href="/build" className="btn-green">Build My Agent</a>
@@ -120,18 +133,50 @@ export default function InternshipsPage() {
           </div>
         </section>
 
-        {/* 4-YEAR INTERNSHIP STRATEGY */}
+        {/* WHAT THE AGENT DOES FOR EACH APPLICATION */}
         <section style={{ background: "#fff", padding: "72px 0" }}>
           <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "var(--green)", marginBottom: 14, display: "block" }}>The Strategy</span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "var(--green)", marginBottom: 14, display: "block" }}>Application by Application</span>
             <h2 style={{ fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 800, color: "var(--navy)", marginBottom: 24, letterSpacing: "-.025em" }}>
-              What a 4-year internship timeline actually looks like.
+              What The College Agent Does for Each Application
             </h2>
+            <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 28 }}>
+              Every internship application is different, but The College Agent runs the same thorough process for each one — so nothing slips through and you show up to every opportunity fully prepared.
+            </p>
             {[
-              { year: "Freshman Year", action: "Start building awareness. Identify industries that interest you, follow companies, and use your agent to build a structured contact list of alumni and connections." },
-              { year: "Sophomore Year", action: "Apply to competitive programs — summer research, nonprofit internships, small company roles. Your first internship doesn't have to be impressive. It has to exist." },
-              { year: "Junior Year", action: "This is the year that matters most for recruiting. Your agent manages your full pipeline: applications to target firms, outreach to recruiters, interview prep. Secure your first major internship." },
-              { year: "Senior Year", action: "Convert your internship experience into a full-time offer — or use it as leverage for your job search. Your agent helps you position your work and make the transition." },
+              { step: "1", title: "Deadline Alert & Prep Window", desc: "Your agent surfaces the application deadline 4–6 weeks in advance — not 48 hours before it closes. That prep window is when your agent starts generating the materials you need: a tailored resume version, an outreach plan, and a company research brief." },
+              { step: "2", title: "Company Research Brief", desc: "Before you write a single word of your application, your agent builds a research brief on the company — what they do, their culture, recent news, what they look for in interns, and how to position your experience to match. You go into the application knowing the company, not researching it at midnight." },
+              { step: "3", title: "Resume Tailoring", desc: "Your master resume gets tailored for the role. Your agent adjusts the language, reorders bullet points, and highlights the experience and coursework most relevant to the specific internship — so every application feels like it was written just for that company." },
+              { step: "4", title: "Outreach Message Drafts", desc: "Your agent drafts cold emails and LinkedIn connection requests to recruiters and alumni at the target company — in your voice, professional but not robotic. These go out weeks before the deadline so you have time to build a relationship, not just submit an application into a void." },
+              { step: "5", title: "Application Status Tracking", desc: "Every application gets logged: company, role, date submitted, current status, next follow-up date. Nothing lives in an email thread you have to search for. Your agent surfaces follow-up reminders automatically and tracks the pipeline from first contact to final decision." },
+              { step: "6", title: "Interview Prep Package", desc: "If you get an interview, your agent builds a prep package: behavioral questions tailored to the company, your relevant experience mapped to STAR format stories, company culture notes, and a list of smart questions to ask. You walk in over-prepared — which is exactly where you want to be." },
+            ].map(({ step, title, desc }) => (
+              <div key={step} style={{ display: "flex", gap: 20, marginBottom: 28, alignItems: "flex-start" }}>
+                <div style={{ width: 42, height: 42, borderRadius: "50%", background: "rgba(61,139,61,.2)", border: "2px solid var(--green)", color: "var(--green)", fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{step}</div>
+                <div>
+                  <h3 style={{ fontSize: 17, fontWeight: 800, color: "var(--navy)", marginBottom: 8, letterSpacing: "-.01em" }}>{title}</h3>
+                  <p style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(11,23,41,.7)", margin: 0 }}>{desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 4-YEAR INTERNSHIP STRATEGY */}
+        <section style={{ background: "var(--cream2)", padding: "72px 0" }}>
+          <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "var(--green)", marginBottom: 14, display: "block" }}>The Internship Timeline</span>
+            <h2 style={{ fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 800, color: "var(--navy)", marginBottom: 24, letterSpacing: "-.025em" }}>
+              The Internship Timeline: Freshman to Senior Year
+            </h2>
+            <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 24 }}>
+              Most students don&apos;t think about internships until junior year. By then, the students who started earlier already have experience, connections, and a clear advantage. Here&apos;s what an intentional, agent-assisted internship strategy looks like across all four years:
+            </p>
+            {[
+              { year: "Freshman Year", action: "Awareness and foundation. Your agent helps you identify industries that interest you, understand how recruiting works in your field, and begin building a professional presence on LinkedIn. You won&apos;t apply to competitive programs yet — but by the time you do, you&apos;ll have a year of intentional preparation behind you. Your agent also tracks research labs, nonprofit summer programs, and small-company roles that are accessible as early as freshman summer." },
+              { year: "Sophomore Year", action: "First applications. This is the year to get your first internship — even if it&apos;s not your dream company. Research programs, nonprofits, university labs, and small businesses are all legitimate first experiences. Your agent manages the application pipeline for 5–10 targets, drafts outreach emails, and handles follow-up. The goal: one real experience before junior year that gives you something concrete to build on." },
+              { year: "Junior Year", action: "This is the year that defines your resume before graduation. Most competitive internship programs recruit heavily in the fall of junior year for the following summer. Your agent manages your full pipeline — applications to 15–25 target firms, outreach to recruiters and alumni, behavioral interview prep, and offer negotiation. The work you did freshman and sophomore year pays off here." },
+              { year: "Senior Year", action: "Convert or leverage. If you received a return offer from your junior year internship, your agent helps you evaluate it and negotiate. If you&apos;re in the full-time job market, your agent positions your internship experience strategically, manages your applications, and helps you make the transition from student to professional. Senior year is the payoff of three years of intentional work." },
             ].map(({ year, action }) => (
               <div key={year} style={{ display: "flex", gap: 20, alignItems: "flex-start", marginBottom: 28 }}>
                 <div style={{ background: "rgba(61,139,61,.1)", border: "2px solid var(--green)", borderRadius: 8, padding: "8px 14px", fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: "var(--green)", letterSpacing: ".08em", whiteSpace: "nowrap", flexShrink: 0 }}>{year}</div>
@@ -141,6 +186,18 @@ export default function InternshipsPage() {
             <div style={{ marginTop: 16, display: "flex", gap: 14, flexWrap: "wrap" }}>
               <a href="/build" className="btn-green">Build My Agent</a>
               <a href="/study" className="btn-outline-dark">AI Study Companion</a>
+            </div>
+          </div>
+        </section>
+
+        {/* INTERNAL LINKS */}
+        <section style={{ background: "#fff", padding: "48px 0" }}>
+          <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--navy)", marginBottom: 20, letterSpacing: "-.02em" }}>Explore More</h2>
+            <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+              <a href="/for-students" style={{ fontSize: 14, color: "var(--green)", textDecoration: "underline", fontWeight: 600 }}>AI for College Students →</a>
+              <a href="/study" style={{ fontSize: 14, color: "var(--green)", textDecoration: "underline", fontWeight: 600 }}>AI Study Companion →</a>
+              <a href="/faq" style={{ fontSize: 14, color: "var(--green)", textDecoration: "underline", fontWeight: 600 }}>Frequently Asked Questions →</a>
             </div>
           </div>
         </section>
