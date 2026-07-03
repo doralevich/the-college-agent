@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Blocks, Bot, Check, Coins, Home, Loader2, LogOut, Menu, MessageSquare, RotateCcw, Settings2, Sparkles, X } from "lucide-react";
+import { Blocks, Bot, Check, Coins, Compass, Home, Loader2, LogOut, Menu, MessageSquare, RotateCcw, Settings2, Sparkles, X } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "@/lib/supabase/client";
 import { usd } from "@/lib/format";
@@ -19,6 +19,7 @@ import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { ChatView } from "@/components/chat/ChatView";
 import { FilesView } from "@/components/files/FilesView";
 import { IntegrationsView } from "@/components/IntegrationsView";
+import { NowWhatView } from "@/components/NowWhatView";
 import { ShortcutsView } from "@/components/ShortcutsView";
 import { WelcomeView } from "@/components/WelcomeView";
 import type { OnboardPrefill } from "@/components/ConversationalOnboard";
@@ -91,6 +92,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
     ...(hasAgent
       ? [
           { id: "chat" as DashboardTabId, label: "Chat", icon: MessageSquare },
+          { id: "now-what" as DashboardTabId, label: "Now what?", icon: Compass, iconColor: "#8B5CF6" },
           { id: "integrations" as DashboardTabId, label: "Integrations", icon: Blocks, iconColor: "#3B82F6" },
           { id: "shortcuts" as DashboardTabId, label: "Shortcuts", icon: Sparkles, iconColor: "#F59E0B" },
         ]
@@ -155,6 +157,34 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
   // (harmless no-op on desktop).
   const sidebarBody = (
     <>
+      {/* Agent identity: the intake avatar (or default mascot) + name, upper left under the
+          logo — so the rail opens with the agent the student built, not just navigation. */}
+      {hasAgent && (
+        <div className="mt-4 flex items-center gap-2.5 px-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-background">
+            {avatarUrl ? (
+              // Storage URLs aren't in next/image's remote list — plain img, as elsewhere.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <Image
+                src="/thecollegeagent.png"
+                alt=""
+                width={36}
+                height={36}
+                className="h-full w-full object-contain p-0.5"
+              />
+            )}
+          </span>
+          <div className="min-w-0">
+            <div className="truncate text-sm font-semibold text-foreground">
+              {agentName?.trim() || "Your agent"}
+            </div>
+            {agentName?.trim() && <div className="text-xs text-muted-foreground">Your agent</div>}
+          </div>
+        </div>
+      )}
+
       {tabs.length > 0 && (
         <nav
           className="mt-5 flex flex-col gap-1"
@@ -246,7 +276,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
             composer draft, and the model selection survive leaving and returning to the tab. */}
         {hasAgent && chatOpened && (
           <div className={cn("h-full", !isChat && "hidden")}>
-            <ChatView firstName={firstName} classes={classes} accent={schoolAccent} />
+            <ChatView firstName={firstName} classes={classes} accent={schoolAccent} avatarUrl={avatarUrl} />
           </div>
         )}
         {/* Files mirrors Chat: full-height, kept MOUNTED (just hidden) so the current directory,
@@ -286,6 +316,8 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
                 <IntegrationsView agentId={agentId} />
               ) : active === "shortcuts" && hasAgent ? (
                 <ShortcutsView />
+              ) : active === "now-what" && hasAgent ? (
+                <NowWhatView onOpenChat={() => openDashboardTab("chat")} />
               ) : active === "welcome" && paid ? (
                 <WelcomeView
                   firstName={firstName}

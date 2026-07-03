@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { Loader2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useWorkspace } from "@/components/WorkspaceProvider";
 import { DropOverlay } from "./Attachments";
 import { ChatComposer } from "./ChatComposer";
 import { ChatMessages } from "./ChatMessages";
@@ -49,6 +50,7 @@ export function ChatView({
   firstName,
   classes = [],
   accent,
+  avatarUrl,
 }: {
   // Student's first name from the intake — greets them on the empty state.
   firstName?: string | null;
@@ -58,7 +60,10 @@ export function ChatView({
   // School brand color (or the College Agent green fallback) — renders as a faint
   // wash from the top of the pane so the chat feels like the student's school.
   accent?: string;
+  // Intake avatar shown beside the agent's messages (default mascot when null).
+  avatarUrl?: string | null;
 }) {
+  const { userEmail } = useWorkspace();
   const {
     agentId,
     sessions,
@@ -121,6 +126,7 @@ export function ChatView({
   }, []);
   const todaysClasses = useMemo(() => classes.filter((c) => c.days && classIsToday(c.days)), [classes]);
   const greetName = firstName?.trim() || "there";
+  const userInitial = (firstName?.trim()?.[0] || userEmail?.[0] || "").toUpperCase();
 
   return (
     <div
@@ -162,7 +168,12 @@ export function ChatView({
             <Loader2 className="h-5 w-5 animate-spin" />
           </div>
         ) : messages.length > 0 ? (
-          <ChatMessages messages={messages} isStreaming={isStreaming} />
+          <ChatMessages
+            messages={messages}
+            isStreaming={isStreaming}
+            agentAvatarUrl={avatarUrl}
+            userInitial={userInitial}
+          />
         ) : (
           <div className="flex flex-col items-center gap-2 text-center">
             <h1 className="text-[26px] font-semibold tracking-tight text-foreground sm:text-[30px]">
