@@ -47,6 +47,19 @@ export default function BuildPage() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Referral code from ?ref=... — kept in localStorage so it survives the multi-step
+  // flow and a canceled-checkout round trip. Applied server-side at checkout.
+  const [ref, setRef] = useState<string>("");
+
+  useEffect(() => {
+    const fromUrl = new URLSearchParams(window.location.search).get("ref")?.trim() ?? "";
+    if (fromUrl) {
+      localStorage.setItem("ca-ref", fromUrl);
+      setRef(fromUrl);
+    } else {
+      setRef(localStorage.getItem("ca-ref") ?? "");
+    }
+  }, []);
 
   // The HTML snippet pulls Inter + IBM Plex Mono from Google Fonts. App Router
   // client components can't render <link> into <head>, so inject once on mount
@@ -133,6 +146,7 @@ export default function BuildPage() {
           email: info.schoolEmail.trim(),
           firstName: info.firstName.trim(),
           lastName: info.lastName.trim(),
+          ...(ref ? { ref } : {}),
         }),
       });
       const body = await res.json().catch(() => ({}));
@@ -224,6 +238,11 @@ export default function BuildPage() {
                   <p className="ca-savenote">
                     Plus {hostingPrice}/month for cloud hosting. Cancel hosting any time.
                   </p>
+                  {ref && (
+                    <p className="ca-savenote" style={{ color: "var(--ca-green)", fontWeight: 600 }}>
+                      Referral applied: your first month of hosting is free.
+                    </p>
+                  )}
 
                   <ul className="ca-features">
                     <li><span className="ca-check"><CheckIcon /></span>Your own AI Agent, built and set up for you</li>

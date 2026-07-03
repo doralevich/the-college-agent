@@ -4,6 +4,7 @@ import { priceIdFor } from "@/lib/stripe/prices";
 import { currentPlanLookup, HOSTING_LOOKUP } from "@/lib/pricing/intro-cutoff";
 import { getOptionalUserId } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { ensureReferralCoupon, resolveReferralCode } from "@/lib/referral";
 
 // Anonymous-friendly Stripe Checkout entrypoint.
 // - Logged-in students: we pass user_id metadata so the webhook flips their
@@ -17,6 +18,9 @@ type Body = {
   email?: string;
   firstName?: string;
   lastName?: string;
+  // Referral share code from /build?ref=... — friend's first hosting month free,
+  // referrer gets a $25 credit when this checkout completes.
+  ref?: string;
 };
 
 export const POST = route(async (req) => {
@@ -70,9 +74,30 @@ export const POST = route(async (req) => {
   if (lastName) metadata.last_name = lastName;
 
   const stripe = getStripe();
+
+  // Referred signup: validate the code, refuse self-referrals, and swap the promo-code
+  // box for the referral coupon (Stripe won't allow both). Invalid/expired codes are
+  // silently ignored — never block a paying student over a bad ref.
+  let referralCoupon: string | null = null;
+  const refCode = (body.ref ?? "").trim();
+  if (refCode) {
+    const owner = await resolveReferralCode(refCode);
+    if (owner && owner.email !== email && owner.userId !== userId) {
+      try {
+        referralCoupon = await ensureReferralCoupon(stripe);
+        metadata.referral_code = refCode.toUpperCase();
+        metadata.referrer_user_id = owner.userId;
+      } catch (err) {
+        console.error("[build/checkout] referral coupon failed, continuing without", err);
+      }
+    }
+  }
+
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
-    allow_promotion_codes: true,
+    ...(referralCoupon
+      ? { discounts: [{ coupon: referralCoupon }] }
+      : { allow_promotion_codes: true }),
     payment_method_collection: "if_required",
     line_items: [
       { price: hostingPriceId, quantity: 1 },

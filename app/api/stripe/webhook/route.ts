@@ -184,6 +184,11 @@ async function handleCheckoutCompleted(db: DB, session: Stripe.Checkout.Session)
     }
   }
 
+  // Referral reward: the friend already got their discount at checkout; credit the
+  // referrer one hosting month. Throws on transient failures so Stripe retries —
+  // the referrals row (unique per session) makes retries single-credit.
+  await rewardReferrer(db, session, entEmail);
+
   // Best-effort post-payment notification — never let it fail the webhook.
   if (orderRow) {
     try {
@@ -192,6 +197,63 @@ async function handleCheckoutCompleted(db: DB, session: Stripe.Checkout.Session)
       console.error("[stripe webhook] notify failed", err);
     }
   }
+}
+
+// Credit the referrer $25 (one hosting month) on a completed referred signup. Stacking
+// is deliberate and uncapped: each referral is its own Stripe customer-balance credit,
+// and balances roll into future invoices automatically.
+async function rewardReferrer(db: DB, session: Stripe.Checkout.Session, referredEmail: string) {
+  const code = session.metadata?.referral_code;
+  const referrerUserId = session.metadata?.referrer_user_id;
+  if (!code || !referrerUserId) return;
+
+  // Claim the reward slot for this session. A webhook retry that already rewarded
+  // short-circuits on the existing row's status.
+  await db
+    .from("referrals")
+    .upsert(
+      [
+        {
+          code,
+          referrer_user_id: referrerUserId,
+          referred_email: referredEmail || "(unknown)",
+          stripe_session_id: session.id,
+        },
+      ],
+      { onConflict: "stripe_session_id", ignoreDuplicates: true }
+    );
+  const { data: row } = await db
+    .from("referrals")
+    .select("id, status")
+    .eq("stripe_session_id", session.id)
+    .maybeSingle();
+  if (!row || row.status === "rewarded") return;
+
+  // Find the referrer's Stripe customer through their entitlement (email-keyed).
+  const { data: userRes } = await db.auth.admin.getUserById(referrerUserId);
+  const referrerEmail = (userRes?.user?.email ?? "").toLowerCase();
+  const { data: ent } = referrerEmail
+    ? await db.from("entitlements").select("stripe_customer_id").eq("email", referrerEmail).maybeSingle()
+    : { data: null };
+  const customerId = (ent?.stripe_customer_id as string | null) ?? null;
+
+  if (!customerId) {
+    // Comped/allowlist referrer with no Stripe billing: nothing to credit against.
+    // Mark it so the card still counts the signup; don't retry forever.
+    await db.from("referrals").update({ status: "no_customer" }).eq("id", row.id);
+    return;
+  }
+
+  // Negative amount = credit toward the customer's next invoice(s).
+  await getStripe().customers.createBalanceTransaction(customerId, {
+    amount: -2500,
+    currency: "usd",
+    description: "Referral reward: a friend joined The College Agent",
+  });
+  await db
+    .from("referrals")
+    .update({ status: "rewarded", rewarded_at: new Date().toISOString() })
+    .eq("id", row.id);
 }
 
 // Settle an AI-credits top-up: push the credit onto the student's box budget, then mark

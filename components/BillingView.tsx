@@ -17,6 +17,7 @@ import {
 } from "@/lib/pricing";
 import { HOSTING_SHAPES } from "@/config/agents";
 import { Button } from "@/components/ui/button";
+import { ReferralCard } from "@/components/ReferralCard";
 import { cn } from "@/lib/utils";
 
 // Settings -> Subscription: the plan they bought, monthly hosting, the Stripe portal
@@ -119,6 +120,9 @@ export function BillingView() {
       )}
 
       {!loading && data?.canManage && <InvoicesCard />}
+
+      {/* Give a month, get a month — earned credits land on the next hosting invoice. */}
+      {!loading && <ReferralCard />}
     </div>
   );
 }
