@@ -200,13 +200,13 @@ export default function Home() {
             <div className="dual-card dual-card-student">
               <div className="dual-icon"><Sparkles size={24} strokeWidth={1.9} /></div>
               <span className="dual-tag dual-tag-student">For Students</span>
-              <h2>Your own AI operator for college.</h2>
+              <h2>Your personal AI agent.</h2>
               <p>It knows your classes, deadlines, professors, goals, and communication style. It helps you stay ahead academically, prepare for internships, write better emails, and stop letting important things slip.</p>
             </div>
             <div className="dual-card dual-card-parent">
               <div className="dual-icon"><ShieldCheck size={24} strokeWidth={1.9} /></div>
               <span className="dual-tag dual-tag-parent">For Parents</span>
-              <h2>A four-year advantage, not another app.</h2>
+              <h2>A four-year advantage.</h2>
               <p>You are not buying tutoring hours or a generic AI subscription. You are giving your student a personalized support system that keeps them organized, accountable, and prepared for the opportunities that matter.</p>
             </div>
           </div>
