@@ -50,6 +50,9 @@ export default function BuildPage() {
   // Checkout requires an explicit Terms acceptance — the API refuses sessions
   // without it, and the acceptance timestamp rides the Stripe metadata.
   const [agreeTerms, setAgreeTerms] = useState(false);
+  // Optional extra credits on top of the included $20 — default none. Added as a
+  // one-time Stripe line item; delivered to the agent at provisioning.
+  const [extraCents, setExtraCents] = useState(0);
   // Referral code from ?ref=... — kept in localStorage so it survives the multi-step
   // flow and a canceled-checkout round trip. Applied server-side at checkout.
   const [ref, setRef] = useState<string>("");
@@ -149,6 +152,7 @@ export default function BuildPage() {
           firstName: info.firstName.trim(),
           lastName: info.lastName.trim(),
           termsAccepted: agreeTerms,
+          ...(extraCents > 0 ? { extraCreditsCents: extraCents } : {}),
           ...(ref ? { ref } : {}),
         }),
       });
@@ -246,6 +250,24 @@ export default function BuildPage() {
                     <li><span className="ca-check"><CheckIcon /></span>Cancel anytime, pause over summer</li>
                     <li><span className="ca-check"><CheckIcon /></span>7-day money-back guarantee</li>
                   </ul>
+
+                  <div className="ca-extra">
+                    <p className="ca-extra-label">
+                      Start with extra credits <span>(optional)</span>
+                    </p>
+                    <div className="ca-extra-chips" role="group" aria-label="Extra credits">
+                      {[0, 1000, 2500, 5000].map((cents) => (
+                        <button
+                          key={cents}
+                          type="button"
+                          className={extraCents === cents ? "is-active" : ""}
+                          onClick={() => setExtraCents(cents)}
+                        >
+                          {cents === 0 ? "None" : `+${formatPrice(cents)}`}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
                   <button type="button" className="ca-cta" onClick={continueToInfo}>
                     Let&apos;s do it!
@@ -661,6 +683,42 @@ export default function BuildPage() {
           color: var(--ca-muted);
           text-align: center;
           margin: 16px 0 0;
+        }
+
+        .ca-extra {
+          margin: 0 0 22px;
+        }
+        .ca-extra-label {
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--ca-body);
+          margin: 0 0 8px;
+        }
+        .ca-extra-label span {
+          font-weight: 400;
+          color: var(--ca-muted);
+        }
+        .ca-extra-chips {
+          display: flex;
+          gap: 6px;
+          flex-wrap: wrap;
+        }
+        .ca-extra-chips button {
+          font-family: var(--ca-sans);
+          font-size: 13.5px;
+          font-weight: 600;
+          padding: 8px 16px;
+          border-radius: 999px;
+          border: 1.5px solid var(--ca-line);
+          background: var(--ca-white);
+          color: var(--ca-body);
+          cursor: pointer;
+          transition: border-color 0.15s, background 0.15s, color 0.15s;
+        }
+        .ca-extra-chips button.is-active {
+          border-color: var(--ca-green);
+          background: var(--ca-green);
+          color: #fff;
         }
 
         .ca-terms {
