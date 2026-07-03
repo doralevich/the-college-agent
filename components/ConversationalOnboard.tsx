@@ -37,11 +37,16 @@ const SURPRISE_NAMES = [
   "Scout", "Sunny", "Theo", "Turbo", "Ziggy", "Zoe",
 ];
 
-// The 20 brand avatar presets (public/avatars, sliced from David's board). Picking one is
-// converted to a File and rides the exact same upload path as a custom image.
+// The brand avatar presets (public/avatars, sliced from David's boards): 20 student-style
+// faces and 20 dressed-up bots. Picking one is converted to a File and rides the exact
+// same upload path as a custom image.
 const AVATAR_PRESETS = Array.from(
   { length: 20 },
   (_, i) => `/avatars/preset-${String(i + 1).padStart(2, "0")}.webp`
+);
+const BOT_PRESETS = Array.from(
+  { length: 20 },
+  (_, i) => `/avatars/bot-${String(i + 1).padStart(2, "0")}.webp`
 );
 
 function AvatarPicker({
@@ -55,24 +60,54 @@ function AvatarPicker({
   disabled: boolean;
   setAvatar: (f: File | null) => void;
 }) {
-  const [selected, setSelected] = useState<number | null>(null);
-  const [picking, setPicking] = useState<number | null>(null);
+  // Selection tracked by src so the two preset groups can't collide.
+  const [selected, setSelected] = useState<string | null>(null);
+  const [picking, setPicking] = useState<string | null>(null);
 
-  async function pick(i: number) {
+  async function pick(src: string) {
     if (disabled || picking !== null) return;
-    setPicking(i);
+    setPicking(src);
     try {
-      const res = await fetch(AVATAR_PRESETS[i]);
+      const res = await fetch(src);
       if (!res.ok) throw new Error("preset fetch failed");
       const blob = await res.blob();
-      setAvatar(new File([blob], `preset-${String(i + 1).padStart(2, "0")}.webp`, { type: blob.type || "image/webp" }));
-      setSelected(i);
+      const name = src.split("/").pop() ?? "preset.webp";
+      setAvatar(new File([blob], name, { type: blob.type || "image/webp" }));
+      setSelected(src);
     } catch {
       /* leave the current avatar untouched */
     } finally {
       setPicking(null);
     }
   }
+
+  const presetGrid = (srcs: string[], kind: string) => (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(52px, 1fr))", gap: 10 }}>
+      {srcs.map((src, i) => (
+        <button
+          key={src}
+          type="button"
+          disabled={disabled}
+          onClick={() => pick(src)}
+          aria-label={`${kind} option ${i + 1}`}
+          style={{
+            padding: 0,
+            border: `2.5px solid ${selected === src ? T.green : "transparent"}`,
+            borderRadius: "50%",
+            overflow: "hidden",
+            aspectRatio: "1",
+            background: T.greenSoft,
+            cursor: disabled ? "not-allowed" : "pointer",
+            opacity: picking !== null && picking !== src ? 0.6 : 1,
+            transition: "border-color .12s, opacity .12s",
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={src} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+        </button>
+      ))}
+    </div>
+  );
 
   return (
     <div>
@@ -139,31 +174,12 @@ function AvatarPicker({
       <div style={{ fontSize: 12, fontWeight: 600, color: T.inkSoft, letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 10 }}>
         Or pick one of ours
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(52px, 1fr))", gap: 10 }}>
-        {AVATAR_PRESETS.map((src, i) => (
-          <button
-            key={src}
-            type="button"
-            disabled={disabled}
-            onClick={() => pick(i)}
-            aria-label={`Avatar option ${i + 1}`}
-            style={{
-              padding: 0,
-              border: `2.5px solid ${selected === i ? T.green : "transparent"}`,
-              borderRadius: "50%",
-              overflow: "hidden",
-              aspectRatio: "1",
-              background: T.greenSoft,
-              cursor: disabled ? "not-allowed" : "pointer",
-              opacity: picking !== null && picking !== i ? 0.6 : 1,
-              transition: "border-color .12s, opacity .12s",
-            }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={src} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-          </button>
-        ))}
+      {presetGrid(AVATAR_PRESETS, "Avatar")}
+
+      <div style={{ fontSize: 12, fontWeight: 600, color: T.inkSoft, letterSpacing: "0.04em", textTransform: "uppercase", margin: "16px 0 10px" }}>
+        Or pick your bot
       </div>
+      {presetGrid(BOT_PRESETS, "Bot")}
     </div>
   );
 }
