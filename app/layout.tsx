@@ -40,6 +40,12 @@ export const metadata: Metadata = {
   ],
   applicationName: "The College Agent",
   category: "Education",
+  // Home-screen installs on iOS: real app title and no Safari chrome when launched.
+  appleWebApp: {
+    capable: true,
+    title: "College Agent",
+    statusBarStyle: "default",
+  },
   metadataBase: new URL("https://thecollegeagent.ai"),
   verification: {
     google: "5fRSMFjZatwPejPvw4h30ZVsT0ZbPagGU39YXJUVjn8",

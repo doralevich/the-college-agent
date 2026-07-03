@@ -58,6 +58,7 @@ export const CHECKLIST_GROUPS: ChecklistGroup[] = [
   {
     title: "Tools and goals",
     items: [
+      { key: "add_to_phone", label: "Put the app on your phone", hint: "Add it to your home screen so your agent is one tap away. The Now what? tab shows you how." },
       { key: "connect_calendar", label: "Connect your calendar", hint: "The single highest-leverage integration. Do it first." },
       { key: "connect_email", label: "Connect Gmail or school email", hint: "So your agent can flag what matters in your inbox." },
       { key: "connect_lms", label: "Connect Canvas or your LMS", hint: "Assignments and grades flow in automatically." },
