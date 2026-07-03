@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Nav from "../components/Nav";
+import { Footer } from "../components/Footer";
 import { BookOpenCheck, BriefcaseBusiness, CalendarDays, GraduationCap, ShieldCheck, TrendingUp } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -142,6 +143,8 @@ export default function ForParentsPage() {
         </section>
 
       </main>
+
+      <Footer />
 
       <style>{`
         .ben-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }

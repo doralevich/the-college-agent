@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Nav from "../components/Nav";
+import { Footer } from "../components/Footer";
 
 export const metadata: Metadata = {
   title: "About The College Agent — AI Built for Your Entire College Journey",
@@ -86,6 +87,8 @@ export default function AboutPage() {
           </div>
         </div>
       </main>
+
+      <Footer />
 
       <style>{`
         .mono-label {
