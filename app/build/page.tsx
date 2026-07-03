@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import BuildNav from "../components/BuildNav";
 import ChatBot from "../components/ChatBot";
 import {
-  INTRO_CUTOFF_LABEL,
   INTRO_PLAN_AMOUNT_CENTS,
   REGULAR_PLAN_AMOUNT_CENTS,
   HOSTING_AMOUNT_CENTS,
@@ -89,9 +88,7 @@ export default function BuildPage() {
   const promoActive = useMemo(() => introPromoActive(), []);
   const planPriceCents = promoActive ? INTRO_PLAN_AMOUNT_CENTS : REGULAR_PLAN_AMOUNT_CENTS;
   const planPrice = formatPrice(planPriceCents);
-  const regularPrice = formatPrice(REGULAR_PLAN_AMOUNT_CENTS);
   const hostingPrice = formatPrice(HOSTING_AMOUNT_CENTS);
-  const savings = formatPrice(REGULAR_PLAN_AMOUNT_CENTS - INTRO_PLAN_AMOUNT_CENTS);
 
   function continueToPlan() {
     setError(null);
@@ -222,15 +219,6 @@ export default function BuildPage() {
                   hosting tiers to figure out.
                 </p>
 
-                {promoActive && (
-                  <div className="ca-promo" role="status">
-                    <span className="ca-promo-pill">Intro pricing</span>
-                    <span>
-                      {planPrice} through {INTRO_CUTOFF_LABEL}. Save {savings} vs the {regularPrice} regular price.
-                    </span>
-                  </div>
-                )}
-
                 <div className="ca-card">
                   <h3 className="ca-plan-name">The College Agent</h3>
                   <p className="ca-plan-desc">
@@ -264,11 +252,6 @@ export default function BuildPage() {
                   </button>
 
                   <p className="ca-trust">Secure checkout by Stripe</p>
-
-                  <p className="ca-apinote">
-                    <InfoIcon /> Your first $20 of AI usage is included. After that, AI usage is
-                    billed based on what you use.
-                  </p>
                 </div>
 
                 <p className="ca-next">
@@ -556,30 +539,6 @@ export default function BuildPage() {
           margin: 0 0 24px;
           min-height: 18px;
         }
-        .ca-promo {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 14px 18px;
-          margin: 0 0 18px;
-          background: #FEF3C7;
-          border: 1px solid #F59E0B;
-          border-radius: 12px;
-          color: #78350F;
-          font-size: 14px;
-          line-height: 1.45;
-        }
-        .ca-promo-pill {
-          flex: 0 0 auto;
-          background: #F59E0B;
-          color: #FFFFFF;
-          font-weight: 700;
-          font-size: 11px;
-          letter-spacing: 0.04em;
-          text-transform: uppercase;
-          padding: 4px 10px;
-          border-radius: 999px;
-        }
 
         .ca-welcome-bot {
           display: block;
@@ -758,23 +717,6 @@ export default function BuildPage() {
           text-decoration: underline;
         }
 
-        .ca-apinote {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          font-size: 13px;
-          font-weight: 600;
-          line-height: 1.5;
-          color: #8a5a00;
-          background: #FEF3C7;
-          border: 1px solid #F59E0B;
-          border-radius: 9px;
-          padding: 11px 14px;
-          margin: 14px 0 0;
-          text-align: center;
-        }
-        .ca-apinote svg { flex: 0 0 auto; width: 15px; height: 15px; color: #B45309; }
 
         .ca-next {
           font-size: 13px;
@@ -823,11 +765,3 @@ function CheckIcon() {
   );
 }
 
-function InfoIcon() {
-  return (
-    <svg viewBox="0 0 16 16" fill="none">
-      <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.4" />
-      <path d="M8 7.2v4M8 4.8h.01" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  );
-}
