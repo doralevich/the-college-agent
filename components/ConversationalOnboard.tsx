@@ -1741,6 +1741,21 @@ function Input({
   return null;
 }
 
+// Day/time pickers write plain strings into ClassEntry ("Mon / Wed / Fri",
+// "10:00 AM - 10:50 AM"), so the stored payload and the SOUL.md build path are
+// identical to what free-typing produced.
+const DAY_OPTIONS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const TIME_OPTIONS: string[] = (() => {
+  const out: string[] = [];
+  for (let mins = 7 * 60; mins <= 22 * 60; mins += 15) {
+    const h24 = Math.floor(mins / 60);
+    const m = mins % 60;
+    const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+    out.push(`${h12}:${String(m).padStart(2, "0")} ${h24 < 12 ? "AM" : "PM"}`);
+  }
+  return out;
+})();
+
 function ClassListInput({
   classes,
   draft,
@@ -1756,15 +1771,39 @@ function ClassListInput({
   removeClass: (idx: number) => void;
   disabled: boolean;
 }) {
-  const fields: Array<{ key: keyof ClassEntry; label: string; placeholder: string }> = [
+  const textFields: Array<{ key: keyof ClassEntry; label: string; placeholder: string }> = [
     { key: "name", label: "Class name", placeholder: "Marketing 301" },
-    { key: "days", label: "Days", placeholder: "Mon / Wed / Fri" },
-    { key: "time", label: "Time", placeholder: "10:00–10:50am" },
+    { key: "sku", label: "Class SKU", placeholder: "MKT-301-A" },
     { key: "location", label: "Location", placeholder: "Bryan Hall 215" },
     { key: "professor", label: "Professor", placeholder: "Prof. Lewis" },
-    { key: "sku", label: "Class SKU", placeholder: "MKT-301-A" },
   ];
   const canAdd = !!draft.name.trim();
+
+  const selectedDays = draft.days.split(" / ").filter(Boolean);
+  function toggleDay(day: string) {
+    const next = selectedDays.includes(day)
+      ? selectedDays.filter((d) => d !== day)
+      : [...selectedDays, day];
+    // Join in canonical week order no matter the tap order.
+    setDraft({ ...draft, days: DAY_OPTIONS.filter((d) => next.includes(d)).join(" / ") });
+  }
+
+  const [startTime = "", endTime = ""] = draft.time.split(" - ");
+  function setTime(start: string, end: string) {
+    setDraft({ ...draft, time: start && end ? `${start} - ${end}` : start || end });
+  }
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+    fontSize: 14,
+    padding: "8px 10px",
+    border: `1px solid ${T.line}`,
+    borderRadius: 8,
+    outline: "none",
+    background: T.card,
+    color: T.ink,
+  };
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {classes.length > 0 && (
@@ -1820,7 +1859,7 @@ function ClassListInput({
           borderRadius: 12,
         }}
       >
-        {fields.map((f) => (
+        {textFields.slice(0, 2).map((f) => (
           <label key={f.key} style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: T.inkSoft }}>
             {f.label}
             <input
@@ -1835,17 +1874,90 @@ function ClassListInput({
                   if (canAdd) addClass();
                 }
               }}
-              style={{
-                width: "100%",
-                fontFamily: "'DM Sans', system-ui, sans-serif",
-                fontSize: 14,
-                padding: "8px 10px",
-                border: `1px solid ${T.line}`,
-                borderRadius: 8,
-                outline: "none",
-                background: T.card,
-                color: T.ink,
+              style={inputStyle}
+            />
+          </label>
+        ))}
+
+        {/* Days: tap the days it meets — no typing. */}
+        <div style={{ gridColumn: "1 / -1", display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: T.inkSoft }}>
+          Days
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {DAY_OPTIONS.map((day) => {
+              const on = selectedDays.includes(day);
+              return (
+                <button
+                  key={day}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => toggleDay(day)}
+                  aria-pressed={on}
+                  style={{
+                    fontFamily: "'DM Sans', system-ui, sans-serif",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    padding: "7px 12px",
+                    borderRadius: 999,
+                    border: `1.5px solid ${on ? T.green : T.line}`,
+                    background: on ? T.green : T.card,
+                    color: on ? "#fff" : T.ink,
+                    cursor: disabled ? "not-allowed" : "pointer",
+                    transition: "background .12s, color .12s, border-color .12s",
+                  }}
+                >
+                  {day}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Time: pick start and end from dropdowns (15-minute steps). */}
+        <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: T.inkSoft }}>
+          Starts
+          <select
+            value={startTime}
+            disabled={disabled}
+            onChange={(e) => setTime(e.target.value, endTime)}
+            style={{ ...inputStyle, appearance: "auto", cursor: disabled ? "not-allowed" : "pointer" }}
+          >
+            <option value="">Select...</option>
+            {TIME_OPTIONS.map((t) => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+        </label>
+        <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: T.inkSoft }}>
+          Ends
+          <select
+            value={endTime}
+            disabled={disabled}
+            onChange={(e) => setTime(startTime, e.target.value)}
+            style={{ ...inputStyle, appearance: "auto", cursor: disabled ? "not-allowed" : "pointer" }}
+          >
+            <option value="">Select...</option>
+            {TIME_OPTIONS.map((t) => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+        </label>
+
+        {textFields.slice(2).map((f) => (
+          <label key={f.key} style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: T.inkSoft }}>
+            {f.label}
+            <input
+              type="text"
+              value={draft[f.key]}
+              disabled={disabled}
+              placeholder={f.placeholder}
+              onChange={(e) => setDraft({ ...draft, [f.key]: e.target.value })}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  if (canAdd) addClass();
+                }
               }}
+              style={inputStyle}
             />
           </label>
         ))}
