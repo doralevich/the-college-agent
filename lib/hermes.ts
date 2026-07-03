@@ -302,3 +302,74 @@ export async function configureHermes(
     return { ok: false, detail: `exec failed: ${(e as Error).message}` };
   }
 }
+
+// Switch a LIVE box between the metered Agent37 gateway (platform credits) and the
+// student's own API key, without touching persona/telegram/cron. A one-time snapshot of
+// the template's config.yaml makes the platform restore exact — no guessing the metered
+// gateway's provider/model names. Used by Settings -> Usage Credits.
+export async function switchModelProvider(
+  agent37Id: string,
+  target:
+    | { provider: "anthropic"; key: string }
+    | { provider: "openai"; key: string }
+    | { provider: "platform" }
+): Promise<ConfigureResult> {
+  const running = await waitForRunning(agent37Id);
+  if (!running) return { ok: false, detail: "instance did not reach running state in time" };
+
+  const lines: string[] = [
+    `export PATH="$HOME/.local/bin:$PATH"`,
+    `mkdir -p "$HOME/.hermes" "$HOME/.hermes/logs"`,
+    // One-time snapshot of the platform (template) model config; -n never clobbers.
+    `cp -n "$HOME/.hermes/config.yaml" "$HOME/.hermes/config.platform.yaml" 2>/dev/null || true`,
+  ];
+
+  if (target.provider === "platform") {
+    lines.push(
+      // Strip BYO keys, restore the exact metered-gateway model config.
+      `touch "$HOME/.hermes/.env"`,
+      `grep -vE '^(ANTHROPIC_API_KEY|OPENAI_API_KEY)=' "$HOME/.hermes/.env" > "$HOME/.hermes/.env.tmp" 2>/dev/null || true`,
+      `mv "$HOME/.hermes/.env.tmp" "$HOME/.hermes/.env" && chmod 600 "$HOME/.hermes/.env"`,
+      `[ -f "$HOME/.hermes/config.platform.yaml" ] && cp "$HOME/.hermes/config.platform.yaml" "$HOME/.hermes/config.yaml" || echo RESTORE_WARN`
+    );
+  } else {
+    const envKey = target.provider === "anthropic" ? "ANTHROPIC_API_KEY" : "OPENAI_API_KEY";
+    const model = target.provider === "anthropic" ? BYO_ANTHROPIC_MODEL : BYO_OPENAI_MODEL;
+    lines.push(
+      // Replace BOTH provider keys with just the new one — switching providers must not
+      // leave the previous key live. Key is base64'd so it can't break the shell.
+      `touch "$HOME/.hermes/.env"`,
+      `grep -vE '^(ANTHROPIC_API_KEY|OPENAI_API_KEY)=' "$HOME/.hermes/.env" > "$HOME/.hermes/.env.tmp" 2>/dev/null || true`,
+      `echo "${b64(`${envKey}=${target.key}\n`)}" | base64 -d >> "$HOME/.hermes/.env.tmp"`,
+      `mv "$HOME/.hermes/.env.tmp" "$HOME/.hermes/.env" && chmod 600 "$HOME/.hermes/.env"`,
+      `hermes config set model.provider ${target.provider} >/dev/null 2>&1 || echo MODEL_SET_WARN`,
+      `hermes config set model.default ${model} >/dev/null 2>&1 || echo MODEL_SET_WARN`
+    );
+  }
+
+  lines.push(
+    // Restart the gateway so the new .env + model config load (same pattern as provisioning).
+    `hermes gateway stop >/dev/null 2>&1 || true`,
+    `pkill -f "hermes gateway" >/dev/null 2>&1 || true`,
+    `sleep 1`,
+    `(hermes gateway install && hermes gateway start) >/dev/null 2>&1 || (nohup sh -c 'while true; do hermes gateway run >> "$HOME/.hermes/logs/gateway.log" 2>&1; sleep 3; done' >/dev/null 2>&1 &)`,
+    `sleep 2`,
+    `echo HERMES_SWITCHED_OK`
+  );
+
+  try {
+    const res = await agent37.exec(agent37Id, lines.join("\n"));
+    const ok = res.exit_code === 0 && res.stdout.includes("HERMES_SWITCHED_OK");
+    const warn = res.stdout.includes("MODEL_SET_WARN") || res.stdout.includes("RESTORE_WARN");
+    return {
+      ok,
+      detail: ok
+        ? warn
+          ? "switched (model config warning, non-fatal)"
+          : "switched"
+        : `exec exit=${res.exit_code} stderr=${(res.stderr || "").slice(0, 300)}`,
+    };
+  } catch (e) {
+    return { ok: false, detail: `exec failed: ${(e as Error).message}` };
+  }
+}
