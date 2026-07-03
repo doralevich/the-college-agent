@@ -25,6 +25,7 @@ type CreditsData = {
   } | null;
   transactions: { id: string; amount_cents: number; type: string; status: string; created_at: string }[];
   autoRecharge: { enabled: boolean; threshold_cents: number; amount_cents: number } | null;
+  alerts: { threshold_cents: number } | null;
 };
 
 const TOPUP_PRESETS_CENTS = [1000, 2500, 5000];
@@ -140,6 +141,8 @@ export function CreditsView() {
           </div>
 
           <UsageHistoryCard />
+
+          {data.alerts && <AlertsCard initial={data.alerts} />}
 
           {data.autoRecharge && <AutoRechargeCard initial={data.autoRecharge} />}
 
@@ -260,6 +263,50 @@ function UsageHistoryCard() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+const ALERT_PRESETS_CENTS = [300, 500, 1000];
+
+// "Warn me when my balance drops below" — one email + Telegram nudge when the balance
+// crosses this line (the almost-empty warning at $1 always stays on).
+function AlertsCard({ initial }: { initial: { threshold_cents: number } }) {
+  const [threshold, setThreshold] = useState(initial.threshold_cents);
+  const [saving, setSaving] = useState(false);
+
+  async function save(cents: number) {
+    setSaving(true);
+    try {
+      await apiFetch("/api/billing/alerts", {
+        method: "POST",
+        body: JSON.stringify({ threshold_cents: cents }),
+      });
+      setThreshold(cents);
+      toast.success(`We'll warn you below ${formatUSD(cents)}.`);
+    } catch (e) {
+      toast.error((e as Error).message || "Couldn't update the alert.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="rounded-2xl border p-6">
+      <h3 className="text-base font-medium">Low balance warning</h3>
+      <p className="mt-1 text-sm text-muted-foreground">
+        We send you an email (and a Telegram nudge, if connected) when your balance drops
+        below this line.
+      </p>
+      <div className="mt-3">
+        <PresetPicker
+          label="Warn me below"
+          value={threshold}
+          options={ALERT_PRESETS_CENTS}
+          disabled={saving}
+          onChange={save}
+        />
+      </div>
     </div>
   );
 }

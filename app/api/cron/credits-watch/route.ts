@@ -32,6 +32,7 @@ type EntRow = {
   email: string;
   user_id: string;
   last_alert_stage: "low" | "critical" | null;
+  alert_threshold_cents: number | null;
   auto_recharge_enabled: boolean;
   auto_recharge_threshold_cents: number;
   auto_recharge_amount_cents: number;
@@ -51,7 +52,7 @@ export async function GET(req: Request) {
   const { data: ents, error } = await db
     .from("entitlements")
     .select(
-      "email, user_id, last_alert_stage, auto_recharge_enabled, auto_recharge_threshold_cents, auto_recharge_amount_cents, auto_recharge_failures, stripe_payment_method_id, stripe_customer_id"
+      "email, user_id, last_alert_stage, alert_threshold_cents, auto_recharge_enabled, auto_recharge_threshold_cents, auto_recharge_amount_cents, auto_recharge_failures, stripe_payment_method_id, stripe_customer_id"
     )
     .eq("status", "active")
     .not("user_id", "is", null);
@@ -248,12 +249,14 @@ async function sweepOne(db: DB, ent: EntRow, summary: Record<string, number>) {
     }
   }
 
-  // --- Alerts (one per stage; only fires when severity increases) ---
+  // --- Alerts (one per stage; only fires when severity increases). The low line is the
+  // student's own threshold (Settings -> Usage Credits); critical stays fixed. ---
+  const lowCents = ent.alert_threshold_cents ?? LOW_CENTS;
   const stage: "low" | "critical" | null =
-    remainingCents < CRITICAL_CENTS ? "critical" : remainingCents < LOW_CENTS ? "low" : null;
+    remainingCents < CRITICAL_CENTS ? "critical" : remainingCents < lowCents ? "low" : null;
 
   if (!stage) {
-    if (ent.last_alert_stage && remainingCents >= RECOVERED_CENTS) {
+    if (ent.last_alert_stage && remainingCents >= Math.max(RECOVERED_CENTS, lowCents + 100)) {
       await db.from("entitlements").update({ last_alert_stage: null }).eq("email", ent.email);
     }
     return;

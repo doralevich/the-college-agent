@@ -26,7 +26,7 @@ export const GET = route(async () => {
     email
       ? db
           .from("entitlements")
-          .select("auto_recharge_enabled, auto_recharge_threshold_cents, auto_recharge_amount_cents")
+          .select("auto_recharge_enabled, auto_recharge_threshold_cents, auto_recharge_amount_cents, alert_threshold_cents")
           .eq("email", email)
           .maybeSingle()
       : Promise.resolve({ data: null }),
@@ -79,6 +79,7 @@ export const GET = route(async () => {
     auto_recharge_enabled: boolean;
     auto_recharge_threshold_cents: number;
     auto_recharge_amount_cents: number;
+    alert_threshold_cents: number | null;
   } | null;
   const autoRecharge = ent
     ? {
@@ -87,6 +88,7 @@ export const GET = route(async () => {
         amount_cents: ent.auto_recharge_amount_cents,
       }
     : null;
+  const alerts = ent ? { threshold_cents: ent.alert_threshold_cents ?? 500 } : null;
 
-  return json({ byo, credits, transactions: txRes.data ?? [], autoRecharge });
+  return json({ byo, credits, transactions: txRes.data ?? [], autoRecharge, alerts });
 });
