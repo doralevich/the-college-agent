@@ -37,6 +37,7 @@ export default function PrivacyPage() {
               <li>Improve our platform and agent-building processes</li>
               <li>Comply with legal obligations</li>
             </ul>
+            <p>If you join our newsletter, we use your email address to send occasional product updates and tips. Newsletter emails are delivered through Mailchimp, and every email includes an unsubscribe link. Unsubscribing stops marketing emails without affecting your account or your agent.</p>
             <p>We do not sell your personal information to third parties.</p>
           </Section>
 

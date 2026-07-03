@@ -5,6 +5,7 @@ import Explainer from "./components/Explainer";
 import ChatBot from "./components/ChatBot";
 import Nav from "./components/Nav";
 import IntegrationGlobe from "./components/IntegrationGlobe";
+import { NewsletterSignup } from "./components/NewsletterSignup";
 import { BookOpenCheck, BriefcaseBusiness, GraduationCap, Mail, Network, NotebookTabs, ShieldCheck, Sparkles } from "lucide-react";
 
 const CALENDLY = "https://calendly.com/therealdaveo/apolloai";
@@ -291,6 +292,17 @@ export default function Home() {
 
       {/* FOOTER */}
       <footer className="dark-section" style={{ padding: "48px 0" }}>
+        <div style={{ maxWidth: 1160, margin: "0 auto 32px", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20, paddingBottom: 32, borderBottom: "1px solid rgba(255,255,255,.06)" }}>
+          <div style={{ maxWidth: 420 }}>
+            <div className="mono-label" style={{ marginBottom: 8 }}>Newsletter</div>
+            <p style={{ fontFamily: "var(--font-inter, Inter, sans-serif)", fontSize: 14, color: "rgba(255,255,255,.6)", margin: "0 0 4px", lineHeight: 1.5 }}>
+              College tips, product updates, and what students are doing with their agents. No spam, unsubscribe anytime.
+            </p>
+          </div>
+          <div style={{ flex: "1 1 320px", maxWidth: 420 }}>
+            <NewsletterSignup />
+          </div>
+        </div>
         <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}>
           <div>
             <div style={{ fontFamily: "var(--font-inter, Inter, sans-serif)", fontSize: 18, fontWeight: 800, letterSpacing: "-.02em", color: "#fff" }}>
