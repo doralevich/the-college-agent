@@ -118,6 +118,7 @@ export default async function DashboardPage({ params }: Props) {
       agentName={agentName}
       avatarUrl={avatarUrl}
       userId={user.id}
+      intake={questionnaire}
       onboardPrefill={onboardPrefill}
       classes={classes}
       schoolAccent={schoolAccent}

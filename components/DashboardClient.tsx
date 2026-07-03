@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Blocks, Bot, Check, Coins, Compass, Home, Loader2, LogOut, Menu, MessageSquare, RotateCcw, Settings2, Sparkles, X } from "lucide-react";
+import { Blocks, Bot, Check, Coins, Compass, Home, ListChecks, Loader2, LogOut, Menu, MessageSquare, RotateCcw, Settings2, Sparkles, X } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "@/lib/supabase/client";
 import { usd } from "@/lib/format";
@@ -14,6 +14,7 @@ import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SettingsHub } from "@/components/SettingsHub";
+import { ChecklistView } from "@/components/ChecklistView";
 import { ChatProvider, useChatContext } from "@/components/chat/ChatProvider";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { ChatView } from "@/components/chat/ChatView";
@@ -38,6 +39,8 @@ type Props = {
   avatarUrl: string | null;
   // Auth user id — scopes the conversational onboarding's localStorage progress key.
   userId: string;
+  // The stored intake questionnaire — the Checklist tab shows it and seeds the edit flow.
+  intake: Record<string, unknown> | null;
   // Optional prefill from the pre-payment /build lead-capture form, so the conversational
   // onboarding can skip questions we already asked. null when no lead row exists.
   onboardPrefill: OnboardPrefill | null;
@@ -51,7 +54,7 @@ type Props = {
 
 export type ChatClassInfo = { name: string; days: string; time: string };
 
-export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstName, agentName, avatarUrl, userId, onboardPrefill, classes, schoolAccent }: Props) {
+export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstName, agentName, avatarUrl, userId, intake, onboardPrefill, classes, schoolAccent }: Props) {
   const hasAgent = !!agentId;
   const { userEmail } = useWorkspace();
   const router = useRouter();
@@ -93,6 +96,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
       ? [
           { id: "chat" as DashboardTabId, label: "Chat", icon: MessageSquare },
           { id: "now-what" as DashboardTabId, label: "Now what?", icon: Compass, iconColor: "#8B5CF6" },
+          { id: "checklist" as DashboardTabId, label: "Checklist", icon: ListChecks, iconColor: "#14B8A6" },
           { id: "integrations" as DashboardTabId, label: "Integrations", icon: Blocks, iconColor: "#3B82F6" },
           { id: "shortcuts" as DashboardTabId, label: "Shortcuts", icon: Sparkles, iconColor: "#F59E0B" },
         ]
@@ -318,6 +322,8 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
                 <ShortcutsView />
               ) : active === "now-what" && hasAgent ? (
                 <NowWhatView onOpenChat={() => openDashboardTab("chat")} avatarUrl={avatarUrl} />
+              ) : active === "checklist" && hasAgent ? (
+                <ChecklistView userId={userId} firstName={firstName} intake={intake} />
               ) : active === "welcome" && paid ? (
                 <WelcomeView
                   firstName={firstName}
