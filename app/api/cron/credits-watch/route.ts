@@ -4,6 +4,7 @@ import { getStripe } from "@/lib/stripe/client";
 import { sendCreditsLowEmail } from "@/lib/email/credits-low";
 import { sendTelegramMessage } from "@/lib/telegram";
 import { syncToMailchimp } from "@/lib/newsletter";
+import { bountyForClearedCount } from "@/lib/ambassador";
 
 // Hourly credits sweep (Vercel cron, see vercel.json), protected by CRON_SECRET — Vercel
 // sends it as `Authorization: Bearer <CRON_SECRET>` automatically. For every active,
@@ -118,7 +119,183 @@ export async function GET(req: Request) {
     console.error("[credits-watch] leads resync", e);
   }
 
-  return Response.json({ ...summary, newsletterSynced, leadsSynced });
+  // ---- Ambassador program (July 2026 PRD) ----
+
+  // Clearing: sales past their 7-day hold clear ONE AT A TIME, oldest first, so the
+  // $75/$100 escalator counts sequentially — two sales clearing in the same run must
+  // not both read the same lifetime count. The bounty tier locks at this moment and is
+  // never recomputed. Review-flagged sales sit until an admin releases them.
+  let salesCleared = 0;
+  try {
+    const { data: due } = await db
+      .from("ambassador_sales")
+      .select("id, ambassador_id")
+      .eq("status", "pending")
+      .lte("clears_at", new Date().toISOString())
+      .order("clears_at", { ascending: true })
+      .limit(200);
+    for (const sale of due ?? []) {
+      const ambassadorId = sale.ambassador_id as string | null;
+      if (!ambassadorId) continue;
+      const { data: amb } = await db
+        .from("ambassadors")
+        .select("cleared_referral_count")
+        .eq("id", ambassadorId)
+        .maybeSingle();
+      const before = (amb?.cleared_referral_count as number | undefined) ?? 0;
+      const bounty = bountyForClearedCount(before);
+      const { error: updErr } = await db
+        .from("ambassador_sales")
+        .update({ status: "cleared", bounty_cents: bounty })
+        .eq("id", sale.id)
+        .eq("status", "pending"); // guard against a concurrent state change
+      if (updErr) continue;
+      await db.from("ambassadors").update({ cleared_referral_count: before + 1 }).eq("id", ambassadorId);
+      salesCleared++;
+    }
+  } catch (e) {
+    console.error("[credits-watch] ambassador clearing", e);
+  }
+
+  // Bi-weekly payout run (Fridays of even ISO weeks, once per run date): assembles the
+  // exact amounts, nets clawbacks against new earnings, applies org splits, and QUEUES.
+  // Releasing funds is a human action (PRD automation boundary) — admin marks paid.
+  let payoutsQueued = 0;
+  try {
+    const now = new Date();
+    if (now.getUTCDay() === 5 && isoWeek(now) % 2 === 0) {
+      const runDate = now.toISOString().slice(0, 10);
+      const { data: already } = await db.from("ambassador_payouts").select("id").eq("run_date", runDate).limit(1);
+      if (!already || already.length === 0) {
+        payoutsQueued = await runAmbassadorPayouts(db, runDate);
+      }
+    }
+  } catch (e) {
+    console.error("[credits-watch] ambassador payout run", e);
+  }
+
+  // Demo sandbox hygiene: sessions carry expires_at (created + 12h); this delete is the
+  // enforcer. Cost control is the per-session message cap, not this.
+  try {
+    await db.from("demo_sessions").delete().lt("expires_at", new Date().toISOString());
+  } catch (e) {
+    console.error("[credits-watch] demo session cleanup", e);
+  }
+
+  return Response.json({ ...summary, newsletterSynced, leadsSynced, salesCleared, payoutsQueued });
+}
+
+function isoWeek(d: Date): number {
+  const t = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  const day = t.getUTCDay() || 7;
+  t.setUTCDate(t.getUTCDate() + 4 - day);
+  const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+  return Math.ceil(((t.getTime() - y0.getTime()) / 86_400_000 + 1) / 7);
+}
+
+// Assemble one bi-weekly payout run. Per ambassador: sum bounties of cleared, unswept
+// sales; net unapplied negative ledger adjustments (clawbacks) against them; split the
+// org's share out per the org's config (or all of it when the student donates theirs).
+// W-9 gate: a positive net with no W-9 on file is queued as held_no_w9 and not released.
+// A negative net is recorded as-is (documents the carryover; nothing is sent).
+async function runAmbassadorPayouts(db: DB, runDate: string): Promise<number> {
+  const { data: salesRows } = await db
+    .from("ambassador_sales")
+    .select("id, ambassador_id, org_id, bounty_cents")
+    .eq("status", "cleared")
+    .is("payout_id", null);
+  const { data: adjRows } = await db
+    .from("ambassador_ledger_adjustments")
+    .select("id, ambassador_id, amount_cents")
+    .is("applied_to_payout_id", null);
+
+  type Sale = { id: string; ambassador_id: string | null; org_id: string | null; bounty_cents: number | null };
+  type Adj = { id: string; ambassador_id: string; amount_cents: number };
+  const sales = (salesRows ?? []) as Sale[];
+  const adjustments = (adjRows ?? []) as Adj[];
+  if (sales.length === 0 && adjustments.length === 0) return 0;
+
+  const ambIds = [...new Set([...sales.map((s) => s.ambassador_id), ...adjustments.map((a) => a.ambassador_id)])].filter(
+    Boolean
+  ) as string[];
+  const { data: ambRows } = await db
+    .from("ambassadors")
+    .select("id, w9_on_file, payout_method, payout_handle, donate_share, org_id")
+    .in("id", ambIds);
+  const ambById = new Map((ambRows ?? []).map((a) => [a.id as string, a]));
+
+  const orgIds = [...new Set(sales.map((s) => s.org_id).filter(Boolean))] as string[];
+  const { data: orgRows } = orgIds.length
+    ? await db.from("orgs").select("id, org_split_cents, payout_method, payout_handle").in("id", orgIds)
+    : { data: [] };
+  const orgById = new Map((orgRows ?? []).map((o) => [o.id as string, o]));
+
+  let created = 0;
+  for (const ambassadorId of ambIds) {
+    const amb = ambById.get(ambassadorId);
+    if (!amb) continue;
+    const mySales = sales.filter((s) => s.ambassador_id === ambassadorId);
+    const myAdjs = adjustments.filter((a) => a.ambassador_id === ambassadorId);
+
+    let studentTotal = 0;
+    const orgTotals = new Map<string, number>();
+    for (const s of mySales) {
+      const bounty = s.bounty_cents ?? 0;
+      const org = s.org_id ? orgById.get(s.org_id) : null;
+      if (org) {
+        const orgShare = amb.donate_share ? bounty : Math.min((org.org_split_cents as number) ?? 0, bounty);
+        orgTotals.set(s.org_id as string, (orgTotals.get(s.org_id as string) ?? 0) + orgShare);
+        studentTotal += bounty - orgShare;
+      } else {
+        studentTotal += bounty;
+      }
+    }
+    const adjTotal = myAdjs.reduce((sum, a) => sum + a.amount_cents, 0); // negative
+    const net = studentTotal + adjTotal;
+
+    const status = net > 0 && !amb.w9_on_file ? "held_no_w9" : "queued";
+    const { data: payout, error } = await db
+      .from("ambassador_payouts")
+      .insert({
+        ambassador_id: ambassadorId,
+        payee_type: "ambassador",
+        run_date: runDate,
+        total_cents: net,
+        status,
+        method: amb.payout_method,
+        handle: amb.payout_handle,
+      })
+      .select("id")
+      .single();
+    if (error || !payout) {
+      console.error("[credits-watch] payout insert failed", ambassadorId, error);
+      continue;
+    }
+    created++;
+
+    const saleIds = mySales.map((s) => s.id);
+    if (saleIds.length) await db.from("ambassador_sales").update({ payout_id: payout.id }).in("id", saleIds);
+    const adjIds = myAdjs.map((a) => a.id);
+    if (adjIds.length)
+      await db.from("ambassador_ledger_adjustments").update({ applied_to_payout_id: payout.id }).in("id", adjIds);
+
+    for (const [orgId, cents] of orgTotals) {
+      if (cents <= 0) continue;
+      const org = orgById.get(orgId);
+      await db.from("ambassador_payouts").insert({
+        ambassador_id: ambassadorId,
+        org_id: orgId,
+        payee_type: "org",
+        run_date: runDate,
+        total_cents: cents,
+        status: "queued",
+        method: org?.payout_method ?? null,
+        handle: org?.payout_handle ?? null,
+      });
+      created++;
+    }
+  }
+  return created;
 }
 
 async function sweepOne(db: DB, ent: EntRow, summary: Record<string, number>) {

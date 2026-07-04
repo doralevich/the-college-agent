@@ -5,6 +5,8 @@ import { getStripe } from "@/lib/stripe/client";
 import { sendOrderSummaryEmail, type OrderForEmail } from "@/lib/email/order-summary";
 import { sendAccountCreatedEmail } from "@/lib/email/account-created";
 import { findOrCreateAuthUser } from "@/lib/auth/find-or-create-user";
+import { ambassadorByPromoCode, ambassadorBySlug, AMBASSADOR_COUPON_OFF_CENTS, CLEARING_DAYS } from "@/lib/ambassador";
+import { currentPlanAmountCents } from "@/lib/pricing/intro-cutoff";
 
 // Stripe webhook. This is the ONLY thing that flips entitlements to 'active' (never a
 // user-facing button). It MUST stay out of the proxy.ts auth matcher (no redirects) and
@@ -50,6 +52,15 @@ export async function POST(req: Request) {
       case "customer.subscription.deleted":
         await syncBySubscription(db, (event.data.object as Stripe.Subscription).id, "canceled");
         break;
+      // Ambassador clawbacks: a refund inside the 7-day window kills a pending sale;
+      // a refund or chargeback on an already-cleared sale writes a negative ledger
+      // entry against the ambassador's future earnings and decrements their tier count.
+      case "charge.refunded":
+        await handleAmbassadorReversal(db, idOf((event.data.object as Stripe.Charge).payment_intent), "late_refund");
+        break;
+      case "charge.dispute.created":
+        await handleAmbassadorReversal(db, idOf((event.data.object as Stripe.Dispute).payment_intent), "chargeback");
+        break;
       case "customer.subscription.updated": {
         const sub = event.data.object as Stripe.Subscription;
         const mapped = mapSubStatus(sub.status);
@@ -79,6 +90,16 @@ async function handleCheckoutCompleted(db: DB, session: Stripe.Checkout.Session)
   if (session.metadata?.type === "credits_topup") {
     await handleCreditsTopup(db, session);
     return;
+  }
+
+  // Ambassador attribution for plan purchases — best-effort; a failure here must
+  // never block account fulfillment (the sale can be reconstructed by admin).
+  if (session.metadata?.plan_lookup) {
+    try {
+      await recordAmbassadorSale(db, session);
+    } catch (err) {
+      console.error("[stripe webhook] ambassador sale", session.id, err);
+    }
   }
 
   const orderId = session.metadata?.order_id ?? session.client_reference_id ?? null;
@@ -375,6 +396,135 @@ function idOf(v: string | { id: string } | null | undefined): string | null {
 function subIdFromInvoice(invoice: Stripe.Invoice): string | null {
   const sub = (invoice as unknown as { subscription?: string | { id: string } | null }).subscription;
   return idOf(sub ?? null);
+}
+
+// ---- Ambassador program (July 2026 PRD) ----
+
+// Record an attributed sale. Attribution: a promotion code entered at checkout wins;
+// the /r/{slug} link cookie (carried on session metadata) attributes only when no code
+// was entered. Self-referrals are rejected. Cluster signals (same card fingerprint,
+// rapid bursts) hold the sale in `review` for admin instead of auto-paying.
+async function recordAmbassadorSale(db: DB, session: Stripe.Checkout.Session) {
+  const stripe = getStripe();
+  const { data: existing } = await db
+    .from("ambassador_sales")
+    .select("id")
+    .eq("stripe_session_id", session.id)
+    .maybeSingle();
+  if (existing) return; // replayed delivery
+
+  const expanded = await stripe.checkout.sessions.retrieve(session.id, {
+    expand: ["discounts.promotion_code", "payment_intent.latest_charge"],
+  });
+
+  let couponCode: string | null = null;
+  for (const d of expanded.discounts ?? []) {
+    const pc = (d as { promotion_code?: string | Stripe.PromotionCode | null }).promotion_code;
+    if (pc && typeof pc !== "string") {
+      couponCode = pc.code;
+      break;
+    }
+    if (typeof pc === "string") {
+      couponCode = (await stripe.promotionCodes.retrieve(pc)).code;
+      break;
+    }
+  }
+
+  let amb = couponCode ? await ambassadorByPromoCode(couponCode) : null;
+  const viaCode = !!amb;
+  if (!amb && session.metadata?.ambassador_slug) {
+    amb = await ambassadorBySlug(session.metadata.ambassador_slug);
+  }
+  if (!amb) return; // house / organic sale — the orders table already records it
+
+  const purchaserEmail = (session.customer_details?.email ?? session.customer_email ?? "").toLowerCase();
+  if (purchaserEmail && purchaserEmail === amb.email.toLowerCase()) {
+    console.warn("[ambassador] self-referral blocked", amb.id, purchaserEmail);
+    return;
+  }
+
+  const pi = expanded.payment_intent;
+  const piObj = pi && typeof pi !== "string" ? pi : null;
+  const charge = piObj?.latest_charge && typeof piObj.latest_charge !== "string" ? piObj.latest_charge : null;
+  const fingerprint = charge?.payment_method_details?.card?.fingerprint ?? null;
+
+  let status = "pending";
+  let reviewReason: string | null = null;
+  if (fingerprint) {
+    const { data: dupes } = await db
+      .from("ambassador_sales")
+      .select("id")
+      .eq("ambassador_id", amb.id)
+      .eq("card_fingerprint", fingerprint)
+      .limit(1);
+    if (dupes && dupes.length > 0) {
+      status = "review";
+      reviewReason = "same card fingerprint as an earlier signup under this ambassador";
+    }
+  }
+  if (status === "pending") {
+    const hourAgo = new Date(Date.now() - 3600_000).toISOString();
+    const { count } = await db
+      .from("ambassador_sales")
+      .select("id", { count: "exact", head: true })
+      .eq("ambassador_id", amb.id)
+      .gte("created_at", hourAgo);
+    if ((count ?? 0) >= 3) {
+      status = "review";
+      reviewReason = "rapid signup burst";
+    }
+  }
+
+  await db.from("ambassador_sales").insert({
+    ambassador_id: amb.id,
+    org_id: amb.org_id,
+    purchaser_email: purchaserEmail || null,
+    stripe_customer_id: idOf(session.customer),
+    stripe_payment_intent_id: idOf(session.payment_intent),
+    stripe_session_id: session.id,
+    coupon_code_used: couponCode,
+    card_fingerprint: fingerprint,
+    gross_cents: currentPlanAmountCents() - (viaCode ? AMBASSADOR_COUPON_OFF_CENTS : 0),
+    status,
+    review_reason: reviewReason,
+    clears_at: new Date(Date.now() + CLEARING_DAYS * 86_400_000).toISOString(),
+  });
+}
+
+// Refunds/chargebacks. Pending (or review) sales just flip status — no payout was ever
+// owed. Cleared sales additionally write a negative ledger adjustment (netted against
+// the ambassador's FUTURE earnings on the next payout run) and decrement the lifetime
+// cleared count so the $75/$100 tier stays honest. Already-paid sales are not reopened.
+async function handleAmbassadorReversal(db: DB, paymentIntentId: string | null, reason: "late_refund" | "chargeback") {
+  if (!paymentIntentId) return;
+  const { data } = await db
+    .from("ambassador_sales")
+    .select("id, ambassador_id, status, bounty_cents")
+    .eq("stripe_payment_intent_id", paymentIntentId)
+    .maybeSingle();
+  if (!data) return;
+  const sale = data as { id: string; ambassador_id: string | null; status: string; bounty_cents: number | null };
+  if (sale.status === "refunded" || sale.status === "reversed") return;
+  const newStatus = reason === "chargeback" ? "reversed" : "refunded";
+
+  await db.from("ambassador_sales").update({ status: newStatus }).eq("id", sale.id);
+  if (sale.status !== "cleared") return; // never cleared → nothing owed, nothing to claw back
+
+  if (sale.ambassador_id && sale.bounty_cents) {
+    await db.from("ambassador_ledger_adjustments").insert({
+      ambassador_id: sale.ambassador_id,
+      sale_id: sale.id,
+      amount_cents: -sale.bounty_cents,
+      reason,
+    });
+    const { data: amb } = await db
+      .from("ambassadors")
+      .select("cleared_referral_count")
+      .eq("id", sale.ambassador_id)
+      .maybeSingle();
+    const next = Math.max(0, ((amb?.cleared_referral_count as number | undefined) ?? 1) - 1);
+    await db.from("ambassadors").update({ cleared_referral_count: next }).eq("id", sale.ambassador_id);
+  }
 }
 
 // findOrCreateAuthUser lives in lib/auth/find-or-create-user.ts so both the

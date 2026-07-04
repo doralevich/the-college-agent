@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 type AmbassadorRequest = {
   // Personal Information
@@ -90,6 +91,30 @@ export async function POST(req: NextRequest) {
     // All three agreements must be checked — the program terms hinge on them.
     if (!data.agreeIndependent || !data.agreeCommissions || !data.agreeProfessional) {
       return NextResponse.json({ error: "Please confirm all three agreements." }, { status: 400 });
+    }
+
+    // The application IS the ambassador record: stored as `pending` for admin review.
+    // Approval (in /admin/ambassadors) mints the Stripe promo code and /r link.
+    try {
+      const db = createAdminClient();
+      await db.from("ambassadors").upsert(
+        [
+          {
+            full_name: fullName,
+            email: email.toLowerCase(),
+            phone: mobile,
+            school: university,
+            notes: [`Grad year: ${graduationYear}`, `Major: ${major}`, whyInterested && `Why: ${whyInterested}`]
+              .filter(Boolean)
+              .join("\n")
+              .slice(0, 2000),
+          },
+        ],
+        { onConflict: "email", ignoreDuplicates: true }
+      );
+    } catch (dbErr) {
+      // The email to David below is the fallback record; never fail the application.
+      console.error("ambassador-request: db insert failed", dbErr);
     }
 
     const mandrillKey = process.env.MANDRILL_API_KEY;
