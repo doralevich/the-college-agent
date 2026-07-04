@@ -4,6 +4,7 @@ import { isAdminEmail } from "@/config/admins";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/client";
 import { approveAmbassador } from "@/lib/ambassador";
+import { sendAmbassadorWelcomeEmail } from "@/lib/email/ambassador-welcome";
 
 // Admin controls for the ambassador program: approve applicants (mints the Stripe
 // promo code + /r link), suspend, W-9 flag, payout details, fraud-review decisions,
@@ -58,6 +59,16 @@ export const POST = route(async (req) => {
   switch (body.action) {
     case "approve": {
       const amb = await approveAmbassador(getStripe(), body.id);
+      // Welcome email with their code, link, dashboard, and where the assets live.
+      // Best-effort: approval stands even if delivery hiccups.
+      if (amb.stripe_promo_code && amb.referral_slug) {
+        await sendAmbassadorWelcomeEmail({
+          email: amb.email,
+          fullName: amb.full_name,
+          code: amb.stripe_promo_code,
+          slug: amb.referral_slug,
+        });
+      }
       return json({ ok: true, ambassador: amb });
     }
     case "suspend": {
