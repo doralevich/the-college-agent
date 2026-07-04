@@ -143,7 +143,7 @@ export default function AmbassadorPage() {
           </div>
         </section>
 
-        <section className="affiliate-section dark-section why-become-section">
+        <section className="affiliate-section why-become-section">
           <div className="affiliate-glow why-become-glow" />
           <div className="affiliate-shell why-become-shell">
             <div className="why-become">
@@ -737,6 +737,7 @@ export default function AmbassadorPage() {
         .why-become-section {
           position: relative;
           overflow: hidden;
+          background: #fff;
         }
         .why-become-glow {
           left: auto;
@@ -744,6 +745,7 @@ export default function AmbassadorPage() {
           top: -120px;
           width: 520px;
           height: 520px;
+          background: radial-gradient(circle, rgba(61,139,61,.10), transparent 62%);
         }
         .why-become-shell {
           position: relative;
@@ -787,20 +789,20 @@ export default function AmbassadorPage() {
         .why-become h2 {
           font-size: 36px;
           font-weight: 800;
-          color: #fff;
+          color: var(--navy);
           line-height: 1.15;
           margin: 0 0 12px;
         }
         .why-become h4 {
           font-size: 24px;
           font-weight: 600;
-          color: rgba(255,255,255,.85);
+          color: rgba(11,23,41,.75);
           line-height: 1.3;
           margin: 0 0 16px;
         }
         .why-become p {
           font-size: 15.5px;
-          color: rgba(255,255,255,.65);
+          color: rgba(11,23,41,.65);
           line-height: 1.7;
           margin: 0;
         }
