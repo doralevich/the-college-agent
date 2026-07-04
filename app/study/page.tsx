@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     description:
       "The College Agent is your AI study companion — turning notes into study guides, building review schedules, and helping you actually prepare instead of just showing up.",
     url: "https://thecollegeagent.ai/study",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "The College Agent" }],
+    images: [{ url: "/og-image.jpg", width: 1200, height: 1200, alt: "The College Agent" }],
   },
 };
 

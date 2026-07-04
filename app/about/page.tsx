@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     description:
       "The College Agent is a personal AI companion built by Apollo Claw to solve the real challenges college students face — from freshman orientation to senior career planning.",
     url: "https://thecollegeagent.ai/about",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "The College Agent" }],
+    images: [{ url: "/og-image.jpg", width: 1200, height: 1200, alt: "The College Agent" }],
   },
 };
 

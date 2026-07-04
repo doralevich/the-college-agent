@@ -66,10 +66,10 @@ export const metadata: Metadata = {
     siteName: "The College Agent",
     images: [
       {
-        url: "/og-image.png",
+        url: "/og-image.jpg",
         width: 1200,
-        height: 630,
-        alt: "The College Agent icon",
+        height: 1200,
+        alt: "The College Agent",
       },
     ],
   },
@@ -78,7 +78,7 @@ export const metadata: Metadata = {
     title: "The College Agent — Your Personal AI for All 4 Years of College",
     description:
       "The College Agent is a personal AI companion that grows with you through college — managing classes, study, internships, social life, and career planning from freshman year to graduation.",
-    images: ["/og-image.png"],
+    images: ["/og-image.jpg"],
   },
 };
 

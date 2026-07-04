@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     description:
       "AI productivity, academic success, internship, and student life advice from The College Agent.",
     url: "https://thecollegeagent.ai/blog",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "The College Agent" }],
+    images: [{ url: "/og-image.jpg", width: 1200, height: 1200, alt: "The College Agent" }],
     type: "website",
   },
 };
