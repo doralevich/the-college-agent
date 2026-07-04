@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Nav from "../components/Nav";
 import { Footer } from "../components/Footer";
 import {
-  INTRO_PLAN_AMOUNT_CENTS,
-  REGULAR_PLAN_AMOUNT_CENTS,
+  PLAN_AMOUNT_CENTS,
   HOSTING_AMOUNT_CENTS,
+  HOSTING_ANNUAL_AMOUNT_CENTS,
 } from "@/lib/pricing/intro-cutoff";
 
 // The Terms students accept at checkout (the /build info step links here and the
@@ -19,16 +19,16 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://thecollegeagent.ai/terms" },
 };
 
-const TERMS_UPDATED = "July 3, 2026";
+const TERMS_UPDATED = "July 4, 2026";
 
 function price(cents: number): string {
-  return "$" + (cents / 100).toLocaleString("en-US", { maximumFractionDigits: 0 });
+  return "$" + (cents / 100).toLocaleString("en-US", { minimumFractionDigits: cents % 100 ? 2 : 0, maximumFractionDigits: 2 });
 }
 
 export default function TermsPage() {
-  const intro = price(INTRO_PLAN_AMOUNT_CENTS);
-  const regular = price(REGULAR_PLAN_AMOUNT_CENTS);
+  const plan = price(PLAN_AMOUNT_CENTS);
   const hosting = price(HOSTING_AMOUNT_CENTS);
+  const hostingAnnual = price(HOSTING_ANNUAL_AMOUNT_CENTS);
 
   return (
     <>
@@ -65,20 +65,20 @@ export default function TermsPage() {
           <Section title="4. Pricing &amp; Payment">
             <p>Current pricing, in USD:</p>
             <ul>
-              <li><strong>Agent build (one-time):</strong> {intro} at the introductory price through August 15, 2026; {regular} thereafter. The price shown at checkout is the price you pay.</li>
-              <li><strong>Cloud hosting:</strong> {hosting} per month, billed in advance on a recurring subscription.</li>
+              <li><strong>Platform fee (one-time):</strong> {plan}. The price shown at checkout is the price you pay; any discount or promotion code applied at checkout is reflected there.</li>
+              <li><strong>Cloud hosting:</strong> your choice of {hosting} per month or {hostingAnnual} per year (the annual price equals ten monthly payments), billed in advance on a recurring subscription that starts at purchase.</li>
               <li><strong>AI usage credits:</strong> $20 included with your purchase; optional top-ups available from your dashboard.</li>
             </ul>
-            <p>Payments are processed by Stripe. We never see or store your card number. By purchasing, you authorize us (through Stripe) to charge the one-time build fee and the recurring monthly hosting fee until you cancel. Prices do not include any applicable taxes, which are your responsibility where required by law.</p>
+            <p>Payments are processed by Stripe. We never see or store your card number. By purchasing, you authorize us (through Stripe) to charge the one-time platform fee and the recurring hosting fee on the billing interval you chose until you cancel. Prices do not include any applicable taxes, which are your responsibility where required by law.</p>
             <p>We may change hosting pricing with at least 30 days&apos; advance notice to you by email; changes apply from your next billing cycle after the notice period. Promotional pricing, referral rewards, and credits have no cash value and are not transferable.</p>
           </Section>
 
           <Section title="5. 7-Day Refund Guarantee">
             <p><strong>If The College Agent is not for you, tell us within 7 days and we will refund you.</strong> Here is exactly how it works:</p>
             <ul>
-              <li><strong>Window:</strong> You may request a full refund of your one-time agent build fee and your first month&apos;s hosting fee within 7 calendar days of your purchase (the date of your Stripe payment). A request made at any time up to 11:59 PM Eastern Time on the 7th day is within the window.</li>
+              <li><strong>Window:</strong> You may request a full refund of your one-time platform fee and your first hosting payment (monthly or annual) within 7 calendar days of your purchase (the date of your Stripe payment). A request made at any time up to 11:59 PM Eastern Time on the 7th day is within the window.</li>
               <li><strong>How to request:</strong> Email <a href="mailto:hello@thecollegeagent.ai" style={{ color: "var(--green)" }}>hello@thecollegeagent.ai</a> from the email address on your account with the subject &ldquo;Refund request.&rdquo; No forms, no phone calls, no questions required.</li>
-              <li><strong>What you get back:</strong> 100% of the agent build fee and your first month&apos;s hosting fee, returned to your original payment method through Stripe, normally within 5 to 10 business days of our confirmation.</li>
+              <li><strong>What you get back:</strong> 100% of the platform fee and your first hosting payment, returned to your original payment method through Stripe, normally within 5 to 10 business days of our confirmation.</li>
               <li><strong>What happens next:</strong> On refund, your agent is decommissioned and your account is closed. Download anything you want to keep from your dashboard before or promptly after requesting the refund; we will honor download requests for at least 14 days after the refund is issued.</li>
               <li><strong>Credits:</strong> The $20 of included AI usage credits are part of the refunded purchase and are forfeited. Separately purchased credit top-ups are refunded to the extent unused.</li>
             </ul>

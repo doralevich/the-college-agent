@@ -1,7 +1,7 @@
 import { ApiError, json, readJson, route } from "@/lib/http";
 import { getStripe } from "@/lib/stripe/client";
 import { priceIdFor } from "@/lib/stripe/prices";
-import { currentPlanLookup, HOSTING_LOOKUP } from "@/lib/pricing/intro-cutoff";
+import { currentPlanLookup, HOSTING_LOOKUP, HOSTING_ANNUAL_LOOKUP } from "@/lib/pricing/intro-cutoff";
 import { getOptionalUserId } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ensureReferralCoupon, resolveReferralCode } from "@/lib/referral";
@@ -27,6 +27,8 @@ type Body = {
   // Optional extra AI credits picked on the plan card ($10/$25/$50). Added as a
   // one-time line item; the webhook records it and provisioning delivers it.
   extraCreditsCents?: number;
+  // Hosting billing choice from the plan card: $25/month (default) or $250/year.
+  hostingInterval?: "monthly" | "annual";
 };
 
 // Only these add-on amounts exist in the UI; anything else is ignored, never billed.
@@ -60,13 +62,15 @@ export const POST = route(async (req) => {
   const lastName = (body.lastName ?? "").trim();
 
   const planLookup = currentPlanLookup();
+  const hostingInterval = body.hostingInterval === "annual" ? "annual" : "monthly";
+  const hostingLookup = hostingInterval === "annual" ? HOSTING_ANNUAL_LOOKUP : HOSTING_LOOKUP;
 
   let planPriceId: string;
   let hostingPriceId: string;
   try {
     [planPriceId, hostingPriceId] = await Promise.all([
       priceIdFor(planLookup),
-      priceIdFor(HOSTING_LOOKUP),
+      priceIdFor(hostingLookup),
     ]);
   } catch (e) {
     throw new ApiError(
@@ -85,9 +89,10 @@ export const POST = route(async (req) => {
   if (userId) metadata.user_id = userId;
   if (firstName) metadata.first_name = firstName;
   if (lastName) metadata.last_name = lastName;
+  metadata.hosting_interval = hostingInterval;
   // Proof of clickwrap acceptance, kept alongside the order in Stripe.
   metadata.terms_accepted_at = new Date().toISOString();
-  metadata.terms_version = "2026-07-03";
+  metadata.terms_version = "2026-07-04";
 
   const extraCreditsCents = EXTRA_CREDITS_ALLOWED_CENTS.includes(Number(body.extraCreditsCents))
     ? Number(body.extraCreditsCents)

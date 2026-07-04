@@ -18,8 +18,10 @@ const stripe = new Stripe(key);
 
 // lookup_key, display name, amount (cents), recurring interval ('month' | 'year' | false).
 const CATALOG = [
-  { key: "ca_monthly", name: "The College Agent (Monthly)", amount: 2999, recurring: "month" },
-  { key: "ca_annual", name: "The College Agent (School Year)", amount: 29999, recurring: "year" },
+  // Current model (July 2026 PRD): flat one-time platform fee + hosting monthly/annual.
+  { key: "ca_plan", name: "The College Agent (Platform Fee)", amount: 24999, recurring: false },
+  { key: "ca_hosting", name: "The College Agent — Hosting", amount: 2500, recurring: "month" },
+  { key: "ca_hosting_annual", name: "The College Agent — Hosting (Annual)", amount: 25000, recurring: "year" },
   { key: "plan_undergraduate", name: "The Undergraduate", amount: 19900, recurring: false },
   { key: "plan_graduate", name: "The Graduate", amount: 39900, recurring: false },
   { key: "plan_scholar", name: "The Scholar", amount: 59900, recurring: false },
@@ -34,7 +36,7 @@ const CATALOG = [
 
 // lookup_keys renamed during development — archive the old prices/products so the catalog
 // stays clean and priceIdFor never resolves a stale key. Safe no-op once they're gone.
-const ARCHIVED_KEYS = ["plan_basic", "support_6mo"];
+const ARCHIVED_KEYS = ["plan_basic", "support_6mo", "ca_monthly", "ca_annual", "ca_plan_intro", "ca_plan_regular"];
 
 async function findProduct(catalogKey) {
   const res = await stripe.products.search({ query: `metadata['catalog_key']:'${catalogKey}'`, limit: 1 });

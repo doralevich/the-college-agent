@@ -1,35 +1,36 @@
-// Intro-pricing cutoff for The College Agent one-time plan fee.
-// Through Aug 15 (inclusive, end-of-day Eastern) the plan is $499; from Aug 16
-// onwards it's $599. The server picks the lookup_key based on this at checkout
-// time, and the /build page mirrors the same logic for what to render.
+// Flat pricing per the July 2026 ambassador-program PRD (business numbers locked):
+// one-time platform fee $249.99, hosting $25/month or $250/year. The annual price IS
+// the discount ("2 months free" = 10 x $25), not a trial. The ambassador coupon takes
+// the one-time fee to $199.99 at checkout.
 //
-// Implemented as end-of-day Aug 15 in America/New_York (the US college timezone
-// most users will read it in) converted to UTC. ET ↔ UTC offset varies with
-// daylight-saving; mid-August always lands inside EDT (UTC-4) so end of Aug 15
-// ET = Aug 16 04:00:00 UTC.
+// This module used to carry the intro/regular Aug-15 cutoff. The intro mechanism is
+// retired; the old exports remain as aliases so every page that imported the pair
+// renders the same flat price, and introPromoActive() is simply false so promo
+// banners and "intro pricing" copy vanish everywhere without touching each page.
 
-const INTRO_CUTOFF_UTC = Date.UTC(2026, 7 /* August (0-indexed) */, 16, 4, 0, 0);
+export const PLAN_LOOKUP = "ca_plan";
+export const PLAN_AMOUNT_CENTS = 24999;
 
-export const INTRO_PLAN_LOOKUP = "ca_plan_intro";
-export const REGULAR_PLAN_LOOKUP = "ca_plan_regular";
-
-export const INTRO_PLAN_AMOUNT_CENTS = 49900;
-export const REGULAR_PLAN_AMOUNT_CENTS = 59900;
-export const HOSTING_AMOUNT_CENTS = 2500;
 export const HOSTING_LOOKUP = "ca_hosting";
+export const HOSTING_AMOUNT_CENTS = 2500;
+export const HOSTING_ANNUAL_LOOKUP = "ca_hosting_annual";
+export const HOSTING_ANNUAL_AMOUNT_CENTS = 25000;
 
-// True while the intro promo is still live. Pass a clock for deterministic tests.
-export function introPromoActive(now: Date = new Date()): boolean {
-  return now.getTime() < INTRO_CUTOFF_UTC;
-}
-
-export function currentPlanLookup(now: Date = new Date()): string {
-  return introPromoActive(now) ? INTRO_PLAN_LOOKUP : REGULAR_PLAN_LOOKUP;
-}
-
-export function currentPlanAmountCents(now: Date = new Date()): number {
-  return introPromoActive(now) ? INTRO_PLAN_AMOUNT_CENTS : REGULAR_PLAN_AMOUNT_CENTS;
-}
-
-// Human-readable date for the marketing banner (e.g. "August 15").
+// ---- Back-compat aliases (old intro/regular model) ----
+export const INTRO_PLAN_LOOKUP = PLAN_LOOKUP;
+export const REGULAR_PLAN_LOOKUP = PLAN_LOOKUP;
+export const INTRO_PLAN_AMOUNT_CENTS = PLAN_AMOUNT_CENTS;
+export const REGULAR_PLAN_AMOUNT_CENTS = PLAN_AMOUNT_CENTS;
 export const INTRO_CUTOFF_LABEL = "August 15";
+
+export function introPromoActive(_now: Date = new Date()): boolean {
+  return false;
+}
+
+export function currentPlanLookup(_now: Date = new Date()): string {
+  return PLAN_LOOKUP;
+}
+
+export function currentPlanAmountCents(_now: Date = new Date()): number {
+  return PLAN_AMOUNT_CENTS;
+}

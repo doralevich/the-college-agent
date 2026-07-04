@@ -64,7 +64,7 @@ export async function resolveReferralCode(
 }
 
 // The $25-off-once coupon referred friends get at checkout — exactly their first
-// month of hosting free ($499 plan stays intact). Created lazily on first use.
+// month of hosting free (the one-time platform fee stays intact). Created lazily on first use.
 export async function ensureReferralCoupon(stripe: Stripe): Promise<string> {
   try {
     await stripe.coupons.retrieve(REFERRAL_COUPON_ID);
