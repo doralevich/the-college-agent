@@ -7,6 +7,7 @@ import { NewsletterSignup } from "./NewsletterSignup";
 const CALENDLY = "https://calendly.com/therealdaveo/apolloai";
 
 const LINKS = [
+  { label: "Try the Demo", href: "/demo" },
   { label: "Book a Consultation", href: CALENDLY },
   { label: "Blog", href: "/blog" },
   { label: "Ambassador Program", href: "/ambassador" },
