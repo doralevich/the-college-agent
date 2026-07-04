@@ -284,12 +284,6 @@ const CLUBS_OPTIONS = [
   "None right now",
 ];
 const SPORTS_OPTIONS = ["Varsity", "Club", "Intramural", "Not right now"];
-const WORK_OPTIONS = [
-  "No, school is my focus",
-  "Yes, under 10 hrs/week",
-  "Yes, 10-20 hrs/week",
-  "Yes, 20+ hrs/week",
-];
 const AFTER_COLLEGE_OPTIONS = [
   "Straight into a career",
   "Grad / professional school",
@@ -329,7 +323,8 @@ const MAJOR_GROUPS: MajorGroup[] = (majorsData as { groups: MajorGroup[] }).grou
 // `tier: "tail"` -> shown unless the student exited early at wantTier2.
 type Tier = 2 | 3 | "tail";
 type Step =
-  | { kind: "text"; key: TextKey; prompt: string; placeholder?: string; inputType?: "text" | "email" | "tel"; required?: boolean; tier?: Tier }
+  // `showIf` gates conditional follow-ups (e.g. "Which one(s)?" only after a Yes).
+  | { kind: "text"; key: TextKey; prompt: string; placeholder?: string; inputType?: "text" | "email" | "tel"; required?: boolean; tier?: Tier; showIf?: (form: FormState) => boolean }
   | { kind: "textarea"; key: TextKey; prompt: string; placeholder?: string; required?: boolean; tier?: Tier }
   | { kind: "multi"; key: MultiKey; prompt: string; options: string[]; max?: number; required?: boolean; tier?: Tier }
   | { kind: "single"; key: SingleKey; prompt: string; options: string[]; required?: boolean; tier?: Tier }
@@ -362,6 +357,8 @@ type TextKey =
   | "school"
   | "major"
   | "minor"
+  | "greekOrg"
+  | "whichSports"
   | "anythingElse";
 type MultiKey =
   | "checkinFrequency"
@@ -458,9 +455,10 @@ const STEPS: Step[] = [
   { kind: "select", key: "minor", prompt: "Any minor or second focus?", placeholder: "Search minors...", groups: MAJOR_GROUPS, extraOptions: ["Not yet", "None"], tier: 3 },
   { kind: "single", key: "livingSituation", prompt: "Where are you living this year?", options: LIVING_OPTIONS, tier: 3 },
   { kind: "single", key: "greekLife", prompt: "Are you in a fraternity or sorority?", options: GREEK_OPTIONS, tier: 3 },
+  { kind: "text", key: "greekOrg", prompt: "Nice! Which one(s)?", placeholder: "Alpha Phi, Sigma Chi...", tier: 3, showIf: (f) => f.greekLife === "Yes" },
   { kind: "multi", key: "clubs", prompt: "What clubs or student orgs are you part of? Pick any that apply.", options: CLUBS_OPTIONS, tier: 3 },
   { kind: "multi", key: "sportsTeams", prompt: "Are you on any sports teams? Pick any that apply.", options: SPORTS_OPTIONS, tier: 3 },
-  { kind: "single", key: "workStatus", prompt: "Do you work or have a side hustle alongside school?", options: WORK_OPTIONS, tier: 3 },
+  { kind: "text", key: "whichSports", prompt: "Which sport?", placeholder: "Soccer, lacrosse, swimming...", tier: 3, showIf: (f) => f.sportsTeams.some((s) => s && s !== "Not right now") },
   { kind: "single", key: "afterCollege", prompt: "What are you hoping to do after college?", options: AFTER_COLLEGE_OPTIONS, tier: 3 },
   { kind: "multi", key: "academicStruggles", prompt: "What's hardest for you academically? Pick any that apply.", options: ACADEMIC_STRUGGLES_OPTIONS, tier: 3 },
   { kind: "multi", key: "stressReset", prompt: "When you get stressed or burnt out, what helps you reset? Pick any that fit.", options: STRESS_RESET_OPTIONS, tier: 3 },
@@ -488,8 +486,10 @@ type FormState = {
   minor: string;
   livingSituation: string;
   greekLife: string;
+  greekOrg: string;
   clubs: string[];
   sportsTeams: string[];
+  whichSports: string;
   workStatus: string;
   afterCollege: string;
   academicStruggles: string[];
@@ -518,8 +518,10 @@ const EMPTY: FormState = {
   minor: "",
   livingSituation: "",
   greekLife: "",
+  greekOrg: "",
   clubs: [],
   sportsTeams: [],
+  whichSports: "",
   workStatus: "",
   afterCollege: "",
   academicStruggles: [],
@@ -654,6 +656,8 @@ export function ConversationalOnboard({
     }
     return STEPS.filter((s) => {
       if ((s.kind === "text" || s.kind === "textarea" || s.kind === "typeahead") && prefilledKeys.has(s.key)) return false;
+      // Conditional follow-ups ("Which one(s)?") only exist while their trigger answer holds.
+      if (s.kind === "text" && s.showIf && !s.showIf(form)) return false;
       const tier = "tier" in s ? s.tier : undefined;
       // Default is to SHOW tier 2 / 3 / tail. Only hide when the student explicitly
       // tapped "no" on the matching branch, so the branch step's CTA stays
@@ -662,7 +666,8 @@ export function ConversationalOnboard({
       if (form.wantDeepDive === "no" && tier === 3) return false;
       return true;
     });
-  }, [form.wantTier2, form.wantDeepDive, prefill]);
+    // Depends on the whole form now that showIf follow-ups read arbitrary answers.
+  }, [form, prefill]);
 
   // Inject Fraunces + DM Sans (match the Welcome card's vibe).
   useEffect(() => {
@@ -841,8 +846,10 @@ export function ConversationalOnboard({
           minor: form.minor.trim(),
           livingSituation: form.livingSituation,
           greekLife: form.greekLife,
+          greekOrg: form.greekOrg.trim(),
           clubs: form.clubs,
           sportsTeams: form.sportsTeams,
+          whichSports: form.whichSports.trim(),
           workStatus: form.workStatus,
           afterCollege: form.afterCollege,
           academicStruggles: form.academicStruggles,

@@ -14,6 +14,7 @@ export const metadata: Metadata = {
     description:
       "Represent one of the first AI platforms built for college students. Build your resume, gain real-world experience, and earn commissions.",
     url: "https://thecollegeagent.ai/ambassador",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "The College Agent" }],
   },
   twitter: {
     title: "Become a College Agent Campus Ambassador",
