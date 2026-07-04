@@ -67,13 +67,10 @@ export default function AmbassadorApplyPage() {
         }
         .apply-hero {
           position: relative;
-          padding: 64px 0 80px;
+          padding: 48px 0 56px;
           overflow: hidden;
         }
-        .affiliate-hero.dark-section {
-          background: linear-gradient(180deg, #0b1729 0%, #131f33 100%);
-          color: #fff;
-        }
+        /* hero uses the site's standard .dark-section navy + grid */
         .affiliate-glow {
           position: absolute;
           inset: 0;
