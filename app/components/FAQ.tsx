@@ -4,44 +4,52 @@ import { useState } from "react";
 
 const FAQS = [
   {
-    q: "What is Hermes?",
-    a: "Hermes is the proven student agent framework that powers all College Agent deployments. It is pre-configured with battle-tested student workflows and is designed to be fast to deploy, deeply personal, and built specifically for how students actually live and work.",
+    q: "What is The College Agent?",
+    a: "Your own personal AI agent, built around your classes, your calendar, and your life. It is personalized from a short intake (your school, classes, goals, and how you like to work), runs 24/7 in the cloud, and is reachable from your dashboard and on Telegram.",
   },
   {
-    q: "What plans are available?",
-    a: "There are three tiers: The Undergraduate ($999), The Graduate ($1,499), and The Scholar ($1,999). All three are built on Hermes and include cloud hosting, web portal access, Telegram access, and Brave Search. The Graduate and Scholar include enhanced onboarding forms, a live onboarding call, and post-launch support.",
+    q: "What does it cost?",
+    a: "One plan, everything included: $249.99 one-time to build and configure your agent, plus cloud hosting at $25/month or $250/year (the annual price is ten months, so two months are free). Every new account starts with $20 of AI usage credits.",
   },
   {
-    q: "Do all plans come with the same hosting options?",
-    a: "Yes. All deployments use Apollo Claw cloud hosting. Basic is $89/month, Pro is $159/month. Hosting is required for all College Agent deployments.",
+    q: "Is there a refund policy?",
+    a: "Yes. There is a 7-day money-back guarantee: if The College Agent is not for you, tell us within 7 days of purchase and we refund your platform fee and first hosting payment in full. The details are in our Terms & Conditions.",
   },
   {
-    q: "What does the co-training period include?",
-    a: "The co-training period is included in your setup fee. During this time, we work alongside you and your agent, refining how it responds, adjusting integrations, and making sure it fits the way you actually work and think. It is hands-on, not a tutorial.",
+    q: "How fast is my agent live?",
+    a: "The intake takes about five minutes: name your agent, give it a face, add your classes. Once it is submitted, your agent is provisioned automatically and fully live within 30 minutes.",
   },
   {
-    q: "What happens after the co-training period?",
-    a: "You can continue with an optional support plan (6 Months at $750 or Annual at $1,200) or go fully independent with your agent. There is no mandatory ongoing fee after co-training ends, other than your monthly hosting.",
+    q: "What can it actually do?",
+    a: "Turn syllabi into tracked deadlines, build study plans and quiz you before tests, draft emails to professors in your voice, watch your calendar and inbox, plan travel, remember birthdays, manage your budget, and run your internship pipeline. It takes action in the tools you already use.",
   },
   {
-    q: "Can I change my integrations after setup?",
-    a: "Yes. Integration changes can be made during the co-training period at no additional charge. After co-training, integration updates are handled through your support plan.",
+    q: "What tools does it connect to?",
+    a: "Canvas, Blackbaud, Google Classroom, Gmail, Google Calendar, Outlook, Microsoft Teams, Google Drive, Dropbox, Notion, Todoist, LinkedIn, and thousands more through the Integrations tab in your dashboard.",
+  },
+  {
+    q: "Do I need my own AI account?",
+    a: "No. Your plan includes $20 of AI usage credits, and you can top up from your dashboard ($10, $25, or $50) with low-balance alerts and optional auto-recharge. Advanced users can bring their own Anthropic or OpenAI API key instead.",
   },
   {
     q: 'What is a "named persona" and why does it matter?',
-    a: "Your agent has a name you choose, and it is trained on your communication style, your tone, your priorities, and your context. It does not sound like a generic chatbot. Over time, it sounds like a version of you, which is the point.",
-  },
-  {
-    q: "Is there a Mac Mini or hardware option?",
-    a: "No. The College Agent is cloud-only. This keeps it accessible from anywhere (dorms, libraries, apartments) without requiring hardware you have to carry between locations.",
+    a: "Your agent has a name and face you choose, and it is trained on your communication style, your tone, your priorities, and your context. It does not sound like a generic chatbot. Over time, it sounds like a version of you, which is the point.",
   },
   {
     q: "Who is this for?",
-    a: "Undergrads, graduate students, and pre-professional students who want an AI personal agent that actually knows their life, their schedule, their goals, and their voice, not a generic tool that treats every user the same.",
+    a: "High schoolers getting ready for college, undergrads, graduate students, and pre-professional students who want an AI agent that actually knows their life, their schedule, their goals, and their voice, not a generic tool that treats every user the same.",
   },
   {
     q: "Can someone purchase this as a gift?",
-    a: "Absolutely. A parent, grandparent, friend, coach, or anyone can purchase a College Agent for their student. The configurator can be completed together or separately. The agent is built for the student.",
+    a: "Absolutely. A parent, grandparent, friend, coach, or anyone can purchase a College Agent for their student. The student completes the intake themselves, so the agent is built for them.",
+  },
+  {
+    q: "Can I pause hosting over the summer?",
+    a: "Yes. Hosting can be canceled or paused any time from your dashboard, and your files stay yours: you can download everything whenever you want.",
+  },
+  {
+    q: "Is there hardware to buy?",
+    a: "No. The College Agent is cloud-only. It works from any device (dorm, library, phone) and can be added to your home screen like an app.",
   },
 ];
 

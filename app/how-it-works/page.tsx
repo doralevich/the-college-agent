@@ -3,11 +3,8 @@ import Nav from "../components/Nav";
 import { PageHero } from "../components/PageHero";
 import { Footer } from "../components/Footer";
 import {
-  INTRO_CUTOFF_LABEL,
   INTRO_PLAN_AMOUNT_CENTS,
-  REGULAR_PLAN_AMOUNT_CENTS,
   HOSTING_AMOUNT_CENTS,
-  introPromoActive,
 } from "@/lib/pricing/intro-cutoff";
 
 export const metadata: Metadata = {
@@ -26,13 +23,11 @@ export const metadata: Metadata = {
 
 function price(cents: number): string {
   const dollars = cents / 100;
-  return "$" + dollars.toLocaleString("en-US", { maximumFractionDigits: 0 });
+  return "$" + dollars.toLocaleString("en-US", { minimumFractionDigits: cents % 100 ? 2 : 0, maximumFractionDigits: 2 });
 }
 
 export default function HowItWorksPage() {
-  const promo = introPromoActive();
-  const plan = price(promo ? INTRO_PLAN_AMOUNT_CENTS : REGULAR_PLAN_AMOUNT_CENTS);
-  const regular = price(REGULAR_PLAN_AMOUNT_CENTS);
+    const plan = price(INTRO_PLAN_AMOUNT_CENTS);
   const hosting = price(HOSTING_AMOUNT_CENTS);
 
   const steps = [
@@ -42,7 +37,7 @@ export default function HowItWorksPage() {
     },
     {
       title: "Pay for your agent",
-      body: `One plan, everything included: ${plan} one-time to build and configure your personal agent${promo ? ` (intro pricing through ${INTRO_CUTOFF_LABEL}; ${regular} after)` : ""}, plus ${hosting}/month for cloud hosting that keeps it running 24/7. Your plan includes $20 of AI usage credits to get you started. Checkout is handled by Stripe; we never see your card number. You can cancel hosting any time and pause over the summer.`,
+      body: `One plan, everything included: ${plan} one-time to build and configure your personal agent, plus cloud hosting that keeps it running 24/7: your choice of ${hosting}/month or $250/year (the annual price is ten months, so two months are free). Your plan includes $20 of AI usage credits to get you started. Checkout is handled by Stripe; we never see your card number, and there is a 7-day money-back guarantee. You can cancel hosting any time and pause over the summer.`,
     },
     {
       title: "Check your email",

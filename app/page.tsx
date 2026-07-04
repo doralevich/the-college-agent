@@ -8,12 +8,7 @@ import IntegrationGlobe from "./components/IntegrationGlobe";
 import { Footer } from "./components/Footer";
 import { BookOpenCheck, Blocks, BriefcaseBusiness, GraduationCap, Mail, Network, NotebookTabs, ShieldCheck, Sparkles } from "lucide-react";
 import { categoryLabel, getCollegeAgentPosts } from "@/lib/sanity-blog";
-import {
-  INTRO_PLAN_AMOUNT_CENTS,
-  REGULAR_PLAN_AMOUNT_CENTS,
-  HOSTING_AMOUNT_CENTS,
-  introPromoActive,
-} from "@/lib/pricing/intro-cutoff";
+import { INTRO_PLAN_AMOUNT_CENTS, HOSTING_AMOUNT_CENTS } from "@/lib/pricing/intro-cutoff";
 
 const CALENDLY = "https://calendly.com/therealdaveo/apolloai";
 
@@ -22,7 +17,7 @@ const CALENDLY = "https://calendly.com/therealdaveo/apolloai";
 export const revalidate = 300;
 
 function price(cents: number): string {
-  return "$" + (cents / 100).toLocaleString("en-US", { maximumFractionDigits: 0 });
+  return "$" + (cents / 100).toLocaleString("en-US", { minimumFractionDigits: cents % 100 ? 2 : 0, maximumFractionDigits: 2 });
 }
 
 export const metadata: Metadata = {
@@ -86,7 +81,7 @@ const POWER_ASKS = [
 ];
 
 function buildJsonLd() {
-  const planPrice = ((introPromoActive() ? INTRO_PLAN_AMOUNT_CENTS : REGULAR_PLAN_AMOUNT_CENTS) / 100).toFixed(0);
+  const planPrice = (INTRO_PLAN_AMOUNT_CENTS / 100).toFixed(2);
   const hostingPrice = (HOSTING_AMOUNT_CENTS / 100).toFixed(0);
   return {
   "@context": "https://schema.org",
@@ -161,7 +156,7 @@ function buildJsonLd() {
           name: "What does The College Agent cost?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: `The College Agent is $${planPrice} one-time to build your agent, plus $${hostingPrice}/month cloud hosting, with $20 of AI usage credits included. There is a 7-day money-back guarantee. Visit thecollegeagent.ai/build to get started.`,
+            text: `The College Agent is $${planPrice} one-time to build your agent, plus cloud hosting at $${hostingPrice}/month or $250/year (two months free on annual), with $20 of AI usage credits included. There is a 7-day money-back guarantee. Visit thecollegeagent.ai/build to get started.`,
           },
         },
       ],
@@ -315,7 +310,7 @@ export default async function Home() {
           <div className="process-grid">
             {[
               { n: "1", phase: "Step 1", title: "Sign Up", desc: "Two minutes at thecollegeagent.ai/build: your name, school email, and phone. No account to create first, no password to invent." },
-              { n: "2", phase: "Step 2", title: "One Plan, Everything Included", desc: `${price(introPromoActive() ? INTRO_PLAN_AMOUNT_CENTS : REGULAR_PLAN_AMOUNT_CENTS)} one-time to build your agent plus ${price(HOSTING_AMOUNT_CENTS)}/month hosting, with $20 of AI credits included. Secure checkout by Stripe and a 7-day money-back guarantee.` },
+              { n: "2", phase: "Step 2", title: "One Plan, Everything Included", desc: `${price(INTRO_PLAN_AMOUNT_CENTS)} one-time to build your agent, plus hosting at ${price(HOSTING_AMOUNT_CENTS)}/month or $250/year (two months free), with $20 of AI credits included. Secure checkout by Stripe and a 7-day money-back guarantee.` },
               { n: "3", phase: "Step 3", title: "Five-Minute Intake", desc: "Name your agent, give it a face, and tell it about your school, your classes, and how you like to work. It saves as you go." },
               { n: "4", phase: "Step 4", title: "Your Agent Comes to Life", desc: "Live within 30 minutes: personalized with everything you shared, in your dashboard and on Telegram. Feed it a syllabus and watch it go." },
             ].map((step) => (

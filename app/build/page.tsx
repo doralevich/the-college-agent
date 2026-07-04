@@ -1,21 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import BuildNav from "../components/BuildNav";
 import ChatBot from "../components/ChatBot";
 import {
-  INTRO_PLAN_AMOUNT_CENTS,
-  REGULAR_PLAN_AMOUNT_CENTS,
+  PLAN_AMOUNT_CENTS,
   HOSTING_AMOUNT_CENTS,
-  introPromoActive,
+  HOSTING_ANNUAL_AMOUNT_CENTS,
 } from "@/lib/pricing/intro-cutoff";
 
-// Single price model: one-time plan fee ($499 intro thru Aug 15, $599 after)
-// PLUS recurring monthly hosting ($25/mo). The Stripe Checkout Session bundles
-// both line items (see app/api/build/checkout); we POST to that endpoint and
-// redirect to the returned session.url so students land on a session WE created
-// (with user_id metadata), not a static Payment Link — the metadata is what lets
-// the webhook activate the right account on payment.
+// Single price model: one-time platform fee ($249.99) PLUS recurring hosting, the
+// student's choice of $25/month or $250/year (annual = 10 x monthly, 2 months free).
+// The Stripe Checkout Session bundles both line items (see app/api/build/checkout);
+// we POST to that endpoint and redirect to the returned session.url so students land
+// on a session WE created (with user_id metadata), not a static Payment Link — the
+// metadata is what lets the webhook activate the right account on payment.
 
 const FONTS_HREF =
   "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap";
@@ -53,6 +52,8 @@ export default function BuildPage() {
   // Optional extra credits on top of the included $20 — default none. Added as a
   // one-time Stripe line item; delivered to the agent at provisioning.
   const [extraCents, setExtraCents] = useState(0);
+  // Hosting billing choice: $25/month or $250/year (2 months free on annual).
+  const [hostingInterval, setHostingInterval] = useState<"monthly" | "annual">("monthly");
   // Referral code from ?ref=... — kept in localStorage so it survives the multi-step
   // flow and a canceled-checkout round trip. Applied server-side at checkout.
   const [ref, setRef] = useState<string>("");
@@ -86,12 +87,9 @@ export default function BuildPage() {
     };
   }, []);
 
-  // Intro promo status — read once per render. Server resolves the same flag at
-  // checkout time, so what the student sees on /build matches what they pay.
-  const promoActive = useMemo(() => introPromoActive(), []);
-  const planPriceCents = promoActive ? INTRO_PLAN_AMOUNT_CENTS : REGULAR_PLAN_AMOUNT_CENTS;
-  const planPrice = formatPrice(planPriceCents);
+  const planPrice = formatPrice(PLAN_AMOUNT_CENTS);
   const hostingPrice = formatPrice(HOSTING_AMOUNT_CENTS);
+  const hostingAnnualPrice = formatPrice(HOSTING_ANNUAL_AMOUNT_CENTS);
 
   function continueToPlan() {
     setError(null);
@@ -152,6 +150,7 @@ export default function BuildPage() {
           firstName: info.firstName.trim(),
           lastName: info.lastName.trim(),
           termsAccepted: agreeTerms,
+          hostingInterval,
           ...(extraCents > 0 ? { extraCreditsCents: extraCents } : {}),
           ...(ref ? { ref } : {}),
         }),
@@ -233,8 +232,31 @@ export default function BuildPage() {
                     <span className="ca-price">{planPrice}</span>
                     <span className="ca-period">one-time</span>
                   </div>
+                  <div className="ca-extra" style={{ marginTop: 0 }}>
+                    <p className="ca-extra-label">
+                      Cloud hosting <span>(keeps your agent running 24/7)</span>
+                    </p>
+                    <div className="ca-extra-chips" role="group" aria-label="Hosting billing">
+                      <button
+                        type="button"
+                        className={hostingInterval === "monthly" ? "is-active" : ""}
+                        onClick={() => setHostingInterval("monthly")}
+                      >
+                        {hostingPrice}/month
+                      </button>
+                      <button
+                        type="button"
+                        className={hostingInterval === "annual" ? "is-active" : ""}
+                        onClick={() => setHostingInterval("annual")}
+                      >
+                        {hostingAnnualPrice}/year
+                      </button>
+                    </div>
+                  </div>
                   <p className="ca-savenote">
-                    Plus {hostingPrice}/month for cloud hosting. Cancel hosting any time.
+                    {hostingInterval === "annual"
+                      ? `Annual hosting is 10 months' price: 2 months free. Cancel any time.`
+                      : `Cancel hosting any time, pause over summer.`}
                   </p>
                   {ref && (
                     <p className="ca-savenote" style={{ color: "var(--ca-green)", fontWeight: 600 }}>

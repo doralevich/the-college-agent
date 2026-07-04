@@ -15,13 +15,11 @@ type CatalogItem = {
 };
 
 const CATALOG: CatalogItem[] = [
-  // The College Agent — new pricing model: one-time plan fee + monthly hosting.
-  // Intro vs regular flips on the Aug 15 cutoff (lib/pricing/intro-cutoff.ts);
-  // the checkout route picks the right key per-request, but both stay seeded so
-  // either can resolve immediately.
-  { key: "ca_plan_intro", name: "The College Agent (Intro, thru Aug 15)", amount: 49900, recurring: false },
-  { key: "ca_plan_regular", name: "The College Agent (Plan)", amount: 59900, recurring: false },
+  // The College Agent — flat pricing per the July 2026 PRD: $249.99 one-time platform
+  // fee, hosting $25/month or $250/year (annual = 10 x monthly, "2 months free").
+  { key: "ca_plan", name: "The College Agent (Platform Fee)", amount: 24999, recurring: false },
   { key: "ca_hosting", name: "The College Agent — Hosting", amount: 2500, recurring: "month" },
+  { key: "ca_hosting_annual", name: "The College Agent — Hosting (Annual)", amount: 25000, recurring: "year" },
   // Legacy configurator catalog (multi-tier /build configurator) — keep seeded for
   // back-compat until those routes go away.
   { key: "plan_undergraduate", name: "The Undergraduate", amount: 19900, recurring: false },
@@ -36,10 +34,10 @@ const CATALOG: CatalogItem[] = [
   { key: "hosting_max", name: "Hosting - Max", amount: 9900, recurring: "month" },
 ];
 
-// Old recurring College Agent prices ($29.99/mo, $299.99/yr). The new model splits
-// the plan (one-time) from hosting (monthly), so these are deactivated. Existing
+// Old recurring College Agent prices ($29.99/mo, $299.99/yr) plus the retired
+// intro/regular one-time pair ($499/$599, replaced by flat ca_plan). Existing
 // subscribers keep paying their original price until they cancel/migrate.
-const ARCHIVED_KEYS = ["plan_basic", "support_6mo", "ca_monthly", "ca_annual"];
+const ARCHIVED_KEYS = ["plan_basic", "support_6mo", "ca_monthly", "ca_annual", "ca_plan_intro", "ca_plan_regular"];
 
 export type SeedRow = {
   key: string;
@@ -55,6 +53,16 @@ export type SeedResult = {
   rows: SeedRow[];
   archived: string[];
 };
+
+// Self-heal for a single catalog entry: lets priceIdFor create a just-introduced
+// price on first use in an environment nobody has re-seeded yet (e.g. right after a
+// repricing deploy). Returns null for lookup keys that aren't ours to create.
+export async function ensureCatalogPrice(lookupKey: string): Promise<string | null> {
+  const item = CATALOG.find((c) => c.key === lookupKey);
+  if (!item) return null;
+  const row = await upsert(item, getStripe());
+  return row.price;
+}
 
 export async function seedStripeCatalog(): Promise<SeedResult> {
   const stripe = getStripe();
