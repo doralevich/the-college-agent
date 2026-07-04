@@ -19,6 +19,7 @@ type Me = {
   };
   stats: { pendingCount: number; clearedUnpaidCents: number; unappliedAdjCents: number; paidCents: number };
   payouts: Array<{ run_date: string; total_cents: number; status: string }>;
+  signups: Array<{ when: string; who: string; status: string; bounty_cents: number | null }>;
 };
 
 const usd = (cents: number) =>
@@ -185,6 +186,32 @@ export function AmbassadorDashboard() {
         </div>
       </div>
 
+      {/* Who signed up */}
+      <div style={card}>
+        <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--navy)", marginBottom: 4 }}>Your signups</h2>
+        <p style={{ fontSize: 13.5, lineHeight: 1.6, color: "rgba(11,23,41,.6)", marginBottom: 12 }}>
+          Every sale credited to your code or link, newest first. A sale clears 7 days after
+          purchase, then it counts toward your next payout.
+        </p>
+        {me.signups.length === 0 ? (
+          <p style={{ fontSize: 14, color: "rgba(11,23,41,.55)", margin: 0 }}>
+            No signups yet. Share your link and this list fills itself.
+          </p>
+        ) : (
+          me.signups.map((s, i) => (
+            <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "9px 0", borderBottom: "1px solid rgba(11,23,41,.06)", fontSize: 14 }}>
+              <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "var(--navy)" }}>
+                {new Date(s.when).toLocaleDateString("en-US", { month: "short", day: "numeric" })} · {s.who}
+              </span>
+              <span style={{ flexShrink: 0, fontWeight: 600, color: s.status === "cleared" || s.status === "paid" ? "var(--green)" : "rgba(11,23,41,.5)" }}>
+                {s.status === "pending" ? "clearing" : s.status}
+                {s.bounty_cents ? ` · ${usd(s.bounty_cents)}` : ""}
+              </span>
+            </div>
+          ))
+        )}
+      </div>
+
       {/* Payout settings */}
       <div style={card}>
         <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--navy)", marginBottom: 4 }}>How you get paid</h2>
@@ -249,15 +276,56 @@ export function AmbassadorDashboard() {
           College Agent, disclose the relationship (a simple <strong>#ad</strong> or &ldquo;I earn a
           commission&rdquo; works). It&apos;s an FTC requirement and part of your ambassador terms.
         </p>
-        <ul style={{ margin: 0, paddingLeft: 18, fontSize: 14, lineHeight: 2, color: "rgba(11,23,41,.75)" }}>
-          <li><a href="/ambassador/dashboard/flyer" style={{ color: "var(--green)", textDecoration: "underline", fontWeight: 700 }}>Print your personalized QR flyer</a></li>
-          <li><a href="/ambassador/playbook" style={{ color: "var(--green)", textDecoration: "underline", fontWeight: 700 }}>Read the playbook (pitch, objections, tabling, posting)</a></li>
-          <li><a href="/og-image.jpg" download style={{ color: "var(--green)", textDecoration: "underline" }}>Social card (mascot + wordmark)</a></li>
-          <li><a href="/thecollegeagent.png" download style={{ color: "var(--green)", textDecoration: "underline" }}>Mascot art (transparent PNG)</a></li>
-          <li><a href="/logo-college-agent.png" download style={{ color: "var(--green)", textDecoration: "underline" }}>Wordmark logo</a></li>
-          <li>Brand green: <span style={{ fontFamily: "var(--font-mono)" }}>#2D7A3A</span></li>
-          <li>Your pitch: &ldquo;It&apos;s a personal AI agent that knows your classes, plans your weeks, and never lets you miss a deadline. My code takes $50 off.&rdquo;</li>
-        </ul>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 16 }}>
+          <a href="/ambassador/dashboard/flyer" style={{ background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 700, padding: "10px 18px", borderRadius: 9, textDecoration: "none" }}>Print your QR flyer</a>
+          <a href="/ambassador/playbook" style={{ background: "#fff", color: "var(--green)", border: "1.5px solid var(--green)", fontSize: 13, fontWeight: 700, padding: "9px 18px", borderRadius: 9, textDecoration: "none" }}>Open the playbook</a>
+        </div>
+
+        <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: "rgba(11,23,41,.5)", marginBottom: 8 }}>Downloads</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(96px, 1fr))", gap: 10, marginBottom: 18 }}>
+          {[
+            { src: "/thecollegeagent.png", label: "Mascot" },
+            { src: "/mascot-left.png", label: "Mascot 2" },
+            { src: "/avatars/preset-11.webp", label: "Bot 1" },
+            { src: "/avatars/preset-13.webp", label: "Bot 2" },
+            { src: "/avatars/preset-14.webp", label: "Bot 3" },
+            { src: "/logo-college-agent.png", label: "Logo" },
+            { src: "/logo-college-agent-white.png", label: "Logo (white)" },
+            { src: "/og-image.jpg", label: "Social card" },
+          ].map((a2) => (
+            <a key={a2.src} href={a2.src} download style={{ textDecoration: "none", textAlign: "center" }}>
+              <span style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 76, background: a2.label === "Logo (white)" ? "var(--navy)" : "rgba(11,23,41,.04)", border: "1px solid rgba(11,23,41,.08)", borderRadius: 10, overflow: "hidden", padding: 8 }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={a2.src} alt={a2.label} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+              </span>
+              <span style={{ display: "block", fontSize: 11, color: "rgba(11,23,41,.6)", marginTop: 4 }}>{a2.label}</span>
+            </a>
+          ))}
+        </div>
+
+        <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: "rgba(11,23,41,.5)", marginBottom: 8 }}>Ready-to-post captions (tap to copy)</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {[
+            `My AI agent literally plans my week, tracks every deadline, and quizzes me before tests. Try the free demo: ${link ?? "thecollegeagent.ai/demo"} (code ${a.code} = $50 off) #ad`,
+            `I stopped missing deadlines. My College Agent turns syllabi into calendars, builds study plans, even drafts emails to professors. Free demo: ${link ?? "thecollegeagent.ai/demo"} · my code ${a.code} takes $50 off #ad`,
+            `POV: an AI that actually knows YOUR classes. Free demo: ${link ?? "thecollegeagent.ai/demo"} · ${a.code} saves $50 #ad`,
+          ].map((cap, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => copy(cap, `cap${i}`)}
+              style={{ textAlign: "left", background: "rgba(11,23,41,.03)", border: "1px solid rgba(11,23,41,.08)", borderRadius: 10, padding: "11px 14px", fontSize: 13, lineHeight: 1.55, color: "var(--navy)", cursor: "pointer" }}
+            >
+              {cap}
+              <span style={{ display: "block", fontSize: 11, color: copied === `cap${i}` ? "var(--green)" : "rgba(11,23,41,.4)", marginTop: 4, fontWeight: 600 }}>
+                {copied === `cap${i}` ? "Copied!" : "Tap to copy"}
+              </span>
+            </button>
+          ))}
+        </div>
+        <p style={{ fontSize: 12, color: "rgba(11,23,41,.5)", marginTop: 12, marginBottom: 0 }}>
+          Brand green: <span style={{ fontFamily: "var(--font-mono)" }}>#2D7A3A</span> · Keep the #ad on every post (FTC rule, and it&apos;s in your terms).
+        </p>
       </div>
     </div>
   );
