@@ -1,4 +1,6 @@
+import { cookies } from "next/headers";
 import { ApiError, json, readJson, route } from "@/lib/http";
+import { ambassadorBySlug } from "@/lib/ambassador";
 import { getStripe } from "@/lib/stripe/client";
 import { priceIdFor } from "@/lib/stripe/prices";
 import { currentPlanLookup, HOSTING_LOOKUP, HOSTING_ANNUAL_LOOKUP } from "@/lib/pricing/intro-cutoff";
@@ -93,6 +95,15 @@ export const POST = route(async (req) => {
   // Proof of clickwrap acceptance, kept alongside the order in Stripe.
   metadata.terms_accepted_at = new Date().toISOString();
   metadata.terms_version = "2026-07-04";
+
+  // Ambassador link attribution (/r/{slug} cookie). Rides the metadata so the webhook
+  // can attribute the sale; a promotion code entered on the Stripe page still wins.
+  try {
+    const ambSlug = (await cookies()).get("ca_amb")?.value ?? "";
+    if (ambSlug && (await ambassadorBySlug(ambSlug))) metadata.ambassador_slug = ambSlug;
+  } catch {
+    /* attribution is best-effort; never block checkout on it */
+  }
 
   const extraCreditsCents = EXTRA_CREDITS_ALLOWED_CENTS.includes(Number(body.extraCreditsCents))
     ? Number(body.extraCreditsCents)
