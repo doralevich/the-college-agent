@@ -1039,12 +1039,12 @@ export function ConversationalOnboard({
             </h1>
             <p style={{ fontSize: 15, lineHeight: 1.6, color: T.inkSoft, maxWidth: 420, margin: "0 0 26px" }}>
               {displayBotName} is live and already knows your classes, your goals, and how you
-              like to work. The first conversation is where it gets good.
+              like to work. Let&apos;s show you what to do first.
             </p>
             <button
               type="button"
               className="ca-onboard-cta"
-              onClick={() => window.location.assign("/dashboard/chat")}
+              onClick={() => window.location.assign("/dashboard/now-what")}
               style={{
                 border: "none",
                 cursor: "pointer",
@@ -1058,7 +1058,24 @@ export function ConversationalOnboard({
                 transition: "background .15s",
               }}
             >
-              Open chat
+              Now what? Show me
+            </button>
+            <button
+              type="button"
+              onClick={() => window.location.assign("/dashboard/chat")}
+              style={{
+                marginTop: 12,
+                border: "none",
+                background: "transparent",
+                cursor: "pointer",
+                fontFamily: "'DM Sans', system-ui, sans-serif",
+                fontSize: 13.5,
+                fontWeight: 600,
+                color: T.greenText,
+                textDecoration: "underline",
+              }}
+            >
+              or jump straight into chat
             </button>
           </div>
         ) : (
