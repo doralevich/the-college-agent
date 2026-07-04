@@ -15,8 +15,9 @@ export const GET = route(async () => {
   const [salesRes, payoutsRes, adjRes] = await Promise.all([
     db
       .from("ambassador_sales")
-      .select("status, bounty_cents, payout_id, created_at")
-      .eq("ambassador_id", amb.id),
+      .select("status, bounty_cents, payout_id, created_at, purchaser_email")
+      .eq("ambassador_id", amb.id)
+      .order("created_at", { ascending: false }),
     db
       .from("ambassador_payouts")
       .select("run_date, total_cents, status, payee_type")
@@ -44,7 +45,22 @@ export const GET = route(async () => {
     .filter((p) => p.status === "paid")
     .reduce((sum, p) => sum + (p.total_cents as number), 0);
 
+  // Individual signups, newest first, with the buyer's email masked: the ambassador
+  // sees enough to recognize who converted without us leaking full addresses.
+  const signups = sales.slice(0, 25).map((s) => {
+    const email = String((s as { purchaser_email?: string | null }).purchaser_email ?? "");
+    const [local = "", domain = ""] = email.split("@");
+    const masked = email ? `${local.slice(0, 1)}***@${domain}` : "someone";
+    return {
+      when: s.created_at,
+      who: masked,
+      status: s.status,
+      bounty_cents: s.bounty_cents ?? null,
+    };
+  });
+
   return json({
+    signups,
     ambassador: {
       full_name: amb.full_name,
       status: amb.status,
