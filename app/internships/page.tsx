@@ -22,6 +22,7 @@ export const metadata: Metadata = {
     description:
       "The College Agent manages your entire internship pipeline — from target company research to offer negotiation. Land your first internship before junior year.",
     url: "https://thecollegeagent.ai/internships",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "The College Agent" }],
   },
 };
 

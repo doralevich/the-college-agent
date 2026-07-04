@@ -13,6 +13,7 @@ export const metadata: Metadata = {
     description:
       "Apply to become a College Agent Ambassador. Build your resume, gain real-world experience, and earn commissions.",
     url: "https://thecollegeagent.ai/ambassador/apply",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "The College Agent" }],
   },
   twitter: {
     title: "Apply | College Agent Ambassador Program",

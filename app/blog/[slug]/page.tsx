@@ -41,13 +41,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       url,
       type: "article",
-      images: post.featuredImageUrl ? [{ url: post.featuredImageUrl }] : undefined,
+      // Posts without a featured image still get the brand card in link previews.
+      images: post.featuredImageUrl ? [{ url: post.featuredImageUrl }] : [{ url: "/og-image.png", width: 1200, height: 630, alt: "The College Agent" }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: post.featuredImageUrl ? [post.featuredImageUrl] : undefined,
+      images: post.featuredImageUrl ? [post.featuredImageUrl] : ["/og-image.png"],
     },
   };
 }

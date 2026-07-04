@@ -21,6 +21,7 @@ export const metadata: Metadata = {
     description:
       "Give your college student an AI companion that keeps them organized, on track, and career-ready from day one. Peace of mind for parents.",
     url: "https://thecollegeagent.ai/for-parents",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "The College Agent" }],
   },
 };
 

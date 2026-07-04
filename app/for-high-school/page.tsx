@@ -22,6 +22,7 @@ export const metadata: Metadata = {
     description:
       "Start building the habits, skills, and plans that will define your college years before you even arrive on campus.",
     url: "https://thecollegeagent.ai/for-high-school",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "The College Agent" }],
   },
 };
 
