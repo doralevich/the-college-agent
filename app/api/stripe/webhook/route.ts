@@ -7,6 +7,7 @@ import { sendAccountCreatedEmail } from "@/lib/email/account-created";
 import { findOrCreateAuthUser } from "@/lib/auth/find-or-create-user";
 import { ambassadorByPromoCode, ambassadorBySlug, AMBASSADOR_COUPON_OFF_CENTS, CLEARING_DAYS } from "@/lib/ambassador";
 import { currentPlanAmountCents } from "@/lib/pricing/intro-cutoff";
+import { syncToMailchimp } from "@/lib/newsletter";
 
 // Stripe webhook. This is the ONLY thing that flips entitlements to 'active' (never a
 // user-facing button). It MUST stay out of the proxy.ts auth matcher (no redirects) and
@@ -99,6 +100,17 @@ async function handleCheckoutCompleted(db: DB, session: Stripe.Checkout.Session)
       await recordAmbassadorSale(db, session);
     } catch (err) {
       console.error("[stripe webhook] ambassador sale", session.id, err);
+    }
+    // Demo-lead conversion: re-tag demo-lead -> paid-student in Mailchimp and flag the
+    // lead rows, so nurture campaigns stop and onboarding campaigns start.
+    try {
+      const buyerEmail = (session.customer_details?.email ?? session.customer_email ?? "").toLowerCase();
+      if (buyerEmail) {
+        await db.from("demo_leads").update({ converted_to_paid: true }).eq("email", buyerEmail);
+        await syncToMailchimp(buyerEmail, { tags: ["paid-student"] });
+      }
+    } catch (err) {
+      console.error("[stripe webhook] paid-student retag", session.id, err);
     }
   }
 

@@ -17,7 +17,8 @@ export async function GET(req: Request, ctx: { params: Promise<{ slug: string }>
     console.error("[/r] slug lookup failed", slug, err);
   }
 
-  const res = NextResponse.redirect(new URL("/", url.origin), { status: 302 });
+  // Known ambassadors route into the personalized demo (PRD); unknown slugs go home.
+  const res = NextResponse.redirect(new URL(amb ? "/demo" : "/", url.origin), { status: 302 });
   if (amb) {
     res.cookies.set("ca_amb", amb.referral_slug ?? slug.toLowerCase(), {
       maxAge: 60 * 60 * 24 * 90, // 90 days

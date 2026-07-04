@@ -211,7 +211,7 @@ export default async function Home() {
             </p>
             <div className="hero-cta-row" style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 28 }}>
               <a href="/build" className="btn-purple">Build My Agent</a>
-              <a href="#how-it-works" className="btn-outline">See How It Works</a>
+              <a href="/demo" className="btn-outline">Try the Free Demo</a>
             </div>
             <p style={{ fontSize: 14, lineHeight: 1.7, color: "rgba(255,255,255,.5)", maxWidth: 520, marginBottom: 0 }}>
               Used by college students across the U.S. to manage classes, study smarter, land internships, and build their career — from freshman orientation to senior capstone.

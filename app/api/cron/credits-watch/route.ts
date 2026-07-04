@@ -119,6 +119,29 @@ export async function GET(req: Request) {
     console.error("[credits-watch] leads resync", e);
   }
 
+  // Demo-lead stragglers: opted-in demo leads that missed their Mailchimp mirror.
+  let demoLeadsSynced = 0;
+  try {
+    const { data: pendingDemo } = await db
+      .from("demo_leads")
+      .select("id, email, ambassador_id")
+      .eq("mailchimp_synced", false)
+      .eq("email_opt_in", true)
+      .limit(50);
+    for (const lead of pendingDemo ?? []) {
+      const { data: amb } = lead.ambassador_id
+        ? await db.from("ambassadors").select("stripe_promo_code").eq("id", lead.ambassador_id).maybeSingle()
+        : { data: null };
+      const ambTag = amb?.stripe_promo_code ? `amb-${amb.stripe_promo_code}` : "house";
+      if (await syncToMailchimp(String(lead.email).toLowerCase(), { tags: ["demo-lead", ambTag] })) {
+        await db.from("demo_leads").update({ mailchimp_synced: true }).eq("id", lead.id);
+        demoLeadsSynced++;
+      }
+    }
+  } catch (e) {
+    console.error("[credits-watch] demo leads resync", e);
+  }
+
   // ---- Ambassador program (July 2026 PRD) ----
 
   // Clearing: sales past their 7-day hold clear ONE AT A TIME, oldest first, so the
@@ -182,7 +205,7 @@ export async function GET(req: Request) {
     console.error("[credits-watch] demo session cleanup", e);
   }
 
-  return Response.json({ ...summary, newsletterSynced, leadsSynced, salesCleared, payoutsQueued });
+  return Response.json({ ...summary, newsletterSynced, leadsSynced, demoLeadsSynced, salesCleared, payoutsQueued });
 }
 
 function isoWeek(d: Date): number {
