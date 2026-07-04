@@ -250,6 +250,8 @@ export function AmbassadorDashboard() {
           commission&rdquo; works). It&apos;s an FTC requirement and part of your ambassador terms.
         </p>
         <ul style={{ margin: 0, paddingLeft: 18, fontSize: 14, lineHeight: 2, color: "rgba(11,23,41,.75)" }}>
+          <li><a href="/ambassador/dashboard/flyer" style={{ color: "var(--green)", textDecoration: "underline", fontWeight: 700 }}>Print your personalized QR flyer</a></li>
+          <li><a href="/ambassador/playbook" style={{ color: "var(--green)", textDecoration: "underline", fontWeight: 700 }}>Read the playbook (pitch, objections, tabling, posting)</a></li>
           <li><a href="/og-image.jpg" download style={{ color: "var(--green)", textDecoration: "underline" }}>Social card (mascot + wordmark)</a></li>
           <li><a href="/thecollegeagent.png" download style={{ color: "var(--green)", textDecoration: "underline" }}>Mascot art (transparent PNG)</a></li>
           <li><a href="/logo-college-agent.png" download style={{ color: "var(--green)", textDecoration: "underline" }}>Wordmark logo</a></li>
