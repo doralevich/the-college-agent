@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     description:
       "The whole process, step by step: sign up, pay for your agent, fill out your intake, and your personal AI agent is live within 30 minutes.",
     url: "https://thecollegeagent.ai/how-it-works",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "The College Agent" }],
+    images: [{ url: "/og-image.jpg", width: 1200, height: 1200, alt: "The College Agent" }],
   },
 };
 
