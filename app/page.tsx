@@ -21,9 +21,9 @@ function price(cents: number): string {
 }
 
 export const metadata: Metadata = {
-  title: "The College Agent — Your Personal AI for All 4 Years of College",
+  title: "The College Agent — Your AI Companion for College Students",
   description:
-    "The College Agent is a personal AI companion that grows with you through college — managing classes, study, internships, social life, and career planning from freshman year to graduation.",
+    "The College Agent is your AI study companion and study partner for all four years of college — from freshman year to your first job offer. Plan your schedule, study smarter, prep for internships, and graduate career-ready.",
   alternates: { canonical: "https://thecollegeagent.ai" },
 };
 
@@ -90,14 +90,18 @@ function buildJsonLd() {
       "@type": "Service",
       "@id": "https://thecollegeagent.ai/#service",
       name: "The College Agent",
+      alternateName: ["College AI companion", "AI study partner for college students"],
       description:
-        "A personal AI companion for college students that manages academics, social life, internships, and career planning across all 4 years of college.",
+        "An AI study companion and study partner for enrolled college students that helps with studying, class schedules, notes, deadlines, internships, and career planning across all four years of college.",
+      disambiguatingDescription:
+        "An ongoing AI study companion for enrolled college students across all four years of college. Not a college admissions, enrollment, or student-registration service.",
       provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
       url: "https://thecollegeagent.ai",
       serviceType: "AI Companion for College Students",
       category: "Education Technology",
+      audience: { "@type": "EducationalAudience", educationalRole: "student" },
       keywords:
-        "AI for college students, AI study companion, personal AI agent for students, AI college planner, AI class schedule manager, AI internship prep, college life AI, AI study partner",
+        "AI companion for college students, AI study companion, AI study partner, AI for college students, AI class schedule planner, AI college planner, AI internship prep, college AI companion",
       areaServed: "United States",
       offers: [
         { "@type": "Offer", name: "The College Agent (one-time build)", price: planPrice, priceCurrency: "USD" },
@@ -111,7 +115,7 @@ function buildJsonLd() {
       operatingSystem: "Web, iOS, Android",
       applicationCategory: "EducationApplication",
       description:
-        "A personal AI companion for college students that manages academics, social life, internships, and career planning across all 4 years of college.",
+        "An AI study companion and study partner for college students that helps with studying, class schedules, notes, deadlines, internships, and career planning across all four years of college.",
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
       aggregateRating: { "@type": "AggregateRating", ratingValue: "4.8", ratingCount: "127" },
     },
@@ -203,11 +207,12 @@ export default async function Home() {
               Apollo[Claw] College Edition
             </div>
             <h1 className="hero-h1" style={{ color: "#fff", textAlign: "left" }}>
-              Your College<br />AI Assistant.
+              Your college<br />AI companion.
             </h1>
             <p className="hero-sub">
-              Your own student AI assistant. Named. Trained on your voice. Built around your schedule, classes,
-              notes, deadlines, study plans, professor emails, internships, and goals. It grows with you as you grow.
+              An AI study companion and partner for all four years of college. Named, and trained on your voice.
+              Built around your schedule, classes, notes, deadlines, study plans, professor emails, internships,
+              and goals. It grows with you from freshman year to your first job offer, and beyond.
             </p>
             <div className="hero-cta-row" style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 28 }}>
               <a href="/build" className="btn-purple">Build My Agent</a>
