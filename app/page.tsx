@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import FAQ from "./components/FAQ";
 import SchoolMarquee from "./components/SchoolMarquee";
 import Explainer from "./components/Explainer";
 import ChatBot from "./components/ChatBot";
@@ -71,13 +70,36 @@ const AGENT_WAYS = [
 ];
 
 // The proof: things a student can literally type at their agent on day one.
-const POWER_ASKS = [
-  "Turn this syllabus into my semester plan.",
-  "What's due this week?",
-  "Quiz me on Chapter 7 before Friday's exam.",
-  "Draft an email to Professor Chen asking about my grade.",
-  "Update my resume for this internship application.",
-  "Remind me about Mom's birthday and help me pick a gift.",
+const ASK_CATEGORIES = [
+  {
+    label: "Academics",
+    asks: [
+      "Turn this syllabus into my semester plan.",
+      "What's due this week?",
+      "Quiz me on Chapter 7 before Friday's exam.",
+    ],
+  },
+  {
+    label: "Communication",
+    asks: [
+      "Draft an email to Professor Chen asking about my grade.",
+      "Write a professional email to my advisor.",
+    ],
+  },
+  {
+    label: "Career",
+    asks: [
+      "Update my resume for this internship application.",
+      "Find internships I should apply for this month.",
+    ],
+  },
+  {
+    label: "Life",
+    asks: [
+      "Find the best flights home for fall break.",
+      "Remind me about Mom's birthday and help me pick a gift.",
+    ],
+  },
 ];
 
 function buildJsonLd() {
@@ -118,52 +140,6 @@ function buildJsonLd() {
         "An AI study companion and study partner for college students that helps with studying, class schedules, notes, deadlines, internships, and career planning across all four years of college.",
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
       aggregateRating: { "@type": "AggregateRating", ratingValue: "4.8", ratingCount: "127" },
-    },
-    {
-      "@type": "FAQPage",
-      "@id": "https://thecollegeagent.ai/#faq",
-      mainEntity: [
-        {
-          "@type": "Question",
-          name: "What is The College Agent?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "The College Agent is a personal AI companion built specifically for college students. It manages your class schedule, study plans, internship applications, social calendar, and career goals, and gets smarter the longer you use it.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Can high school students use The College Agent?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Yes. High school students can start using The College Agent to prepare for college, building study habits, researching schools, and getting a head start on their college years.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "How does The College Agent help with internships?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "The College Agent tracks internship deadlines, helps write outreach emails, manages your application pipeline, and prepares you for interviews, so by junior year you have real experience on your resume.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Is The College Agent different from ChatGPT?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Yes. ChatGPT is a general-purpose tool. The College Agent is dedicated to your college life, it knows your classes, your goals, your schedule, and your progress. It grows with you over 4 years.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "What does The College Agent cost?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: `The College Agent is ${price(INTRO_PLAN_AMOUNT_CENTS)} one-time to build your agent, plus cloud hosting at $${hostingPrice}/month or $250/year (two months free on annual), with $20 of AI usage credits included. There is a 7-day money-back guarantee. Visit thecollegeagent.ai/build to get started.`,
-          },
-        },
-      ],
     },
   ],
   };
@@ -261,18 +237,25 @@ export default async function Home() {
             ))}
           </div>
 
-          {/* The proof band: not categories, actual sentences you can say to it. */}
+          {/* Grouped by area: Academics, Communication, Career, Life. */}
           <div className="asks-band">
             <div className="asks-head">
-              <span className="mono-label asks-eyebrow" style={{ color: "rgba(61,139,61,.85)" }}>Say It. It&apos;s Handled.</span>
+              <span className="mono-label asks-eyebrow" style={{ color: "rgba(61,139,61,.85)" }}>Just Ask. It&apos;s Handled.</span>
               <h3>Real things students ask<br />on day one.</h3>
             </div>
-            <div className="asks-grid">
-              {POWER_ASKS.map((ask) => (
-                <div key={ask} className="ask-chip">&ldquo;{ask}&rdquo;</div>
+            <div className="asks-cats">
+              {ASK_CATEGORIES.map((cat) => (
+                <div key={cat.label} className="ask-cat">
+                  <div className="ask-cat-label">{cat.label}</div>
+                  <div className="ask-cat-chips">
+                    {cat.asks.map((ask) => (
+                      <div key={ask} className="ask-chip">&ldquo;{ask}&rdquo;</div>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
-            <div style={{ textAlign: "center", marginTop: 28 }}>
+            <div style={{ textAlign: "center", marginTop: 32 }}>
               <a href="/build" className="btn-purple">Build My Agent</a>
             </div>
           </div>
@@ -405,9 +388,6 @@ export default async function Home() {
           </div>
         </section>
       )}
-
-      {/* FAQ */}
-      <FAQ />
 
       {/* SCHOOL MARQUEE, the trust strip sits at the bottom, just above the footer. */}
       <SchoolMarquee />
@@ -555,11 +535,17 @@ export default async function Home() {
           font-size: clamp(22px, 2.6vw, 30px); font-weight: 800; color: #fff;
           letter-spacing: -.02em; line-height: 1.2;
         }
-        .asks-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .asks-cats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; align-items: start; }
+        .ask-cat-label {
+          font-family: var(--font-mono); font-size: 11px; font-weight: 700; text-transform: uppercase;
+          letter-spacing: .1em; color: rgba(61,139,61,.9); margin-bottom: 14px; padding-bottom: 10px;
+          border-bottom: 1px solid rgba(255,255,255,.1);
+        }
+        .ask-cat-chips { display: flex; flex-direction: column; gap: 10px; }
         .ask-chip {
           background: rgba(255,255,255,.06); border: 1px solid rgba(61,139,61,.35);
-          border-radius: 12px; padding: 14px 16px;
-          font-size: 14px; line-height: 1.55; color: rgba(255,255,255,.85); font-style: italic;
+          border-radius: 12px; padding: 13px 15px;
+          font-size: 13.5px; line-height: 1.5; color: rgba(255,255,255,.85); font-style: italic;
         }
 
         /* HOME BLOG */
@@ -641,7 +627,7 @@ export default async function Home() {
         @media (max-width: 900px) {
           .ways-title { white-space: normal; }
           .uc-grid { grid-template-columns: repeat(2, 1fr); }
-          .asks-grid { grid-template-columns: repeat(2, 1fr); }
+          .asks-cats { grid-template-columns: repeat(2, 1fr); gap: 18px 22px; }
           .home-blog-grid { grid-template-columns: 1fr; max-width: 520px; margin: 0 auto; }
           .stat-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; }
           .stat-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,.15); padding-bottom: 20px; }
@@ -661,7 +647,7 @@ export default async function Home() {
           .hero-mascot { max-width: 200px; }
           .dual-grid { grid-template-columns: 1fr; }
           .uc-grid { grid-template-columns: 1fr; }
-          .asks-grid { grid-template-columns: 1fr; }
+          .asks-cats { grid-template-columns: 1fr; gap: 22px; }
           .asks-band { padding: 34px 22px 32px; }
           .stat-grid { grid-template-columns: repeat(2, 1fr); }
           .int-menu-grid { grid-template-columns: 1fr 1fr; }
