@@ -5,7 +5,7 @@ import { Footer } from "../components/Footer";
 import { BookOpenCheck, BriefcaseBusiness, CalendarDays, GraduationCap, ShieldCheck, TrendingUp } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "AI Support for Your College Student — The College Agent for Parents",
+  title: "AI Support for Your College Student, The College Agent for Parents",
   description:
     "Give your college student an AI companion that keeps them organized, on track, and career-ready from day one. Peace of mind for parents.",
   keywords: [
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "https://thecollegeagent.ai/for-parents" },
   openGraph: {
-    title: "AI Support for Your College Student — The College Agent for Parents",
+    title: "AI Support for Your College Student, The College Agent for Parents",
     description:
       "Give your college student an AI companion that keeps them organized, on track, and career-ready from day one. Peace of mind for parents.",
     url: "https://thecollegeagent.ai/for-parents",
@@ -38,12 +38,12 @@ const BENEFITS = [
   {
     icon: CalendarDays,
     title: "Organization from Day One",
-    desc: "The agent tracks every class, assignment, deadline, and exam — so your student doesn't miss critical moments because their planner app didn't remind them.",
+    desc: "The agent tracks every class, assignment, deadline, and exam, so your student doesn't miss critical moments because their planner app didn't remind them.",
   },
   {
     icon: BookOpenCheck,
     title: "Academic Support",
-    desc: "Study guides, review schedules, writing support, and professor communication — the agent keeps your student academically supported without the cost of private tutoring.",
+    desc: "Study guides, review schedules, writing support, and professor communication, the agent keeps your student academically supported without the cost of private tutoring.",
   },
   {
     icon: BriefcaseBusiness,
@@ -53,12 +53,12 @@ const BENEFITS = [
   {
     icon: GraduationCap,
     title: "4-Year Career Plan",
-    desc: "From freshman year orientation to senior capstone, the agent helps your student build toward a career — not just get through semesters.",
+    desc: "From freshman year orientation to senior capstone, the agent helps your student build toward a career, not just get through semesters.",
   },
   {
     icon: TrendingUp,
     title: "Grows with Them",
-    desc: "The more your student uses the agent, the smarter it gets. It learns their voice, their work style, their goals — and becomes more valuable every semester.",
+    desc: "The more your student uses the agent, the smarter it gets. It learns their voice, their work style, their goals, and becomes more valuable every semester.",
   },
   {
     icon: ShieldCheck,
@@ -94,13 +94,13 @@ export default function ForParentsPage() {
               College is overwhelming. Even for great students.
             </h2>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
-              The students who struggle in college aren&apos;t always the ones who aren&apos;t smart enough. They&apos;re the ones who got overwhelmed — by the sheer volume of things to track, deadlines to hit, emails to send, and decisions to make — all without the structure of high school holding things together.
+              The students who struggle in college aren&apos;t always the ones who aren&apos;t smart enough. They&apos;re the ones who got overwhelmed, by the sheer volume of things to track, deadlines to hit, emails to send, and decisions to make, all without the structure of high school holding things together.
             </p>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
-              A missed internship application deadline. An assignment submitted to the wrong folder. A professor email never sent that could have changed a grade. These aren&apos;t failures of intelligence — they&apos;re failures of infrastructure. The College Agent is that infrastructure.
+              A missed internship application deadline. An assignment submitted to the wrong folder. A professor email never sent that could have changed a grade. These aren&apos;t failures of intelligence, they&apos;re failures of infrastructure. The College Agent is that infrastructure.
             </p>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)" }}>
-              And beyond academics, it&apos;s the career-readiness gap that most parents worry about. Will my student graduate with real experience? Will they know how to build a network? Will they be ready? With The College Agent, the answer is yes — because the work starts freshman year, not senior year.
+              And beyond academics, it&apos;s the career-readiness gap that most parents worry about. Will my student graduate with real experience? Will they know how to build a network? Will they be ready? With The College Agent, the answer is yes, because the work starts freshman year, not senior year.
             </p>
           </div>
         </section>
@@ -110,24 +110,24 @@ export default function ForParentsPage() {
           <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
             <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "var(--green)", marginBottom: 14, display: "block" }}>Common Parent Concerns</span>
             <h2 style={{ fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 800, color: "var(--navy)", marginBottom: 28, letterSpacing: "-.025em" }}>
-              What Parents Worry About Most — And What The Agent Solves
+              What Parents Worry About Most, And What The Agent Solves
             </h2>
             {[
               {
                 worry: "Will they miss important deadlines?",
-                answer: "The College Agent surfaces every deadline — assignment submissions, exam dates, internship application windows, registration dates — weeks in advance. Your student sees what&apos;s coming before it becomes urgent. Nothing falls through the cracks because there&apos;s always a system tracking it.",
+                answer: "The College Agent surfaces every deadline, assignment submissions, exam dates, internship application windows, registration dates, weeks in advance. Your student sees what&apos;s coming before it becomes urgent. Nothing falls through the cracks because there&apos;s always a system tracking it.",
               },
               {
                 worry: "Will they get internship experience before graduation?",
-                answer: "This is the biggest career-readiness gap, and it&apos;s exactly what The College Agent is built to close. Starting freshman year, the agent helps your student build awareness of their target industries, identify opportunities, and approach recruiting season junior year with a full pipeline already in motion — not starting from scratch.",
+                answer: "This is the biggest career-readiness gap, and it&apos;s exactly what The College Agent is built to close. Starting freshman year, the agent helps your student build awareness of their target industries, identify opportunities, and approach recruiting season junior year with a full pipeline already in motion, not starting from scratch.",
               },
               {
                 worry: "Will they know how to communicate professionally?",
-                answer: "College is where students learn to send professional emails, talk to professors, reach out to advisors, and network with recruiters. The College Agent drafts all of these messages in your student&apos;s voice — professional, polished, and appropriate. Over time, your student doesn&apos;t just send better emails; they internalize what good communication looks like.",
+                answer: "College is where students learn to send professional emails, talk to professors, reach out to advisors, and network with recruiters. The College Agent drafts all of these messages in your student&apos;s voice, professional, polished, and appropriate. Over time, your student doesn&apos;t just send better emails; they internalize what good communication looks like.",
               },
               {
                 worry: "Is this just going to do their work for them?",
-                answer: "No. The College Agent manages logistics, surfaces information, and drafts communications — but it doesn&apos;t attend class, take exams, or write papers for your student. It handles the organizational infrastructure so your student can focus on learning, connecting, and performing. Think of it as a system that removes friction, not a substitute for effort.",
+                answer: "No. The College Agent manages logistics, surfaces information, and drafts communications, but it doesn&apos;t attend class, take exams, or write papers for your student. It handles the organizational infrastructure so your student can focus on learning, connecting, and performing. Think of it as a system that removes friction, not a substitute for effort.",
               },
             ].map(({ worry, answer }) => (
               <div key={worry} style={{ marginBottom: 32, background: "#fff", borderRadius: 14, padding: "28px 32px", border: "1px solid rgba(11,23,41,.07)", boxShadow: "0 4px 16px rgba(11,23,41,.04)" }}>
@@ -143,13 +143,13 @@ export default function ForParentsPage() {
           <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
             <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "var(--green)", marginBottom: 14, display: "block" }}>Common Parent Concerns</span>
             <h2 style={{ fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 800, color: "var(--navy)", marginBottom: 28, letterSpacing: "-.025em" }}>
-              What Parents Worry About Most — And What The Agent Solves
+              What Parents Worry About Most, And What The Agent Solves
             </h2>
             {([
-              { worry: "Will they miss important deadlines?", answer: "The College Agent surfaces every deadline — assignment submissions, exam dates, internship application windows, registration dates — weeks in advance. Your student sees what's coming before it becomes urgent. Nothing falls through the cracks because there's always a system tracking it." },
-              { worry: "Will they get internship experience before graduation?", answer: "This is the biggest career-readiness gap, and it's exactly what The College Agent is built to close. Starting freshman year, the agent helps your student build awareness of their target industries, identify opportunities, and approach recruiting season junior year with a full pipeline already in motion — not starting from scratch." },
-              { worry: "Will they know how to communicate professionally?", answer: "College is where students learn to send professional emails, talk to professors, reach out to advisors, and network with recruiters. The College Agent drafts all of these messages in your student's voice — professional, polished, and appropriate. Over time, your student internalizes what good communication looks like." },
-              { worry: "Is this just going to do their work for them?", answer: "No. The College Agent manages logistics, surfaces information, and drafts communications — but it doesn't attend class, take exams, or write papers for your student. It handles the organizational infrastructure so your student can focus on learning, connecting, and performing." },
+              { worry: "Will they miss important deadlines?", answer: "The College Agent surfaces every deadline, assignment submissions, exam dates, internship application windows, registration dates, weeks in advance. Your student sees what's coming before it becomes urgent. Nothing falls through the cracks because there's always a system tracking it." },
+              { worry: "Will they get internship experience before graduation?", answer: "This is the biggest career-readiness gap, and it's exactly what The College Agent is built to close. Starting freshman year, the agent helps your student build awareness of their target industries, identify opportunities, and approach recruiting season junior year with a full pipeline already in motion, not starting from scratch." },
+              { worry: "Will they know how to communicate professionally?", answer: "College is where students learn to send professional emails, talk to professors, reach out to advisors, and network with recruiters. The College Agent drafts all of these messages in your student's voice, professional, polished, and appropriate. Over time, your student internalizes what good communication looks like." },
+              { worry: "Is this just going to do their work for them?", answer: "No. The College Agent manages logistics, surfaces information, and drafts communications, but it doesn't attend class, take exams, or write papers for your student. It handles the organizational infrastructure so your student can focus on learning, connecting, and performing." },
             ] as { worry: string; answer: string }[]).map(({ worry, answer }) => (
               <div key={worry} style={{ marginBottom: 28, background: "#fff", borderRadius: 14, padding: "28px 32px", border: "1px solid rgba(11,23,41,.07)", boxShadow: "0 4px 16px rgba(11,23,41,.04)" }}>
                 <h3 style={{ fontSize: 17, fontWeight: 800, color: "var(--navy)", marginBottom: 12, letterSpacing: "-.01em" }}>{worry}</h3>
@@ -188,16 +188,16 @@ export default function ForParentsPage() {
               Think of it as four-year ROI, not a monthly subscription.
             </h2>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
-              You&apos;re already investing $50,000 to $250,000 in your student&apos;s college education. The College Agent is what makes sure that investment pays off — by keeping your student organized, career-focused, and building real experience every semester, not just surviving each one.
+              You&apos;re already investing $50,000 to $250,000 in your student&apos;s college education. The College Agent is what makes sure that investment pays off, by keeping your student organized, career-focused, and building real experience every semester, not just surviving each one.
             </p>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
-              Consider what parents typically spend on academic support: a private tutor runs $80–$150 per session. SAT prep programs cost $1,000–$3,000. College counselors charge $3,000–$10,000 for the admissions process alone. The College Agent covers academic organization, communication coaching, internship tracking, and career planning — across all four years — for a fraction of those individual costs.
+              Consider what parents typically spend on academic support: a private tutor runs $80–$150 per session. SAT prep programs cost $1,000–$3,000. College counselors charge $3,000–$10,000 for the admissions process alone. The College Agent covers academic organization, communication coaching, internship tracking, and career planning, across all four years, for a fraction of those individual costs.
             </p>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
               One internship landed. One professor relationship built. One job offer received because the student was actually prepared. That&apos;s the ROI. And The College Agent is working toward that outcome from day one.
             </p>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 32 }}>
-              Many parents purchase the agent as a gift — for freshman move-in, a birthday, or any moment they want to give their student a real edge. See current plans at <a href="/build" style={{ color: "var(--green)", textDecoration: "underline" }}>thecollegeagent.ai/build</a>.
+              Many parents purchase the agent as a gift, for freshman move-in, a birthday, or any moment they want to give their student a real edge. See current plans at <a href="/build" style={{ color: "var(--green)", textDecoration: "underline" }}>thecollegeagent.ai/build</a>.
             </p>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
               <a href="/build" className="btn-green">View Plans &amp; Pricing</a>

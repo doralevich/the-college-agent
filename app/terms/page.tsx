@@ -13,7 +13,7 @@ import {
 // The headline policy: a full refund window of 7 calendar days from purchase.
 
 export const metadata: Metadata = {
-  title: "Terms & Conditions — The College Agent",
+  title: "Terms & Conditions, The College Agent",
   description:
     "The terms that govern The College Agent: what you get, what you pay, our 7-day refund guarantee, acceptable use, and how your data stays yours.",
   alternates: { canonical: "https://thecollegeagent.ai/terms" },

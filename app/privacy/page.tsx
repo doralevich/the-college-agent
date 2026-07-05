@@ -3,7 +3,7 @@ import Nav from "../components/Nav";
 import { Footer } from "../components/Footer";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — The College Agent",
+  title: "Privacy Policy, The College Agent",
   description:
     "How The College Agent collects, uses, and protects your personal information. Read our full privacy policy.",
   alternates: { canonical: "https://thecollegeagent.ai/privacy" },

@@ -38,7 +38,7 @@ const CATEGORIES: Category[] = [
   },
   {
     title: "Email & communication",
-    blurb: "Faster, cleaner messages — without losing your voice.",
+    blurb: "Faster, cleaner messages, without losing your voice.",
     icon: Mail,
     shortcuts: [
       { prompt: "Draft an email to my professor asking for an extension on Friday's paper.", what: "Polite, specific, ready to send." },
@@ -110,7 +110,7 @@ export function ShortcutsView() {
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Shortcuts</h1>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-          Ways to talk to your agent — copy any of these into Chat, or use them as inspiration to
+          Ways to talk to your agent, copy any of these into Chat, or use them as inspiration to
           ask in your own words. Your agent works best when you treat it like a smart classmate
           who already has access to your calendar, email, files, and the open web.
         </p>
@@ -144,7 +144,7 @@ export function ShortcutsView() {
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Tip: the more you connect (calendar, email, Canvas, Drive), the more shortcuts unlock —
+        Tip: the more you connect (calendar, email, Canvas, Drive), the more shortcuts unlock, 
         head over to <span className="font-medium text-foreground">Integrations</span> to plug
         anything in.
       </p>

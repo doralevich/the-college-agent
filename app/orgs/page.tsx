@@ -4,12 +4,12 @@ import { Footer } from "../components/Footer";
 import { OrgApplyForm } from "./OrgApplyForm";
 
 export const metadata: Metadata = {
-  title: "Orgs & Fundraising — The College Agent",
+  title: "Orgs & Fundraising, The College Agent",
   description:
     "Turn your club, team, chapter, or cause into a fundraiser: your members share The College Agent and part of every sale goes to the group.",
   alternates: { canonical: "https://thecollegeagent.ai/orgs" },
   openGraph: {
-    title: "Orgs & Fundraising — The College Agent",
+    title: "Orgs & Fundraising, The College Agent",
     description: "Part of every sale your members drive goes to your group. A fundraiser that runs itself.",
     url: "https://thecollegeagent.ai/orgs",
     images: [{ url: "/og-image.jpg", width: 1200, height: 1200, alt: "The College Agent" }],

@@ -5,7 +5,7 @@ import { Footer } from "../components/Footer";
 import { BookOpenCheck, BriefcaseBusiness, CalendarDays, Network, NotebookTabs, Sparkles } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "AI for College Students — The College Agent",
+  title: "AI for College Students, The College Agent",
   description:
     "The only AI built for your whole college experience: classes, studying, internships, social life, and career planning. It grows with you from before freshman year to after graduation.",
   keywords: [
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "https://thecollegeagent.ai/for-students" },
   openGraph: {
-    title: "AI for College Students — The College Agent",
+    title: "AI for College Students, The College Agent",
     description:
       "The only AI built for your whole college experience: classes, studying, internships, social life, and career planning. It grows with you from before freshman year to after graduation.",
     url: "https://thecollegeagent.ai/for-students",
@@ -315,13 +315,13 @@ export default function ForStudentsPage() {
               What Your First Semester Looks Like With AI
             </h2>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
-              Week one of freshman year is chaotic for almost every student. You have syllabi to read, professors to email, a social calendar filling up, and zero structure for how to handle any of it. Most students get through it by sheer adrenaline — and start falling behind by week four.
+              Week one of freshman year is chaotic for almost every student. You have syllabi to read, professors to email, a social calendar filling up, and zero structure for how to handle any of it. Most students get through it by sheer adrenaline, and start falling behind by week four.
             </p>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
-              With The College Agent, your first semester looks different. Before classes start, you load your schedule. Your agent builds your week — blocking study time, surfacing deadlines, flagging office hours. Your first professor email is drafted before you have to ask. Your first exam review guide is ready two weeks before the test.
+              With The College Agent, your first semester looks different. Before classes start, you load your schedule. Your agent builds your week, blocking study time, surfacing deadlines, flagging office hours. Your first professor email is drafted before you have to ask. Your first exam review guide is ready two weeks before the test.
             </p>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
-              By midterms, you&apos;re not cramming — you&apos;ve been reviewing consistently. By the end of the semester, your agent knows your class load, your professors, your work style, and your goals. That&apos;s infrastructure most students never build. You have it from day one.
+              By midterms, you&apos;re not cramming, you&apos;ve been reviewing consistently. By the end of the semester, your agent knows your class load, your professors, your work style, and your goals. That&apos;s infrastructure most students never build. You have it from day one.
             </p>
           </div>
         </section>
@@ -333,7 +333,7 @@ export default function ForStudentsPage() {
               Ready to build your agent?
             </h2>
             <p style={{ fontSize: 16, lineHeight: 1.7, color: "rgba(255,255,255,.6)", marginBottom: 32 }}>
-              Join students who are already using The College Agent to stay ahead — academically, professionally, and personally — across all 4 years of college.
+              Join students who are already using The College Agent to stay ahead, academically, professionally, and personally, across all 4 years of college.
             </p>
             <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
               <a href="/build" className="btn-green">Build My Agent</a>

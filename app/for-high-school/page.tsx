@@ -5,7 +5,7 @@ import { Footer } from "../components/Footer";
 import { BookOpenCheck, CalendarDays, GraduationCap, NotebookTabs, Sparkles, TrendingUp } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Get Ready for College with AI — The College Agent for High Schoolers",
+  title: "Get Ready for College with AI, The College Agent for High Schoolers",
   description:
     "Start building the habits, skills, and plans that will define your college years before you even arrive on campus. AI college prep for high school students.",
   keywords: [
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "https://thecollegeagent.ai/for-high-school" },
   openGraph: {
-    title: "Get Ready for College with AI — The College Agent for High Schoolers",
+    title: "Get Ready for College with AI, The College Agent for High Schoolers",
     description:
       "Start building the habits, skills, and plans that will define your college years before you even arrive on campus.",
     url: "https://thecollegeagent.ai/for-high-school",
@@ -39,17 +39,17 @@ const PREP_AREAS = [
   {
     icon: NotebookTabs,
     title: "Study Habits That Actually Work",
-    desc: "High school has structure built in. College doesn't. Your agent helps you build the study systems now — before you're on your own with five classes and no one reminding you.",
+    desc: "High school has structure built in. College doesn't. Your agent helps you build the study systems now, before you're on your own with five classes and no one reminding you.",
   },
   {
     icon: CalendarDays,
     title: "Schedule & Time Management",
-    desc: "College schedules look nothing like high school. Your agent helps you understand how to block time for studying, social life, and sleep — so you're not constantly behind.",
+    desc: "College schedules look nothing like high school. Your agent helps you understand how to block time for studying, social life, and sleep, so you're not constantly behind.",
   },
   {
     icon: GraduationCap,
     title: "College Planning",
-    desc: "Not admissions — what comes after. What to expect your first semester, how to pick a major, how to find professors worth getting to know, and how to use every year strategically.",
+    desc: "Not admissions, what comes after. What to expect your first semester, how to pick a major, how to find professors worth getting to know, and how to use every year strategically.",
   },
   {
     icon: TrendingUp,
@@ -64,7 +64,7 @@ const PREP_AREAS = [
   {
     icon: Sparkles,
     title: "Head Start on Freshman Year",
-    desc: "Show up to college already knowing how to manage yourself — with an AI companion already trained on your goals, your style, and your plan. That's the head start that matters.",
+    desc: "Show up to college already knowing how to manage yourself, with an AI companion already trained on your goals, your style, and your plan. That's the head start that matters.",
   },
 ];
 
@@ -95,13 +95,13 @@ export default function ForHighSchoolPage() {
               The early start is the biggest advantage.
             </h2>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
-              Most students wait until they&apos;re already struggling in college to look for help. They get overwhelmed by week three of freshman year — not because they&apos;re not smart, but because no one taught them how to manage their time, communicate professionally, or think strategically about their four years.
+              Most students wait until they&apos;re already struggling in college to look for help. They get overwhelmed by week three of freshman year, not because they&apos;re not smart, but because no one taught them how to manage their time, communicate professionally, or think strategically about their four years.
             </p>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
-              The students who thrive start building those skills before they arrive. They understand what college actually demands — academically, socially, professionally — and they have systems in place to handle it before the pressure hits.
+              The students who thrive start building those skills before they arrive. They understand what college actually demands, academically, socially, professionally, and they have systems in place to handle it before the pressure hits.
             </p>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)" }}>
-              The College Agent lets you start that process now. You build the AI companion, train it on your goals and your work style, and arrive at college freshman year with infrastructure already in place. That&apos;s a real advantage — not a theoretical one.
+              The College Agent lets you start that process now. You build the AI companion, train it on your goals and your work style, and arrive at college freshman year with infrastructure already in place. That&apos;s a real advantage, not a theoretical one.
             </p>
           </div>
         </section>
@@ -114,23 +114,23 @@ export default function ForHighSchoolPage() {
               The Head Start Advantage: What It Actually Means
             </h2>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
-              Starting The College Agent in high school doesn&apos;t mean doing college work early. It means building the mental models, organizational habits, and communication skills that college demands — so those aren&apos;t things you have to figure out in real time while also navigating a new environment.
+              Starting The College Agent in high school doesn&apos;t mean doing college work early. It means building the mental models, organizational habits, and communication skills that college demands, so those aren&apos;t things you have to figure out in real time while also navigating a new environment.
             </p>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
-              When you arrive at college with The College Agent already trained on your goals, your voice, and your plan, you spend your first week setting up your schedule — not panicking about it. You send your first professor email on day two because your agent already has a template ready. You know what an organized week looks like because you&apos;ve been building that rhythm for months.
+              When you arrive at college with The College Agent already trained on your goals, your voice, and your plan, you spend your first week setting up your schedule, not panicking about it. You send your first professor email on day two because your agent already has a template ready. You know what an organized week looks like because you&apos;ve been building that rhythm for months.
             </p>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
-              That head start compounds. Students who arrive organized stay organized. Students who know how to study efficiently outperform students who are still figuring it out by midterms. The first semester sets the tone for the next four years — and The College Agent makes sure yours starts strong.
+              That head start compounds. Students who arrive organized stay organized. Students who know how to study efficiently outperform students who are still figuring it out by midterms. The first semester sets the tone for the next four years, and The College Agent makes sure yours starts strong.
             </p>
             <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--navy)", marginBottom: 12, letterSpacing: "-.02em" }}>
               What You Build Before Freshman Year
             </h3>
             <ul style={{ paddingLeft: 20, marginBottom: 0 }}>
-              <li style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 8 }}><strong>Study system</strong> — Consistent daily study habits that work for your learning style, not a generic method.</li>
-              <li style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 8 }}><strong>Communication templates</strong> — Professional email drafts for professors, advisors, and future employers.</li>
-              <li style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 8 }}><strong>4-year plan framework</strong> — A rough map of your major, your goals, and how each year builds toward your career.</li>
-              <li style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 8 }}><strong>LinkedIn foundation</strong> — A profile started in high school gives you a full year of head start on professional networking.</li>
-              <li style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 8 }}><strong>Agent memory</strong> — Your College Agent already knows you before orientation. It doesn&apos;t need a warm-up period.</li>
+              <li style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 8 }}><strong>Study system</strong>, Consistent daily study habits that work for your learning style, not a generic method.</li>
+              <li style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 8 }}><strong>Communication templates</strong>, Professional email drafts for professors, advisors, and future employers.</li>
+              <li style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 8 }}><strong>4-year plan framework</strong>, A rough map of your major, your goals, and how each year builds toward your career.</li>
+              <li style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 8 }}><strong>LinkedIn foundation</strong>, A profile started in high school gives you a full year of head start on professional networking.</li>
+              <li style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 8 }}><strong>Agent memory</strong>, Your College Agent already knows you before orientation. It doesn&apos;t need a warm-up period.</li>
             </ul>
           </div>
         </section>
@@ -146,7 +146,7 @@ export default function ForHighSchoolPage() {
               <div style={{ background: "var(--cream2)", borderRadius: 14, padding: "28px 32px", border: "1px solid rgba(11,23,41,.07)" }}>
                 <div style={{ background: "rgba(61,139,61,.1)", border: "2px solid var(--green)", borderRadius: 8, padding: "6px 12px", fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: "var(--green)", letterSpacing: ".08em", display: "inline-block", marginBottom: 16 }}>Junior Year</div>
                 <h3 style={{ fontSize: 17, fontWeight: 800, color: "var(--navy)", marginBottom: 12 }}>Build the Foundation</h3>
-                <p style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 12 }}>Junior year is the right time to start building The College Agent — not because you need it for high school yet, but because the habits you build now will be the habits you walk into college with.</p>
+                <p style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 12 }}>Junior year is the right time to start building The College Agent, not because you need it for high school yet, but because the habits you build now will be the habits you walk into college with.</p>
                 <ul style={{ paddingLeft: 20, margin: 0 }}>
                   <li style={{ fontSize: 14, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 6 }}>Start organizing your academic goals and interests with your agent</li>
                   <li style={{ fontSize: 14, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 6 }}>Build daily study habits using AI-assisted scheduling</li>
@@ -158,7 +158,7 @@ export default function ForHighSchoolPage() {
               <div style={{ background: "var(--cream2)", borderRadius: 14, padding: "28px 32px", border: "1px solid rgba(11,23,41,.07)" }}>
                 <div style={{ background: "rgba(61,139,61,.1)", border: "2px solid var(--green)", borderRadius: 8, padding: "6px 12px", fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: "var(--green)", letterSpacing: ".08em", display: "inline-block", marginBottom: 16 }}>Senior Year</div>
                 <h3 style={{ fontSize: 17, fontWeight: 800, color: "var(--navy)", marginBottom: 12 }}>Prepare the Launch</h3>
-                <p style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 12 }}>Senior year is when your College Agent gets college-specific. You&apos;re not just preparing to apply — you&apos;re preparing to thrive from day one of freshman year.</p>
+                <p style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 12 }}>Senior year is when your College Agent gets college-specific. You&apos;re not just preparing to apply, you&apos;re preparing to thrive from day one of freshman year.</p>
                 <ul style={{ paddingLeft: 20, margin: 0 }}>
                   <li style={{ fontSize: 14, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 6 }}>Load your intended major, target school, and freshman year goals into your agent</li>
                   <li style={{ fontSize: 14, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 6 }}>Build your 4-year plan framework with your agent before orientation</li>
@@ -197,16 +197,16 @@ export default function ForHighSchoolPage() {
           <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
             <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "var(--green)", marginBottom: 14, display: "block" }}>Freshman Year Reality</span>
             <h2 style={{ fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 800, color: "var(--navy)", marginBottom: 20, letterSpacing: "-.025em" }}>
-              What freshman year actually looks like — and how to be ready.
+              What freshman year actually looks like, and how to be ready.
             </h2>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
-              Freshman year is exciting and overwhelming in equal measure. You&apos;re managing your own schedule for the first time, navigating a new social environment, figuring out how to talk to professors, and trying to do well academically — all simultaneously.
+              Freshman year is exciting and overwhelming in equal measure. You&apos;re managing your own schedule for the first time, navigating a new social environment, figuring out how to talk to professors, and trying to do well academically, all simultaneously.
             </p>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
               The students who handle it well aren&apos;t necessarily smarter. They&apos;re more organized. They email professors before problems become crises. They know when their assignments are due. They have a system.
             </p>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 32 }}>
-              The College Agent is that system. And if you build it now, you&apos;ll arrive at college already knowing how it works — so your first semester is about growth, not scrambling.
+              The College Agent is that system. And if you build it now, you&apos;ll arrive at college already knowing how it works, so your first semester is about growth, not scrambling.
             </p>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
               <a href="/build" className="btn-green">Build My Agent</a>

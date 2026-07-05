@@ -24,12 +24,12 @@ export const metadata: Metadata = {
 };
 
 const STUDENT_USES = [
-  { icon: ListChecks,     title: "Stay Organized",      desc: "Assignments, deadlines, notes, and syllabi — all in one place." },
+  { icon: ListChecks,    title: "Stay Organized",     desc: "Assignments, deadlines, notes, and syllabi, all in one place." },
   { icon: BookOpen,       title: "Study Smarter",       desc: "Turn class notes into study guides, flashcards, quizzes, and review tools." },
   { icon: CalendarCheck2, title: "Manage your Workload", desc: "Build study plans around exams, projects, work, and activities." },
   { icon: FileText,       title: "Writing & Research",  desc: "Organize sources, format citations, and keep papers on track." },
   { icon: TrendingUp,     title: "Track your Progress", desc: "Monitor grades, calculate averages, and identify areas to improve." },
-  { icon: LifeBuoy,       title: "Academic Support",    desc: "Ask anything, anytime — clear explanations when you're stuck on a concept." },
+  { icon: LifeBuoy,      title: "Academic Support",   desc: "Ask anything, anytime, clear explanations when you're stuck on a concept." },
 ];
 
 // The pitch, in checkboxes: what the role does, what it accomplishes, what lands on
@@ -197,7 +197,7 @@ export default function AmbassadorPage() {
               ))}
             </div>
 
-            {/* Fundraisers: the org angle — clubs and teams earn on every signup. */}
+            {/* Fundraisers: the org angle, clubs and teams earn on every signup. */}
             <div className="fundraiser-band">
               <div className="fundraiser-copy">
                 <span className="fundraiser-kicker">For Clubs, Teams &amp; Greek Life</span>

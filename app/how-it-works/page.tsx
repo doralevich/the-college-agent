@@ -8,12 +8,12 @@ import {
 } from "@/lib/pricing/intro-cutoff";
 
 export const metadata: Metadata = {
-  title: "How It Works — The College Agent",
+  title: "How It Works, The College Agent",
   description:
     "The whole process, step by step: sign up, pay for your agent, fill out your intake, and your personal AI agent is live within 30 minutes. What you pay, what you get, and how your data stays yours.",
   alternates: { canonical: "https://thecollegeagent.ai/how-it-works" },
   openGraph: {
-    title: "How It Works — The College Agent",
+    title: "How It Works, The College Agent",
     description:
       "The whole process, step by step: sign up, pay for your agent, fill out your intake, and your personal AI agent is live within 30 minutes.",
     url: "https://thecollegeagent.ai/how-it-works",

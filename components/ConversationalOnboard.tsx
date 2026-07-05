@@ -885,7 +885,7 @@ export function ConversationalOnboard({
       } catch (provErr) {
         // Don't undo the onboarding submit on a provision failure; the StepsView fallback
         // can pick up from here. Surface the reason to the student.
-        setError(`Saved your answers — but ${(provErr as Error).message}. Refresh to try again.`);
+        setError(`Saved your answers, but ${(provErr as Error).message}. Refresh to try again.`);
         setSubmitting(false);
         router.refresh();
         return;
@@ -1243,7 +1243,7 @@ export function ConversationalOnboard({
         }
         @media (max-width: 560px) {
           /* Compact single-column layout: small mascot on top, question full width, no
-             header paragraph — the question and its options fit the top of the screen. */
+             header paragraph, the question and its options fit the top of the screen. */
           .ca-onboard-root { padding: 18px 12px 28px !important; }
           .ca-onboard-header { margin-bottom: 12px !important; }
           .ca-onboard-header > div { margin-bottom: 8px !important; }

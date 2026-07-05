@@ -4,12 +4,12 @@ import { Footer } from "../components/Footer";
 import { DemoExperience } from "./DemoExperience";
 
 export const metadata: Metadata = {
-  title: "Try the Demo — The College Agent",
+  title: "Try the Demo, The College Agent",
   description:
     "Meet a live demo of your personal College Agent: tell it your school and graduation year and see what having your own AI agent actually feels like.",
   alternates: { canonical: "https://thecollegeagent.ai/demo" },
   openGraph: {
-    title: "Try the Demo — The College Agent",
+    title: "Try the Demo, The College Agent",
     description: "See what having your own AI agent actually feels like. No account needed.",
     url: "https://thecollegeagent.ai/demo",
     images: [{ url: "/og-image.jpg", width: 1200, height: 1200, alt: "The College Agent" }],

@@ -194,7 +194,7 @@ export function DemoExperience({ refSlug }: { refSlug: string }) {
   if (step === "form") {
     return (
       <>
-        {/* Hero: header text left, agent right — same navy treatment as every other page. */}
+        {/* Hero: header text left, agent right, same navy treatment as every other page. */}
         <section className="demo-hero">
           <div className="demo-hero-inner">
             <div className="demo-hero-text">
