@@ -64,14 +64,21 @@ export const POST = route(async (req) => {
     throw new ApiError(400, "invalid_request", "Send a message.");
   }
 
-  const client = new Anthropic({ apiKey });
-  const response = await client.messages.create({
-    model: "claude-opus-4-8",
-    max_tokens: 600,
-    output_config: { effort: "low" },
-    system: systemPrompt(String(session.school ?? "your school"), Number(session.grad_year ?? 2028)),
-    messages,
-  });
+  let response: Anthropic.Message;
+  try {
+    const client = new Anthropic({ apiKey });
+    response = await client.messages.create({
+      model: "claude-opus-4-8",
+      max_tokens: 600,
+      system: systemPrompt(String(session.school ?? "your school"), Number(session.grad_year ?? 2028)),
+      messages,
+    });
+  } catch (e) {
+    // Surface the real Anthropic failure (bad/expired key, model access, rate limit)
+    // in the server logs, but hand the visitor a friendly retry message.
+    console.error("[demo:chat] anthropic error", e);
+    throw new ApiError(502, "chat_failed", "Your agent hit a snag. Give that another try in a moment.");
+  }
 
   const reply = response.content
     .filter((block): block is Anthropic.TextBlock => block.type === "text")
