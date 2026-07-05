@@ -7,8 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 const NAV_LINKS = [
   { label: "For Students", href: "/for-students" },
   { label: "For Parents", href: "/for-parents" },
-  { label: "How It Works", href: "/how-it-works" },
-  { label: "Demo", href: "/demo" },
+  { label: "For High School", href: "/for-high-school" },
   { label: "Blog", href: "/blog" },
   { label: "FAQ", href: "/faq" },
 ];
@@ -108,9 +107,9 @@ export default function Nav() {
           display: flex; align-items: center; gap: 32px;
         }
         .nav-link {
-          font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+          font-family: var(--font-mono); font-size: 12px; font-weight: 600;
           letter-spacing: .08em; text-transform: uppercase;
-          color: rgba(11,23,41,.55); transition: color .15s;
+          color: rgba(11,23,41,.8); transition: color .15s;
         }
         .nav-link:hover { color: var(--green); }
         .nav-cta-desktop {
@@ -145,7 +144,7 @@ export default function Nav() {
         .nav-mobile-link {
           font-family: var(--font-mono); font-size: 12px; font-weight: 600;
           letter-spacing: .08em; text-transform: uppercase;
-          color: rgba(11,23,41,.65); padding: 12px 0;
+          color: rgba(11,23,41,.85); padding: 12px 0;
           border-bottom: 1px solid rgba(11,23,41,.06);
           transition: color .15s;
         }

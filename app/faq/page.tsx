@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     description:
       "Answers to the most common questions about The College Agent — what it is, how it works, who it's for, and what it costs.",
     url: "https://thecollegeagent.ai/faq",
-    images: [{ url: "/og-image.jpg", width: 1200, height: 1200, alt: "The College Agent" }],
+    images: [{ url: "https://thecollegeagent.ai/og-image.png", width: 1200, height: 630, alt: "The College Agent" }],
   },
 };
 

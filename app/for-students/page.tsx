@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     description:
       "The only AI built for your whole college experience: classes, studying, internships, social life, and career planning. It grows with you from before freshman year to after graduation.",
     url: "https://thecollegeagent.ai/for-students",
-    images: [{ url: "/og-image.jpg", width: 1200, height: 1200, alt: "The College Agent" }],
+    images: [{ url: "https://thecollegeagent.ai/og-image.png", width: 1200, height: 630, alt: "The College Agent" }],
   },
 };
 
