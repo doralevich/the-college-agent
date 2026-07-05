@@ -30,7 +30,7 @@ const TESTIMONIALS = [
     tag: "Academic",
   },
   {
-    quote: "The 30-day co-training period was the part I didn't expect to love. Having someone actually work with us to configure it correctly made all the difference. It's not a product you install. It's a process you build.",
+    quote: "Setup was the part I didn't expect to love. My daughter filled out the intake on a Sunday morning, named it, gave it a face, and it was building her study plan by lunch. It's not a product you install. It's a teammate you meet.",
     name: "Karen L.",
     role: "Parent, University of Maryland",
     tag: "Onboarding",

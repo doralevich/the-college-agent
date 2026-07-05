@@ -66,7 +66,7 @@ const faqSchema = {
       name: "What does The College Agent cost?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "The College Agent offers flexible plans starting at $199. Visit thecollegeagent.ai/build to see current pricing and choose the right tier for your needs.",
+        text: "The College Agent is one plan with everything included: $249.99 one-time to build your agent, plus cloud hosting at $25/month or $250/year (the annual price equals ten monthly payments, so two months are free). Every new account starts with $20 of AI usage credits, and there is a 7-day money-back guarantee. Visit thecollegeagent.ai/build to get started.",
       },
     },
     {
@@ -167,8 +167,8 @@ const FAQS = [
     q: "What does The College Agent cost?",
     a: (
       <>
-        <p>The College Agent offers flexible plans designed for different students and families. Plans vary by agent tier, hosting, support level, and onboarding experience. Entry-level plans start at $199.</p>
-        <p>To see current pricing and choose the right plan, visit <a href="/build" style={{ color: "var(--green)" }}>thecollegeagent.ai/build</a>.</p>
+        <p>One plan, everything included: $249.99 one-time to build and configure your agent, plus cloud hosting at $25/month or $250/year (the annual price equals ten monthly payments, so two months are free). Every new account starts with $20 of AI usage credits, and there is a 7-day money-back guarantee: if it&apos;s not for you, one email within 7 days gets you a full refund.</p>
+        <p>To get started, visit <a href="/build" style={{ color: "var(--green)" }}>thecollegeagent.ai/build</a>.</p>
         <p>For context, a single private tutoring session typically costs $80–$150. A college counselor charges $3,000–$10,000. The College Agent covers academic organization, communication support, internship tracking, and career planning — across all four years — for a fraction of what parents typically spend on individual academic services.</p>
         <p>Many parents purchase the agent as a gift for their student — for freshman move-in, a birthday, or as an investment in their four-year success. If you&apos;re a parent considering it for your student, the <a href="/for-parents" style={{ color: "var(--green)" }}>parents page</a> has more context on what to expect.</p>
       </>
@@ -286,10 +286,10 @@ export default function FAQPage() {
           <div style={{ marginTop: 56, padding: "36px", background: "var(--navy, #0b1729)", borderRadius: 16, textAlign: "center" }}>
             <h2 style={{ fontSize: 24, fontWeight: 800, color: "#fff", marginBottom: 12, letterSpacing: "-.025em" }}>Ready to build your agent?</h2>
             <p style={{ fontSize: 15, color: "rgba(255,255,255,.6)", marginBottom: 28, lineHeight: 1.7 }}>
-              Pick your plan and have your agent live in as little as 30 minutes.
+              One plan, everything included. Your agent can be live 30 minutes from now.
             </p>
             <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
-              <a href="/build" className="btn-green">See Plans &amp; Pricing</a>
+              <a href="/build" className="btn-green">Let&apos;s Get Started</a>
               <a href="/about" className="btn-outline-light">About The College Agent</a>
             </div>
           </div>

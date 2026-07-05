@@ -30,7 +30,7 @@ export default function PrivacyPage() {
               <li><strong>Identity &amp; Contact Information:</strong> First name, last name, school email address, personal email address, mobile number, school name, and year of study.</li>
               <li><strong>Onboarding Information:</strong> Academic details, schedule, goals, communication style, interests, career aspirations, and any other information you provide through our onboarding forms.</li>
               <li><strong>Technical Credentials:</strong> API keys and bot tokens you provide to configure your agent. These are used solely for deployment and are never shared.</li>
-              <li><strong>Configuration Data:</strong> Your selected agent tier, hosting plan, support plan, onboarding type, and integrations.</li>
+              <li><strong>Configuration Data:</strong> Your agent&apos;s name and avatar, your intake answers, your plan and hosting status, and the integrations you connect.</li>
               <li><strong>Usage Data:</strong> How you interact with our website, including pages visited, time spent, and actions taken.</li>
               <li><strong>Uploaded Files:</strong> Any documents (such as resumes, syllabi, or class notes) you submit through our forms or share with your agent.</li>
               <li><strong>Payment Information:</strong> Payments are processed by Stripe. We receive your name, email, and transaction details; we never see or store your full card number.</li>
