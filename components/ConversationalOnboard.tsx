@@ -582,6 +582,18 @@ const PREFILL_KEYS: ReadonlyArray<keyof OnboardPrefill> = [
   "school",
 ];
 
+// Building the agent takes a minute or two. Rather than a single frozen line, cycle
+// through a few "here's what to do next" prompts so the wait feels productive and the
+// student knows how to break the ice once their agent is live. {name} is the agent's name.
+const BUILD_TIPS: string[] = [
+  "Hang tight, we're building {name} from everything you just told us.",
+  "First thing to try when this finishes: ask {name} if they know who you are.",
+  "Then ask what's due this week, {name} already has your classes.",
+  "Tell {name} how you like to be nudged: a gentle heads-up or a hard deadline.",
+  "Connect Canvas or your calendar next so {name} can keep everything in sync.",
+  "Almost there. {name} is learning your schedule, your goals, and your style.",
+];
+
 export function ConversationalOnboard({
   userId,
   knownFirstName,
@@ -635,6 +647,8 @@ export function ConversationalOnboard({
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   // Draft class being filled out before it lands in form.classes.
   const [classDraft, setClassDraft] = useState<ClassEntry>(EMPTY_CLASS);
+  // Which "what to do next" prompt is showing during the build wait.
+  const [buildTipIdx, setBuildTipIdx] = useState(0);
 
   const displayFirstName = (form.firstName?.trim() || knownFirstName?.trim() || "there");
   const displayBotName = (form.agentName?.trim() || "Your College Agent");
@@ -722,6 +736,19 @@ export function ConversationalOnboard({
       setStepIdx(Math.max(0, visibleSteps.length - 1));
     }
   }, [visibleSteps.length, stepIdx]);
+
+  // Rotate the build prompts every ~4s while the agent is being built; reset to the
+  // first prompt whenever a build starts (or stops).
+  useEffect(() => {
+    if (!submitting) {
+      setBuildTipIdx(0);
+      return;
+    }
+    const id = setInterval(() => {
+      setBuildTipIdx((i) => (i + 1) % BUILD_TIPS.length);
+    }, 4000);
+    return () => clearInterval(id);
+  }, [submitting]);
 
   const current = visibleSteps[stepIdx];
   const isLast = stepIdx === visibleSteps.length - 1;
@@ -1126,9 +1153,18 @@ export function ConversationalOnboard({
           </div>
 
           {submitting ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 10, color: T.inkSoft, fontSize: 14, padding: "16px 0" }}>
-              <Loader2 className="animate-spin" style={{ width: 16, height: 16 }} />
-              Saving your answers and building your agent. This can take a minute or two.
+            <div style={{ padding: "16px 0" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, color: T.ink, fontSize: 15, fontWeight: 600 }}>
+                <Loader2 className="animate-spin" style={{ width: 16, height: 16, flex: "0 0 auto" }} />
+                Building {displayBotName}. This takes a minute or two.
+              </div>
+              <div
+                key={buildTipIdx}
+                className="ca-build-tip"
+                style={{ marginTop: 12, color: T.inkSoft, fontSize: 14, lineHeight: 1.55, minHeight: 44 }}
+              >
+                {BUILD_TIPS[buildTipIdx].replace(/\{name\}/g, displayBotName)}
+              </div>
             </div>
           ) : (
             <Input
@@ -1237,6 +1273,10 @@ export function ConversationalOnboard({
         .ca-onboard-cta:hover:not(:disabled) { background: ${T.greenDeep}; }
         .ca-onboard-cta:focus-visible { outline: 3px solid ${T.greenSoft}; outline-offset: 3px; }
         .ca-onboard-back:hover:not(:disabled) { background: ${T.greenSoft}; color: ${T.ink}; }
+        /* Each rotating build prompt fades in as it swaps (key change remounts the node). */
+        .ca-build-tip { animation: ca-tip-fade .45s ease; }
+        @keyframes ca-tip-fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { .ca-build-tip { animation: none; } }
         /* Long checkbox lists read as two columns once there's room; phones stay one column. */
         @media (min-width: 561px) {
           .ca-options-2col { display: grid !important; grid-template-columns: 1fr 1fr; column-gap: 12px; }
