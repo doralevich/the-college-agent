@@ -17,7 +17,7 @@ import { findModel, prettyModelLabel, prettyProvider, type ModelGroup } from "./
 interface Props {
   groups: ModelGroup[];
   model: string | null; // selected model id; null => riding the instance default
-  defaultModel: string | null; // instance default model id — pre-selected and badged
+  defaultModel: string | null; // instance default model id, pre-selected and badged
   defaultLabel: string; // resolved trigger label fallback (while loading / nothing matched)
   disabled?: boolean;
   onChange: (model: string | null, provider: string | null) => void;

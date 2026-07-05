@@ -289,7 +289,7 @@ function InvoicesCard() {
       .then((d) => {
         if (!cancelled) setInvoices(d.invoices);
       })
-      .catch(() => {}); // supplementary card — the portal still lists invoices if this fails
+      .catch(() => {}); // supplementary card, the portal still lists invoices if this fails
     return () => {
       cancelled = true;
     };

@@ -157,7 +157,7 @@ export function IntakeDialog({
         onOpenChange(false);
       } catch (e) {
         toast.error(`Intake saved, but agent creation failed: ${(e as Error).message}`);
-        onSaved(); // intake changed — refresh, but keep the dialog open to retry the create
+        onSaved(); // intake changed, refresh, but keep the dialog open to retry the create
       }
     });
   }

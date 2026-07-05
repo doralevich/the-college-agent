@@ -45,7 +45,7 @@ export default function StripeCatalogPage() {
         <h1 className="text-xl font-semibold">Stripe Catalog</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Sync the live Stripe catalog with the prices in <code>lib/pricing.ts</code>. Safe to
-          re-run — products are matched by <code>metadata.catalog_key</code> and prices by{" "}
+          re-run, products are matched by <code>metadata.catalog_key</code> and prices by{" "}
           <code>lookup_key</code>. Amounts that have changed mint a new Stripe Price and
           archive the old one. Use this after editing prices in the Stripe dashboard.
         </p>
