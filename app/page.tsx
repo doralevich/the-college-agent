@@ -202,8 +202,8 @@ export default async function Home() {
               <span style={{ color: "var(--green)", fontSize: 14 }}>&#9670;</span>
               Apollo[Claw] College Edition
             </div>
-            <h1 className="hero-h1" style={{ color: "#fff" }}>
-              Your personal AI agent <br />for your college years <br />...and then some!
+            <h1 className="hero-h1" style={{ color: "#fff", textAlign: "left" }}>
+              Your College<br />AI Assistant.
             </h1>
             <p className="hero-sub">
               Your own student AI assistant. Named. Trained on your voice. Built around your schedule, classes,
