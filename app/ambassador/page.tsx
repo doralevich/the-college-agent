@@ -1,23 +1,23 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { Award, CalendarCheck2, Check, FileText, LifeBuoy, ListChecks, Rocket, TrendingUp, BookOpen } from "lucide-react";
+import { Award, Bot, CalendarCheck2, Check, FileText, LifeBuoy, ListChecks, Rocket, TrendingUp, BookOpen } from "lucide-react";
 import Nav from "../components/Nav";
 import { Footer } from "../components/Footer";
 
 export const metadata: Metadata = {
-  title: "Become a College Agent Campus Ambassador | The College Agent",
+  title: "Become a College Agent Ambassador | The College Agent",
   description:
-    "Apply to become a College Agent Campus Ambassador. Help students succeed, build your resume, gain leadership experience, and earn commissions representing one of the first AI platforms built for college students.",
+    "Apply to become a College Agent Ambassador. Help students succeed, build your resume, gain leadership experience, and earn commissions representing one of the first AI platforms built for college students.",
   alternates: { canonical: "https://thecollegeagent.ai/ambassador" },
   openGraph: {
-    title: "Become a College Agent Campus Ambassador",
+    title: "Become a College Agent Ambassador",
     description:
       "Represent one of the first AI platforms built for college students. Build your resume, gain real-world experience, and earn commissions.",
     url: "https://thecollegeagent.ai/ambassador",
     images: [{ url: "/og-image.jpg", width: 1200, height: 1200, alt: "The College Agent" }],
   },
   twitter: {
-    title: "Become a College Agent Campus Ambassador",
+    title: "Become a College Agent Ambassador",
     description:
       "Help students succeed. Build your resume. Earn commissions.",
   },
@@ -39,7 +39,7 @@ const PROGRAM_PERKS = [
     icon: ListChecks,
     title: "What You'll Actually Do",
     items: [
-      "Launch The College Agent on your campus",
+      "Launch The College Agent at your school",
       "Run live demos in dorms, clubs, and classes",
       "Share your personal link and watch it convert",
       "Give feedback that shapes the product roadmap",
@@ -59,7 +59,7 @@ const PROGRAM_PERKS = [
     icon: FileText,
     title: "What Goes On Your Resume",
     items: [
-      "Campus Ambassador at an AI startup",
+      "Ambassador at an AI startup",
       "Growth results you can quantify in interviews",
       "Event planning and public speaking reps",
       "The exact experience recruiters are hunting for",
@@ -88,17 +88,17 @@ export default function AmbassadorPage() {
             <div className="affiliate-copy">
               <div className="hero-badge">
                 <span style={{ color: "var(--green)", fontSize: 14 }}>&#9670;</span>
-                Campus Ambassador Program
+                Ambassador Program
               </div>
-              <h1>Become a College Agent campus ambassador.</h1>
+              <h1>Become a College Agent ambassador.</h1>
               <p className="hero-tagline">Help students succeed. Build your resume. Earn commissions.</p>
               <p>
                 Join a select group of student ambassadors representing one of the first AI platforms
                 built specifically for college students. Gain real-world experience, strengthen your
-                resume, and earn commissions while making a meaningful impact on campus.
+                resume, and earn commissions while making a meaningful impact at your school.
               </p>
               <div className="affiliate-actions">
-                <a href="/ambassador/apply" className="btn-purple">Apply Now</a>
+                <a href="/ambassador/apply" className="btn-purple" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><Bot size={16} strokeWidth={2} aria-hidden /> Apply Now</a>
               </div>
             </div>
             <div className="hero-bot">
@@ -124,7 +124,7 @@ export default function AmbassadorPage() {
                 for each student to help stay organized, reduce academic stress, and simplify the
                 day-to-day demands of college.
               </p>
-              <a href="/ambassador/apply" className="btn-purple what-is-cta">Apply Now</a>
+              <a href="/ambassador/apply" className="btn-purple what-is-cta" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><Bot size={16} strokeWidth={2} aria-hidden /> Apply Now</a>
             </div>
             <div className="what-is-right">
               <h3 className="why-use-title">Why Students Use The College Agent</h3>
@@ -154,7 +154,7 @@ export default function AmbassadorPage() {
                 gaining practical experience that can strengthen your resume and prepare you for
                 internships and future careers.
               </p>
-              <a href="/ambassador/apply" className="btn-purple why-become-cta">Apply Now</a>
+              <a href="/ambassador/apply" className="btn-purple why-become-cta" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><Bot size={16} strokeWidth={2} aria-hidden /> Apply Now</a>
             </div>
             <div className="why-become-bot">
               <Image
@@ -173,7 +173,7 @@ export default function AmbassadorPage() {
               <h2 className="program-banner-title">The Ambassador Program</h2>
               <p>
                 This is a real role with real output. You launch the newest agent technology on
-                your campus, build proof you can sell, lead, and grow something, and get paid
+                your school, build proof you can sell, lead, and grow something, and get paid
                 while you do it.
               </p>
             </div>
@@ -228,7 +228,7 @@ export default function AmbassadorPage() {
                 Earn commissions. Build your resume. Gain real-world experience.
               </p>
               <p className="applications-note">Applications are now open.</p>
-              <a href="/ambassador/apply" className="btn-purple final-cta-btn">Apply Now</a>
+              <a href="/ambassador/apply" className="btn-purple final-cta-btn" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><Bot size={16} strokeWidth={2} aria-hidden /> Apply Now</a>
             </div>
           </div>
         </section>
