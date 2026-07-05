@@ -52,83 +52,115 @@ const TAG_TEXT: Record<string, string> = {
 
 const SCENARIOS = [
   {
-    before: { headline: "Deadlines get missed.", body: "Assignments live in Canvas, syllabi, email, and memory. By Sunday night, the week is already behind." },
-    after:  { headline: "The week is already mapped.", body: "The agent sends a prioritized briefing with deadlines, study blocks, prep work, and what needs attention first." },
+    before: { headline: "Deadlines get missed.", body: "Assignments are scattered across syllabi, Canvas, email, calendars, and sticky notes. Something always slips through the cracks." },
+    after:  { headline: "Every week starts with a plan.", body: "Your College Agent organizes assignments, deadlines, study sessions, and priorities into one clear roadmap, so you always know what comes next." },
   },
   {
-    before: { headline: "Internship windows close fast.", body: "Handshake posts, alumni leads, recruiter notes, and application deadlines scatter across too many places." },
-    after:  { headline: "Applications move on time.", body: "The agent tracks target roles, drafts outreach, flags deadlines, and keeps follow-up moving before opportunities disappear." },
+    before: { headline: "Internship opportunities disappear.", body: "Applications, recruiter emails, networking contacts, and follow-ups are spread across too many places." },
+    after:  { headline: "Career opportunities stay on track.", body: "Your College Agent tracks applications, reminds you to follow up, prepares your resume, and keeps your internship search moving forward." },
   },
   {
-    before: { headline: "Important emails sit too long.", body: "Professors, advisors, recruiters, and group projects all need responses. The longer it waits, the worse it looks." },
-    after:  { headline: "Replies sound polished and on time.", body: "The agent drafts clear responses in the student's voice so they can review, send, and move on." },
+    before: { headline: "Important emails get delayed.", body: "Writing to professors, advisors, recruiters, and classmates takes time, and often gets pushed aside." },
+    after:  { headline: "Professional communication is effortless.", body: "Your College Agent drafts polished emails in your voice, ready for you to review and send with confidence." },
   },
   {
-    before: { headline: "Studying starts from scratch.", body: "Notes, textbooks, slides, and test dates are disconnected. Review becomes last-minute and inefficient." },
-    after:  { headline: "Study guides are ready when needed.", body: "The agent turns class materials into guides, review plans, practice questions, and prep checklists built around the next exam." },
+    before: { headline: "Studying becomes reactive.", body: "Notes, readings, lectures, and exam dates are scattered across different places, making last-minute cramming the default." },
+    after:  { headline: "Study plans are always ready.", body: "Your College Agent creates personalized study schedules, review guides, practice questions, and reminders before every exam." },
+  },
+  {
+    before: { headline: "You're constantly switching between apps.", body: "Canvas, Gmail, Google Calendar, Notes, Docs, to-do lists, and more. Everything lives somewhere different." },
+    after:  { headline: "One place for your entire college life.", body: "Your College Agent brings everything together, classes, assignments, deadlines, communication, studying, internships, and personal plans, so you always know what's next and what matters most." },
   },
 ];
 
 export default function Explainer() {
   return (
     <>
-      {/* WHAT GETS HANDLED */}
+      {/* BEFORE & AFTER */}
       <section id="before-after" style={{ background: "var(--cream)", padding: "80px 0", scrollMarginTop: 80 }}>
         <div style={{ maxWidth: 1000, margin: "0 auto", padding: "0 24px" }}>
-          <div style={{ textAlign: "center", marginBottom: 44 }}>
-            <span className="mono-label">The Difference</span>
-            <h2 className="section-title">From scattered to handled.</h2>
-            <p className="section-sub" style={{ maxWidth: 620, margin: "12px auto 0" }}>
-              A personalized agent that knows the student&apos;s real college life and keeps the work
-              moving. The hard parts of the week just get done.
+          <div style={{ textAlign: "center", marginBottom: 40 }}>
+            <span className="mono-label">Before &amp; After</span>
+            <h2 className="section-title">From overwhelmed to in control.</h2>
+            <p className="section-sub" style={{ maxWidth: 640, margin: "12px auto 0" }}>
+              The difference isn&apos;t another chatbot. It&apos;s a personal College Agent that understands
+              your academic life, stays organized, and keeps everything moving.
             </p>
           </div>
 
-          <div className="handled-grid">
-            {SCENARIOS.map((s, i) => (
-              <div key={i} className="handled-card">
-                <span className="handled-check" aria-hidden>
+          <div className="ba-grid">
+            <div className="ba-colhead ba-colhead-neg">Without</div>
+            <div className="ba-colhead ba-colhead-pos">With The College Agent</div>
+            {SCENARIOS.map((s, i) => [
+              <div key={`n${i}`} className="ba-cell ba-neg">
+                <span className="ba-celltag ba-celltag-neg">Without</span>
+                <div className="ba-headline">{s.before.headline}</div>
+                <p className="ba-body">{s.before.body}</p>
+              </div>,
+              <div key={`p${i}`} className="ba-cell ba-pos">
+                <span className="ba-celltag ba-celltag-pos">With The College Agent</span>
+                <span className="ba-check" aria-hidden>
                   <svg viewBox="0 0 20 20" fill="none">
                     <path d="M4 10.5l4 4 8-9" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </span>
-                <div className="handled-text">
-                  <div className="handled-headline">{s.after.headline}</div>
-                  <p className="handled-body">{s.after.body}</p>
+                <div className="ba-text">
+                  <div className="ba-headline">{s.after.headline}</div>
+                  <p className="ba-body">{s.after.body}</p>
                 </div>
-              </div>
-            ))}
+              </div>,
+            ])}
           </div>
 
           <div className="handled-done">Consider it done.</div>
         </div>
         <style>{`
-          .handled-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-          .handled-card {
-            background: #fff; border: 1px solid rgba(61,139,61,.2);
-            border-left: 4px solid var(--green); border-radius: 14px;
-            padding: 24px 26px; display: flex; gap: 16px; align-items: flex-start;
+          .ba-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: stretch; }
+          .ba-colhead {
+            font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .08em; padding: 4px 4px 2px; text-align: center;
+          }
+          .ba-colhead-neg { color: rgba(11,23,41,.42); }
+          .ba-colhead-pos { color: var(--green); }
+          .ba-cell {
+            background: #fff; border-radius: 14px; padding: 22px 24px;
             box-shadow: 0 10px 30px rgba(11,23,41,.05);
           }
-          .handled-check {
-            flex: 0 0 auto; width: 34px; height: 34px; border-radius: 50%;
+          .ba-neg { border: 1px solid rgba(11,23,41,.1); border-left: 4px solid rgba(11,23,41,.2); }
+          .ba-pos {
+            border: 1px solid rgba(61,139,61,.2); border-left: 4px solid var(--green);
+            display: flex; gap: 14px; align-items: flex-start;
+          }
+          .ba-check {
+            flex: 0 0 auto; width: 32px; height: 32px; border-radius: 50%;
             background: rgba(61,139,61,.12); color: var(--green);
             display: flex; align-items: center; justify-content: center;
           }
-          .handled-check svg { width: 18px; height: 18px; }
-          .handled-headline {
-            font-size: 18px; font-weight: 800; color: var(--navy);
+          .ba-check svg { width: 17px; height: 17px; }
+          .ba-headline {
+            font-size: 17px; font-weight: 800; color: var(--navy);
             margin-bottom: 6px; letter-spacing: -.01em; line-height: 1.25;
           }
-          .handled-body { font-size: 14px; line-height: 1.7; color: rgba(11,23,41,.72); margin: 0; }
+          .ba-neg .ba-headline { color: rgba(11,23,41,.6); }
+          .ba-body { font-size: 14px; line-height: 1.68; color: rgba(11,23,41,.72); margin: 0; }
+          .ba-neg .ba-body { color: rgba(11,23,41,.55); }
+          .ba-celltag { display: none; }
           .handled-done {
             text-align: center; margin-top: 40px;
             font-size: clamp(24px, 3vw, 32px); font-weight: 800;
             color: var(--green); letter-spacing: -.02em;
           }
           @media (max-width: 680px) {
-            .handled-grid { grid-template-columns: 1fr; }
-            .handled-card { padding: 20px 22px; }
+            .ba-grid { grid-template-columns: 1fr; gap: 10px; }
+            .ba-colhead { display: none; }
+            .ba-pos { flex-direction: column; gap: 10px; }
+            .ba-neg { margin-top: 10px; }
+            .ba-celltag {
+              display: inline-block; font-family: var(--font-mono); font-size: 10px;
+              font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px;
+            }
+            .ba-celltag-neg { color: rgba(11,23,41,.4); }
+            .ba-celltag-pos { color: var(--green); }
           }
         `}</style>
       </section>
