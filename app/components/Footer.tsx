@@ -1,18 +1,39 @@
 import { NewsletterSignup } from "./NewsletterSignup";
 
-// The site-wide dark footer: newsletter signup, brand, links, copyright. Self-contained
-// styling (no dependence on per-page .dark-section rules) so it renders identically on
-// every marketing page.
+// The site-wide dark footer: newsletter signup, brand, a full-sitemap link grid, and
+// copyright. Self-contained styling (no dependence on per-page .dark-section rules) so it
+// renders identically on every marketing page. The columns are the canonical list of
+// every marketing page — the top nav shows a curated subset, but the footer is complete.
 
 const CALENDLY = "https://calendly.com/therealdaveo/apolloai";
 
-const LINKS = [
-  { label: "Try the Demo", href: "/demo" },
-  { label: "Book a Consultation", href: CALENDLY },
-  { label: "Blog", href: "/blog" },
-  { label: "Ambassador Program", href: "/ambassador" },
-  { label: "Contact", href: "https://apolloclaw.ai/contact" },
-  { label: "Apollo[Claw]", href: "https://apolloclaw.ai" },
+const FOOTER_COLUMNS: { heading: string; links: { label: string; href: string }[] }[] = [
+  {
+    heading: "Product",
+    links: [
+      { label: "Try the Demo", href: "/demo" },
+      { label: "For Students", href: "/for-students" },
+      { label: "For Parents", href: "/for-parents" },
+      { label: "For High School", href: "/for-high-school" },
+      { label: "AI Study Companion", href: "/study" },
+      { label: "AI Internship Prep", href: "/internships" },
+      { label: "How It Works", href: "/how-it-works" },
+    ],
+  },
+  {
+    heading: "Company",
+    links: [
+      { label: "About", href: "/about" },
+      { label: "FAQ", href: "/faq" },
+      { label: "Ambassador Program", href: "/ambassador" },
+      { label: "Schedule a Consultation", href: CALENDLY },
+      { label: "Contact", href: "https://apolloclaw.ai/contact" },
+    ],
+  },
+];
+
+// Privacy + Terms live in the bottom bar opposite the copyright, not in a column.
+const LEGAL_LINKS = [
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Terms & Conditions", href: "/terms" },
 ];
@@ -31,8 +52,8 @@ export function Footer() {
           <NewsletterSignup />
         </div>
       </div>
-      <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}>
-        <div>
+      <div className="footer-grid" style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 40 }}>
+        <div style={{ maxWidth: 260 }}>
           <div style={{ fontFamily: "var(--font-inter, Inter, sans-serif)", fontSize: 18, fontWeight: 800, letterSpacing: "-.02em", color: "#fff" }}>
             The College <span style={{ color: "var(--green)" }}>[Agent]</span>
           </div>
@@ -44,23 +65,55 @@ export function Footer() {
             </a>
           </div>
         </div>
-        <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
-          {LINKS.map((link) => (
-            <a
-              key={link.label}
-              href={link.href}
-              target={link.href.startsWith("http") ? "_blank" : undefined}
-              rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
-              style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.65)", letterSpacing: ".04em", transition: "color .15s", textDecoration: "none" }}
-            >
-              {link.label}
-            </a>
-          ))}
-        </div>
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.4)", width: "100%", marginTop: 20, paddingTop: 20, borderTop: "1px solid rgba(255,255,255,.06)" }}>
-          &copy; 2026 Apollo[Claw]. All rights reserved. &nbsp;&middot;&nbsp; thecollegeagent.ai
+
+        {FOOTER_COLUMNS.map((col) => (
+          <div key={col.heading} className="footer-col">
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".12em", color: "rgba(255,255,255,.4)", marginBottom: 14 }}>
+              {col.heading}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {col.links.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  target={link.href.startsWith("http") ? "_blank" : undefined}
+                  rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                  className="footer-link"
+                  style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.65)", letterSpacing: ".04em", textDecoration: "none" }}
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        ))}
+
+        <div className="footer-bottom" style={{ width: "100%", marginTop: 20, paddingTop: 20, borderTop: "1px solid rgba(255,255,255,.06)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.4)", letterSpacing: ".04em" }}>
+            &copy; 2026 Apollo[Claw]. All rights reserved. &nbsp;&middot;&nbsp; thecollegeagent.ai
+          </div>
+          <div style={{ display: "flex", gap: 20 }}>
+            {LEGAL_LINKS.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                className="footer-link"
+                style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.55)", letterSpacing: ".04em", textDecoration: "none" }}
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
         </div>
       </div>
+
+      <style>{`
+        .footer-link:hover { color: var(--green) !important; }
+        @media (max-width: 720px) {
+          .footer-grid { gap: 28px !important; }
+          .footer-col { flex: 1 1 40%; min-width: 140px; }
+        }
+      `}</style>
     </footer>
   );
 }

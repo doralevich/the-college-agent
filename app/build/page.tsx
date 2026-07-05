@@ -420,7 +420,7 @@ export default function BuildPage() {
             letterSpacing: ".04em",
           }}
         >
-          &copy; 2025 The College Agent. All rights reserved. &nbsp;&middot;&nbsp; thecollegeagent.ai
+          &copy; 2026 Apollo[Claw]. All rights reserved. &nbsp;&middot;&nbsp; thecollegeagent.ai
         </p>
       </footer>
 

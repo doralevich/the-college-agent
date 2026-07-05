@@ -1,9 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
+// Primary nav = the five pages a prospect reaches for first. The audience/use-case pages
+// (High School, Study, Internships, About) live under a "More" dropdown so they're
+// reachable from the top without crowding the bar; the footer carries the full sitemap.
 const NAV_LINKS = [
   { label: "For Students", href: "/for-students" },
   { label: "For Parents", href: "/for-parents" },
@@ -13,8 +16,34 @@ const NAV_LINKS = [
   { label: "FAQ", href: "/faq" },
 ];
 
+const MORE_LINKS = [
+  { label: "For High School", href: "/for-high-school" },
+  { label: "AI Study Companion", href: "/study" },
+  { label: "AI Internship Prep", href: "/internships" },
+  { label: "About", href: "/about" },
+];
+
 export default function Nav() {
   const [open, setOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef<HTMLDivElement>(null);
+
+  // Close the "More" dropdown on any outside click or Escape.
+  useEffect(() => {
+    if (!moreOpen) return;
+    function onDown(e: MouseEvent) {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMoreOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setMoreOpen(false);
+    }
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [moreOpen]);
 
   // Swap the "Log In" affordance for "Dashboard" once we know the visitor already has a
   // session. Starts false so the first client render matches the static SSR'd markup
@@ -60,6 +89,29 @@ export default function Nav() {
             {NAV_LINKS.map(l => (
               <a key={l.href} href={l.href} className="nav-link">{l.label}</a>
             ))}
+            <div className="nav-more" ref={moreRef}>
+              <button
+                type="button"
+                className="nav-link nav-more-btn"
+                onClick={() => setMoreOpen(o => !o)}
+                aria-expanded={moreOpen}
+                aria-haspopup="true"
+              >
+                More
+                <svg className={`nav-more-caret ${moreOpen ? "is-open" : ""}`} width="9" height="6" viewBox="0 0 9 6" fill="none" aria-hidden="true">
+                  <path d="M1 1l3.5 3.5L8 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              {moreOpen && (
+                <div className="nav-more-menu">
+                  {MORE_LINKS.map(l => (
+                    <a key={l.href} href={l.href} className="nav-more-item" onClick={() => setMoreOpen(false)}>
+                      {l.label}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Desktop CTA */}
@@ -93,6 +145,11 @@ export default function Nav() {
                 {l.label}
               </a>
             ))}
+            {MORE_LINKS.map(l => (
+              <a key={l.href} href={l.href} className="nav-mobile-link" onClick={() => setOpen(false)}>
+                {l.label}
+              </a>
+            ))}
             <a href="/build" className="btn-purple nav-mobile-cta" onClick={() => setOpen(false)}>
               Build My Agent
             </a>
@@ -113,6 +170,30 @@ export default function Nav() {
           color: rgba(11,23,41,.55); transition: color .15s;
         }
         .nav-link:hover { color: var(--green); }
+
+        /* "More" dropdown */
+        .nav-more { position: relative; }
+        .nav-more-btn {
+          display: inline-flex; align-items: center; gap: 5px;
+          background: none; border: none; cursor: pointer; padding: 0;
+        }
+        .nav-more-caret { transition: transform .18s; }
+        .nav-more-caret.is-open { transform: rotate(180deg); }
+        .nav-more-menu {
+          position: absolute; top: calc(100% + 14px); right: 0;
+          background: #fff; border: 1px solid rgba(11,23,41,.1);
+          border-radius: 10px; box-shadow: 0 12px 32px rgba(11,23,41,.12);
+          padding: 8px; min-width: 208px; display: flex; flex-direction: column;
+          z-index: 120;
+        }
+        .nav-more-item {
+          font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+          letter-spacing: .06em; text-transform: uppercase;
+          color: rgba(11,23,41,.6); padding: 10px 12px; border-radius: 7px;
+          transition: background .12s, color .12s; white-space: nowrap;
+        }
+        .nav-more-item:hover { background: rgba(61,139,61,.08); color: var(--green); }
+
         .nav-cta-desktop {
           display: flex; align-items: center; gap: 20px;
         }
