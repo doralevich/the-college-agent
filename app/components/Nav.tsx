@@ -13,7 +13,6 @@ const NAV_LINKS = [
   { label: "How It Works", href: "/how-it-works" },
   { label: "Demo", href: "/demo" },
   { label: "Blog", href: "/blog" },
-  { label: "FAQ", href: "/faq" },
   { label: "Contact", href: "https://apolloclaw.ai/contact" },
 ];
 

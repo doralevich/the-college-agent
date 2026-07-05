@@ -1,21 +1,17 @@
 import { NewsletterSignup } from "./NewsletterSignup";
 
-// The site-wide dark footer: newsletter signup, brand, a compact Company link column, and
+// The site-wide dark footer: newsletter signup, brand, a horizontal link menu, and
 // copyright with Privacy/Terms. Self-contained styling (no dependence on per-page
 // .dark-section rules) so it renders identically on every marketing page.
 
 const CALENDLY = "https://calendly.com/therealdaveo/apolloai";
 
-const FOOTER_COLUMNS: { heading: string; links: { label: string; href: string }[] }[] = [
-  {
-    heading: "Company",
-    links: [
-      { label: "FAQ", href: "/faq" },
-      { label: "Ambassador Program", href: "/ambassador" },
-      { label: "Schedule a Consultation", href: CALENDLY },
-      { label: "Contact", href: "https://apolloclaw.ai/contact" },
-    ],
-  },
+// Horizontal footer menu.
+const MENU_LINKS = [
+  { label: "FAQ", href: "/faq" },
+  { label: "Ambassador Program", href: "/ambassador" },
+  { label: "Demo", href: "/demo" },
+  { label: "Schedule a Consultation", href: CALENDLY },
 ];
 
 // Privacy + Terms live in the bottom bar opposite the copyright, not in a column.
@@ -38,7 +34,7 @@ export function Footer() {
           <NewsletterSignup />
         </div>
       </div>
-      <div className="footer-grid" style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 40 }}>
+      <div className="footer-grid" style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 24 }}>
         <div style={{ maxWidth: 260 }}>
           <div style={{ fontFamily: "var(--font-inter, Inter, sans-serif)", fontSize: 18, fontWeight: 800, letterSpacing: "-.02em", color: "#fff" }}>
             The College <span style={{ color: "var(--green)" }}>[Agent]</span>
@@ -52,27 +48,20 @@ export function Footer() {
           </div>
         </div>
 
-        {FOOTER_COLUMNS.map((col) => (
-          <div key={col.heading} className="footer-col">
-            <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".12em", color: "rgba(255,255,255,.4)", marginBottom: 14 }}>
-              {col.heading}
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {col.links.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  target={link.href.startsWith("http") ? "_blank" : undefined}
-                  rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                  className="footer-link"
-                  style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.65)", letterSpacing: ".04em", textDecoration: "none" }}
-                >
-                  {link.label}
-                </a>
-              ))}
-            </div>
-          </div>
-        ))}
+        <nav className="footer-menu">
+          {MENU_LINKS.map((link) => (
+            <a
+              key={link.label}
+              href={link.href}
+              target={link.href.startsWith("http") ? "_blank" : undefined}
+              rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
+              className="footer-link"
+              style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,255,255,.7)", letterSpacing: ".04em", textDecoration: "none", whiteSpace: "nowrap" }}
+            >
+              {link.label}
+            </a>
+          ))}
+        </nav>
 
         <div className="footer-bottom" style={{ width: "100%", marginTop: 20, paddingTop: 20, borderTop: "1px solid rgba(255,255,255,.06)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.4)", letterSpacing: ".04em" }}>
@@ -95,9 +84,10 @@ export function Footer() {
 
       <style>{`
         .footer-link:hover { color: var(--green) !important; }
+        .footer-menu { display: flex; align-items: center; flex-wrap: wrap; gap: 26px; }
         @media (max-width: 720px) {
-          .footer-grid { gap: 28px !important; }
-          .footer-col { flex: 1 1 40%; min-width: 140px; }
+          .footer-grid { gap: 22px !important; }
+          .footer-menu { gap: 16px 20px; }
         }
       `}</style>
     </footer>
