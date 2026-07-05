@@ -100,3 +100,22 @@ export function categoryLabel(category: string) {
     .replace("Internships Career", "Internships & Career")
     .replace("Wellbeing Balance", "Wellbeing & Balance");
 }
+
+// A display title that is never blank. Sanity posts occasionally come through with an
+// empty `title` (field renamed, left unset, or only `seoTitle` filled in), which rendered
+// as an empty <h2>. Fall back to the SEO title, then to a human-readable version of the
+// slug, so a card always shows something.
+export function postTitle(post: {
+  title?: string;
+  seoTitle?: string;
+  slug?: { current?: string };
+}): string {
+  const explicit = (post.title ?? "").trim() || (post.seoTitle ?? "").trim();
+  if (explicit) return explicit;
+  const slug = post.slug?.current ?? "";
+  if (!slug) return "Untitled";
+  return slug
+    .split("-")
+    .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1) : w))
+    .join(" ");
+}

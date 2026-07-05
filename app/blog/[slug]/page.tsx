@@ -6,6 +6,7 @@ import {
   categoryLabel,
   getCollegeAgentPost,
   getCollegeAgentPosts,
+  postTitle,
   type PortableTextBlock,
 } from "@/lib/sanity-blog";
 
@@ -28,7 +29,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {};
   }
 
-  const title = post.seoTitle || post.title;
+  const title = post.seoTitle || postTitle(post);
   const description = post.seoDescription || post.excerpt || "";
   const url = `https://thecollegeagent.ai/blog/${post.slug.current}`;
 
@@ -72,7 +73,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                 Blog
               </Link>
               <div className="blog-post-category">{categoryLabel(post.category)}</div>
-              <h1>{post.title}</h1>
+              <h1>{postTitle(post)}</h1>
               {post.excerpt ? <p>{post.excerpt}</p> : null}
             </div>
           </header>
