@@ -258,11 +258,16 @@ export default function ForStudentsPage() {
                 student life and your agent handles it.
               </p>
             </div>
-            <div style={{ display: "grid", gap: 32 }}>
-              {JOURNEY.map(({ stage, desc }) => (
-                <div key={stage} style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
-                  <div style={{ background: "rgba(61,139,61,.1)", border: "2px solid var(--green)", borderRadius: 8, padding: "8px 14px", fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: "var(--green)", letterSpacing: ".08em", whiteSpace: "nowrap", flexShrink: 0 }}>{stage}</div>
-                  <p style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(11,23,41,.7)", margin: 0 }}>{desc}</p>
+            <div className="roadmap">
+              {JOURNEY.map(({ stage, desc }, i) => (
+                <div key={stage} className="roadmap-item">
+                  <div className="roadmap-rail">
+                    <span className="roadmap-node">{String(i + 1).padStart(2, "0")}</span>
+                  </div>
+                  <div className="roadmap-card">
+                    <div className="roadmap-stage">{stage}</div>
+                    <p>{desc}</p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -274,11 +279,11 @@ export default function ForStudentsPage() {
           <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px" }}>
             <div style={{ textAlign: "center", marginBottom: 48 }}>
               <span className="mono-label-green">The Complete List</span>
-              <h2 className="section-title">Name it. Your agent handles it.</h2>
+              <h2 className="section-title">You name it. Your agent handles it.</h2>
             </div>
             <div className="everything-grid">
               {EVERYTHING.map(({ title, items }) => (
-                <div key={title} className="feat-card">
+                <div key={title} className="feat-card everything-card">
                   <h3 style={{ marginBottom: 14 }}>{title}</h3>
                   <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 9 }}>
                     {items.map((item) => (
@@ -296,6 +301,9 @@ export default function ForStudentsPage() {
               Gmail, Google Calendar, Outlook, Microsoft Teams, Google Drive, Dropbox, Notion,
               Todoist, LinkedIn, Spotify, YouTube, and thousands more.
             </p>
+            <div style={{ textAlign: "center", marginTop: 32 }}>
+              <a href="/build" className="btn-green">Build My Agent</a>
+            </div>
           </div>
         </section>
 
@@ -315,29 +323,6 @@ export default function ForStudentsPage() {
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
               By midterms, you&apos;re not cramming — you&apos;ve been reviewing consistently. By the end of the semester, your agent knows your class load, your professors, your work style, and your goals. That&apos;s infrastructure most students never build. You have it from day one.
             </p>
-          </div>
-        </section>
-
-        {/* FROM FRESHMAN TO SENIOR: extended timeline */}
-        <section style={{ background: "var(--cream2)", padding: "72px 0" }}>
-          <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
-            <div style={{ textAlign: "center", marginBottom: 48 }}>
-              <span className="mono-label-green">The Full Journey</span>
-              <h2 style={{ fontSize: "clamp(26px, 3vw, 40px)", fontWeight: 800, lineHeight: 1.08, letterSpacing: "-.02em", color: "var(--navy)" }}>From Freshman to Senior: Your AI College Journey</h2>
-            </div>
-            <div style={{ display: "grid", gap: 28 }}>
-              {([
-                { year: "Freshman Year", desc: "Get your bearings — with AI doing the heavy lifting. Your agent organizes your first semester, tracks every assignment, drafts professor emails, and starts building the study habits that will carry you through four years. You focus on making friends and finding your footing; your agent keeps the academics on track." },
-                { year: "Sophomore Year", desc: "Start thinking bigger. Your agent tracks academic progress, helps you find clubs and leadership roles that strengthen your resume, and begins surfacing internship opportunities for the summer ahead. By the end of sophomore year, most students using The College Agent have already applied to at least one competitive program — before most of their peers have even thought about it." },
-                { year: "Junior Year", desc: "Internship season — the year that defines your resume before graduation. Your agent manages your full recruiting pipeline: target companies, application deadlines, outreach emails, interview prep. By the end of junior year, you have real experience on your resume, a network you've built intentionally, and a clear picture of where you want to go." },
-                { year: "Senior Year", desc: "Cross the finish line ready. Your agent helps you turn your internship experience into a career plan — full-time applications, networking, LinkedIn positioning, and the transition from student to professional. By senior year, your agent has three years of context on you. It's not a generic tool anymore — it's your personal advisor for the biggest transition of your young career." },
-              ] as { year: string; desc: string }[]).map(({ year, desc }) => (
-                <div key={year} style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
-                  <div style={{ background: "rgba(61,139,61,.1)", border: "2px solid var(--green)", borderRadius: 8, padding: "8px 14px", fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, color: "var(--green)", letterSpacing: ".08em", whiteSpace: "nowrap", flexShrink: 0 }}>{year}</div>
-                  <p style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(11,23,41,.7)", margin: 0 }}>{desc}</p>
-                </div>
-              ))}
-            </div>
           </div>
         </section>
 
@@ -424,10 +409,39 @@ export default function ForStudentsPage() {
           transition: border-color .15s, background .15s; cursor: pointer; text-decoration: none;
         }
         .btn-outline-light:hover { border-color: #fff; background: rgba(255,255,255,.07); }
-        .everything-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; align-items: start; }
+        /* Even columns: stretch every card to the tallest so the tops AND bottoms line up. */
+        .everything-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; align-items: stretch; }
+        .everything-card { height: 100%; }
         @media (max-width: 1000px) { .everything-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 900px) { .feat-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 600px) { .feat-grid, .everything-grid { grid-template-columns: 1fr; } }
+
+        /* Sleek journey roadmap: a single rail with numbered nodes, before college to after graduation. */
+        .roadmap { position: relative; max-width: 760px; margin: 0 auto; }
+        .roadmap::before {
+          content: ""; position: absolute; left: 27px; top: 27px; bottom: 27px; width: 2px;
+          background: linear-gradient(rgba(61,139,61,.35), rgba(61,139,61,.12));
+        }
+        .roadmap-item { display: grid; grid-template-columns: 54px 1fr; gap: 24px; align-items: start; }
+        .roadmap-rail { display: flex; justify-content: center; }
+        .roadmap-node {
+          position: relative; z-index: 1;
+          width: 54px; height: 54px; border-radius: 50%;
+          background: #fff; border: 2px solid var(--green); color: var(--green);
+          font-family: var(--font-mono); font-size: 15px; font-weight: 700;
+          display: flex; align-items: center; justify-content: center;
+          box-shadow: 0 6px 18px rgba(61,139,61,.16); flex-shrink: 0;
+        }
+        .roadmap-card { padding-bottom: 36px; }
+        .roadmap-item:last-child .roadmap-card { padding-bottom: 0; }
+        .roadmap-stage { font-size: 18px; font-weight: 800; color: var(--navy); margin: 4px 0 7px; letter-spacing: -.015em; }
+        .roadmap-card p { font-size: 15px; line-height: 1.75; color: rgba(11,23,41,.68); margin: 0; }
+        @media (max-width: 560px) {
+          .roadmap::before { left: 21px; top: 21px; bottom: 21px; }
+          .roadmap-item { grid-template-columns: 42px 1fr; gap: 16px; }
+          .roadmap-node { width: 42px; height: 42px; font-size: 13px; }
+          .roadmap-card { padding-bottom: 28px; }
+        }
       `}</style>
     </>
   );
