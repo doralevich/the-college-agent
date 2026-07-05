@@ -84,7 +84,7 @@ export default function SetupPage() {
             <h1 style={{ fontSize: 30, fontWeight: 800, color: "#fff", marginTop: 10, marginBottom: 10 }}>Connect your agent</h1>
             <p style={{ fontSize: 15, color: "rgba(255,255,255,.55)", lineHeight: 1.7 }}>
               Connect Telegram so you can chat with your agent like you&apos;d text a friend. If you want
-              your agent to run on your own model, add an Anthropic or OpenAI key below — otherwise the
+              your agent to run on your own model, add an Anthropic or OpenAI key below, otherwise the
               plan&apos;s default model is fine.
             </p>
           </div>
@@ -92,10 +92,10 @@ export default function SetupPage() {
 
         <form onSubmit={handleSubmit} style={{ maxWidth: 660, margin: "0 auto", padding: "40px 24px 80px" }}>
 
-          {/* 01 — Telegram */}
+          {/* 01, Telegram */}
           <CredBlock num="01" label="Connect Your Telegram Bot">
             <p style={{ fontSize: 14, color: "rgba(11,23,41,.65)", lineHeight: 1.65, marginBottom: 16 }}>
-              Telegram is how you&apos;ll talk to your agent — like texting a friend. Install it on both
+              Telegram is how you&apos;ll talk to your agent, like texting a friend. Install it on both
               your <strong>phone</strong> and your <strong>desktop</strong> so you can switch between
               devices without losing the thread.
             </p>
@@ -135,21 +135,21 @@ export default function SetupPage() {
             </CredField>
           </CredBlock>
 
-          {/* 02 — Bring-your-own model (optional) */}
+          {/* 02, Bring-your-own model (optional) */}
           <CredBlock num="02" label="Bring Your Own Model (optional)">
             <p style={{ fontSize: 14, color: "rgba(11,23,41,.65)", lineHeight: 1.65, marginBottom: 16 }}>
-              Want your agent to run on your own model? Pick one or both — we&apos;ll show you how to
+              Want your agent to run on your own model? Pick one or both, we&apos;ll show you how to
               grab the key. Skip this and the plan&apos;s default model handles everything;
               pay-as-you-go rates will be applied.
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
               <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", padding: "10px 14px", border: "1.5px solid", borderColor: providers.anthropic ? "var(--green)" : "rgba(11,23,41,.12)", borderRadius: 8, background: providers.anthropic ? "rgba(61,139,61,.04)" : "#fff", transition: "all .15s" }}>
                 <input type="checkbox" checked={providers.anthropic} onChange={() => toggleProvider("anthropic")} style={{ width: 16, height: 16, accentColor: "var(--green)", cursor: "pointer" }} />
-                <span style={{ fontSize: 14, color: "var(--navy)" }}><strong>Anthropic</strong> — Claude (Opus, Sonnet, Haiku)</span>
+                <span style={{ fontSize: 14, color: "var(--navy)" }}><strong>Anthropic</strong>, Claude (Opus, Sonnet, Haiku)</span>
               </label>
               <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", padding: "10px 14px", border: "1.5px solid", borderColor: providers.openai ? "var(--green)" : "rgba(11,23,41,.12)", borderRadius: 8, background: providers.openai ? "rgba(61,139,61,.04)" : "#fff", transition: "all .15s" }}>
                 <input type="checkbox" checked={providers.openai} onChange={() => toggleProvider("openai")} style={{ width: 16, height: 16, accentColor: "var(--green)", cursor: "pointer" }} />
-                <span style={{ fontSize: 14, color: "var(--navy)" }}><strong>OpenAI</strong> — ChatGPT (GPT-5, GPT-4o)</span>
+                <span style={{ fontSize: 14, color: "var(--navy)" }}><strong>OpenAI</strong>, ChatGPT (GPT-5, GPT-4o)</span>
               </label>
             </div>
 

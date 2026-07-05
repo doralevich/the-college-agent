@@ -128,7 +128,7 @@ export function SettingsView() {
           </p>
           {hasActiveAgent && (
             <p className="mt-2 text-sm text-destructive">
-              Your agent is still active. Stop or delete it first — you can&apos;t delete the
+              Your agent is still active. Stop or delete it first, you can&apos;t delete the
               workspace while it&apos;s running.
             </p>
           )}

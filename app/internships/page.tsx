@@ -5,9 +5,9 @@ import { Footer } from "../components/Footer";
 import { BriefcaseBusiness, CalendarDays, FileText, Mail, Network, TrendingUp } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "AI Internship Prep for College Students — The College Agent",
+  title: "AI Internship Prep for College Students, The College Agent",
   description:
-    "The College Agent manages your entire internship pipeline — from target company research to offer negotiation. Land your first internship before junior year.",
+    "The College Agent manages your entire internship pipeline, from target company research to offer negotiation. Land your first internship before junior year.",
   keywords: [
     "AI internship prep",
     "internship help for college students",
@@ -18,9 +18,9 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "https://thecollegeagent.ai/internships" },
   openGraph: {
-    title: "AI Internship Prep for College Students — The College Agent",
+    title: "AI Internship Prep for College Students, The College Agent",
     description:
-      "The College Agent manages your entire internship pipeline — from target company research to offer negotiation. Land your first internship before junior year.",
+      "The College Agent manages your entire internship pipeline, from target company research to offer negotiation. Land your first internship before junior year.",
     url: "https://thecollegeagent.ai/internships",
     images: [{ url: "https://thecollegeagent.ai/og-image.png", width: 1200, height: 630, alt: "The College Agent" }],
   },
@@ -39,12 +39,12 @@ const PIPELINE_STAGES = [
   {
     icon: Network,
     title: "Target Company Research",
-    desc: "Your agent helps you identify internship targets that match your major, your interests, and your career direction — and tracks application windows so you never miss a deadline.",
+    desc: "Your agent helps you identify internship targets that match your major, your interests, and your career direction, and tracks application windows so you never miss a deadline.",
   },
   {
     icon: Mail,
     title: "Outreach & Networking",
-    desc: "Cold emails to recruiters. LinkedIn connection requests to alumni. Informational interview requests. Your agent drafts every outreach message in your voice — professional and personal.",
+    desc: "Cold emails to recruiters. LinkedIn connection requests to alumni. Informational interview requests. Your agent drafts every outreach message in your voice, professional and personal.",
   },
   {
     icon: FileText,
@@ -54,7 +54,7 @@ const PIPELINE_STAGES = [
   {
     icon: CalendarDays,
     title: "Deadline Tracking",
-    desc: "Internship deadlines are aggressive and unforgiving. Your agent surfaces them weeks in advance so you have time to prepare properly — not scramble at the last minute.",
+    desc: "Internship deadlines are aggressive and unforgiving. Your agent surfaces them weeks in advance so you have time to prepare properly, not scramble at the last minute.",
   },
   {
     icon: BriefcaseBusiness,
@@ -64,7 +64,7 @@ const PIPELINE_STAGES = [
   {
     icon: TrendingUp,
     title: "Resume & LinkedIn Positioning",
-    desc: "Your agent helps you frame your experience, coursework, and projects in language that recruiters respond to — so your resume and LinkedIn profile actually get you noticed.",
+    desc: "Your agent helps you frame your experience, coursework, and projects in language that recruiters respond to, so your resume and LinkedIn profile actually get you noticed.",
   },
 ];
 
@@ -95,7 +95,7 @@ export default function InternshipsPage() {
               Most students miss internship opportunities because of logistics, not ability.
             </h2>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
-              The internship recruiting process is relentless. Application windows open months before the internship starts. Cold outreach requires follow-up. Deadlines fall during midterms. Resume tweaks need to happen fast. Most students aren&apos;t losing opportunities because they&apos;re not qualified — they&apos;re losing them because they couldn&apos;t keep up with the logistics.
+              The internship recruiting process is relentless. Application windows open months before the internship starts. Cold outreach requires follow-up. Deadlines fall during midterms. Resume tweaks need to happen fast. Most students aren&apos;t losing opportunities because they&apos;re not qualified, they&apos;re losing them because they couldn&apos;t keep up with the logistics.
             </p>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
               The students who land internships early in college aren&apos;t necessarily the most talented. They&apos;re the most organized. They started outreach early. They tracked their applications. They followed up. They prepared for interviews before the night before.
@@ -135,15 +135,15 @@ export default function InternshipsPage() {
               What The College Agent Does for Each Application
             </h2>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 28 }}>
-              Every internship application is different, but The College Agent runs the same thorough process for each one — so nothing slips through and you show up to every opportunity fully prepared.
+              Every internship application is different, but The College Agent runs the same thorough process for each one, so nothing slips through and you show up to every opportunity fully prepared.
             </p>
             {[
-              { step: "1", title: "Deadline Alert & Prep Window", desc: "Your agent surfaces the application deadline 4–6 weeks in advance — not 48 hours before it closes. That prep window is when your agent starts generating the materials you need: a tailored resume version, an outreach plan, and a company research brief." },
-              { step: "2", title: "Company Research Brief", desc: "Before you write a single word of your application, your agent builds a research brief on the company — what they do, their culture, recent news, what they look for in interns, and how to position your experience to match. You go into the application knowing the company, not researching it at midnight." },
-              { step: "3", title: "Resume Tailoring", desc: "Your master resume gets tailored for the role. Your agent adjusts the language, reorders bullet points, and highlights the experience and coursework most relevant to the specific internship — so every application feels like it was written just for that company." },
-              { step: "4", title: "Outreach Message Drafts", desc: "Your agent drafts cold emails and LinkedIn connection requests to recruiters and alumni at the target company — in your voice, professional but not robotic. These go out weeks before the deadline so you have time to build a relationship, not just submit an application into a void." },
+              { step: "1", title: "Deadline Alert & Prep Window", desc: "Your agent surfaces the application deadline 4–6 weeks in advance, not 48 hours before it closes. That prep window is when your agent starts generating the materials you need: a tailored resume version, an outreach plan, and a company research brief." },
+              { step: "2", title: "Company Research Brief", desc: "Before you write a single word of your application, your agent builds a research brief on the company, what they do, their culture, recent news, what they look for in interns, and how to position your experience to match. You go into the application knowing the company, not researching it at midnight." },
+              { step: "3", title: "Resume Tailoring", desc: "Your master resume gets tailored for the role. Your agent adjusts the language, reorders bullet points, and highlights the experience and coursework most relevant to the specific internship, so every application feels like it was written just for that company." },
+              { step: "4", title: "Outreach Message Drafts", desc: "Your agent drafts cold emails and LinkedIn connection requests to recruiters and alumni at the target company, in your voice, professional but not robotic. These go out weeks before the deadline so you have time to build a relationship, not just submit an application into a void." },
               { step: "5", title: "Application Status Tracking", desc: "Every application gets logged: company, role, date submitted, current status, next follow-up date. Nothing lives in an email thread you have to search for. Your agent surfaces follow-up reminders automatically and tracks the pipeline from first contact to final decision." },
-              { step: "6", title: "Interview Prep Package", desc: "If you get an interview, your agent builds a prep package: behavioral questions tailored to the company, your relevant experience mapped to STAR format stories, company culture notes, and a list of smart questions to ask. You walk in over-prepared — which is exactly where you want to be." },
+              { step: "6", title: "Interview Prep Package", desc: "If you get an interview, your agent builds a prep package: behavioral questions tailored to the company, your relevant experience mapped to STAR format stories, company culture notes, and a list of smart questions to ask. You walk in over-prepared, which is exactly where you want to be." },
             ].map(({ step, title, desc }) => (
               <div key={step} style={{ display: "flex", gap: 20, marginBottom: 28, alignItems: "flex-start" }}>
                 <div style={{ width: 42, height: 42, borderRadius: "50%", background: "rgba(61,139,61,.2)", border: "2px solid var(--green)", color: "var(--green)", fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{step}</div>
@@ -167,9 +167,9 @@ export default function InternshipsPage() {
               Most students don&apos;t think about internships until junior year. By then, the students who started earlier already have experience, connections, and a clear advantage. Here&apos;s what an intentional, agent-assisted internship strategy looks like across all four years:
             </p>
             {[
-              { year: "Freshman Year", action: "Awareness and foundation. Your agent helps you identify industries that interest you, understand how recruiting works in your field, and begin building a professional presence on LinkedIn. You won&apos;t apply to competitive programs yet — but by the time you do, you&apos;ll have a year of intentional preparation behind you. Your agent also tracks research labs, nonprofit summer programs, and small-company roles that are accessible as early as freshman summer." },
-              { year: "Sophomore Year", action: "First applications. This is the year to get your first internship — even if it&apos;s not your dream company. Research programs, nonprofits, university labs, and small businesses are all legitimate first experiences. Your agent manages the application pipeline for 5–10 targets, drafts outreach emails, and handles follow-up. The goal: one real experience before junior year that gives you something concrete to build on." },
-              { year: "Junior Year", action: "This is the year that defines your resume before graduation. Most competitive internship programs recruit heavily in the fall of junior year for the following summer. Your agent manages your full pipeline — applications to 15–25 target firms, outreach to recruiters and alumni, behavioral interview prep, and offer negotiation. The work you did freshman and sophomore year pays off here." },
+              { year: "Freshman Year", action: "Awareness and foundation. Your agent helps you identify industries that interest you, understand how recruiting works in your field, and begin building a professional presence on LinkedIn. You won&apos;t apply to competitive programs yet, but by the time you do, you&apos;ll have a year of intentional preparation behind you. Your agent also tracks research labs, nonprofit summer programs, and small-company roles that are accessible as early as freshman summer." },
+              { year: "Sophomore Year", action: "First applications. This is the year to get your first internship, even if it&apos;s not your dream company. Research programs, nonprofits, university labs, and small businesses are all legitimate first experiences. Your agent manages the application pipeline for 5–10 targets, drafts outreach emails, and handles follow-up. The goal: one real experience before junior year that gives you something concrete to build on." },
+              { year: "Junior Year", action: "This is the year that defines your resume before graduation. Most competitive internship programs recruit heavily in the fall of junior year for the following summer. Your agent manages your full pipeline, applications to 15–25 target firms, outreach to recruiters and alumni, behavioral interview prep, and offer negotiation. The work you did freshman and sophomore year pays off here." },
               { year: "Senior Year", action: "Convert or leverage. If you received a return offer from your junior year internship, your agent helps you evaluate it and negotiate. If you&apos;re in the full-time job market, your agent positions your internship experience strategically, manages your applications, and helps you make the transition from student to professional. Senior year is the payoff of three years of intentional work." },
             ].map(({ year, action }) => (
               <div key={year} style={{ display: "flex", gap: 20, alignItems: "flex-start", marginBottom: 28 }}>

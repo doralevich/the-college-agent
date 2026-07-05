@@ -5,9 +5,9 @@ import { Footer } from "../components/Footer";
 import { BookOpenCheck, Clock, FileText, NotebookTabs, Sparkles, TrendingUp } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "AI Study Companion for College Students — The College Agent",
+  title: "AI Study Companion for College Students, The College Agent",
   description:
-    "The College Agent is your AI study companion — turning notes into study guides, building review schedules, and helping you actually prepare instead of just showing up.",
+    "The College Agent is your AI study companion, turning notes into study guides, building review schedules, and helping you actually prepare instead of just showing up.",
   keywords: [
     "AI study companion",
     "AI study tool",
@@ -20,9 +20,9 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "https://thecollegeagent.ai/study" },
   openGraph: {
-    title: "AI Study Companion for College Students — The College Agent",
+    title: "AI Study Companion for College Students, The College Agent",
     description:
-      "The College Agent is your AI study companion — turning notes into study guides, building review schedules, and helping you actually prepare instead of just showing up.",
+      "The College Agent is your AI study companion, turning notes into study guides, building review schedules, and helping you actually prepare instead of just showing up.",
     url: "https://thecollegeagent.ai/study",
     images: [{ url: "https://thecollegeagent.ai/og-image.png", width: 1200, height: 630, alt: "The College Agent" }],
   },
@@ -46,7 +46,7 @@ const STUDY_FEATURES = [
   {
     icon: Clock,
     title: "Review Schedules",
-    desc: "Your agent builds a review schedule backward from your exam dates — so you're not cramming the night before, you're reinforcing material over days and weeks.",
+    desc: "Your agent builds a review schedule backward from your exam dates, so you're not cramming the night before, you're reinforcing material over days and weeks.",
   },
   {
     icon: Sparkles,
@@ -56,17 +56,17 @@ const STUDY_FEATURES = [
   {
     icon: BookOpenCheck,
     title: "Note Organization",
-    desc: "Your agent organizes notes by class, by topic, and by importance. Find what you need instantly — no more searching through folders or scrolling through a mess of files.",
+    desc: "Your agent organizes notes by class, by topic, and by importance. Find what you need instantly, no more searching through folders or scrolling through a mess of files.",
   },
   {
     icon: FileText,
     title: "Writing Support",
-    desc: "Papers, research essays, lab reports. Your agent helps you outline, structure your argument, organize sources, and clean up drafts — without writing it for you.",
+    desc: "Papers, research essays, lab reports. Your agent helps you outline, structure your argument, organize sources, and clean up drafts, without writing it for you.",
   },
   {
     icon: TrendingUp,
     title: "Progress Tracking",
-    desc: "Your agent tracks what you've reviewed, what still needs attention, and where your knowledge gaps are — so your study time is always spent on what matters most.",
+    desc: "Your agent tracks what you've reviewed, what still needs attention, and where your knowledge gaps are, so your study time is always spent on what matters most.",
   },
 ];
 
@@ -100,10 +100,10 @@ export default function StudyPage() {
               They sit down to study, but they don&apos;t know where to start. Their notes are scattered. They don&apos;t know what&apos;s going to be on the exam. They read the same chapter twice without retaining anything. They cram the night before and forget it by morning.
             </p>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
-              The problem isn&apos;t effort — it&apos;s system. Students who do well academically don&apos;t necessarily work harder. They work with better structure. They know what to review, when to review it, and how to test themselves before the real test.
+              The problem isn&apos;t effort, it&apos;s system. Students who do well academically don&apos;t necessarily work harder. They work with better structure. They know what to review, when to review it, and how to test themselves before the real test.
             </p>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)" }}>
-              The College Agent builds that structure for you — automatically, based on your actual course material and your actual exam schedule. That&apos;s what an AI study companion should do.
+              The College Agent builds that structure for you, automatically, based on your actual course material and your actual exam schedule. That&apos;s what an AI study companion should do.
             </p>
           </div>
         </section>
@@ -116,24 +116,24 @@ export default function StudyPage() {
               Study Techniques That Actually Work
             </h2>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 24 }}>
-              The College Agent doesn&apos;t just organize your notes — it helps you apply the study methods that decades of cognitive research have shown to be most effective. These aren&apos;t hacks or shortcuts; they&apos;re the techniques that high-performing students use consistently.
+              The College Agent doesn&apos;t just organize your notes, it helps you apply the study methods that decades of cognitive research have shown to be most effective. These aren&apos;t hacks or shortcuts; they&apos;re the techniques that high-performing students use consistently.
             </p>
             {[
               {
                 technique: "Spaced Repetition",
-                desc: "Reviewing material at increasing intervals is far more effective than massed practice. Your agent schedules reviews at the right times — not just the night before the exam, but days and weeks beforehand when the material is starting to fade. This is how you retain information long-term instead of forgetting it the day after the test.",
+                desc: "Reviewing material at increasing intervals is far more effective than massed practice. Your agent schedules reviews at the right times, not just the night before the exam, but days and weeks beforehand when the material is starting to fade. This is how you retain information long-term instead of forgetting it the day after the test.",
               },
               {
                 technique: "Active Recall",
-                desc: "Reading your notes again is passive. Testing yourself on the material is active — and significantly more effective for retention. Your agent generates practice questions from your own course material so you practice retrieval, not recognition. By the time the exam arrives, you&apos;ve already answered similar questions dozens of times.",
+                desc: "Reading your notes again is passive. Testing yourself on the material is active, and significantly more effective for retention. Your agent generates practice questions from your own course material so you practice retrieval, not recognition. By the time the exam arrives, you&apos;ve already answered similar questions dozens of times.",
               },
               {
                 technique: "The Feynman Technique",
-                desc: "If you can explain a concept simply, you understand it. If you can&apos;t, you&apos;ve identified a gap. Your agent can help you work through complex topics by breaking them into explanations — surfacing the gaps before the exam does.",
+                desc: "If you can explain a concept simply, you understand it. If you can&apos;t, you&apos;ve identified a gap. Your agent can help you work through complex topics by breaking them into explanations, surfacing the gaps before the exam does.",
               },
               {
                 technique: "Interleaved Practice",
-                desc: "Mixing topics in a single study session — rather than drilling one subject for hours — produces better long-term retention. Your agent builds study sessions that interleave subjects strategically based on what needs reinforcement and when your exams are scheduled.",
+                desc: "Mixing topics in a single study session, rather than drilling one subject for hours, produces better long-term retention. Your agent builds study sessions that interleave subjects strategically based on what needs reinforcement and when your exams are scheduled.",
               },
             ].map(({ technique, desc }) => (
               <div key={technique} style={{ marginBottom: 24, background: "#fff", borderRadius: 12, padding: "24px 28px", border: "1px solid rgba(11,23,41,.07)", boxShadow: "0 4px 12px rgba(11,23,41,.04)" }}>
@@ -178,9 +178,9 @@ export default function StudyPage() {
             {[
               { step: "1", title: "Load Your Course Materials", desc: "Upload your syllabi, notes, slide decks, and textbook chapters. Your agent ingests them, organizes them by class and topic, and identifies the key concepts that are most likely to appear on exams based on your professor's emphasis and past content patterns." },
               { step: "2", title: "Map Your Exam Calendar", desc: "Your agent builds a full exam and assignment calendar for the semester. Every deadline is visible, every exam has a study window assigned around it, and every major assignment has prep steps broken out weeks in advance." },
-              { step: "3", title: "Generate Study Guides", desc: "For each class and exam, your agent creates a structured study guide — organized by topic, prioritized by importance, and formatted for the way you learn. Not a copy of your notes. A synthesized, actionable review document." },
-              { step: "4", title: "Build Your Weekly Schedule", desc: "Your agent maps study blocks into your week based on what&apos;s coming up — balancing review sessions across subjects, ensuring adequate spacing, and adjusting automatically when exam dates shift or new assignments appear." },
-              { step: "5", title: "Generate Practice Tests", desc: "Before each exam, your agent creates a practice test based on your actual course material — matching the format and depth of your professor&apos;s tests. You take it. You see where you&apos;re weak. Your agent updates the review schedule accordingly." },
+              { step: "3", title: "Generate Study Guides", desc: "For each class and exam, your agent creates a structured study guide, organized by topic, prioritized by importance, and formatted for the way you learn. Not a copy of your notes. A synthesized, actionable review document." },
+              { step: "4", title: "Build Your Weekly Schedule", desc: "Your agent maps study blocks into your week based on what&apos;s coming up, balancing review sessions across subjects, ensuring adequate spacing, and adjusting automatically when exam dates shift or new assignments appear." },
+              { step: "5", title: "Generate Practice Tests", desc: "Before each exam, your agent creates a practice test based on your actual course material, matching the format and depth of your professor&apos;s tests. You take it. You see where you&apos;re weak. Your agent updates the review schedule accordingly." },
               { step: "6", title: "Track and Adjust", desc: "After each exam, you report back on how it went. Your agent updates its model of your strengths and gaps, adjusts future study plans based on your patterns, and continuously improves its recommendations the longer you use it." },
             ].map(({ step, title, desc }) => (
               <div key={step} style={{ display: "flex", gap: 20, marginBottom: 28, alignItems: "flex-start" }}>
@@ -202,10 +202,10 @@ export default function StudyPage() {
               Study support is just one part of your College Agent.
             </h2>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
-              The College Agent isn&apos;t just an AI study tool. It&apos;s a personal AI companion built for your entire college life. That means it&apos;s managing your class schedule and deadlines at the same time it&apos;s building your study guides — and it&apos;s tracking your internship applications while you&apos;re focusing on finals.
+              The College Agent isn&apos;t just an AI study tool. It&apos;s a personal AI companion built for your entire college life. That means it&apos;s managing your class schedule and deadlines at the same time it&apos;s building your study guides, and it&apos;s tracking your internship applications while you&apos;re focusing on finals.
             </p>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 32 }}>
-              Everything connects. Your agent knows when exam season is — so it automatically backs off on surfacing non-urgent tasks and focuses your attention where it needs to be. That kind of context-aware support is what makes The College Agent different from any individual study app or AI tool.
+              Everything connects. Your agent knows when exam season is, so it automatically backs off on surfacing non-urgent tasks and focuses your attention where it needs to be. That kind of context-aware support is what makes The College Agent different from any individual study app or AI tool.
             </p>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
               <a href="/build" className="btn-green">Build My Agent</a>

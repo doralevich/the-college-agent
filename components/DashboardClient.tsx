@@ -165,7 +165,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
   const sidebarBody = (
     <>
       {/* Agent identity: the intake avatar (or default mascot) + name, upper left under the
-          logo — so the rail opens with the agent the student built, not just navigation. */}
+          logo, so the rail opens with the agent the student built, not just navigation. */}
       {hasAgent && (
         <div className="mt-4 flex items-center gap-2.5 px-3">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-background">

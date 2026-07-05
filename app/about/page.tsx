@@ -3,14 +3,14 @@ import Nav from "../components/Nav";
 import { Footer } from "../components/Footer";
 
 export const metadata: Metadata = {
-  title: "About The College Agent — AI built for your entire college journey",
+  title: "About The College Agent, AI built for your entire college journey",
   description:
-    "The College Agent is a personal AI companion built by Apollo Claw to solve the real challenges college students face — from freshman orientation to senior career planning.",
+    "The College Agent is a personal AI companion built by Apollo Claw to solve the real challenges college students face, from freshman orientation to senior career planning.",
   alternates: { canonical: "https://thecollegeagent.ai/about" },
   openGraph: {
-    title: "About The College Agent — AI built for your entire college journey",
+    title: "About The College Agent, AI built for your entire college journey",
     description:
-      "The College Agent is a personal AI companion built by Apollo Claw to solve the real challenges college students face — from freshman orientation to senior career planning.",
+      "The College Agent is a personal AI companion built by Apollo Claw to solve the real challenges college students face, from freshman orientation to senior career planning.",
     url: "https://thecollegeagent.ai/about",
     images: [{ url: "https://thecollegeagent.ai/og-image.png", width: 1200, height: 630, alt: "The College Agent" }],
   },
@@ -40,7 +40,7 @@ export default function AboutPage() {
             AI built for your entire college journey
           </h1>
           <p className="lead-text">
-            College is one of the most important and overwhelming four-year stretches of a person&apos;s life. There are classes to manage, deadlines to hit, internships to land, connections to build, and a career to plan — all at once, with very little infrastructure to help you stay on top of it. The College Agent is the personal AI for college students that finally solves this.
+            College is one of the most important and overwhelming four-year stretches of a person&apos;s life. There are classes to manage, deadlines to hit, internships to land, connections to build, and a career to plan, all at once, with very little infrastructure to help you stay on top of it. The College Agent is the personal AI for college students that finally solves this.
           </p>
 
           <Section title="Why The College Agent Exists">
@@ -48,46 +48,46 @@ export default function AboutPage() {
               The College Agent was built by <a href="https://apolloclaw.ai" target="_blank" rel="noopener noreferrer" style={{ color: "var(--green)" }}>Apollo Claw</a>, an AI infrastructure company focused on building personalized AI systems for real people in real situations. The problem was simple: generic AI tools like ChatGPT are powerful, but they don&apos;t know you. They don&apos;t know your professors, your schedule, your goals, your internship deadlines, or your communication style. Every time you open them, you start from zero.
             </p>
             <p>
-              College students needed something different — an AI that grows with them, remembers what matters, and gets smarter with every semester. That&apos;s what The College Agent is.
+              College students needed something different, an AI that grows with them, remembers what matters, and gets smarter with every semester. That&apos;s what The College Agent is.
             </p>
           </Section>
 
           <Section title="The Problem We Solve">
             <p>
-              The real problem in college isn&apos;t intelligence — it&apos;s infrastructure. The students who struggle academically, miss internship deadlines, and graduate without direction aren&apos;t usually the ones who don&apos;t work hard. They&apos;re the ones who didn&apos;t have a system.
+              The real problem in college isn&apos;t intelligence, it&apos;s infrastructure. The students who struggle academically, miss internship deadlines, and graduate without direction aren&apos;t usually the ones who don&apos;t work hard. They&apos;re the ones who didn&apos;t have a system.
             </p>
             <p>
-              College removes the scaffolding of high school — no parent checking your homework, no teacher reminding you about tomorrow&apos;s test, no forced schedule keeping you on track — and replaces it with complete autonomy at exactly the moment when the stakes are highest. Most students are not prepared for that transition. No one teaches them how to manage a semester, build a professional network, or plan a four-year career arc starting freshman year.
+              College removes the scaffolding of high school, no parent checking your homework, no teacher reminding you about tomorrow&apos;s test, no forced schedule keeping you on track, and replaces it with complete autonomy at exactly the moment when the stakes are highest. Most students are not prepared for that transition. No one teaches them how to manage a semester, build a professional network, or plan a four-year career arc starting freshman year.
             </p>
             <p>
-              The College Agent is the infrastructure students were never given. It manages the logistics — deadlines, study schedules, communication, internship pipelines — so students can focus their energy on learning, connecting, and building the things that actually matter for their future.
+              The College Agent is the infrastructure students were never given. It manages the logistics, deadlines, study schedules, communication, internship pipelines, so students can focus their energy on learning, connecting, and building the things that actually matter for their future.
             </p>
             <ul>
               <li><strong>The academic problem:</strong> Syllabi, deadlines, and study plans that actually keep students ahead instead of constantly catching up.</li>
               <li><strong>The communication problem:</strong> Professional emails to professors, advisors, and recruiters drafted in the student&apos;s own voice.</li>
-              <li><strong>The career problem:</strong> Internship tracking, LinkedIn positioning, and networking support starting freshman year — not junior year when it&apos;s almost too late.</li>
+              <li><strong>The career problem:</strong> Internship tracking, LinkedIn positioning, and networking support starting freshman year, not junior year when it&apos;s almost too late.</li>
               <li><strong>The organization problem:</strong> A single system that connects all of it, so nothing important falls through the cracks.</li>
             </ul>
           </Section>
 
           <Section title="What Makes It Different from Generic AI">
             <p>
-              Most AI tools are horizontal — they can do many things for anyone. The College Agent is vertical: it&apos;s designed entirely around the college student experience. It knows the rhythm of a semester. It understands the difference between a midterm week and a recruiting season. It helps you write a cold email to a recruiter the same way it helps you draft a request to a professor for an extension.
+              Most AI tools are horizontal, they can do many things for anyone. The College Agent is vertical: it&apos;s designed entirely around the college student experience. It knows the rhythm of a semester. It understands the difference between a midterm week and a recruiting season. It helps you write a cold email to a recruiter the same way it helps you draft a request to a professor for an extension.
             </p>
             <p>
-              When you set up your College Agent, you tell it about your school, your major, your year, your goals, and how you work. From that point forward, it operates as your personal AI operator — not a tool you pull up when you remember to, but a system that&apos;s always ready when you need it.
+              When you set up your College Agent, you tell it about your school, your major, your year, your goals, and how you work. From that point forward, it operates as your personal AI operator, not a tool you pull up when you remember to, but a system that&apos;s always ready when you need it.
             </p>
             <ul>
-              <li><strong>It knows your classes</strong> — your professors, your syllabi, your assignment deadlines.</li>
-              <li><strong>It tracks your goals</strong> — internship targets, LinkedIn milestones, career ambitions.</li>
-              <li><strong>It learns your voice</strong> — so emails it drafts actually sound like you.</li>
-              <li><strong>It grows smarter</strong> — the longer you use it, the more effective it becomes.</li>
+              <li><strong>It knows your classes</strong>, your professors, your syllabi, your assignment deadlines.</li>
+              <li><strong>It tracks your goals</strong>, internship targets, LinkedIn milestones, career ambitions.</li>
+              <li><strong>It learns your voice</strong>, so emails it drafts actually sound like you.</li>
+              <li><strong>It grows smarter</strong>, the longer you use it, the more effective it becomes.</li>
             </ul>
           </Section>
 
           <Section title="4 Years, One Agent: The Long-Game Vision">
             <p>
-              Most tools help you today. The College Agent is built for the long game — all 4 years of college, with one personal AI agent growing alongside you.
+              Most tools help you today. The College Agent is built for the long game, all 4 years of college, with one personal AI agent growing alongside you.
             </p>
             <p>
               The vision behind The College Agent is simple: what if a student arrived at college with the same kind of organized, proactive support that high-performing professionals have? What if they had a system that tracked their academic progress, surfaced opportunities before they passed, drafted communications on their behalf, and helped them build a career foundation from day one of freshman year?
@@ -99,10 +99,10 @@ export default function AboutPage() {
               By <strong>sophomore year</strong>, your agent knows your academic patterns, your strongest subjects, and which professors you work best with. It&apos;s helping you plan the semesters ahead, not just the week in front of you.
             </p>
             <p>
-              By <strong>junior year</strong>, you have internship experience on your resume, a LinkedIn that actually reflects your work, and a network of connections your agent has helped you maintain. You&apos;re not scrambling in recruiting season — you&apos;re prepared.
+              By <strong>junior year</strong>, you have internship experience on your resume, a LinkedIn that actually reflects your work, and a network of connections your agent has helped you maintain. You&apos;re not scrambling in recruiting season, you&apos;re prepared.
             </p>
             <p>
-              By <strong>senior year</strong>, your post-graduation plan is already in motion. Your agent has been working alongside you for three years. You&apos;re not starting your career from scratch — you&apos;re building on a foundation.
+              By <strong>senior year</strong>, your post-graduation plan is already in motion. Your agent has been working alongside you for three years. You&apos;re not starting your career from scratch, you&apos;re building on a foundation.
             </p>
             <p>
               That&apos;s the difference between a tool and a companion. The College Agent is the latter.
@@ -111,7 +111,7 @@ export default function AboutPage() {
 
           <Section title="Built on Real Infrastructure">
             <p>
-              Every College Agent is built on the Apollo Claw AI platform — the same infrastructure used by professionals, consultants, and companies who need AI that actually works for their specific context. Students get access to that same power, configured entirely for college life.
+              Every College Agent is built on the Apollo Claw AI platform, the same infrastructure used by professionals, consultants, and companies who need AI that actually works for their specific context. Students get access to that same power, configured entirely for college life.
             </p>
             <p>
               Your agent is named, personalized, and yours. It&apos;s not a shared product. It&apos;s not a generic subscription. It&apos;s an AI built around the way you work.

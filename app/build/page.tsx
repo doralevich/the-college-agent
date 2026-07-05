@@ -424,7 +424,7 @@ export default function BuildPage() {
         </p>
       </footer>
 
-      {/* Checkout questions happen right here — keep the Help Me widget in reach. */}
+      {/* Checkout questions happen right here, keep the Help Me widget in reach. */}
       <ChatBot />
 
       <style>{`

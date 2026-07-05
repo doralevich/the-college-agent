@@ -21,9 +21,9 @@ function price(cents: number): string {
 }
 
 export const metadata: Metadata = {
-  title: "The College Agent — Your AI Companion for College Students",
+  title: "The College Agent, Your AI Companion for College Students",
   description:
-    "The College Agent is your AI study companion and study partner for all four years of college — from freshman year to your first job offer. Plan your schedule, study smarter, prep for internships, and graduate career-ready.",
+    "The College Agent is your AI study companion and study partner for all four years of college, from freshman year to your first job offer. Plan your schedule, study smarter, prep for internships, and graduate career-ready.",
   alternates: { canonical: "https://thecollegeagent.ai" },
 };
 
@@ -128,7 +128,7 @@ function buildJsonLd() {
           name: "What is The College Agent?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "The College Agent is a personal AI companion built specifically for college students. It manages your class schedule, study plans, internship applications, social calendar, and career goals — and gets smarter the longer you use it.",
+            text: "The College Agent is a personal AI companion built specifically for college students. It manages your class schedule, study plans, internship applications, social calendar, and career goals, and gets smarter the longer you use it.",
           },
         },
         {
@@ -136,7 +136,7 @@ function buildJsonLd() {
           name: "Can high school students use The College Agent?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Yes. High school students can start using The College Agent to prepare for college — building study habits, researching schools, and getting a head start on their college years.",
+            text: "Yes. High school students can start using The College Agent to prepare for college, building study habits, researching schools, and getting a head start on their college years.",
           },
         },
         {
@@ -144,7 +144,7 @@ function buildJsonLd() {
           name: "How does The College Agent help with internships?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "The College Agent tracks internship deadlines, helps write outreach emails, manages your application pipeline, and prepares you for interviews — so by junior year you have real experience on your resume.",
+            text: "The College Agent tracks internship deadlines, helps write outreach emails, manages your application pipeline, and prepares you for interviews, so by junior year you have real experience on your resume.",
           },
         },
         {
@@ -152,7 +152,7 @@ function buildJsonLd() {
           name: "Is The College Agent different from ChatGPT?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Yes. ChatGPT is a general-purpose tool. The College Agent is dedicated to your college life — it knows your classes, your goals, your schedule, and your progress. It grows with you over 4 years.",
+            text: "Yes. ChatGPT is a general-purpose tool. The College Agent is dedicated to your college life, it knows your classes, your goals, your schedule, and your progress. It grows with you over 4 years.",
           },
         },
         {
@@ -219,7 +219,7 @@ export default async function Home() {
               <a href="/demo" className="btn-outline">Try the Free Demo</a>
             </div>
             <p style={{ fontSize: 14, lineHeight: 1.7, color: "rgba(255,255,255,.5)", maxWidth: 520, marginBottom: 0 }}>
-              Used by college students across the U.S. to manage classes, study smarter, land internships, and build their career — from freshman orientation to senior capstone.
+              Used by college students across the U.S. to manage classes, study smarter, land internships, and build their career, from freshman orientation to senior capstone.
             </p>
             <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.3)", letterSpacing: ".04em" }}>
               Built on Apollo[Claw] infrastructure. Live in 30 minutes.
@@ -350,7 +350,7 @@ export default async function Home() {
       {/* INTEGRATIONS */}
       <IntegrationGlobe />
 
-      {/* MOST RECENT BLOG POSTS — rotates automatically as new posts publish (ISR above). */}
+      {/* MOST RECENT BLOG POSTS, rotates automatically as new posts publish (ISR above). */}
       {recentPosts.length > 0 && (
         <section style={{ background: "var(--cream2)", padding: "72px 0 76px" }}>
           <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px" }}>
@@ -409,7 +409,7 @@ export default async function Home() {
       {/* FAQ */}
       <FAQ />
 
-      {/* SCHOOL MARQUEE — the trust strip sits at the bottom, just above the footer. */}
+      {/* SCHOOL MARQUEE, the trust strip sits at the bottom, just above the footer. */}
       <SchoolMarquee />
 
       {/* CHATBOT */}
