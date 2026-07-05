@@ -1,6 +1,10 @@
 // The standard marketing page header: dark section, hero text on the left, the robot
-// mascot on the right, sentence-case headline at the shared (smaller) hero size.
-// One component so every page header stays identical.
+// mascot flush to the text on the right, sentence-case headline at the shared (smaller)
+// hero size. One component so every page header stays identical. The mascot rotates from
+// the agent cast (pickMascot) so different pages show different agents; pass `mascot` to
+// pin a specific one.
+
+import { pickMascot } from "@/lib/mascots";
 
 type Cta = { label: string; href: string };
 
@@ -10,17 +14,20 @@ export function PageHero({
   sub,
   primary,
   secondary,
+  mascot,
 }: {
   label: string;
   title: string;
   sub: string;
   primary?: Cta;
   secondary?: Cta;
+  mascot?: string;
 }) {
+  const mascotSrc = mascot ?? pickMascot(label);
   return (
     <section style={{ background: "var(--navy, #0b1729)", padding: "64px 0 60px", overflow: "hidden", position: "relative" }}>
       <div className="ph-glow" />
-      <div className="ph-row" style={{ position: "relative", zIndex: 1, maxWidth: 1160, margin: "0 auto", padding: "0 24px", alignItems: "center", justifyContent: "space-between", gap: 48 }}>
+      <div className="ph-row" style={{ position: "relative", zIndex: 1, maxWidth: 1160, margin: "0 auto", padding: "0 24px", alignItems: "center", justifyContent: "space-between", gap: 24 }}>
         <div style={{ flex: "1 1 480px", minWidth: 0 }}>
           <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "rgba(255,255,255,.5)", marginBottom: 16, display: "block" }}>
             {label}
@@ -40,7 +47,7 @@ export function PageHero({
         </div>
         <div className="ph-mascot-wrap">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/mascot.webp" alt="The College Agent mascot" className="ph-mascot" />
+          <img src={mascotSrc} alt="The College Agent mascot" className="ph-mascot" />
         </div>
       </div>
 
@@ -52,7 +59,8 @@ export function PageHero({
           pointer-events: none;
         }
         .ph-row { display: flex; }
-        .ph-mascot-wrap { flex: 0 0 340px; display: flex; align-items: center; justify-content: center; }
+        /* Agent sits flush to the text on its left, not floating in the middle of its column. */
+        .ph-mascot-wrap { flex: 0 0 300px; display: flex; align-items: center; justify-content: flex-start; }
         .ph-mascot {
           width: 100%; max-width: 340px; height: auto;
           filter: drop-shadow(0 24px 48px rgba(0,0,0,.35));

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { pickMascot } from "@/lib/mascots";
 
 // Entry gate + capped demo chat. The form is framed as "set up your agent," not "give
 // us your info." Two consent boxes, neither pre-checked: email and SMS are separate
@@ -206,7 +207,7 @@ export function DemoExperience({ refSlug }: { refSlug: string }) {
             </div>
             <div className="demo-hero-bot">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/thecollegeagent.png" alt="The College Agent" />
+              <img src={pickMascot("demo")} alt="The College Agent" />
             </div>
           </div>
         </section>
@@ -266,7 +267,7 @@ export function DemoExperience({ refSlug }: { refSlug: string }) {
           .demo-hero { background: var(--navy, #0b1729); }
           .demo-hero-inner {
             max-width: 1000px; margin: 0 auto; padding: 40px 24px 44px;
-            display: flex; align-items: center; justify-content: space-between; gap: 32px;
+            display: flex; align-items: center; justify-content: space-between; gap: 20px;
           }
           .demo-hero-text { flex: 1 1 460px; min-width: 0; }
           .demo-eyebrow {
@@ -280,7 +281,7 @@ export function DemoExperience({ refSlug }: { refSlug: string }) {
           .demo-hero-text p {
             font-size: 16px; line-height: 1.7; color: rgba(255,255,255,.65); margin: 0; max-width: 480px;
           }
-          .demo-hero-bot { flex: 0 0 200px; display: flex; justify-content: center; }
+          .demo-hero-bot { flex: 0 0 180px; display: flex; justify-content: flex-start; }
           .demo-hero-bot img {
             width: 100%; max-width: 200px; height: auto;
             filter: drop-shadow(0 18px 36px rgba(0,0,0,.35));
