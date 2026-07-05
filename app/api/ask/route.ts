@@ -69,14 +69,19 @@ export const POST = route(async (req) => {
     throw new ApiError(400, "invalid_request", "Send at least one user message.");
   }
 
-  const client = new Anthropic({ apiKey });
-  const response = await client.messages.create({
-    model: "claude-opus-4-8",
-    max_tokens: 700,
-    output_config: { effort: "low" },
-    system: systemPrompt(),
-    messages,
-  });
+  let response: Anthropic.Message;
+  try {
+    const client = new Anthropic({ apiKey });
+    response = await client.messages.create({
+      model: "claude-opus-4-8",
+      max_tokens: 700,
+      system: systemPrompt(),
+      messages,
+    });
+  } catch (e) {
+    console.error("[ask] anthropic error", e);
+    throw new ApiError(502, "chat_failed", "I hit a snag on that one. Try again in a moment.");
+  }
 
   const reply = response.content
     .filter((block): block is Anthropic.TextBlock => block.type === "text")
