@@ -568,7 +568,7 @@ function BuildCta() {
     <div className="mx-auto max-w-lg py-16 text-center">
       <h1 className="text-2xl font-semibold tracking-tight">Let&apos;s build your agent</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Configure your personal AI agent and choose your plan. Once you&apos;re set up, your Hermes
+        Configure your personal AI agent and choose your plan. Once you&apos;re set up, your
         agent comes to life automatically.
       </p>
       <Button asChild size="lg" className="mt-8">
@@ -749,7 +749,7 @@ function Provisioning({ failed, onRetry }: { failed: boolean; onRetry: () => voi
       ) : (
         <>
           <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
-          <h1 className="mt-4 text-xl font-semibold">Setting up your Hermes agent…</h1>
+          <h1 className="mt-4 text-xl font-semibold">Setting up your agent…</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             We&apos;re provisioning your agent and connecting it to Telegram. This takes about a minute.
           </p>

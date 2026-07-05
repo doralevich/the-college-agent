@@ -1062,11 +1062,11 @@ export function ConversationalOnboard({
                 margin: "0 0 10px",
               }}
             >
-              That&apos;s it. You&apos;re all set up.
+              {displayBotName} is ready.
             </h1>
             <p style={{ fontSize: 15, lineHeight: 1.6, color: T.inkSoft, maxWidth: 420, margin: "0 0 26px" }}>
-              {displayBotName} is live and already knows your classes, your goals, and how you
-              like to work. Let&apos;s show you what to do first.
+              It already knows your classes, your goals, and how you like to work. Let&apos;s show
+              you what to do first.
             </p>
             <button
               type="button"
