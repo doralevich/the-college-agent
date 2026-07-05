@@ -41,9 +41,9 @@ export function Footer() {
           </div>
           <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8, fontFamily: "var(--font-mono)", fontSize: 10, color: "rgba(255,255,255,.45)", letterSpacing: ".06em" }}>
             Powered by
-            <a href="https://apolloclaw.ai" target="_blank" rel="noopener noreferrer" aria-label="Apollo Claw" style={{ display: "inline-flex", alignItems: "center", borderRadius: 4, background: "#fff", padding: "4px 7px" }}>
+            <a href="https://apolloclaw.ai" target="_blank" rel="noopener noreferrer" aria-label="Apollo Claw" style={{ display: "inline-flex", alignItems: "center" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/apollo-claw.svg" alt="Apollo Claw" style={{ height: 16, width: "auto" }} />
+              <img src="/apollo-claw-white.svg" alt="Apollo Claw" style={{ height: 18, width: "auto" }} />
             </a>
           </div>
         </div>

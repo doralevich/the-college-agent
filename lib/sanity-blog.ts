@@ -41,6 +41,25 @@ export type PortableTextBlock = {
 
 const categoryList = JSON.stringify(COLLEGE_AGENT_CATEGORIES);
 
+// The CMS currently stamps every post with the same publish date, so the blog reads as if
+// everything shipped on one day (and a couple of dates land in the future). Until real dates
+// are set in Sanity, we override publishedAt by slug here so the timeline is varied and safely
+// back-dated. Remove a slug from this map once its real date is set in the CMS — a genuine
+// Sanity date always wins when the slug isn't listed.
+const PUBLISHED_AT_OVERRIDES: Record<string, string> = {
+  "ai-that-knows-my-life": "2026-05-14T08:15:00-04:00",
+  "roommate-thought-i-got-my-life-together": "2026-05-28T08:15:00-04:00",
+  "finals-week-used-to-break-me": "2026-06-09T08:15:00-04:00",
+  "i-got-the-internship": "2026-06-20T08:15:00-04:00",
+  "not-a-therapist-but": "2026-06-27T08:15:00-04:00",
+  "what-i-wish-id-known-freshman-year": "2026-07-02T08:15:00-04:00",
+};
+
+function withPublishedDate<T extends CollegeAgentPost>(post: T): T {
+  const override = PUBLISHED_AT_OVERRIDES[post.slug?.current ?? ""];
+  return override ? { ...post, publishedAt: override } : post;
+}
+
 async function sanityFetch<T>(query: string): Promise<T> {
   const url = `https://${PROJECT_ID}.api.sanity.io/v${API_VERSION}/data/query/${DATASET}?query=${encodeURIComponent(query)}`;
   const token = process.env.SANITY_READ_TOKEN || process.env.SANITY_WRITE_TOKEN;
@@ -75,10 +94,21 @@ export async function getCollegeAgentPosts() {
     const posts = await sanityFetch<CollegeAgentPost[]>(
       `*[_type == "post" && !(_id in path("drafts.**")) && category in ${categoryList}] | order(publishedAt asc) ${postProjection}`
     );
-    return posts.length ? posts : fallbackCollegeAgentPosts;
+    return normalizePostDates(posts.length ? posts : fallbackCollegeAgentPosts);
   } catch {
-    return fallbackCollegeAgentPosts;
+    return normalizePostDates(fallbackCollegeAgentPosts);
   }
+}
+
+// Apply the date overrides, then re-sort ascending so the ordering reflects the dates we
+// actually show (the CMS ordered by its own uniform dates, which no longer matches).
+function normalizePostDates(posts: CollegeAgentPost[]): CollegeAgentPost[] {
+  return posts
+    .map(withPublishedDate)
+    .sort(
+      (a, b) =>
+        new Date(a.publishedAt ?? 0).getTime() - new Date(b.publishedAt ?? 0).getTime()
+    );
 }
 
 export async function getCollegeAgentPost(slug: string) {
@@ -86,9 +116,11 @@ export async function getCollegeAgentPost(slug: string) {
     const post = await sanityFetch<CollegeAgentPost | null>(
       `*[_type == "post" && !(_id in path("drafts.**")) && slug.current == ${JSON.stringify(slug)} && category in ${categoryList}][0] ${postProjection}`
     );
-    return post || fallbackCollegeAgentPosts.find((item) => item.slug.current === slug) || null;
+    const resolved = post || fallbackCollegeAgentPosts.find((item) => item.slug.current === slug) || null;
+    return resolved ? withPublishedDate(resolved) : null;
   } catch {
-    return fallbackCollegeAgentPosts.find((item) => item.slug.current === slug) || null;
+    const resolved = fallbackCollegeAgentPosts.find((item) => item.slug.current === slug) || null;
+    return resolved ? withPublishedDate(resolved) : null;
   }
 }
 
