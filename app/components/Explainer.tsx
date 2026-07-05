@@ -72,96 +72,63 @@ const SCENARIOS = [
 export default function Explainer() {
   return (
     <>
-      {/* BEFORE / AFTER */}
+      {/* WHAT GETS HANDLED */}
       <section id="before-after" style={{ background: "var(--cream)", padding: "80px 0", scrollMarginTop: 80 }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
-          <div style={{ textAlign: "center", marginBottom: 40 }}>
-            <span className="mono-label">Before & After</span>
+        <div style={{ maxWidth: 1000, margin: "0 auto", padding: "0 24px" }}>
+          <div style={{ textAlign: "center", marginBottom: 44 }}>
+            <span className="mono-label">The Difference</span>
             <h2 className="section-title">From scattered to handled.</h2>
             <p className="section-sub" style={{ maxWidth: 620, margin: "12px auto 0" }}>
-              The difference is not another chatbot. It is a personalized agent that knows the student's real college life and keeps the work moving.
+              A personalized agent that knows the student&apos;s real college life and keeps the work
+              moving. The hard parts of the week just get done.
             </p>
           </div>
-          {/* Column headers — hidden on mobile where the layout stacks. */}
-          <div className="ba-headers">
-            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: "rgba(11,23,41,.38)", paddingLeft: 4 }}>Without</div>
-            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--green)", paddingLeft: 4 }}>With The College Agent</div>
-          </div>
 
-          {/* Rows */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div className="handled-grid">
             {SCENARIOS.map((s, i) => (
-              <div key={i} className="ba-row">
-                <div className="ba-card ba-card-before">
-                  <span className="ba-tag ba-tag-before">Without</span>
-                  <div className="ba-headline ba-headline-before">{s.before.headline}</div>
-                  <p className="ba-body ba-body-before">{s.before.body}</p>
-                </div>
-                <div className="ba-card ba-card-after">
-                  <span className="ba-tag ba-tag-after">With The College Agent</span>
-                  <div className="ba-headline ba-headline-after">{s.after.headline}</div>
-                  <p className="ba-body ba-body-after">{s.after.body}</p>
+              <div key={i} className="handled-card">
+                <span className="handled-check" aria-hidden>
+                  <svg viewBox="0 0 20 20" fill="none">
+                    <path d="M4 10.5l4 4 8-9" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                <div className="handled-text">
+                  <div className="handled-headline">{s.after.headline}</div>
+                  <p className="handled-body">{s.after.body}</p>
                 </div>
               </div>
             ))}
           </div>
+
+          <div className="handled-done">Consider it done.</div>
         </div>
         <style>{`
-          .ba-headers {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 12px;
-            padding-top: 16px;
+          .handled-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+          .handled-card {
+            background: #fff; border: 1px solid rgba(61,139,61,.2);
+            border-left: 4px solid var(--green); border-radius: 14px;
+            padding: 24px 26px; display: flex; gap: 16px; align-items: flex-start;
+            box-shadow: 0 10px 30px rgba(11,23,41,.05);
           }
-          .ba-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+          .handled-check {
+            flex: 0 0 auto; width: 34px; height: 34px; border-radius: 50%;
+            background: rgba(61,139,61,.12); color: var(--green);
+            display: flex; align-items: center; justify-content: center;
           }
-          /* Per-card tag — only shown on mobile, where the paired header row is hidden. */
-          .ba-tag {
-            display: none;
-            font-family: var(--font-mono);
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: .12em;
-            text-transform: uppercase;
-            margin-bottom: 10px;
+          .handled-check svg { width: 18px; height: 18px; }
+          .handled-headline {
+            font-size: 18px; font-weight: 800; color: var(--navy);
+            margin-bottom: 6px; letter-spacing: -.01em; line-height: 1.25;
           }
-          .ba-tag-before { color: rgba(11,23,41,.4); }
-          .ba-tag-after { color: var(--green); }
-          .ba-card { border-radius: 16px; padding: 30px 32px; }
-          .ba-card-before {
-            background: rgba(255,255,255,.62);
-            border: 1px solid rgba(11,23,41,.1);
+          .handled-body { font-size: 14px; line-height: 1.7; color: rgba(11,23,41,.72); margin: 0; }
+          .handled-done {
+            text-align: center; margin-top: 40px;
+            font-size: clamp(24px, 3vw, 32px); font-weight: 800;
+            color: var(--green); letter-spacing: -.02em;
           }
-          .ba-card-after {
-            background: #fff;
-            border: 2px solid rgba(61,139,61,.35);
-            box-shadow: 0 12px 34px rgba(61,139,61,.1);
-          }
-          .ba-headline {
-            font-size: 23px;
-            font-weight: 800;
-            line-height: 1.25;
-            margin-bottom: 10px;
-          }
-          .ba-headline-before { color: rgba(11,23,41,.48); }
-          .ba-headline-after  { color: var(--navy); }
-          .ba-body {
-            font-size: 14px;
-            line-height: 1.75;
-          }
-          .ba-body-before { color: rgba(11,23,41,.5); }
-          .ba-body-after  { color: rgba(11,23,41,.72); }
           @media (max-width: 680px) {
-            .ba-card { padding: 22px 20px; }
-            .ba-headline { font-size: 18px; }
-            /* Stack to a single column; hide the paired header, show per-card tags. */
-            .ba-headers { display: none; }
-            .ba-row { grid-template-columns: 1fr; gap: 12px; }
-            .ba-tag { display: inline-block; }
+            .handled-grid { grid-template-columns: 1fr; }
+            .handled-card { padding: 20px 22px; }
           }
         `}</style>
       </section>

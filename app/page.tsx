@@ -237,6 +237,48 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* WHAT THE COLLEGE AGENT DOES */}
+      <section id="what-it-does" style={{ background: "#fff", padding: "72px 0 78px" }}>
+        <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px" }}>
+          <div style={{ textAlign: "center", marginBottom: 44 }}>
+            <span className="mono-label">What The College Agent Does</span>
+            <h2 className="section-title ways-title">Your personal college operating system.</h2>
+            <p className="section-sub" style={{ maxWidth: 720, margin: "14px auto 0" }}>
+              A real agent with real capabilities: it reads your syllabi, watches your deadlines,
+              drafts your emails, plans your weeks, and takes action in the tools you already use.
+              All day, every day, for all four years.
+            </p>
+          </div>
+          <div className="uc-grid">
+            {AGENT_WAYS.map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="uc-card">
+                <div className="uc-icon-flat"><Icon size={22} strokeWidth={1.5} /></div>
+                <div className="uc-card-text">
+                  <h3>{title}</h3>
+                  <p>{desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* The proof band: not categories, actual sentences you can say to it. */}
+          <div className="asks-band">
+            <div className="asks-head">
+              <span className="mono-label asks-eyebrow" style={{ color: "rgba(61,139,61,.85)" }}>Say It. It&apos;s Handled.</span>
+              <h3>Real things students ask<br />on day one.</h3>
+            </div>
+            <div className="asks-grid">
+              {POWER_ASKS.map((ask) => (
+                <div key={ask} className="ask-chip">&ldquo;{ask}&rdquo;</div>
+              ))}
+            </div>
+            <div style={{ textAlign: "center", marginTop: 28 }}>
+              <a href="/build" className="btn-purple">Build My Agent</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* DUAL BUYER */}
       <section style={{ background: "var(--cream2)", padding: "70px 0" }}>
         <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
@@ -252,46 +294,6 @@ export default async function Home() {
               <span className="dual-tag dual-tag-parent">For Parents</span>
               <h2>A four-year advantage.</h2>
               <p>You are not buying tutoring hours or a generic AI subscription. You are giving your student a personalized support system that keeps them organized, accountable, and prepared for the opportunities that matter.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* USE CASES */}
-      <section id="what-it-does" style={{ background: "#fff", padding: "72px 0 78px" }}>
-        <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px" }}>
-          <div style={{ textAlign: "center", marginBottom: 38 }}>
-            <span className="mono-label">What It Does</span>
-            <h2 className="section-title ways-title">Your personal college operating system.</h2>
-            <p className="section-sub" style={{ maxWidth: 720, margin: "14px auto 0" }}>
-              A real agent with real capabilities: it reads your syllabi, watches your deadlines,
-              drafts your emails, plans your weeks, and takes action in the tools you already use.
-              All day, every day, for all four years.
-            </p>
-          </div>
-          <div className="uc-grid">
-            {AGENT_WAYS.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="uc-card">
-                <div className="uc-icon-flat"><Icon size={24} strokeWidth={1.9} /></div>
-                <h3>{title}</h3>
-                <p>{desc}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* The proof band: not categories, actual sentences you can say to it. */}
-          <div className="asks-band">
-            <div className="asks-head">
-              <span className="mono-label" style={{ color: "rgba(61,139,61,.85)", marginBottom: 8 }}>Say It. It&apos;s Handled.</span>
-              <h3>Real things students ask on day one.</h3>
-            </div>
-            <div className="asks-grid">
-              {POWER_ASKS.map((ask) => (
-                <div key={ask} className="ask-chip">&ldquo;{ask}&rdquo;</div>
-              ))}
-            </div>
-            <div style={{ textAlign: "center", marginTop: 26 }}>
-              <a href="/build" className="btn-purple">Build My Agent</a>
             </div>
           </div>
         </div>
@@ -524,30 +526,33 @@ export default async function Home() {
         .dual-card h2 { font-size: 24px; line-height: 1.12; letter-spacing: -.03em; color: var(--navy); margin-bottom: 14px; }
         .dual-card p { font-size: 15px; line-height: 1.72; color: rgba(11,23,41,.72); }
 
-        /* USE CASES */
+        /* USE CASES — icon sits beside the text (sleeker flat line icons). */
         .ways-title { white-space: nowrap; }
-        .uc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+        .uc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
         .uc-card {
           background: var(--cream2); border: 1px solid rgba(11,23,41,.07); border-radius: 16px;
-          padding: 24px; min-height: 218px; box-shadow: 0 8px 28px rgba(11,23,41,.04);
+          padding: 24px 26px; box-shadow: 0 8px 28px rgba(11,23,41,.04);
+          display: flex; gap: 18px; align-items: flex-start;
         }
         .uc-icon-flat {
-          width: 46px; height: 46px; border-radius: 14px; margin-bottom: 18px;
+          width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
           display: flex; align-items: center; justify-content: center;
           background: rgba(61,139,61,.1); color: var(--green);
         }
-        .uc-card h3 { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 9px; letter-spacing: -.01em; }
-        .uc-card p { font-size: 13px; line-height: 1.62; color: rgba(11,23,41,.62); }
+        .uc-card-text { min-width: 0; }
+        .uc-card h3 { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 6px; letter-spacing: -.01em; }
+        .uc-card p { font-size: 13.5px; line-height: 1.62; color: rgba(11,23,41,.62); }
 
         /* POWER ASKS */
         .asks-band {
-          margin-top: 44px; background: var(--navy); border-radius: 22px;
-          padding: 44px 36px 40px; overflow: hidden; position: relative;
+          margin-top: 64px; background: var(--navy); border-radius: 22px;
+          padding: 52px 36px 44px; overflow: hidden; position: relative;
         }
-        .asks-head { text-align: center; margin-bottom: 26px; }
+        .asks-head { text-align: center; margin-bottom: 34px; }
+        .asks-eyebrow { display: block; margin-bottom: 12px; }
         .asks-head h3 {
-          font-size: clamp(20px, 2.4vw, 28px); font-weight: 800; color: #fff;
-          letter-spacing: -.02em;
+          font-size: clamp(22px, 2.6vw, 30px); font-weight: 800; color: #fff;
+          letter-spacing: -.02em; line-height: 1.2;
         }
         .asks-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
         .ask-chip {
