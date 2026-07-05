@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Nav from "../components/Nav";
 import { PageHero } from "../components/PageHero";
 import { Footer } from "../components/Footer";
-import { BookOpenCheck, BriefcaseBusiness, CalendarDays, Network, NotebookTabs, Sparkles } from "lucide-react";
+import { BriefcaseBusiness, CalendarDays, Mail, NotebookTabs, Sparkles, Target } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "AI for College Students, The College Agent",
@@ -38,65 +38,65 @@ const breadcrumbSchema = {
 const FEATURES = [
   {
     icon: CalendarDays,
-    title: "Class Schedule Management",
-    desc: "Your agent knows every class, every professor, every deadline. It keeps your semester organized so nothing slips: assignments, exams, office hours, and drop-add deadlines included.",
+    title: "Classes & Schedule",
+    desc: "Your classes, professors, assignments, exams, office hours, and deadlines, all organized in one place. Your agent keeps your semester on track so you always know what's next.",
   },
   {
     icon: NotebookTabs,
-    title: "Study Planning & Guides",
-    desc: "Turn your notes, slides, and textbook chapters into structured study guides. Your agent builds review schedules, creates practice questions, and tracks where you need more time.",
+    title: "Study Smarter",
+    desc: "Turn lecture notes, slides, readings, and textbooks into personalized study guides, practice quizzes, review plans, and exam prep tailored to your schedule.",
   },
   {
     icon: BriefcaseBusiness,
-    title: "Internship Tracking",
-    desc: "From target company research to offer negotiation, your agent manages your entire internship pipeline. Deadlines, outreach emails, application status, and interview prep, all in one place.",
+    title: "Career & Internships",
+    desc: "Build your resume, optimize your LinkedIn profile, track internship applications, prepare for interviews, and manage every opportunity from freshman year through graduation.",
   },
   {
-    icon: Network,
-    title: "LinkedIn & Career Building",
-    desc: "Your agent helps you build a LinkedIn profile that actually reflects your work, drafts connection requests that get responses, and keeps your career network active and growing.",
+    icon: Mail,
+    title: "Communication",
+    desc: "Draft polished emails to professors, advisors, recruiters, classmates, and club leaders in your own voice, ready to review and send.",
   },
   {
     icon: Sparkles,
-    title: "Social Life Balance",
-    desc: "College isn't just academics. Your agent helps you balance study time with the social and extracurricular commitments that matter: clubs, events, leadership roles, and downtime.",
+    title: "Campus Life",
+    desc: "Balance classes with clubs, events, leadership roles, work, travel, and personal commitments, all from one organized dashboard.",
   },
   {
-    icon: BookOpenCheck,
-    title: "Academic Communication",
-    desc: "Professor emails. Advisor meeting requests. Club outreach. Recruiter cold emails. Your agent drafts every message in your voice, polished, professional, and ready to send.",
+    icon: Target,
+    title: "Goals & Productivity",
+    desc: "Keep projects moving, prioritize what matters most, build better habits, and stay one step ahead with personalized reminders, planning, and daily guidance.",
   },
 ];
 
 // "Most effective uses" — the college-operating-system framing, in second person.
 const EFFECTIVE_USES = [
   {
-    title: "First 30 days",
-    desc: "Load your class schedule, syllabi, deadlines, professor info, clubs, and orientation items. Build a weekly rhythm before things get chaotic.",
+    title: "Start Strong",
+    desc: "Begin college with a plan. Add your class schedule, syllabi, professors, deadlines, clubs, and campus commitments. Your agent organizes everything before the semester gets busy.",
   },
   {
-    title: "Assignment and deadline tracking",
-    desc: "Every syllabus becomes tasks, reminders, study blocks, and check-ins. Nothing lives only in your head.",
+    title: "Never Miss a Deadline",
+    desc: "Every syllabus becomes a personalized action plan with assignments, quizzes, exams, reminders, and study blocks, so you always know what's due and what's coming next.",
   },
   {
-    title: "Study planning",
-    desc: "Turns exams, readings, papers, and problem sets into a realistic weekly plan. Helps you avoid the classic freshman mistake: waiting until it is urgent.",
+    title: "Study Smarter",
+    desc: "Transform notes, lectures, readings, and textbooks into personalized study guides, review schedules, practice quizzes, and exam prep tailored to your workload.",
   },
   {
-    title: "Professor and advisor communication",
-    desc: "Drafts polished emails to professors, TAs, advisors, and administrators. Helps you ask the right questions without sounding sloppy.",
+    title: "Communicate with Confidence",
+    desc: "Draft polished emails to professors, teaching assistants, advisors, recruiters, and classmates in your own voice, professional, clear, and ready to send.",
   },
   {
-    title: "Social and campus involvement",
-    desc: "Tracks clubs, events, applications, deadlines, and follow-ups. Helps you get involved without overcommitting.",
+    title: "Balance Your College Life",
+    desc: "Keep classes, clubs, events, work, travel, friendships, and personal commitments organized in one place, making it easier to stay involved without becoming overwhelmed.",
   },
   {
-    title: "Career foundation early",
-    desc: "Start your resume, LinkedIn, internship tracker, alumni connections, and summer planning from freshman year. By sophomore year, you are not starting cold.",
+    title: "Build Your Career Early",
+    desc: "Create your resume, strengthen your LinkedIn profile, track internships, grow your professional network, and prepare for interviews, starting freshman year instead of scrambling as a senior.",
   },
   {
-    title: "Parent peace of mind",
-    desc: "Not surveillance. Your agent supports your independence while making sure you have a system. You run your life; everyone sleeps better.",
+    title: "Stay Independent. Give Everyone Peace of Mind.",
+    desc: "Your College Agent helps you stay organized, accountable, and prepared while giving your parents confidence that you have a system in place to support you every step of the way.",
   },
 ];
 
@@ -105,27 +105,27 @@ const EFFECTIVE_USES = [
 const JOURNEY = [
   {
     stage: "Before College",
-    desc: "Choosing schools, applications and essays, scholarship deadlines, campus visit planning, packing lists, and move-in logistics. Your agent starts working before you ever set foot on campus.",
+    desc: "Start before you arrive. Navigate applications, essays, scholarships, campus visits, packing, housing, orientation, and move-in with one organized plan before classes even begin.",
   },
   {
     stage: "Freshman Year",
-    desc: "Get your bearings. Your agent organizes your first semester, tracks assignments, drafts professor emails, keeps your quiz and test schedule, and builds the study habits that carry you through.",
+    desc: "Build the right foundation. Organize your classes, syllabi, assignments, exams, study schedule, and communication with professors while developing habits that set you up for long-term success.",
   },
   {
     stage: "Sophomore Year",
-    desc: "Start thinking bigger. Your agent tracks academic progress, helps you find clubs and leadership roles that strengthen your resume, and begins surfacing internship opportunities for the summer ahead.",
+    desc: "Build momentum. Stay on top of academics while discovering clubs, leadership opportunities, networking events, and internships that strengthen your experience and resume.",
   },
   {
     stage: "Junior Year",
-    desc: "Internship season. Your agent manages your full recruiting pipeline: target companies, application deadlines, outreach emails, interview prep. By the end of the year, you have real experience to show for it.",
+    desc: "Turn preparation into opportunity. Manage internship applications, recruiter outreach, interview preparation, networking, and follow-ups, all while balancing your busiest academic year.",
   },
   {
     stage: "Senior Year",
-    desc: "Cross the finish line ready. Your agent turns your experience into a career plan: full-time applications, networking, LinkedIn positioning, and the transition from student to professional.",
+    desc: "Launch your career. Transition confidently from student to professional with full-time job applications, LinkedIn optimization, networking, interview preparation, and career planning.",
   },
   {
-    stage: "After Graduation",
-    desc: "It doesn't stop at the cap toss. Job search, first apartment logistics, grad school applications, alumni networking, and staying organized in your first role. Your agent already knows your whole story.",
+    stage: "Beyond Graduation",
+    desc: "Your story doesn't end at graduation. Whether you're starting your first job, moving to a new city, applying to graduate school, or building your career, your College Agent already knows your goals, preferences, and journey.",
   },
 ];
 
@@ -194,8 +194,8 @@ export default function ForStudentsPage() {
         {/* HERO */}
         <PageHero
           label="For College Students"
-          title="Your personal AI agent for your college years...and then some!"
-          sub="The College Agent is an AI companion that knows you: your classes, your goals, your schedule, your voice. It gets smarter every semester."
+          title="Your Personal College AI Agent."
+          sub="One intelligent agent that manages your classes, deadlines, studying, internships, and college life, so you can focus on succeeding."
           primary={{ label: "Build My Agent", href: "/build" }}
           secondary={{ label: "See Everything It Does", href: "#everything" }}
         />
@@ -204,11 +204,11 @@ export default function ForStudentsPage() {
         <section style={{ background: "#fff", padding: "72px 0" }}>
           <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 24px" }}>
             <div style={{ textAlign: "center", marginBottom: 48 }}>
-              <span className="mono-label-green">Most Effective Uses</span>
+              <span className="mono-label-green">How Students Use Their College Agent</span>
               <h2 className="section-title">Your personal college operating system.</h2>
               <p className="section-sub" style={{ maxWidth: 640, margin: "14px auto 0" }}>
-                Not &ldquo;another chatbot.&rdquo; Not &ldquo;homework help.&rdquo; It&apos;s the
-                thing that quietly keeps your college life organized from day one.
+                More than homework help. More than a chatbot. Your College Agent keeps every part
+                of your college life organized, from your first week on campus to graduation.
               </p>
             </div>
             <div style={{ display: "grid", gap: 26 }}>
@@ -230,9 +230,9 @@ export default function ForStudentsPage() {
           <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px" }}>
             <div style={{ textAlign: "center", marginBottom: 48 }}>
               <span className="mono-label-green">What Your Agent Does</span>
-              <h2 className="section-title">Everything college, in one AI companion.</h2>
+              <h2 className="section-title">Everything college. One intelligent agent.</h2>
               <p className="section-sub" style={{ maxWidth: 680, margin: "14px auto 0" }}>
-                From the first week of freshman year to your final semester, The College Agent manages the parts of college life that are hardest to keep organized on your own. AI for college students means having a system that works even when you don&apos;t.
+                Your College Agent brings every part of your academic life together, from classes and studying to internships, communication, and everything in between. Instead of juggling apps, calendars, notes, and to-do lists, you have one intelligent system that keeps you organized, prepared, and moving forward.
               </p>
             </div>
             <div className="feat-grid">
@@ -252,10 +252,11 @@ export default function ForStudentsPage() {
           <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
             <div style={{ textAlign: "center", marginBottom: 48 }}>
               <span className="mono-label-green">Everything It Does</span>
-              <h2 className="section-title">It grows with you as you grow.</h2>
+              <h2 className="section-title">One Agent. Every Stage of Your Journey.</h2>
               <p className="section-sub" style={{ maxWidth: 680, margin: "14px auto 0" }}>
-                From before your first campus tour to after you toss the cap. Name a part of
-                student life and your agent handles it.
+                From your first campus tour to your first job. Your College Agent isn&apos;t built
+                for a single class or semester. It learns about you, remembers what matters, and
+                evolves alongside you throughout college, and beyond.
               </p>
             </div>
             <div className="roadmap">
@@ -310,18 +311,18 @@ export default function ForStudentsPage() {
         {/* WHAT YOUR FIRST SEMESTER LOOKS LIKE WITH AI */}
         <section style={{ background: "#fff", padding: "72px 0" }}>
           <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
-            <span className="mono-label-green">Your First Semester With AI</span>
+            <span className="mono-label-green">Your First Semester</span>
             <h2 style={{ fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 800, color: "var(--navy)", marginBottom: 20, letterSpacing: "-.025em" }}>
-              What Your First Semester Looks Like With AI
+              Powered by your College Agent.
             </h2>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
-              Week one of freshman year is chaotic for almost every student. You have syllabi to read, professors to email, a social calendar filling up, and zero structure for how to handle any of it. Most students get through it by sheer adrenaline, and start falling behind by week four.
+              What college feels like with your own AI agent. The first few weeks of college move fast. New classes. New professors. New friends. Syllabi, deadlines, club meetings, and a calendar that fills up almost overnight. Most students spend the first month reacting. With The College Agent, you start with a plan.
             </p>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
-              With The College Agent, your first semester looks different. Before classes start, you load your schedule. Your agent builds your week, blocking study time, surfacing deadlines, flagging office hours. Your first professor email is drafted before you have to ask. Your first exam review guide is ready two weeks before the test.
+              Before classes begin, your schedule is organized. Your syllabi become assignments and deadlines. Study time is built into your week. Office hours, exams, and important dates are already on your calendar. When you need to email a professor, your draft is ready before you open your inbox.
             </p>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
-              By midterms, you&apos;re not cramming, you&apos;ve been reviewing consistently. By the end of the semester, your agent knows your class load, your professors, your work style, and your goals. That&apos;s infrastructure most students never build. You have it from day one.
+              By midterms, you&apos;re not cramming, you&apos;re following a study plan that&apos;s been working since the first week of class. By the end of the semester, your College Agent understands your schedule, professors, priorities, and goals. It isn&apos;t just helping you stay organized anymore, it&apos;s helping you stay ahead.
             </p>
           </div>
         </section>
@@ -330,10 +331,10 @@ export default function ForStudentsPage() {
         <section className="dark-section" style={{ padding: "72px 0" }}>
           <div style={{ maxWidth: 680, margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
             <h2 style={{ fontSize: "clamp(26px, 3vw, 38px)", fontWeight: 800, color: "#fff", marginBottom: 16, letterSpacing: "-.03em" }}>
-              Ready to build your agent?
+              Ready to build your College Agent?
             </h2>
             <p style={{ fontSize: 16, lineHeight: 1.7, color: "rgba(255,255,255,.6)", marginBottom: 32 }}>
-              Join students who are already using The College Agent to stay ahead, academically, professionally, and personally, across all 4 years of college.
+              Start college with a personalized AI companion that grows with you, keeping your classes, deadlines, studying, internships, and goals organized from day one through graduation. Because when everything is connected, everything moves forward.
             </p>
             <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
               <a href="/build" className="btn-green">Build My Agent</a>

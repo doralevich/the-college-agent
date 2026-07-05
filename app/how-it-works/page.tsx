@@ -32,40 +32,28 @@ export default function HowItWorksPage() {
 
   const steps = [
     {
-      title: "Sign up",
-      body: `Start at thecollegeagent.ai/build. Tap "Let's get started," look over what's included, and enter your name, school email, and phone. No account to create first and no password to invent; your account is created for you at checkout.`,
+      title: "Create Your Account",
+      body: `Start at thecollegeagent.ai/build and enter your name, school email, and phone number. Your account is automatically created during checkout, so there's nothing extra to set up.`,
     },
     {
-      title: "Pay for your agent",
-      body: `One plan, everything included: ${plan} one-time to build and configure your personal agent, plus cloud hosting that keeps it running 24/7: your choice of ${hosting}/month or $250/year (the annual price is ten months, so two months are free). Your plan includes $20 of AI usage credits to get you started. Checkout is handled by Stripe; we never see your card number, and there is a 7-day money-back guarantee. You can cancel hosting any time and pause over the summer.`,
+      title: "Choose Your Plan",
+      body: `One plan. Everything included. ${plan} one-time to build and personalize your College Agent, plus secure cloud hosting: your choice of ${hosting}/month or $250/year (two months free). Includes $20 in AI credits to get started. Secure checkout with Stripe, and a 7-day money-back guarantee.`,
     },
     {
-      title: "Check your email",
-      body: `The moment your payment lands, we create your account and email you a magic sign-in link. One tap and you're in your dashboard. Your receipt and order summary arrive alongside it.`,
+      title: "Personalize Your Agent",
+      body: `In about five minutes, tell your College Agent about yourself. Choose its name and appearance, then share your school, classes, goals, schedule, and how you like to work. You can update your information anytime as your college life evolves.`,
     },
     {
-      title: "Fill out your intake",
-      body: `A short, friendly questionnaire: name your agent, give it a face (upload a photo or pick one of ours), then tell it about you, your school, your classes, and how you like to work. It saves as you go, takes about five minutes for the basics, and you can go deeper whenever you want. You can review and edit your answers later from the Checklist tab.`,
+      title: "We Build Your Agent",
+      body: `Once your intake is complete, we configure your personalized College Agent behind the scenes. Within about 30 minutes, it's live and ready in your dashboard and on your phone.`,
     },
     {
-      title: "Your agent comes to life",
-      body: `When your intake is done, we build your agent automatically. It's provisioned in about a minute and fully live within 30 minutes: personalized with everything you shared, connected to web chat in your dashboard, and reachable on Telegram from your phone.`,
+      title: "Start Using Your Agent",
+      body: `Upload your syllabi, class schedule, notes, and other important information. From there, simply talk to your agent. Ask questions. Plan your week. Draft emails. Prepare for exams. Track internships. Manage your entire college life.`,
     },
     {
-      title: "Start talking",
-      body: `Open Chat and just talk to it. The "Now what?" tab walks you through the first moves, and the Checklist tracks everything you can feed it to make it perfect: syllabi, quiz and test schedules, notes, birthdays, budgets, and more. Add it to your phone's home screen so it's one tap away.`,
-    },
-    {
-      title: "Connect your tools",
-      body: `Head to Integrations and plug in what you already use: Canvas, Blackbaud, Google Classroom, Gmail, Google Calendar, Outlook, Google Drive, Dropbox, Notion, and thousands more. Your agent can then check deadlines, watch your inbox, and manage your calendar for you.`,
-    },
-    {
-      title: "Credits, after your first $20",
-      body: `Your agent's AI usage draws from your credit balance, and your plan includes $20 to start. When it runs low, add more in the Credits tab ($10, $25, or $50), set a low-balance warning, or turn on auto-recharge so it never runs dry. Advanced users can bring their own Anthropic or OpenAI API key instead.`,
-    },
-    {
-      title: "It grows with you",
-      body: `Update your intake as life changes, feed it each new semester, and it gets sharper the longer you use it. Love it? Share your referral link: your friend gets their first month of hosting free, and you get a free month when they join.`,
+      title: "Connect the Tools You Already Use",
+      body: `Your College Agent works with the apps students rely on every day, including Canvas, Gmail, Google Calendar, Google Drive, Outlook, Notion, Microsoft Teams, Dropbox, Telegram, and hundreds more. The more you connect, the more your agent can help.`,
     },
   ];
 
@@ -75,8 +63,8 @@ export default function HowItWorksPage() {
       <main style={{ paddingTop: 72, minHeight: "100vh", background: "var(--cream2)" }}>
         <PageHero
           label="How It Works"
-          title="From sign-up to a living agent in about 30 minutes."
-          sub="Here's the entire process, step by step: what you do, what you pay, what you get, and what happens behind the scenes."
+          title="From sign-up to your own College Agent in about 30 minutes."
+          sub="Building your agent is simple. You choose your plan, complete a short intake, personalize your agent, and we bring it to life with your schedule, school, goals, and preferences already built in."
           primary={{ label: "Let's Get Started", href: "/build" }}
           secondary={{ label: "See the Features", href: "/for-students#everything" }}
         />
