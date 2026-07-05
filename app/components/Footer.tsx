@@ -1,29 +1,15 @@
 import { NewsletterSignup } from "./NewsletterSignup";
 
-// The site-wide dark footer: newsletter signup, brand, a full-sitemap link grid, and
-// copyright. Self-contained styling (no dependence on per-page .dark-section rules) so it
-// renders identically on every marketing page. The columns are the canonical list of
-// every marketing page — the top nav shows a curated subset, but the footer is complete.
+// The site-wide dark footer: newsletter signup, brand, a compact Company link column, and
+// copyright with Privacy/Terms. Self-contained styling (no dependence on per-page
+// .dark-section rules) so it renders identically on every marketing page.
 
 const CALENDLY = "https://calendly.com/therealdaveo/apolloai";
 
 const FOOTER_COLUMNS: { heading: string; links: { label: string; href: string }[] }[] = [
   {
-    heading: "Product",
-    links: [
-      { label: "Try the Demo", href: "/demo" },
-      { label: "For Students", href: "/for-students" },
-      { label: "For Parents", href: "/for-parents" },
-      { label: "For High School", href: "/for-high-school" },
-      { label: "AI Study Companion", href: "/study" },
-      { label: "AI Internship Prep", href: "/internships" },
-      { label: "How It Works", href: "/how-it-works" },
-    ],
-  },
-  {
     heading: "Company",
     links: [
-      { label: "About", href: "/about" },
       { label: "FAQ", href: "/faq" },
       { label: "Ambassador Program", href: "/ambassador" },
       { label: "Schedule a Consultation", href: CALENDLY },
