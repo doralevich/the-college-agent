@@ -11,18 +11,20 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "The College Agent — Your Personal AI for All 4 Years of College",
+  title: "The College Agent — Your AI Companion for College Students",
   description:
-    "The College Agent is a personal AI companion that grows with you through college — managing classes, study, internships, social life, and career planning from freshman year to graduation.",
+    "The College Agent is your AI study companion and study partner for all four years of college — from freshman year to your first job offer. Plan your schedule, study smarter, prep for internships, and graduate career-ready.",
   keywords: [
-    "AI for college students",
+    "AI companion for college students",
     "AI study companion",
+    "AI study partner",
+    "AI for college students",
+    "AI class schedule planner",
+    "college AI companion",
     "personal AI agent for students",
     "AI college planner",
-    "AI class schedule manager",
     "AI internship prep",
     "college life AI",
-    "AI study partner",
     "AI for high school students",
     "college AI assistant",
     "AI tutor for college",
@@ -32,7 +34,6 @@ export const metadata: Metadata = {
     "AI note taker for students",
     "college productivity app",
     "student AI assistant",
-    "homework organizer",
     "study guide generator",
     "college schedule assistant",
     "internship application assistant",
@@ -60,9 +61,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: "https://thecollegeagent.ai",
-    title: "The College Agent — Your Personal AI for All 4 Years of College",
+    title: "The College Agent — Your AI Companion for College Students",
     description:
-      "The College Agent is a personal AI companion that grows with you through college — managing classes, study, internships, social life, and career planning from freshman year to graduation.",
+      "The College Agent is your AI study companion and study partner for all four years of college — from freshman year to your first job offer. Plan your schedule, study smarter, prep for internships, and graduate career-ready.",
     siteName: "The College Agent",
     images: [
       {
@@ -75,9 +76,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "The College Agent — Your Personal AI for All 4 Years of College",
+    title: "The College Agent — Your AI Companion for College Students",
     description:
-      "The College Agent is a personal AI companion that grows with you through college — managing classes, study, internships, social life, and career planning from freshman year to graduation.",
+      "The College Agent is your AI study companion and study partner for all four years of college — from freshman year to your first job offer. Plan your schedule, study smarter, prep for internships, and graduate career-ready.",
     images: ["/og-image.jpg"],
   },
 };
