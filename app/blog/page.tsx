@@ -3,7 +3,7 @@ import Link from "next/link";
 import Nav from "../components/Nav";
 import { PageHero } from "../components/PageHero";
 import { Footer } from "../components/Footer";
-import { categoryLabel, getCollegeAgentPosts } from "@/lib/sanity-blog";
+import { categoryLabel, getCollegeAgentPosts, postTitle } from "@/lib/sanity-blog";
 
 export const revalidate = 300;
 
@@ -66,7 +66,7 @@ export default async function BlogPage() {
           <div className="blog-grid">
             {posts.map((post) => (
               <article key={post._id} className="blog-card">
-                <Link href={`/blog/${post.slug.current}`} aria-label={post.title}>
+                <Link href={`/blog/${post.slug.current}`} aria-label={postTitle(post)}>
                   {post.featuredImageUrl ? (
                     <img src={post.featuredImageUrl} alt="" className="blog-card-image" />
                   ) : (
@@ -76,7 +76,7 @@ export default async function BlogPage() {
                 <div className="blog-card-body">
                   <div className="blog-card-category">{categoryLabel(post.category)}</div>
                   <h2>
-                    <Link href={`/blog/${post.slug.current}`}>{post.title}</Link>
+                    <Link href={`/blog/${post.slug.current}`}>{postTitle(post)}</Link>
                   </h2>
                   {post.excerpt ? <p>{post.excerpt}</p> : null}
                   <Link className="blog-card-link" href={`/blog/${post.slug.current}`}>

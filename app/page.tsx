@@ -7,7 +7,7 @@ import Nav from "./components/Nav";
 import IntegrationGlobe from "./components/IntegrationGlobe";
 import { Footer } from "./components/Footer";
 import { BookOpenCheck, Blocks, BriefcaseBusiness, GraduationCap, Mail, Network, NotebookTabs, ShieldCheck, Sparkles } from "lucide-react";
-import { categoryLabel, getCollegeAgentPosts } from "@/lib/sanity-blog";
+import { categoryLabel, getCollegeAgentPosts, postTitle } from "@/lib/sanity-blog";
 import { INTRO_PLAN_AMOUNT_CENTS, HOSTING_AMOUNT_CENTS } from "@/lib/pricing/intro-cutoff";
 
 const CALENDLY = "https://calendly.com/therealdaveo/apolloai";
@@ -361,9 +361,10 @@ export default async function Home() {
             <div className="home-blog-grid">
               {recentPosts.map((post) => {
                 const hasImage = Boolean(post.featuredImageUrl);
+                const title = postTitle(post);
                 return (
                   <article key={post._id} className="home-blog-card">
-                    <a href={`/blog/${post.slug.current}`} aria-label={post.title}>
+                    <a href={`/blog/${post.slug.current}`} aria-label={title}>
                       {hasImage ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={post.featuredImageUrl} alt="" className="home-blog-image" />
@@ -372,7 +373,7 @@ export default async function Home() {
                         // and title itself instead of sitting there blank green.
                         <div className="home-blog-image home-blog-image-fallback">
                           <span className="home-blog-fallback-cat">{categoryLabel(post.category)}</span>
-                          <span className="home-blog-fallback-title">{post.title}</span>
+                          <span className="home-blog-fallback-title">{title}</span>
                         </div>
                       )}
                     </a>
@@ -385,7 +386,7 @@ export default async function Home() {
                           </span>
                         )}
                       </div>
-                      {hasImage && <h3><a href={`/blog/${post.slug.current}`}>{post.title}</a></h3>}
+                      {hasImage && <h3><a href={`/blog/${post.slug.current}`}>{title}</a></h3>}
                       {post.excerpt ? <p>{post.excerpt}</p> : null}
                       <a className="home-blog-link" href={`/blog/${post.slug.current}`}>Read article</a>
                     </div>
