@@ -34,7 +34,7 @@ export default async function PlaybookPage() {
       body: (
         <ul>
           <li><strong>&ldquo;I already use ChatGPT.&rdquo;</strong> ChatGPT forgets you the second you close the tab. This is YOUR agent: it keeps your schedule, remembers your classes all four years, and connects to Canvas, Gmail, and your calendar to actually do things.</li>
-          <li><strong>&ldquo;It&apos;s expensive.&rdquo;</strong> With my code it is $199.99 once plus $25 a month. That is less than one tutoring hour per month, and it works every single day. And if it is not for you, there is a full refund window for 7 days.</li>
+          <li><strong>&ldquo;It&apos;s expensive.&rdquo;</strong> With my code it is $449 once plus $25 a month. That is less than one tutoring hour per month, and it works every single day. And if it is not for you, there is a full refund window for 7 days.</li>
           <li><strong>&ldquo;Is this cheating?&rdquo;</strong> No. It is a planner, study partner, and assistant, not a ghostwriter. It quizzes you, organizes you, and drafts communication. The terms literally prohibit submitting its work as your own.</li>
           <li><strong>&ldquo;I don&apos;t have time to set it up.&rdquo;</strong> The intake is five minutes and it is live in 30. You will save that time back the first week.</li>
           <li><strong>&ldquo;Is my data safe?&rdquo;</strong> Your files are your files. You can download everything any time and delete your account whenever you want. Payments run through Stripe.</li>

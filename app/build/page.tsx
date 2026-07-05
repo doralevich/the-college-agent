@@ -9,7 +9,7 @@ import {
   HOSTING_ANNUAL_AMOUNT_CENTS,
 } from "@/lib/pricing/intro-cutoff";
 
-// Single price model: one-time platform fee ($249.99) PLUS recurring hosting, the
+// Single price model: one-time platform fee ($499) PLUS recurring hosting, the
 // student's choice of $25/month or $250/year (annual = 10 x monthly, 2 months free).
 // The Stripe Checkout Session bundles both line items (see app/api/build/checkout);
 // we POST to that endpoint and redirect to the returned session.url so students land

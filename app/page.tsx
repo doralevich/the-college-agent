@@ -160,7 +160,7 @@ function buildJsonLd() {
           name: "What does The College Agent cost?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: `The College Agent is $${planPrice} one-time to build your agent, plus cloud hosting at $${hostingPrice}/month or $250/year (two months free on annual), with $20 of AI usage credits included. There is a 7-day money-back guarantee. Visit thecollegeagent.ai/build to get started.`,
+            text: `The College Agent is ${price(INTRO_PLAN_AMOUNT_CENTS)} one-time to build your agent, plus cloud hosting at $${hostingPrice}/month or $250/year (two months free on annual), with $20 of AI usage credits included. There is a 7-day money-back guarantee. Visit thecollegeagent.ai/build to get started.`,
           },
         },
       ],
