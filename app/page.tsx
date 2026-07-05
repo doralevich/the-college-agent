@@ -30,53 +30,53 @@ export const metadata: Metadata = {
 const AGENT_WAYS = [
   {
     icon: GraduationCap,
-    title: "Owns Your Schedule",
-    desc: "Every class, section, and deadline on your calendar. It can pull semester dates straight from your school's site and knows what Tuesday looks like before you do.",
+    title: "Own Your Schedule",
+    desc: "Your classes, calendar, deadlines, and commitments, all in one place. Your College Agent keeps everything organized, so you always know what's next.",
   },
   {
     icon: BookOpenCheck,
-    title: "Never Misses a Deadline",
-    desc: "Hand it a syllabus and every assignment, quiz, and exam becomes a tracked deadline with reminders that start early, not the night before.",
+    title: "Never Miss a Deadline",
+    desc: "Upload a syllabus once, and every assignment, quiz, exam, and due date is tracked automatically, with reminders sent well before each due date.",
   },
   {
     icon: NotebookTabs,
-    title: "Builds Your Study Plan",
-    desc: "What to study, when, and for how long. Practice questions, chapter quizzes, and check-ins that adjust when life happens.",
+    title: "Study Smarter",
+    desc: "Personalized study plans, practice questions, quizzes, and review schedules that adapt to your workload, exams, and changing priorities.",
   },
   {
     icon: Mail,
-    title: "Writes in Your Voice",
-    desc: "Drafts to professors, TAs, advisors, and recruiters that sound like you on your best day. You approve, it handles the rest.",
+    title: "Write with Confidence",
+    desc: "Draft professional emails to professors, advisors, recruiters, and classmates in your own voice, ready to review and send.",
   },
   {
     icon: Network,
-    title: "Runs Your Life, Not Just School",
-    desc: "Flights home, birthdays, budgets, gym routine, club deadlines, plans with friends. One agent keeping every list so you don't have to.",
+    title: "Manage Your Entire College Life",
+    desc: "From classes and campus events to travel, budgets, clubs, and personal goals, your College Agent keeps everything organized in one place.",
   },
   {
     icon: BriefcaseBusiness,
-    title: "Gets You Hired",
-    desc: "Resume, LinkedIn, internship pipeline, interview prep. It works your career from freshman year so junior year isn't a cold start.",
+    title: "Build Your Career Early",
+    desc: "Create a stronger resume, optimize your LinkedIn profile, find internships, prepare for interviews, and build your professional network, starting freshman year.",
   },
   {
     icon: Blocks,
-    title: "Connected to Everything",
-    desc: "Canvas, Gmail, Google Calendar, Outlook, Drive, Notion, and thousands more. It doesn't just give advice. It takes action.",
+    title: "Connected to Your Tools",
+    desc: "Works with the apps students already rely on, including calendars, email, cloud storage, notes, and learning platforms, bringing everything together in one place.",
   },
   {
     icon: ShieldCheck,
-    title: "On Duty 24/7",
-    desc: "It runs in the cloud around the clock. Message it at 2 AM from your phone and it answers, checks, plans, and reminds.",
+    title: "Always Available",
+    desc: "Your College Agent is available 24/7 to answer questions, organize tasks, plan your schedule, and help you stay ahead whenever you need it.",
   },
 ];
 
 // The proof: things a student can literally type at their agent on day one.
 const POWER_ASKS = [
-  "Pull my fall schedule from the school site onto my calendar.",
-  "Quiz me on Chapter 7 before Friday's test.",
-  "Draft an email asking Professor Chen about my grade.",
-  "Find the best flights to Miami for the first week of August.",
+  "Turn this syllabus into my semester plan.",
   "What's due this week?",
+  "Quiz me on Chapter 7 before Friday's exam.",
+  "Draft an email to Professor Chen asking about my grade.",
+  "Update my resume for this internship application.",
   "Remind me about Mom's birthday and help me pick a gift.",
 ];
 
@@ -207,19 +207,19 @@ export default async function Home() {
               Apollo[Claw] College Edition
             </div>
             <h1 className="hero-h1" style={{ color: "#fff", textAlign: "left" }}>
-              Your college<br />AI companion.
+              Your personal<br />college AI.
             </h1>
             <p className="hero-sub">
-              An AI study companion and partner for all four years of college. Named, and trained on your voice.
-              Built around your schedule, classes, notes, deadlines, study plans, professor emails, internships,
-              and goals. It grows with you from freshman year to your first job offer, and beyond.
+              The first AI assistant designed to manage your entire academic life. It understands your classes,
+              assignments, deadlines, notes, study plans, calendar, professor emails, internships, and goals.
+              It remembers what matters, keeps work moving, and becomes smarter with every semester.
             </p>
             <div className="hero-cta-row" style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 28 }}>
               <a href="/build" className="btn-purple">Build My Agent</a>
               <a href="/demo" className="btn-outline">Try the Free Demo</a>
             </div>
             <p style={{ fontSize: 14, lineHeight: 1.7, color: "rgba(255,255,255,.5)", maxWidth: 520, marginBottom: 0 }}>
-              Used by college students across the U.S. to manage classes, study smarter, land internships, and build their career, from freshman orientation to senior capstone.
+              Built for every stage of college. Manage classes, study smarter, land internships, and prepare for your career, from freshman orientation to graduation.
             </p>
             <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.3)", letterSpacing: ".04em" }}>
               Built on Apollo[Claw] infrastructure. Live in 30 minutes.
@@ -244,9 +244,9 @@ export default async function Home() {
             <span className="mono-label">What The College Agent Does</span>
             <h2 className="section-title ways-title">Your personal college operating system.</h2>
             <p className="section-sub" style={{ maxWidth: 720, margin: "14px auto 0" }}>
-              A real agent with real capabilities: it reads your syllabi, watches your deadlines,
-              drafts your emails, plans your weeks, and takes action in the tools you already use.
-              All day, every day, for all four years.
+              More than answering questions, your College Agent helps run your academic life. It organizes
+              your classes, tracks assignments, manages deadlines, drafts emails, plans your schedule, and
+              helps you stay ahead, all in one place.
             </p>
           </div>
           <div className="uc-grid">
@@ -286,14 +286,14 @@ export default async function Home() {
             <div className="dual-card dual-card-student">
               <div className="dual-icon"><Sparkles size={24} strokeWidth={1.9} /></div>
               <span className="dual-tag dual-tag-student">For Students</span>
-              <h2>Your personal AI agent.</h2>
-              <p>It knows your classes, deadlines, professors, goals, and communication style. It helps you stay ahead academically, prepare for internships, write better emails, and stop letting important things slip.</p>
+              <h2>Your college life, handled.</h2>
+              <p>Your personal AI agent helps manage classes, deadlines, professor emails, study plans, internship prep, and goals, so you stay organized, prepared, and one step ahead.</p>
             </div>
             <div className="dual-card dual-card-parent">
               <div className="dual-icon"><ShieldCheck size={24} strokeWidth={1.9} /></div>
               <span className="dual-tag dual-tag-parent">For Parents</span>
               <h2>A four-year advantage.</h2>
-              <p>You are not buying tutoring hours or a generic AI subscription. You are giving your student a personalized support system that keeps them organized, accountable, and prepared for the opportunities that matter.</p>
+              <p>More than tutoring. More than AI. Give your student a personalized support system that keeps them organized, accountable, and prepared, from the first day of college to the first job offer.</p>
             </div>
           </div>
         </div>
