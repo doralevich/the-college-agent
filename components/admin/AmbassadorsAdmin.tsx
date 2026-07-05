@@ -87,7 +87,7 @@ export function AmbassadorsAdmin() {
     );
   }
 
-  const ambName = (id: string | null) => data.ambassadors.find((a) => a.id === id)?.full_name ?? "—";
+  const ambName = (id: string | null) => data.ambassadors.find((a) => a.id === id)?.full_name ?? "-";
   const pending = data.ambassadors.filter((a) => a.status === "pending");
   const approved = data.ambassadors.filter((a) => a.status === "approved");
 
@@ -153,8 +153,8 @@ export function AmbassadorsAdmin() {
                       <div className="font-medium">{a.full_name}</div>
                       <div className="text-xs text-muted-foreground">{a.email}</div>
                     </td>
-                    <td className="py-2 pr-4 font-mono">{a.stripe_promo_code ?? "—"}</td>
-                    <td className="py-2 pr-4 font-mono text-xs">/r/{a.referral_slug ?? "—"}</td>
+                    <td className="py-2 pr-4 font-mono">{a.stripe_promo_code ?? "-"}</td>
+                    <td className="py-2 pr-4 font-mono text-xs">/r/{a.referral_slug ?? "-"}</td>
                     <td className="py-2 pr-4 tabular-nums">{a.cleared_referral_count}</td>
                     <td className="py-2 pr-4">{a.cleared_referral_count >= 10 ? "$100" : "$75"}</td>
                     <td className="py-2 pr-4">

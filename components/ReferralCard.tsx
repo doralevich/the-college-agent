@@ -25,7 +25,7 @@ export function ReferralCard() {
       .then((d) => {
         if (!cancelled) setInfo(d);
       })
-      .catch(() => {}); // quiet — the card simply doesn't render if this fails
+      .catch(() => {}); // quiet, the card simply doesn't render if this fails
     return () => {
       cancelled = true;
     };
@@ -52,7 +52,7 @@ export function ReferralCard() {
         text: "I have an AI agent that runs my college life. Your first month of hosting is free with my link:",
         url: info.url,
       })
-      .catch(() => {}); // user dismissed the sheet — not an error
+      .catch(() => {}); // user dismissed the sheet, not an error
   }
 
   return (

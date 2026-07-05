@@ -110,13 +110,13 @@ export function CreditsView() {
               <div className="p-6">
                 <div className="text-xs text-muted-foreground">Balance</div>
                 <div className="mt-1 text-2xl font-semibold tabular-nums">
-                  {data.credits ? usd(data.credits.remaining_micros) : "—"}
+                  {data.credits ? usd(data.credits.remaining_micros) : "-"}
                 </div>
               </div>
               <div className="p-6">
                 <div className="text-xs text-muted-foreground">Spent this month</div>
                 <div className="mt-1 text-2xl font-semibold tabular-nums">
-                  {data.credits ? usd(data.credits.spent_micros) : "—"}
+                  {data.credits ? usd(data.credits.spent_micros) : "-"}
                 </div>
                 {data.credits && (
                   <div className="mt-1 text-xs text-muted-foreground">
@@ -231,7 +231,7 @@ function UsageHistoryCard() {
       .then((d) => {
         if (!cancelled) setMonths(d.months);
       })
-      .catch(() => {}); // supplementary card — the balance figures above still stand alone
+      .catch(() => {}); // supplementary card, the balance figures above still stand alone
     return () => {
       cancelled = true;
     };

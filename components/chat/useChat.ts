@@ -115,7 +115,7 @@ export function useChat({ agentId, sessionId, onSessionCreated, onActivity }: Us
     // through to clear messages + abort the stream below.
     if (skipLoadRef.current !== null && skipLoadRef.current === sessionId) {
       skipLoadRef.current = null;
-      return; // we just created this session mid-stream — keep the live messages
+      return; // we just created this session mid-stream, keep the live messages
     }
 
     // Switching threads / starting a new chat stops the in-flight stream, locally AND upstream.
@@ -275,7 +275,7 @@ export function useChat({ agentId, sessionId, onSessionCreated, onActivity }: Us
           abort.signal
         );
 
-        finalizeTools(); // single sweep once the stream ends — covers terminal events and a bare stream-end alike
+        finalizeTools(); // single sweep once the stream ends, covers terminal events and a bare stream-end alike
 
         if (streamError) {
           setError(streamError);

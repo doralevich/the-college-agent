@@ -134,7 +134,7 @@ function BlogStyles() {
         text-transform: uppercase; letter-spacing: .1em; color: var(--green); margin-bottom: 12px;
       }
       .blog-card h2 {
-        font-size: 21px; line-height: 1.16; letter-spacing: 0; color: var(--navy);
+        font-size: 18px; line-height: 1.16; letter-spacing: 0; color: var(--navy);
         margin-bottom: 12px; font-weight: 850;
       }
       .blog-card p {

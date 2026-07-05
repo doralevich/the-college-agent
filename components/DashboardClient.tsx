@@ -492,7 +492,7 @@ function CreditsPill() {
       .then((d) => {
         if (!cancelled && !d.byo && d.credits) setRemainingMicros(d.credits.remaining_micros);
       })
-      .catch(() => {}); // ambient chrome — never toast over a balance hiccup
+      .catch(() => {}); // ambient chrome, never toast over a balance hiccup
     return () => {
       cancelled = true;
     };
