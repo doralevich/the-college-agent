@@ -46,7 +46,9 @@ function q(p: HermesPersonaInput, key: string, cap = 280): string {
 // holds durable voice/personality ONLY — tone, style, what to avoid — never facts about the
 // student (those go to USER.md) and never a raw questionnaire dump. Keep it to a few lines.
 export function buildSoul(p: HermesPersonaInput): string {
-  const name = (p.agentName || "Hermes").toString().trim() || "Hermes";
+  // Student's chosen name wins; otherwise the agent identifies as the brand, never the
+  // underlying "Hermes" engine (students shouldn't see that name).
+  const name = (p.agentName || "College Agent").toString().trim() || "College Agent";
   const tone = q(p, "agentTone") || "warm, focused, and direct";
   const responseStyle = q(p, "responseStyle");
   const verbosity = /short|direct|bullet/i.test(responseStyle)

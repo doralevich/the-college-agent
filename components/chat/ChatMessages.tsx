@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
-import { Check, ChevronDown, ChevronRight, FileText, Image as ImageIcon, Loader2, User, Wrench } from "lucide-react";
+import { Check, FileText, Image as ImageIcon, Loader2, User, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Markdown } from "./Markdown";
 import type { ChatMessage, MessageAttachment, ToolEvent } from "./types";
@@ -54,28 +53,6 @@ function MessageAttachments({ attachments }: { attachments: MessageAttachment[] 
           <span className="max-w-[12rem] truncate">{a.name}</span>
         </span>
       ))}
-    </div>
-  );
-}
-
-function ThinkingBlock({ content, live }: { content: string; live: boolean }) {
-  const [open, setOpen] = useState(live);
-  if (!content) return null;
-  return (
-    <div className="mb-2">
-      <button
-        onClick={() => setOpen(!open)}
-        className="-ml-1 inline-flex items-center gap-1 rounded-md px-1 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-      >
-        {open ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-        <span>{live ? "Thinking…" : "Thought process"}</span>
-        {live && <Loader2 className="h-3 w-3 animate-spin" />}
-      </button>
-      {open && (
-        <div className="mt-1 max-h-60 overflow-y-auto whitespace-pre-wrap break-words border-l-2 border-border pl-3 text-xs leading-relaxed text-muted-foreground">
-          {content}
-        </div>
-      )}
     </div>
   );
 }
@@ -159,7 +136,6 @@ export function ChatMessages({
           <div key={m.id} className="flex items-start justify-start gap-2.5">
             <AgentBadge src={agentAvatarUrl} />
             <div className="min-w-0 flex-1">
-              {m.thinking && <ThinkingBlock content={m.thinking} live={lastAssistant && isStreaming && !m.content} />}
               {tools.length > 0 && (
                 <div className="mb-3 space-y-2">
                   {tools.map((t, k) => (
@@ -169,7 +145,7 @@ export function ChatMessages({
               )}
               {m.content ? <Markdown content={m.content} /> : null}
               {showDots && (
-                <div className={m.thinking || tools.length > 0 ? "mt-2" : undefined}>
+                <div className={tools.length > 0 ? "mt-2" : undefined}>
                   <TypingDots />
                 </div>
               )}

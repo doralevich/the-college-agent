@@ -45,7 +45,7 @@ describe("buildSoul", () => {
 
   it("falls back to the default name and tone when none are given", () => {
     const soul = buildSoul({});
-    expect(soul).toContain("You are Hermes");
+    expect(soul).toContain("You are College Agent");
     expect(soul).toContain("warm, focused, and direct");
   });
 

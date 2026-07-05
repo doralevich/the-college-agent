@@ -128,7 +128,7 @@ export default function SetupPage() {
               <Step>Open Telegram and search for <strong>@userinfobot</strong>.</Step>
               <Step>Start a chat and press <strong>Start</strong> (or send any message).</Step>
               <Step>It replies with your account info. Copy the numeric <strong>Id</strong> (e.g. <Code>123456789</Code>).</Step>
-              <Step>This is how Hermes knows it&apos;s really you when you message your bot.</Step>
+              <Step>This is how your agent knows it&apos;s really you when you message your bot.</Step>
             </Instructions>
             <CredField label="Your Telegram User ID" hint="Numbers only, e.g. 123456789" optional>
               <input type="text" inputMode="numeric" placeholder="123456789" value={form.telegramUserId} onChange={e => set("telegramUserId", e.target.value.replace(/[^0-9]/g, ""))} autoComplete="off" />
