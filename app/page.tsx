@@ -299,9 +299,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* SCHOOL MARQUEE */}
-      <SchoolMarquee />
-
       {/* EXPLAINER + TESTIMONIALS */}
       <Explainer />
 
@@ -410,6 +407,9 @@ export default async function Home() {
 
       {/* FAQ */}
       <FAQ />
+
+      {/* SCHOOL MARQUEE — the trust strip sits at the bottom, just above the footer. */}
+      <SchoolMarquee />
 
       {/* CHATBOT */}
       <ChatBot />
