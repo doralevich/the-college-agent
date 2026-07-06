@@ -14,20 +14,30 @@ import {
   CloudSun,
   FlaskConical,
   MapPin,
+  Moon,
   NotebookPen,
   Sun,
   type LucideIcon,
 } from "lucide-react";
 
-// The New Chat "worth at the top" panel: a slim live status strip (local weather from the
-// browser's geolocation + date/time) and a set of quick-start action cards that either seed
-// the composer with a first-person starter ("here's my quiz/test schedule…") or link to the
-// tab that owns the data. Rendered only on the empty New Chat state.
+// The New Chat "worth at the top" panel: an interactive local-weather forecast (current
+// conditions, an hourly strip, and a what-to-wear tip, all from the browser's geolocation)
+// plus a compact 2-across set of quick-start cards that seed the composer or link to the tab
+// that owns the data. Rendered only on the empty New Chat state.
 
 type ClassInfo = { name: string; days: string; time: string };
 
-// Quick-start cards. The first three drop a starter line into the composer; the last links
-// to Integrations. Each carries a tint so the icon badge reads as a distinct, modern accent.
+export type WeatherData = {
+  city?: string;
+  tempF: number;
+  feelsF: number;
+  code: number;
+  isDay: boolean;
+  hiF: number;
+  loF: number;
+  hours: { label: string; tempF: number; code: number }[];
+};
+
 const ACTIONS: {
   key: string;
   label: string;
@@ -39,15 +49,15 @@ const ACTIONS: {
 }[] = [
   {
     key: "schedule",
-    label: "Update your class schedule",
-    hint: "Keep classes, days, and times current",
+    label: "Class schedule",
+    hint: "Keep classes, days & times current",
     tint: "#3d8b3d",
     Icon: CalendarClock,
     seed: "Let's update my class schedule. Here are my classes, with the days and times:\n",
   },
   {
     key: "notes",
-    label: "Add your notes & textbooks",
+    label: "Notes & textbooks",
     hint: "So I can help you study from them",
     tint: "#2563eb",
     Icon: NotebookPen,
@@ -56,7 +66,7 @@ const ACTIONS: {
   {
     key: "tests",
     label: "Quiz, lab & test dates",
-    hint: "I'll plan your study time around them",
+    hint: "I'll plan study time around them",
     tint: "#7c3aed",
     Icon: FlaskConical,
     seed: "Here's my quiz, lab, and test schedule so you can keep me ahead of it:\n",
@@ -72,8 +82,8 @@ const ACTIONS: {
 ];
 
 // Map a WMO weather code (what Open-Meteo returns) to a short label + icon.
-function describeWeather(code: number): { label: string; Icon: LucideIcon } {
-  if (code === 0) return { label: "Clear", Icon: Sun };
+function describeWeather(code: number, isDay = true): { label: string; Icon: LucideIcon } {
+  if (code === 0) return { label: "Clear", Icon: isDay ? Sun : Moon };
   if (code === 1 || code === 2) return { label: "Partly cloudy", Icon: CloudSun };
   if (code === 3) return { label: "Overcast", Icon: Cloud };
   if (code === 45 || code === 48) return { label: "Foggy", Icon: CloudFog };
@@ -82,19 +92,46 @@ function describeWeather(code: number): { label: string; Icon: LucideIcon } {
   if (code >= 71 && code <= 77) return { label: "Snow", Icon: CloudSnow };
   if (code >= 80 && code <= 82) return { label: "Showers", Icon: CloudRain };
   if (code === 85 || code === 86) return { label: "Snow showers", Icon: CloudSnow };
-  if (code >= 95) return { label: "Thunderstorms", Icon: CloudLightning };
+  if (code >= 95) return { label: "Storms", Icon: CloudLightning };
   return { label: "Weather", Icon: Cloud };
 }
 
+// A short "what to wear" tip from the feels-like temp and conditions.
+function whatToWear(feelsF: number, code: number): string {
+  const rainy = (code >= 51 && code <= 67) || (code >= 80 && code <= 82) || code >= 95;
+  const snowy = (code >= 71 && code <= 77) || code === 85 || code === 86;
+  if (snowy) return "Boots and a warm coat, it's snowing";
+  let base: string;
+  if (feelsF < 33) base = "Heavy coat, hat and gloves";
+  else if (feelsF < 48) base = "A warm jacket";
+  else if (feelsF < 60) base = "A light jacket or hoodie";
+  else if (feelsF < 72) base = "Long sleeves, comfortable out";
+  else if (feelsF < 84) base = "T-shirt weather";
+  else base = "Stay cool, light layers and water";
+  return rainy ? `${base}, grab an umbrella` : base;
+}
+
+// A subtle condition/time tint layered over the card so the weather feels alive.
+function weatherSkin(code: number, isDay: boolean): string {
+  const cloud = code === 2 || code === 3 || code === 45 || code === 48;
+  const rain = (code >= 51 && code <= 67) || (code >= 80 && code <= 82) || code >= 95;
+  const snow = (code >= 71 && code <= 77) || code === 85 || code === 86;
+  if (!isDay) return "linear-gradient(135deg, rgba(30,41,59,.14), rgba(99,102,241,.10))";
+  if (rain) return "linear-gradient(135deg, rgba(100,116,139,.14), rgba(56,189,248,.12))";
+  if (snow) return "linear-gradient(135deg, rgba(147,197,253,.16), rgba(224,242,254,.22))";
+  if (cloud) return "linear-gradient(135deg, rgba(148,163,184,.12), rgba(203,213,225,.16))";
+  return "linear-gradient(135deg, rgba(252,211,77,.18), rgba(56,189,248,.14))";
+}
+
 type WeatherState =
-  | { state: "idle" } // permission not yet granted — show an enable link
+  | { state: "idle" }
   | { state: "loading" }
-  | { state: "ok"; tempF: number; code: number }
+  | { state: "ok"; data: WeatherData }
   | { state: "denied" }
   | { state: "unavailable" };
 
-function useWeather() {
-  const [wx, setWx] = useState<WeatherState>({ state: "loading" });
+function useWeather(demo?: WeatherData) {
+  const [wx, setWx] = useState<WeatherState>(demo ? { state: "ok", data: demo } : { state: "loading" });
 
   const load = useCallback(() => {
     if (typeof navigator === "undefined" || !("geolocation" in navigator)) {
@@ -105,16 +142,57 @@ function useWeather() {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
-          const { latitude, longitude } = pos.coords;
-          const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude.toFixed(
-            3
-          )}&longitude=${longitude.toFixed(3)}&current=temperature_2m,weather_code&temperature_unit=fahrenheit`;
-          const res = await fetch(url);
-          const data = await res.json();
-          const tempF = Math.round(data?.current?.temperature_2m);
-          const code = Number(data?.current?.weather_code ?? -1);
-          if (Number.isFinite(tempF)) setWx({ state: "ok", tempF, code });
-          else setWx({ state: "unavailable" });
+          const { latitude: la, longitude: lo } = pos.coords;
+          const url =
+            `https://api.open-meteo.com/v1/forecast?latitude=${la.toFixed(3)}&longitude=${lo.toFixed(3)}` +
+            `&current=temperature_2m,apparent_temperature,weather_code,is_day` +
+            `&hourly=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min` +
+            `&forecast_days=1&temperature_unit=fahrenheit&timezone=auto`;
+          const [wxRes, city] = await Promise.all([
+            fetch(url).then((r) => r.json()),
+            fetch(
+              `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${la.toFixed(
+                3
+              )}&longitude=${lo.toFixed(3)}&localityLanguage=en`
+            )
+              .then((r) => r.json())
+              .then((g) => g.city || g.locality || g.principalSubdivision || undefined)
+              .catch(() => undefined),
+          ]);
+
+          const cur = wxRes?.current;
+          if (!cur || !Number.isFinite(cur.temperature_2m)) {
+            setWx({ state: "unavailable" });
+            return;
+          }
+
+          // Build the next few hourly slots starting from the current hour.
+          const times: string[] = wxRes.hourly?.time ?? [];
+          const temps: number[] = wxRes.hourly?.temperature_2m ?? [];
+          const codes: number[] = wxRes.hourly?.weather_code ?? [];
+          const prefix = String(cur.time ?? "").slice(0, 13);
+          let start = times.findIndex((t) => t.slice(0, 13) === prefix);
+          if (start < 0) start = 0;
+          const hours: WeatherData["hours"] = [];
+          for (let i = start; i < start + 6 && i < times.length; i++) {
+            const h = parseInt(times[i].slice(11, 13), 10);
+            const label = i === start ? "Now" : `${((h + 11) % 12) + 1}${h < 12 ? "a" : "p"}`;
+            hours.push({ label, tempF: Math.round(temps[i]), code: codes[i] });
+          }
+
+          setWx({
+            state: "ok",
+            data: {
+              city,
+              tempF: Math.round(cur.temperature_2m),
+              feelsF: Math.round(cur.apparent_temperature ?? cur.temperature_2m),
+              code: Number(cur.weather_code ?? 0),
+              isDay: Number(cur.is_day ?? 1) === 1,
+              hiF: Math.round(wxRes.daily?.temperature_2m_max?.[0] ?? cur.temperature_2m),
+              loF: Math.round(wxRes.daily?.temperature_2m_min?.[0] ?? cur.temperature_2m),
+              hours,
+            },
+          });
         } catch {
           setWx({ state: "unavailable" });
         }
@@ -127,6 +205,7 @@ function useWeather() {
   // Only auto-load when permission is already granted, so students aren't prompted for
   // location every time they open a new chat.
   useEffect(() => {
+    if (demo) return;
     let cancelled = false;
     async function decide() {
       if (typeof navigator === "undefined" || !("geolocation" in navigator)) {
@@ -147,66 +226,118 @@ function useWeather() {
     return () => {
       cancelled = true;
     };
-  }, [load]);
+  }, [demo, load]);
 
   return { wx, load };
 }
 
-function WeatherPiece() {
-  const { wx, load } = useWeather();
-  const view = wx.state === "ok" ? describeWeather(wx.code) : null;
-  const Icon = view?.Icon ?? MapPin;
-
-  return (
-    <div className="flex items-center gap-2.5">
-      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
-        <Icon className="h-[18px] w-[18px]" />
-      </span>
-      <div className="leading-tight">
-        <div className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-          Local weather
-        </div>
-        {wx.state === "ok" && view ? (
-          <div className="text-sm font-semibold text-foreground">
-            {wx.tempF}&deg; · {view.label}
-          </div>
-        ) : wx.state === "loading" ? (
-          <div className="text-sm text-muted-foreground">Checking…</div>
-        ) : wx.state === "idle" ? (
-          <button
-            type="button"
-            onClick={load}
-            className="text-sm font-semibold text-primary hover:underline"
-          >
-            Turn on
-          </button>
-        ) : (
-          <div className="text-sm text-muted-foreground">Unavailable</div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function DatePiece() {
-  // Null on the server / first paint to avoid a hydration mismatch; fills in on mount.
+function DateStamp() {
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
     setNow(new Date());
     const id = setInterval(() => setNow(new Date()), 30_000);
     return () => clearInterval(id);
   }, []);
-
   const weekday = now?.toLocaleDateString(undefined, { weekday: "long" }) ?? "";
-  const date = now?.toLocaleDateString(undefined, { month: "long", day: "numeric" }) ?? "";
+  const date = now?.toLocaleDateString(undefined, { month: "short", day: "numeric" }) ?? "";
   const time = now?.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }) ?? "";
-
   return (
     <div className="text-right leading-tight">
-      <div className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-        {weekday || "Today"}
+      <div className="text-xs font-semibold text-foreground">{weekday || "Today"}</div>
+      <div className="text-[11px] text-muted-foreground">{now ? `${date} · ${time}` : "—"}</div>
+    </div>
+  );
+}
+
+function WeatherCard({ accent, demo }: { accent?: string; demo?: WeatherData }) {
+  const { wx, load } = useWeather(demo);
+
+  const baseCard =
+    "rounded-2xl border border-border/70 p-4 shadow-sm transition-colors";
+  const cardStyle = (skin?: string) => ({
+    background: skin ? `${skin}, var(--card)` : "var(--card)",
+  });
+
+  if (wx.state === "ok") {
+    const d = wx.data;
+    const cur = describeWeather(d.code, d.isDay);
+    return (
+      <div className={baseCard} style={cardStyle(weatherSkin(d.code, d.isDay))}>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <cur.Icon className="h-11 w-11 shrink-0" style={{ color: accent ?? "var(--primary)" }} strokeWidth={1.6} />
+            <div className="leading-tight">
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-[28px] font-semibold text-foreground">{d.tempF}&deg;</span>
+                <span className="text-sm font-medium text-foreground/80">{cur.label}</span>
+              </div>
+              <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                {d.city && (
+                  <>
+                    <MapPin className="h-3 w-3" />
+                    <span className="font-medium text-foreground/70">{d.city}</span>
+                    <span aria-hidden>·</span>
+                  </>
+                )}
+                <span>
+                  H {d.hiF}&deg; / L {d.loF}&deg;
+                </span>
+              </div>
+            </div>
+          </div>
+          <DateStamp />
+        </div>
+
+        <div className="mt-3 flex items-baseline gap-1.5 rounded-lg bg-foreground/[0.04] px-3 py-1.5 text-xs text-foreground/75">
+          <span className="shrink-0 whitespace-nowrap font-semibold text-foreground/80">What to wear</span>
+          <span aria-hidden className="shrink-0">·</span>
+          <span className="min-w-0">{whatToWear(d.feelsF, d.code)}</span>
+        </div>
+
+        {d.hours.length > 0 && (
+          <div className="mt-3 flex gap-1 overflow-x-auto pb-0.5">
+            {d.hours.map((h, i) => {
+              const hv = describeWeather(h.code, d.isDay);
+              return (
+                <div
+                  key={i}
+                  className="flex min-w-[50px] flex-col items-center gap-1 rounded-xl px-2 py-2 transition-colors hover:bg-foreground/[0.04]"
+                >
+                  <span className="text-[10px] font-medium text-muted-foreground">{h.label}</span>
+                  <hv.Icon className="h-4 w-4 text-foreground/70" />
+                  <span className="text-xs font-semibold text-foreground">{h.tempF}&deg;</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
-      <div className="text-sm font-semibold text-foreground">{now ? `${date} · ${time}` : "—"}</div>
+    );
+  }
+
+  // Non-ok compact states.
+  return (
+    <div className={`${baseCard} flex items-center justify-between gap-3`} style={cardStyle()}>
+      <div className="flex items-center gap-2.5">
+        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <MapPin className="h-[18px] w-[18px]" />
+        </span>
+        <div className="leading-tight">
+          <div className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+            Local weather
+          </div>
+          {wx.state === "loading" ? (
+            <div className="text-sm text-muted-foreground">Checking…</div>
+          ) : wx.state === "idle" ? (
+            <button type="button" onClick={load} className="text-sm font-semibold text-primary hover:underline">
+              Turn on your local forecast
+            </button>
+          ) : (
+            <div className="text-sm text-muted-foreground">Weather unavailable</div>
+          )}
+        </div>
+      </div>
+      <DateStamp />
     </div>
   );
 }
@@ -215,11 +346,14 @@ export function NewChatTopBar({
   classes = [],
   accent,
   onSeed,
+  demoWeather,
 }: {
   classes?: ClassInfo[];
   accent?: string;
   // Drop a starter message into the composer and focus it.
   onSeed: (text: string) => void;
+  // Preview-only: force the weather card into its rendered state with sample data.
+  demoWeather?: WeatherData;
 }) {
   const todaysClasses = useMemo(() => {
     const tokensByDay = [
@@ -241,20 +375,8 @@ export function NewChatTopBar({
 
   return (
     <div className="w-full max-w-2xl">
-      {/* Live status strip: weather · date/time */}
-      <div
-        className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-2xl border border-border/70 px-4 py-3 shadow-sm"
-        style={{
-          background: accent
-            ? `linear-gradient(120deg, ${accent}12, transparent 70%), var(--card)`
-            : "linear-gradient(120deg, hsl(var(--secondary)) 0%, var(--card) 70%)",
-        }}
-      >
-        <WeatherPiece />
-        <DatePiece />
-      </div>
+      <WeatherCard accent={accent} demo={demoWeather} />
 
-      {/* Quick-start cards */}
       <div className="mt-4 flex items-center justify-between px-0.5">
         <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           Keep your agent up to speed
@@ -266,24 +388,24 @@ export function NewChatTopBar({
         )}
       </div>
 
-      <div className="mt-2 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+      <div className="mt-2 grid grid-cols-2 gap-2.5">
         {ACTIONS.map((a) => {
           const inner = (
             <>
               <span
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
                 style={{ background: `linear-gradient(135deg, ${a.tint}26, ${a.tint}0d)`, color: a.tint }}
               >
-                <a.Icon className="h-[18px] w-[18px]" />
+                <a.Icon className="h-[17px] w-[17px]" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold text-foreground">{a.label}</span>
-                <span className="block text-xs text-muted-foreground">{a.hint}</span>
+                <span className="block text-[13px] font-semibold leading-tight text-foreground">{a.label}</span>
+                <span className="mt-0.5 hidden truncate text-[11px] text-muted-foreground sm:block">{a.hint}</span>
               </span>
             </>
           );
           const cls =
-            "group flex items-center gap-3 rounded-2xl border border-border/70 bg-card p-3.5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-foreground/15 hover:shadow-md";
+            "group flex items-center gap-2.5 rounded-2xl border border-border/70 bg-card p-3 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-foreground/15 hover:shadow-md";
           return a.href ? (
             <Link key={a.key} href={a.href} className={cls}>
               {inner}
