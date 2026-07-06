@@ -6,6 +6,8 @@ import {
   ArrowRight,
   Blocks,
   CalendarClock,
+  ChevronDown,
+  ChevronUp,
   Cloud,
   CloudDrizzle,
   CloudFog,
@@ -21,6 +23,9 @@ import {
   Sunrise,
   type LucideIcon,
 } from "lucide-react";
+
+// Remembers whether the student collapsed the panel (per browser).
+const COLLAPSE_KEY = "ca-newchat-topbar-collapsed";
 
 // The New Chat "worth at the top" panel, split left/right so it stays compact: an interactive
 // local-weather forecast on the left (current conditions, feels-like, high/low, sunrise, an
@@ -431,10 +436,59 @@ export function NewChatTopBar({
   // Preview-only: force the weather card into its rendered state with sample data.
   demoWeather?: WeatherData;
 }) {
+  // Collapsed state is read from localStorage after mount (avoids a hydration mismatch),
+  // so a returning student who hid the panel keeps it hidden.
+  const [collapsed, setCollapsed] = useState(false);
+  useEffect(() => {
+    try {
+      setCollapsed(localStorage.getItem(COLLAPSE_KEY) === "1");
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  const toggle = useCallback(() => {
+    setCollapsed((c) => {
+      const next = !c;
+      try {
+        localStorage.setItem(COLLAPSE_KEY, next ? "1" : "0");
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }, []);
+
+  if (collapsed) {
+    return (
+      <div className="flex w-full max-w-2xl justify-center">
+        <button
+          type="button"
+          onClick={toggle}
+          className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card px-3.5 py-1.5 text-xs font-medium text-muted-foreground shadow-sm transition-colors hover:text-foreground"
+        >
+          <ChevronDown className="h-3.5 w-3.5" />
+          Weather &amp; to-dos
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="grid w-full max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2">
-      <WeatherCard accent={accent} demo={demoWeather} />
-      <ActionsColumn classes={classes} onSeed={onSeed} />
+    <div className="w-full max-w-2xl">
+      <div className="mb-1.5 flex justify-end">
+        <button
+          type="button"
+          onClick={toggle}
+          aria-label="Hide weather and to-dos"
+          className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+        >
+          Hide <ChevronUp className="h-3.5 w-3.5" />
+        </button>
+      </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <WeatherCard accent={accent} demo={demoWeather} />
+        <ActionsColumn classes={classes} onSeed={onSeed} />
+      </div>
     </div>
   );
 }
