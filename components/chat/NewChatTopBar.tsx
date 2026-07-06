@@ -311,55 +311,63 @@ function WeatherCard({ accent, demo }: { accent?: string; demo?: WeatherData }) 
   const cur = describeWeather(d.code, d.isDay);
   return (
     <div className={card} style={{ background: `${weatherSkin(d.code, d.isDay)}, var(--card)` }}>
-      <div className="flex items-start justify-between">
-        <div className="leading-tight">
-          <div className="text-[15px] font-semibold text-foreground">{weekday}</div>
-          <div className="text-xs text-muted-foreground">{now ? dateLine : ""}</div>
-        </div>
-        <cur.Icon className="h-11 w-11 shrink-0" strokeWidth={1.6} style={{ color: accent ?? "var(--primary)" }} />
-      </div>
-
-      <div className="mt-1 flex items-end gap-2">
-        <span className="text-[34px] font-semibold leading-none text-foreground">{d.tempF}&deg;</span>
-        <span className="pb-1 text-sm font-medium text-foreground/80">{cur.label}</span>
-      </div>
-
-      <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-        <span>Feels like {d.feelsF}&deg;</span>
-        <span>
-          H {d.hiF}&deg; · L {d.loF}&deg;
+      {/* Header: location · weekday on the left, time on the right. */}
+      <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+        <span className="inline-flex min-w-0 items-center gap-1">
+          {d.city && (
+            <>
+              <MapPin className="h-3 w-3 shrink-0" />
+              <span className="truncate font-medium text-foreground/70">{d.city}</span>
+              <span aria-hidden>·</span>
+            </>
+          )}
+          <span>{weekday}</span>
         </span>
-        {d.city && (
-          <span className="inline-flex items-center gap-1">
-            <MapPin className="h-3 w-3" />
-            {d.city}
-          </span>
-        )}
-        {d.sunrise && (
-          <span className="inline-flex items-center gap-1">
-            <Sunrise className="h-3 w-3" />
-            {d.sunrise}
-          </span>
-        )}
+        <span className="shrink-0">
+          {now?.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }) ?? ""}
+        </span>
       </div>
 
-      <div className="mt-2.5 flex items-baseline gap-1.5 rounded-lg bg-foreground/[0.04] px-3 py-1.5 text-xs text-foreground/75">
-        <span className="shrink-0 whitespace-nowrap font-semibold text-foreground/80">What to wear</span>
-        <span aria-hidden className="shrink-0">·</span>
-        <span className="min-w-0">{whatToWear(d.feelsF, d.code)}</span>
+      {/* Hero: icon + big temperature, with a compact stat stack on the right. */}
+      <div className="mt-2 flex items-center gap-3">
+        <cur.Icon className="h-12 w-12 shrink-0" strokeWidth={1.5} style={{ color: accent ?? "var(--primary)" }} />
+        <div className="min-w-0 leading-none">
+          <div className="text-[40px] font-semibold tracking-tight text-foreground">{d.tempF}&deg;</div>
+          <div className="mt-1 truncate text-sm font-medium text-foreground/70">{cur.label}</div>
+        </div>
+        <div className="ml-auto shrink-0 space-y-0.5 text-right text-[11px] text-muted-foreground">
+          <div>Feels {d.feelsF}&deg;</div>
+          <div>
+            H {d.hiF}&deg; &nbsp;L {d.loF}&deg;
+          </div>
+          {d.sunrise && (
+            <div className="inline-flex items-center gap-1">
+              <Sunrise className="h-3 w-3" />
+              {d.sunrise}
+            </div>
+          )}
+        </div>
       </div>
 
+      {/* What to wear: a light, single line, no boxed background. */}
+      <div className="mt-3 text-xs text-muted-foreground">
+        <span className="font-medium text-foreground/70">What to wear</span> · {whatToWear(d.feelsF, d.code)}
+      </div>
+
+      {/* Hourly: clean row separated by a hairline, with "Now" gently highlighted. */}
       {d.hours.length > 0 && (
-        <div className="mt-auto flex gap-1 overflow-x-auto pt-3">
+        <div className="mt-auto flex gap-0.5 overflow-x-auto border-t border-border/50 pt-3">
           {d.hours.map((h, i) => {
             const hv = describeWeather(h.code, d.isDay);
             return (
               <div
                 key={i}
-                className="flex min-w-[46px] flex-col items-center gap-1 rounded-xl px-1.5 py-1.5 transition-colors hover:bg-foreground/[0.04]"
+                className={`flex min-w-[44px] flex-col items-center gap-1.5 rounded-lg px-1.5 py-1.5 ${
+                  i === 0 ? "bg-foreground/[0.04]" : ""
+                }`}
               >
                 <span className="text-[10px] font-medium text-muted-foreground">{h.label}</span>
-                <hv.Icon className="h-4 w-4 text-foreground/70" />
+                <hv.Icon className="h-[18px] w-[18px] text-foreground/60" strokeWidth={1.75} />
                 <span className="text-xs font-semibold text-foreground">{h.tempF}&deg;</span>
               </div>
             );
