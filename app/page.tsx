@@ -109,6 +109,29 @@ function buildJsonLd() {
   "@context": "https://schema.org",
   "@graph": [
     {
+      // The brand entity. Anchors "The College Agent" to this domain and its homepage so
+      // Google ranks the home page (not a deep page like /terms) for the brand query, and
+      // can surface a knowledge panel / brand sitelinks.
+      "@type": "Organization",
+      "@id": "https://thecollegeagent.ai/#organization",
+      name: "The College Agent",
+      alternateName: "College Agent",
+      url: "https://thecollegeagent.ai",
+      logo: "https://thecollegeagent.ai/college-agent-icon.png",
+      description:
+        "An AI study companion for college students that manages academics, class schedules, notes, deadlines, internships, and career planning across all four years of college.",
+      parentOrganization: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
+    },
+    {
+      // The site entity — tells Google the homepage is this domain's canonical entry point.
+      "@type": "WebSite",
+      "@id": "https://thecollegeagent.ai/#website",
+      name: "The College Agent",
+      url: "https://thecollegeagent.ai",
+      inLanguage: "en-US",
+      publisher: { "@id": "https://thecollegeagent.ai/#organization" },
+    },
+    {
       "@type": "Service",
       "@id": "https://thecollegeagent.ai/#service",
       name: "The College Agent",
@@ -117,7 +140,7 @@ function buildJsonLd() {
         "An AI study companion and study partner for enrolled college students that helps with studying, class schedules, notes, deadlines, internships, and career planning across all four years of college.",
       disambiguatingDescription:
         "An ongoing AI study companion for enrolled college students across all four years of college. Not a college admissions, enrollment, or student-registration service.",
-      provider: { "@type": "Organization", name: "Apollo[Claw]", url: "https://apolloclaw.ai" },
+      provider: { "@id": "https://thecollegeagent.ai/#organization" },
       url: "https://thecollegeagent.ai",
       serviceType: "AI Companion for College Students",
       category: "Education Technology",
@@ -136,6 +159,7 @@ function buildJsonLd() {
       name: "The College Agent",
       operatingSystem: "Web, iOS, Android",
       applicationCategory: "EducationApplication",
+      publisher: { "@id": "https://thecollegeagent.ai/#organization" },
       description:
         "An AI study companion and study partner for college students that helps with studying, class schedules, notes, deadlines, internships, and career planning across all four years of college.",
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },

@@ -19,9 +19,11 @@ const publicRoutes: { route: string; priority: number; changeFrequency: "weekly"
   { route: "/blog", priority: 0.8, changeFrequency: "weekly" },
   { route: "/build", priority: 0.7, changeFrequency: "monthly" },
   // /onboard has no page — intentionally excluded from sitemap (404s)
-  { route: "/privacy", priority: 0.5, changeFrequency: "monthly" },
-  { route: "/setup", priority: 0.5, changeFrequency: "monthly" },
-  { route: "/terms", priority: 0.5, changeFrequency: "monthly" },
+  // Legal/utility pages kept indexable but de-prioritized so they don't outrank the
+  // homepage or landing pages for brand queries.
+  { route: "/privacy", priority: 0.3, changeFrequency: "monthly" },
+  { route: "/setup", priority: 0.3, changeFrequency: "monthly" },
+  { route: "/terms", priority: 0.3, changeFrequency: "monthly" },
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
