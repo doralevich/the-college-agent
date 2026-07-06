@@ -3,8 +3,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
+  ArrowRight,
   Blocks,
   CalendarClock,
+  ChevronDown,
+  ChevronUp,
   Cloud,
   CloudDrizzle,
   CloudFog,
@@ -17,13 +20,17 @@ import {
   Moon,
   NotebookPen,
   Sun,
+  Sunrise,
   type LucideIcon,
 } from "lucide-react";
 
-// The New Chat "worth at the top" panel: an interactive local-weather forecast (current
-// conditions, an hourly strip, and a what-to-wear tip, all from the browser's geolocation)
-// plus a compact 2-across set of quick-start cards that seed the composer or link to the tab
-// that owns the data. Rendered only on the empty New Chat state.
+// Remembers whether the student collapsed the panel (per browser).
+const COLLAPSE_KEY = "ca-newchat-topbar-collapsed";
+
+// The New Chat "worth at the top" panel, split left/right so it stays compact: an interactive
+// local-weather forecast on the left (current conditions, feels-like, high/low, sunrise, an
+// hourly strip and a what-to-wear tip, all from the browser's geolocation) and a tidy column of
+// quick-start actions on the right. Rendered only on the empty New Chat state.
 
 type ClassInfo = { name: string; days: string; time: string };
 
@@ -35,13 +42,13 @@ export type WeatherData = {
   isDay: boolean;
   hiF: number;
   loF: number;
+  sunrise?: string;
   hours: { label: string; tempF: number; code: number }[];
 };
 
 const ACTIONS: {
   key: string;
   label: string;
-  hint: string;
   tint: string;
   Icon: LucideIcon;
   seed?: string;
@@ -49,16 +56,14 @@ const ACTIONS: {
 }[] = [
   {
     key: "schedule",
-    label: "Class schedule",
-    hint: "Keep classes, days & times current",
+    label: "Update class schedule",
     tint: "#3d8b3d",
     Icon: CalendarClock,
     seed: "Let's update my class schedule. Here are my classes, with the days and times:\n",
   },
   {
     key: "notes",
-    label: "Notes & textbooks",
-    hint: "So I can help you study from them",
+    label: "Add notes & textbooks",
     tint: "#2563eb",
     Icon: NotebookPen,
     seed: "I'd like to add my notes and textbooks so you can help me study. Here's what I'm working with:\n",
@@ -66,7 +71,6 @@ const ACTIONS: {
   {
     key: "tests",
     label: "Quiz, lab & test dates",
-    hint: "I'll plan study time around them",
     tint: "#7c3aed",
     Icon: FlaskConical,
     seed: "Here's my quiz, lab, and test schedule so you can keep me ahead of it:\n",
@@ -74,7 +78,6 @@ const ACTIONS: {
   {
     key: "tools",
     label: "Connect your tools",
-    hint: "Email, Canvas, calendar & more",
     tint: "#d97706",
     Icon: Blocks,
     href: "/dashboard/integrations",
@@ -111,16 +114,24 @@ function whatToWear(feelsF: number, code: number): string {
   return rainy ? `${base}, grab an umbrella` : base;
 }
 
-// A subtle condition/time tint layered over the card so the weather feels alive.
+// A subtle condition/time tint layered over the card so the weather feels alive (kept light).
 function weatherSkin(code: number, isDay: boolean): string {
   const cloud = code === 2 || code === 3 || code === 45 || code === 48;
   const rain = (code >= 51 && code <= 67) || (code >= 80 && code <= 82) || code >= 95;
   const snow = (code >= 71 && code <= 77) || code === 85 || code === 86;
-  if (!isDay) return "linear-gradient(135deg, rgba(30,41,59,.14), rgba(99,102,241,.10))";
-  if (rain) return "linear-gradient(135deg, rgba(100,116,139,.14), rgba(56,189,248,.12))";
-  if (snow) return "linear-gradient(135deg, rgba(147,197,253,.16), rgba(224,242,254,.22))";
-  if (cloud) return "linear-gradient(135deg, rgba(148,163,184,.12), rgba(203,213,225,.16))";
-  return "linear-gradient(135deg, rgba(252,211,77,.18), rgba(56,189,248,.14))";
+  if (!isDay) return "linear-gradient(140deg, rgba(30,41,59,.12), rgba(99,102,241,.09))";
+  if (rain) return "linear-gradient(140deg, rgba(100,116,139,.13), rgba(56,189,248,.12))";
+  if (snow) return "linear-gradient(140deg, rgba(147,197,253,.16), rgba(224,242,254,.24))";
+  if (cloud) return "linear-gradient(140deg, rgba(148,163,184,.12), rgba(203,213,225,.18))";
+  return "linear-gradient(140deg, rgba(252,211,77,.20), rgba(56,189,248,.14))";
+}
+
+function fmtClock(iso?: string): string | undefined {
+  if (!iso) return undefined;
+  const h = parseInt(iso.slice(11, 13), 10);
+  const m = iso.slice(14, 16);
+  if (!Number.isFinite(h)) return undefined;
+  return `${((h + 11) % 12) + 1}:${m} ${h < 12 ? "AM" : "PM"}`;
 }
 
 type WeatherState =
@@ -146,7 +157,7 @@ function useWeather(demo?: WeatherData) {
           const url =
             `https://api.open-meteo.com/v1/forecast?latitude=${la.toFixed(3)}&longitude=${lo.toFixed(3)}` +
             `&current=temperature_2m,apparent_temperature,weather_code,is_day` +
-            `&hourly=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min` +
+            `&hourly=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,sunrise` +
             `&forecast_days=1&temperature_unit=fahrenheit&timezone=auto`;
           const [wxRes, city] = await Promise.all([
             fetch(url).then((r) => r.json()),
@@ -166,7 +177,6 @@ function useWeather(demo?: WeatherData) {
             return;
           }
 
-          // Build the next few hourly slots starting from the current hour.
           const times: string[] = wxRes.hourly?.time ?? [];
           const temps: number[] = wxRes.hourly?.temperature_2m ?? [];
           const codes: number[] = wxRes.hourly?.weather_code ?? [];
@@ -190,6 +200,7 @@ function useWeather(demo?: WeatherData) {
               isDay: Number(cur.is_day ?? 1) === 1,
               hiF: Math.round(wxRes.daily?.temperature_2m_max?.[0] ?? cur.temperature_2m),
               loF: Math.round(wxRes.daily?.temperature_2m_min?.[0] ?? cur.temperature_2m),
+              sunrise: fmtClock(wxRes.daily?.sunrise?.[0]),
               hours,
             },
           });
@@ -202,8 +213,6 @@ function useWeather(demo?: WeatherData) {
     );
   }, []);
 
-  // Only auto-load when permission is already granted, so students aren't prompted for
-  // location every time they open a new chat.
   useEffect(() => {
     if (demo) return;
     let cancelled = false;
@@ -231,105 +240,48 @@ function useWeather(demo?: WeatherData) {
   return { wx, load };
 }
 
-function DateStamp() {
+function useNow() {
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
     setNow(new Date());
     const id = setInterval(() => setNow(new Date()), 30_000);
     return () => clearInterval(id);
   }, []);
-  const weekday = now?.toLocaleDateString(undefined, { weekday: "long" }) ?? "";
-  const date = now?.toLocaleDateString(undefined, { month: "short", day: "numeric" }) ?? "";
-  const time = now?.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }) ?? "";
-  return (
-    <div className="text-right leading-tight">
-      <div className="text-xs font-semibold text-foreground">{weekday || "Today"}</div>
-      <div className="text-[11px] text-muted-foreground">{now ? `${date} · ${time}` : "—"}</div>
-    </div>
-  );
+  return now;
 }
 
 function WeatherCard({ accent, demo }: { accent?: string; demo?: WeatherData }) {
   const { wx, load } = useWeather(demo);
+  const now = useNow();
+  const weekday = now?.toLocaleDateString(undefined, { weekday: "long" }) ?? "Today";
+  const dateLine =
+    now?.toLocaleDateString(undefined, { month: "long", day: "numeric" }) +
+    " · " +
+    (now?.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }) ?? "");
 
-  const baseCard =
-    "rounded-2xl border border-border/70 p-4 shadow-sm transition-colors";
-  const cardStyle = (skin?: string) => ({
-    background: skin ? `${skin}, var(--card)` : "var(--card)",
-  });
+  const card = "flex h-full flex-col rounded-2xl border border-border/70 p-4 shadow-sm";
 
-  if (wx.state === "ok") {
-    const d = wx.data;
-    const cur = describeWeather(d.code, d.isDay);
+  if (wx.state !== "ok") {
     return (
-      <div className={baseCard} style={cardStyle(weatherSkin(d.code, d.isDay))}>
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <cur.Icon className="h-11 w-11 shrink-0" style={{ color: accent ?? "var(--primary)" }} strokeWidth={1.6} />
-            <div className="leading-tight">
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-[28px] font-semibold text-foreground">{d.tempF}&deg;</span>
-                <span className="text-sm font-medium text-foreground/80">{cur.label}</span>
-              </div>
-              <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-                {d.city && (
-                  <>
-                    <MapPin className="h-3 w-3" />
-                    <span className="font-medium text-foreground/70">{d.city}</span>
-                    <span aria-hidden>·</span>
-                  </>
-                )}
-                <span>
-                  H {d.hiF}&deg; / L {d.loF}&deg;
-                </span>
-              </div>
-            </div>
+      <div className={card} style={{ background: "var(--card)" }}>
+        <div className="flex items-start justify-between">
+          <div className="leading-tight">
+            <div className="text-[15px] font-semibold text-foreground">{now ? weekday : "Today"}</div>
+            <div className="text-xs text-muted-foreground">{now ? dateLine : "—"}</div>
           </div>
-          <DateStamp />
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <MapPin className="h-[18px] w-[18px]" />
+          </span>
         </div>
-
-        <div className="mt-3 flex items-baseline gap-1.5 rounded-lg bg-foreground/[0.04] px-3 py-1.5 text-xs text-foreground/75">
-          <span className="shrink-0 whitespace-nowrap font-semibold text-foreground/80">What to wear</span>
-          <span aria-hidden className="shrink-0">·</span>
-          <span className="min-w-0">{whatToWear(d.feelsF, d.code)}</span>
-        </div>
-
-        {d.hours.length > 0 && (
-          <div className="mt-3 flex gap-1 overflow-x-auto pb-0.5">
-            {d.hours.map((h, i) => {
-              const hv = describeWeather(h.code, d.isDay);
-              return (
-                <div
-                  key={i}
-                  className="flex min-w-[50px] flex-col items-center gap-1 rounded-xl px-2 py-2 transition-colors hover:bg-foreground/[0.04]"
-                >
-                  <span className="text-[10px] font-medium text-muted-foreground">{h.label}</span>
-                  <hv.Icon className="h-4 w-4 text-foreground/70" />
-                  <span className="text-xs font-semibold text-foreground">{h.tempF}&deg;</span>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // Non-ok compact states.
-  return (
-    <div className={`${baseCard} flex items-center justify-between gap-3`} style={cardStyle()}>
-      <div className="flex items-center gap-2.5">
-        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
-          <MapPin className="h-[18px] w-[18px]" />
-        </span>
-        <div className="leading-tight">
-          <div className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            Local weather
-          </div>
+        <div className="mt-auto pt-4">
           {wx.state === "loading" ? (
-            <div className="text-sm text-muted-foreground">Checking…</div>
+            <div className="text-sm text-muted-foreground">Checking your local forecast…</div>
           ) : wx.state === "idle" ? (
-            <button type="button" onClick={load} className="text-sm font-semibold text-primary hover:underline">
+            <button
+              type="button"
+              onClick={load}
+              className="text-sm font-semibold text-primary hover:underline"
+            >
               Turn on your local forecast
             </button>
           ) : (
@@ -337,23 +289,78 @@ function WeatherCard({ accent, demo }: { accent?: string; demo?: WeatherData }) 
           )}
         </div>
       </div>
-      <DateStamp />
+    );
+  }
+
+  const d = wx.data;
+  const cur = describeWeather(d.code, d.isDay);
+  return (
+    <div className={card} style={{ background: `${weatherSkin(d.code, d.isDay)}, var(--card)` }}>
+      <div className="flex items-start justify-between">
+        <div className="leading-tight">
+          <div className="text-[15px] font-semibold text-foreground">{weekday}</div>
+          <div className="text-xs text-muted-foreground">{now ? dateLine : ""}</div>
+        </div>
+        <cur.Icon className="h-11 w-11 shrink-0" strokeWidth={1.6} style={{ color: accent ?? "var(--primary)" }} />
+      </div>
+
+      <div className="mt-1 flex items-end gap-2">
+        <span className="text-[34px] font-semibold leading-none text-foreground">{d.tempF}&deg;</span>
+        <span className="pb-1 text-sm font-medium text-foreground/80">{cur.label}</span>
+      </div>
+
+      <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+        <span>Feels like {d.feelsF}&deg;</span>
+        <span>
+          H {d.hiF}&deg; · L {d.loF}&deg;
+        </span>
+        {d.city && (
+          <span className="inline-flex items-center gap-1">
+            <MapPin className="h-3 w-3" />
+            {d.city}
+          </span>
+        )}
+        {d.sunrise && (
+          <span className="inline-flex items-center gap-1">
+            <Sunrise className="h-3 w-3" />
+            {d.sunrise}
+          </span>
+        )}
+      </div>
+
+      <div className="mt-2.5 flex items-baseline gap-1.5 rounded-lg bg-foreground/[0.04] px-3 py-1.5 text-xs text-foreground/75">
+        <span className="shrink-0 whitespace-nowrap font-semibold text-foreground/80">What to wear</span>
+        <span aria-hidden className="shrink-0">·</span>
+        <span className="min-w-0">{whatToWear(d.feelsF, d.code)}</span>
+      </div>
+
+      {d.hours.length > 0 && (
+        <div className="mt-auto flex gap-1 overflow-x-auto pt-3">
+          {d.hours.map((h, i) => {
+            const hv = describeWeather(h.code, d.isDay);
+            return (
+              <div
+                key={i}
+                className="flex min-w-[46px] flex-col items-center gap-1 rounded-xl px-1.5 py-1.5 transition-colors hover:bg-foreground/[0.04]"
+              >
+                <span className="text-[10px] font-medium text-muted-foreground">{h.label}</span>
+                <hv.Icon className="h-4 w-4 text-foreground/70" />
+                <span className="text-xs font-semibold text-foreground">{h.tempF}&deg;</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
 
-export function NewChatTopBar({
-  classes = [],
-  accent,
+function ActionsColumn({
+  classes,
   onSeed,
-  demoWeather,
 }: {
-  classes?: ClassInfo[];
-  accent?: string;
-  // Drop a starter message into the composer and focus it.
+  classes: ClassInfo[];
   onSeed: (text: string) => void;
-  // Preview-only: force the weather card into its rendered state with sample data.
-  demoWeather?: WeatherData;
 }) {
   const todaysClasses = useMemo(() => {
     const tokensByDay = [
@@ -374,38 +381,33 @@ export function NewChatTopBar({
   }, [classes]);
 
   return (
-    <div className="w-full max-w-2xl">
-      <WeatherCard accent={accent} demo={demoWeather} />
-
-      <div className="mt-4 flex items-center justify-between px-0.5">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-          Keep your agent up to speed
-        </span>
-        {todaysClasses.length > 0 && (
-          <span className="hidden truncate pl-3 text-xs text-muted-foreground sm:block">
-            Today: {todaysClasses.map((c) => (c.time ? `${c.name} at ${c.time}` : c.name)).join(" · ")}
-          </span>
-        )}
+    <div className="flex h-full flex-col">
+      <div className="mb-2 px-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        Keep your agent up to speed
       </div>
-
-      <div className="mt-2 grid grid-cols-2 gap-2.5">
+      {todaysClasses.length > 0 && (
+        <div className="mb-2 truncate px-0.5 text-[11px] text-muted-foreground">
+          Today: {todaysClasses.map((c) => (c.time ? `${c.name} at ${c.time}` : c.name)).join(" · ")}
+        </div>
+      )}
+      <div className="grid flex-1 auto-rows-fr gap-2">
         {ACTIONS.map((a) => {
           const inner = (
             <>
               <span
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
                 style={{ background: `linear-gradient(135deg, ${a.tint}26, ${a.tint}0d)`, color: a.tint }}
               >
-                <a.Icon className="h-[17px] w-[17px]" />
+                <a.Icon className="h-4 w-4" />
               </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-[13px] font-semibold leading-tight text-foreground">{a.label}</span>
-                <span className="mt-0.5 hidden truncate text-[11px] text-muted-foreground sm:block">{a.hint}</span>
+              <span className="min-w-0 flex-1 text-[13px] font-semibold leading-tight text-foreground">
+                {a.label}
               </span>
+              <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
             </>
           );
           const cls =
-            "group flex items-center gap-2.5 rounded-2xl border border-border/70 bg-card p-3 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-foreground/15 hover:shadow-md";
+            "group flex items-center gap-2.5 rounded-xl border border-border/70 bg-card px-3 py-2 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-foreground/15 hover:shadow-md";
           return a.href ? (
             <Link key={a.key} href={a.href} className={cls}>
               {inner}
@@ -416,6 +418,76 @@ export function NewChatTopBar({
             </button>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+export function NewChatTopBar({
+  classes = [],
+  accent,
+  onSeed,
+  demoWeather,
+}: {
+  classes?: ClassInfo[];
+  accent?: string;
+  // Drop a starter message into the composer and focus it.
+  onSeed: (text: string) => void;
+  // Preview-only: force the weather card into its rendered state with sample data.
+  demoWeather?: WeatherData;
+}) {
+  // Collapsed state is read from localStorage after mount (avoids a hydration mismatch),
+  // so a returning student who hid the panel keeps it hidden.
+  const [collapsed, setCollapsed] = useState(false);
+  useEffect(() => {
+    try {
+      setCollapsed(localStorage.getItem(COLLAPSE_KEY) === "1");
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  const toggle = useCallback(() => {
+    setCollapsed((c) => {
+      const next = !c;
+      try {
+        localStorage.setItem(COLLAPSE_KEY, next ? "1" : "0");
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }, []);
+
+  if (collapsed) {
+    return (
+      <div className="flex w-full max-w-2xl justify-center">
+        <button
+          type="button"
+          onClick={toggle}
+          className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card px-3.5 py-1.5 text-xs font-medium text-muted-foreground shadow-sm transition-colors hover:text-foreground"
+        >
+          <ChevronDown className="h-3.5 w-3.5" />
+          Weather &amp; to-dos
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full max-w-2xl">
+      <div className="mb-1.5 flex justify-end">
+        <button
+          type="button"
+          onClick={toggle}
+          aria-label="Hide weather and to-dos"
+          className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+        >
+          Hide <ChevronUp className="h-3.5 w-3.5" />
+        </button>
+      </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <WeatherCard accent={accent} demo={demoWeather} />
+        <ActionsColumn classes={classes} onSeed={onSeed} />
       </div>
     </div>
   );
