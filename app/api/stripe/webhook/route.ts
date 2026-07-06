@@ -1,5 +1,6 @@
 import type Stripe from "stripe";
-import { agent37, Agent37Error } from "@/lib/agent37";
+import { Agent37Error } from "@/lib/agent37";
+import { fundCredits } from "@/lib/credits";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/client";
 import { sendOrderSummaryEmail, type OrderForEmail } from "@/lib/email/order-summary";
@@ -332,9 +333,10 @@ async function handleCreditsTopup(db: DB, session: Stripe.Checkout.Session) {
 
   if (agentId && amountCents > 0) {
     try {
-      // 1 cent = 10,000 micros. The ledger row id (or checkout session tail) is the
-      // idempotency key, so redelivered webhooks can never double-credit.
-      await agent37.topUpBudget(
+      // 1 cent = 10,000 micros. fundCredits applies the operator markup (funds
+      // amount/1.05 of real headroom, keeps the spread). The ledger row id (or checkout
+      // session tail) is the idempotency key, so redelivered webhooks can't double-credit.
+      await fundCredits(
         agentId,
         amountCents * 10_000,
         tx ? (tx.id as string) : session.id.slice(-64)

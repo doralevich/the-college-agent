@@ -1,4 +1,5 @@
 import { agent37 } from "@/lib/agent37";
+import { fundCredits } from "@/lib/credits";
 import { requireUser, requireEntitled } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { DEFAULT_AGENT, shapeForHosting } from "@/config/agents";
@@ -113,7 +114,8 @@ export const POST = route(async () => {
   if (starterId) {
     try {
       // Ledger row id doubles as the idempotency key — a re-provision retry can't double-grant.
-      await agent37.topUpBudget(agent.id, usdToMicros(DEFAULT_AGENT.starterCreditsUsd), starterId);
+      // fundCredits applies the markup, so the student sees the full starterCreditsUsd.
+      await fundCredits(agent.id, usdToMicros(DEFAULT_AGENT.starterCreditsUsd), starterId);
       await db
         .from("wallet_transactions")
         .update({ status: "succeeded", failure_reason: null })
@@ -141,7 +143,7 @@ export const POST = route(async () => {
     .not("stripe_session_id", "is", null);
   for (const t of pendingTopups ?? []) {
     try {
-      await agent37.topUpBudget(agent.id, (t.amount_cents as number) * 10_000, t.id as string);
+      await fundCredits(agent.id, (t.amount_cents as number) * 10_000, t.id as string);
       await db
         .from("wallet_transactions")
         .update({ status: "succeeded", failure_reason: null })

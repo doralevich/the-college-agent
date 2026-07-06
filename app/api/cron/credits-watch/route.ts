@@ -1,4 +1,6 @@
 import { agent37 } from "@/lib/agent37";
+import { fundCredits } from "@/lib/credits";
+import { displayMicros } from "@/lib/markup";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/client";
 import { sendCreditsLowEmail } from "@/lib/email/credits-low";
@@ -367,7 +369,7 @@ async function sweepOne(db: DB, ent: EntRow, summary: Record<string, number>) {
   const starter = starterRows?.[0] as { id: string; amount_cents: number } | undefined;
   if (starter) {
     try {
-      await agent37.topUpBudget(agentId, starter.amount_cents * 10_000, starter.id);
+      await fundCredits(agentId, starter.amount_cents * 10_000, starter.id);
       await db
         .from("wallet_transactions")
         .update({ status: "succeeded", failure_reason: null })
@@ -400,7 +402,7 @@ async function sweepOne(db: DB, ent: EntRow, summary: Record<string, number>) {
     try {
       const session = await getStripe().checkout.sessions.retrieve(t.stripe_session_id as string);
       if (session.payment_status === "paid") {
-        await agent37.topUpBudget(agentId, (t.amount_cents as number) * 10_000, t.id as string);
+        await fundCredits(agentId, (t.amount_cents as number) * 10_000, t.id as string);
         await db
           .from("wallet_transactions")
           .update({
@@ -430,8 +432,11 @@ async function sweepOne(db: DB, ent: EntRow, summary: Record<string, number>) {
   // credit_remaining_micros is the one-time headroom (starter + top-ups). Default each leg
   // to 0 so a legacy/partial budget shape can never turn remainingCents into NaN — a NaN
   // here silently disables every alert and auto-recharge below (all `NaN < x` are false).
+  // displayMicros restates the raw headroom in STUDENT-facing dollars (× the markup), because
+  // the thresholds we compare against — the student's alert line and auto-recharge trigger —
+  // are the numbers they set while looking at their marked-up balance.
   let remainingCents = Math.floor(
-    ((budget.monthly_remaining_micros ?? 0) + (budget.credit_remaining_micros ?? 0)) / 10_000
+    displayMicros((budget.monthly_remaining_micros ?? 0) + (budget.credit_remaining_micros ?? 0)) / 10_000
   );
 
   // --- Auto-recharge (runs first so a successful charge can prevent the alert) ---
@@ -473,10 +478,13 @@ async function sweepOne(db: DB, ent: EntRow, summary: Record<string, number>) {
             status: "succeeded",
             stripe_payment_intent_id: pi.id,
           });
-          await agent37.topUpBudget(agentId, amount * 10_000, pi.id);
+          await fundCredits(agentId, amount * 10_000, pi.id);
           if (ent.auto_recharge_failures > 0) {
             await db.from("entitlements").update({ auto_recharge_failures: 0 }).eq("email", ent.email);
           }
+          // remainingCents is in student-facing dollars, and `amount` is what the student was
+          // charged, so their displayed balance rises by exactly `amount` (the markup is on
+          // the funded side, invisible here).
           remainingCents += amount;
           summary.recharges += 1;
         }

@@ -1,4 +1,5 @@
 import { agent37 } from "@/lib/agent37";
+import { displayBudget, displayUsage } from "@/lib/markup";
 import { requireUser } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { json, route } from "@/lib/http";
@@ -67,8 +68,11 @@ export const GET = route(async () => {
       agent37.getUsage(agentId),
     ]);
     if (budgetRes.status === "fulfilled") {
-      const budget = budgetRes.value;
-      const usage = usageRes.status === "fulfilled" ? usageRes.value : null;
+      // Restate both in student-facing dollars (× the markup) before reading any figure, so
+      // the balance and month spend the student sees match what they paid — the raw Agent37
+      // headroom (funded at cost) never surfaces here.
+      const budget = displayBudget(budgetRes.value);
+      const usage = usageRes.status === "fulfilled" ? displayUsage(usageRes.value) : null;
       credits = {
         // Spendable now: what's left of the monthly floor plus remaining top-up credits.
         // Legacy (pre-credits) budgets can miss fields — default each leg to 0 rather

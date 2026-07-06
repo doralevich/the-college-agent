@@ -1,4 +1,5 @@
 import { agent37 } from "@/lib/agent37";
+import { displayMicros } from "@/lib/markup";
 import { requireUser } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { json, route } from "@/lib/http";
@@ -30,11 +31,13 @@ export const GET = route(async () => {
     return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
   });
 
+  // displayMicros restates each month's raw spend in student dollars (× the markup), so the
+  // chart matches the marked-up "spent this month" figure on the credits card.
   const months = await Promise.all(
     periods.map((period) =>
       agent37
         .getUsage(agentId, period)
-        .then((u) => ({ period, total_micros: u.total_micros }))
+        .then((u) => ({ period, total_micros: displayMicros(u.total_micros) }))
         .catch(() => ({ period, total_micros: 0 }))
     )
   );
