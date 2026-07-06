@@ -187,47 +187,64 @@ function AvatarPicker({
 const FONTS_HREF =
   "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=DM+Sans:wght@400;500;600;700&display=swap";
 
-// Voice options — pick any to blend (short labels, picked from the spec).
+// Voice options — pick any to blend. Each carries a short description shown under the label.
 const VOICE_OPTIONS = [
-  "Direct, no filler",
-  "Calm and thoughtful",
-  "Warm and encouraging",
-  "Witty, give me personality",
-  "Motivational and fierce",
-  "Plainspoken and patient",
-  "Candid and real",
-  "Analytical and curious",
+  "Direct & to the point",
+  "Calm & thoughtful",
+  "Warm & encouraging",
+  "Funny & personable",
+  "Motivational & challenging",
+  "Patient & easygoing",
+  "Honest & straightforward",
+  "Analytical & curious",
 ];
+const VOICE_DESCRIPTIONS: Record<string, string> = {
+  "Direct & to the point": "Just tell me what I need to know.",
+  "Calm & thoughtful": "Steady, balanced, and reassuring.",
+  "Warm & encouraging": "Positive, supportive, and uplifting.",
+  "Funny & personable": "A little humor makes everything better.",
+  "Motivational & challenging": "Push me to be my best.",
+  "Patient & easygoing": "Explain things clearly without rushing.",
+  "Honest & straightforward": "Tell it to me like it is.",
+  "Analytical & curious": "Help me think through problems and decisions.",
+};
 
 const CHECKIN_OPTIONS = [
-  "A few times a day",
-  "A morning briefing each day",
-  "Twice a week",
-  "Weekly digest",
+  "Throughout the day",
+  "Every morning",
+  "A few times a week",
+  "Once a week",
   "Only when I ask",
-  "Real-time, whenever something comes up",
+  "Whenever something important comes up",
 ];
+const CHECKIN_DESCRIPTIONS: Record<string, string> = {
+  "Throughout the day": "Keep me updated and on track.",
+  "Every morning": "Start my day with a personalized briefing.",
+  "A few times a week": "Regular check-ins without too many notifications.",
+  "Once a week": "Send me a weekly overview and what's coming up.",
+  "Only when I ask": "I'll reach out whenever I need you.",
+  "Whenever something important comes up": "Alert me about deadlines, changes, and opportunities as they happen.",
+};
 
-const YEAR_OPTIONS = ["Freshman", "Sophomore", "Junior", "Senior", "5th year+", "Grad student"];
+const YEAR_OPTIONS = ["Before College", "Freshman", "Sophomore", "Junior", "Senior", "Graduate Student", "Other"];
 
-// Success picks — what "success" can mean by year-end. Spec list, verbatim.
+// What "success" can mean by year-end.
 const SUCCESS_OPTIONS = [
-  "Hit my target GPA",
-  "Finish every class I'm enrolled in",
-  "Build deeper friendships",
-  "Land an internship or job offer",
-  "Get into grad / professional school",
-  "Build a consistent habit (sleep, gym, study)",
-  "Finish a personal project",
-  "Improve a key skill",
-  "Get fitter or healthier",
-  "Protect my mental health",
-  "Strengthen a key relationship",
-  "Step into a leadership role",
-  "Start something of my own",
-  "Save money or pay down debt",
+  "Achieve my target GPA",
+  "Successfully complete all of my courses",
+  "Land an internship or job",
+  "Get into graduate or professional school",
+  "Build meaningful friendships",
+  "Develop healthier habits",
+  "Improve my physical health",
+  "Prioritize my mental well-being",
+  "Strengthen important relationships",
+  "Take on a leadership role",
+  "Start a personal project or business",
+  "Learn a new skill",
+  "Save more money",
   "Travel somewhere meaningful",
-  "Show up consistently and finish what I start",
+  "Stay consistent and achieve my goals",
 ];
 
 // Everything here is wired in the Integrations tab (Composio catalog), so the
@@ -269,47 +286,74 @@ const PRIORITY_OPTIONS = [
   "Community service & impact",
 ];
 
-// Tier-3 short option lists (per spec).
-const LIVING_OPTIONS = ["Dorm / on-campus", "Off-campus apartment or house", "With family", "Greek house"];
-const GREEK_OPTIONS = ["Yes", "No", "Thinking about rushing"];
-const CLUBS_OPTIONS = [
-  "Academic / pre-professional",
-  "Cultural / identity",
-  "Service / volunteer",
-  "Arts / music / performance",
-  "Religious / spiritual",
-  "Political / advocacy",
-  "Recreational / hobby",
-  "Student government",
-  "None right now",
+// Tier-3 short option lists. Emoji lead the labels per the latest copy.
+const LIVING_OPTIONS = [
+  "🏫 On-campus residence hall or dorm",
+  "🏠 Off-campus apartment or house",
+  "👨‍👩‍👧 Living with family",
+  "🏛 Greek house",
+  "✍️ Other",
 ];
-const SPORTS_OPTIONS = ["Varsity", "Club", "Intramural", "Not right now"];
+const CLUBS_OPTIONS = [
+  "🎓 Academic or pre-professional organizations",
+  "🌍 Cultural or identity-based organizations",
+  "🤝 Community service or volunteer groups",
+  "🎭 Arts, music, or performing arts",
+  "✨ Religious or spiritual organizations",
+  "🗳 Political or advocacy groups",
+  "🎮 Recreational or hobby clubs",
+  "🏛 Student government",
+  "🌱 None right now—but I'd like to get involved",
+  "🚫 None at the moment",
+];
+const SPORTS_OPTIONS = [
+  "🏆 Varsity Athletics",
+  "🥇 Club Sports",
+  "⚽ Intramural Sports",
+  "💪 I work out regularly, but I'm not on a team",
+  "🚫 Not at the moment",
+];
 const AFTER_COLLEGE_OPTIONS = [
-  "Straight into a career",
-  "Grad / professional school",
-  "Gap year",
-  "Start something of my own",
-  "Still figuring it out",
+  "💼 Start my career",
+  "🎓 Attend graduate or professional school",
+  "🌍 Take a gap year",
+  "🚀 Start a business or build something of my own",
+  "🤔 I'm still figuring it out",
 ];
 const ACADEMIC_STRUGGLES_OPTIONS = [
-  "Staying focused",
-  "Procrastination",
-  "Test anxiety",
-  "Writing / essays",
-  "Math-heavy classes",
-  "Reading load",
-  "Time management",
-  "Asking for help",
+  "🎯 Staying focused",
+  "⏳ Procrastination",
+  "😰 Test anxiety",
+  "✍️ Writing papers and essays",
+  "➗ Math or problem-solving courses",
+  "📚 Keeping up with reading assignments",
+  "📅 Time management and staying organized",
+  "🙋 Asking for help or reaching out to professors",
+  "🎒 Balancing school with work, sports, or activities",
+  "💭 None of these—I just want to stay ahead",
 ];
 const STRESS_RESET_OPTIONS = [
-  "Exercise / moving",
-  "Sleep",
-  "Time with friends",
-  "Alone time",
-  "Music",
-  "Getting outside",
-  "Talking it out",
-  "Just powering through",
+  "🏃 Exercise or staying active",
+  "😴 Getting enough sleep",
+  "👥 Spending time with friends",
+  "🌿 Taking some time for myself",
+  "🎵 Listening to music",
+  "🌞 Getting outside",
+  "💬 Talking things through with someone",
+  "💪 I usually just push through",
+  "🎮 Gaming or hobbies",
+  "🧘 Meditation, mindfulness, or prayer",
+  "🍿 Watching TV or movies",
+  "✍️ Reading, journaling, or another creative outlet",
+];
+
+// Tap-to-copy starter lines shown under the final open-ended question.
+const ANYTHING_ELSE_EXAMPLES = [
+  "I tend to procrastinate unless I have reminders.",
+  "I'm working 20 hours a week.",
+  "I'm the first person in my family to go to college.",
+  "I learn best with visual examples.",
+  "I want you to push me when I start falling behind.",
 ];
 
 // Curated major list (grouped) loaded from data/college-agent-majors.json. The
@@ -325,8 +369,8 @@ type Tier = 2 | 3 | "tail";
 type Step =
   // `showIf` gates conditional follow-ups (e.g. "Which one(s)?" only after a Yes).
   | { kind: "text"; key: TextKey; prompt: string; placeholder?: string; inputType?: "text" | "email" | "tel"; required?: boolean; tier?: Tier; showIf?: (form: FormState) => boolean }
-  | { kind: "textarea"; key: TextKey; prompt: string; placeholder?: string; required?: boolean; tier?: Tier }
-  | { kind: "multi"; key: MultiKey; prompt: string; options: string[]; max?: number; required?: boolean; tier?: Tier }
+  | { kind: "textarea"; key: TextKey; prompt: string; placeholder?: string; examples?: string[]; required?: boolean; tier?: Tier }
+  | { kind: "multi"; key: MultiKey; prompt: string; options: string[]; descriptions?: Record<string, string>; max?: number; required?: boolean; tier?: Tier }
   | { kind: "single"; key: SingleKey; prompt: string; options: string[]; required?: boolean; tier?: Tier }
   // School typeahead backed by /api/schools (College Scorecard proxy).
   | { kind: "typeahead"; key: TextKey; prompt: string; placeholder?: string; required?: boolean; tier?: Tier }
@@ -390,10 +434,10 @@ const STEPS: Step[] = [
     kind: "intro",
     key: "__intro",
     prompt:
-      "Hi {firstName}, nice to meet you. I'm your College Agent. Let's start by getting to know each other. I'll run through a few quick questions, it only takes a couple of minutes, and the more you tell me the sharper I get. Ready?",
+      "Hi {firstName}! I'm your College Agent. I'm excited to get to know you. It only takes a few minutes to personalize me, and everything you share helps me become a better partner throughout college. The more I learn about you now, the smarter I'll be when you need me later.",
   },
-  { kind: "text", key: "agentName", prompt: "Before we dive in, what do you want to call me? Pick any name you like, or skip to leave me as your College Agent.", placeholder: "Type a name..." },
-  { kind: "image", key: "avatarFile", prompt: "Want to give me a face? Upload an image (PNG or JPG), or skip and I'll use the default bot. You can always change this later." },
+  { kind: "text", key: "agentName", prompt: "What would you like to call me? Every great partnership starts with a name. Give me any name you'd like, or leave it blank and I'll simply be your College Agent.", placeholder: "Type a name..." },
+  { kind: "image", key: "avatarFile", prompt: "Want to give me a face? Upload a photo or image (PNG or JPG), or choose one of our defaults. You can always change it later." },
   { kind: "text", key: "firstName", prompt: "And what should I call you? Just your first name is perfect.", placeholder: "Your first name", required: true },
   { kind: "text", key: "lastName", prompt: "And your last name", placeholder: "Your last name", required: true },
   { kind: "typeahead", key: "school", prompt: "What school do you go to?", placeholder: "Start typing your school...", required: true },
@@ -404,14 +448,14 @@ const STEPS: Step[] = [
     kind: "branch",
     key: "wantTier2",
     prompt:
-      "Awesome, that's the basics done. We're officially introduced. Now here's where it gets good. The more I know about your schedule, your classes, and how you like to work, the more I can actually help instead of just answering questions. Want to keep going? It's worth it, I promise.",
+      "Awesome—we've got the basics covered. Now the fun part. The more I know about your classes, schedule, goals, and how you like to work, the more personal—and more helpful—I become. Instead of giving generic answers, I'll be able to help in ways tailored to your college life. Ready to keep going? It only gets better from here.",
     yesLabel: "Let's keep going",
     noLabel: "I'm good for now",
   },
   {
     kind: "multi",
     key: "topPriority",
-    prompt: "What matters most to you across your college years? Pick everything that fits.",
+    prompt: "What do you want to get out of college? Choose everything that's important to you. The more I understand your priorities, the better I can help you reach them.",
     options: PRIORITY_OPTIONS,
     required: true,
     tier: 2,
@@ -419,50 +463,47 @@ const STEPS: Step[] = [
   {
     kind: "multi",
     key: "agentHandleFirst",
-    prompt: "What does success look like by the end of this semester and this year? Pick everything that fits.",
+    prompt: "What do you hope to accomplish this semester and this year? Select everything that's important to you. I'll use your goals to personalize my planning, prioritization, and support every step of the way.",
     options: SUCCESS_OPTIONS,
     required: true,
     tier: 2,
   },
-  { kind: "multi", key: "responseStyle", prompt: "How do you want me to communicate with you? Pick any styles that fit and I'll blend them.", options: VOICE_OPTIONS, required: true, tier: 2 },
-  { kind: "multi", key: "checkinFrequency", prompt: "How often should I check in with you? Pick any that fit.", options: CHECKIN_OPTIONS, required: true, tier: 2 },
+  { kind: "multi", key: "responseStyle", prompt: "How should I communicate with you? Choose all that fit. I'll adapt my style to match how you like to be coached, reminded, and supported.", options: VOICE_OPTIONS, descriptions: VOICE_DESCRIPTIONS, required: true, tier: 2 },
+  { kind: "multi", key: "checkinFrequency", prompt: "How often would you like me to check in? Choose all that fit. I'll reach out when it matters, in the way that works best for you.", options: CHECKIN_OPTIONS, descriptions: CHECKIN_DESCRIPTIONS, required: true, tier: 2 },
   {
     kind: "multi",
     key: "integrationsWanted",
     prompt:
-      "Do you use Canvas? We connect with Canvas, Blackbaud, Google Classroom, Gmail, your calendar, and thousands more. Pick the tools you already use and I'll help you hook them up once we're done. You can browse the whole stack later in the Integrations tab.",
+      "Which tools do you already use? Select everything that applies. I'll connect with the tools you already rely on to help manage your classes, schedule, email, files, and more. You can always add or change integrations later.",
     options: INTEGRATION_OPTIONS,
     tier: 2,
   },
   {
     kind: "classList",
     key: "classes",
-    prompt: "Let's add your classes one at a time. Name, days, time, location, professor, class SKU. Add another until you're done.",
+    prompt: "Let's get your semester organized. We'll add your classes one at a time. Just enter the course name, meeting days and times, professor, location, and course number if you have it. The more I know about your classes, the better I can organize your schedule, track deadlines, and help you stay ahead all semester.",
     tier: 2,
   },
   {
     kind: "branch",
     key: "wantDeepDive",
-    prompt: "Want to get into some more detailed questions? They help me build a fuller picture of your life. Just a couple more minutes.",
+    prompt: "Great start! Let's make me even more useful. The more I know about your life, the better I can help you stay organized, make smarter decisions, and keep you one step ahead. Just a few more questions and we'll be there.",
     yesLabel: "Yes, let's keep going",
     noLabel: "No, that's enough for now",
     tier: 2,
   },
-  // Tier 3 — only shown if wantDeepDive === "yes". Spec-aligned: short radios and
-  // checkbox lists, no follow-up text prompts.
-  { kind: "single", key: "year", prompt: "What year are you in?", options: YEAR_OPTIONS, tier: 3 },
+  // Tier 3 — only shown if wantDeepDive === "yes". Short radios and checkbox lists.
+  { kind: "single", key: "year", prompt: "Where are you in your college journey? Choose your current year. I'll tailor my guidance, reminders, and priorities to match where you are.", options: YEAR_OPTIONS, tier: 3 },
   { kind: "select", key: "major", prompt: "What's your major?", placeholder: "Search majors...", groups: MAJOR_GROUPS, tier: 3 },
   { kind: "select", key: "minor", prompt: "Any minor or second focus?", placeholder: "Search minors...", groups: MAJOR_GROUPS, extraOptions: ["Not yet", "None"], tier: 3 },
-  { kind: "single", key: "livingSituation", prompt: "Where are you living this year?", options: LIVING_OPTIONS, tier: 3 },
-  { kind: "single", key: "greekLife", prompt: "Are you in a fraternity or sorority?", options: GREEK_OPTIONS, tier: 3 },
-  { kind: "text", key: "greekOrg", prompt: "Nice! Which one(s)?", placeholder: "Alpha Phi, Sigma Chi...", tier: 3, showIf: (f) => f.greekLife === "Yes" },
-  { kind: "multi", key: "clubs", prompt: "What clubs or student orgs are you part of? Pick any that apply.", options: CLUBS_OPTIONS, tier: 3 },
-  { kind: "multi", key: "sportsTeams", prompt: "Are you on any sports teams? Pick any that apply.", options: SPORTS_OPTIONS, tier: 3 },
-  { kind: "text", key: "whichSports", prompt: "Which sport?", placeholder: "Soccer, lacrosse, swimming...", tier: 3, showIf: (f) => f.sportsTeams.some((s) => s && s !== "Not right now") },
-  { kind: "single", key: "afterCollege", prompt: "What are you hoping to do after college?", options: AFTER_COLLEGE_OPTIONS, tier: 3 },
-  { kind: "multi", key: "academicStruggles", prompt: "What's hardest for you academically? Pick any that apply.", options: ACADEMIC_STRUGGLES_OPTIONS, tier: 3 },
-  { kind: "multi", key: "stressReset", prompt: "When you get stressed or burnt out, what helps you reset? Pick any that fit.", options: STRESS_RESET_OPTIONS, tier: 3 },
-  { kind: "textarea", key: "anythingElse", prompt: "Anything else you want me to know? Goals, habits, pressure points, anything.", tier: "tail" },
+  { kind: "single", key: "livingSituation", prompt: "Where will you be living this year? Where you live helps me personalize reminders, planning, and day-to-day support.", options: LIVING_OPTIONS, tier: 3 },
+  { kind: "multi", key: "clubs", prompt: "What clubs or organizations are you involved in? Select all that apply. I'll help you keep track of meetings, events, leadership opportunities, and important deadlines.", options: CLUBS_OPTIONS, tier: 3 },
+  { kind: "multi", key: "sportsTeams", prompt: "Are you involved in sports or athletics? Select all that apply. I'll help you balance practices, games, travel, training, and your academic schedule.", options: SPORTS_OPTIONS, tier: 3 },
+  { kind: "text", key: "whichSports", prompt: "Which sport?", placeholder: "Soccer, lacrosse, swimming...", tier: 3, showIf: (f) => f.sportsTeams.some((s) => s === "🏆 Varsity Athletics" || s === "🥇 Club Sports" || s === "⚽ Intramural Sports") },
+  { kind: "single", key: "afterCollege", prompt: "What are your plans after college? Choose the option that best fits today. Don't worry—you can always update it as your goals evolve.", options: AFTER_COLLEGE_OPTIONS, tier: 3 },
+  { kind: "multi", key: "academicStruggles", prompt: "What academic challenges would you like me to help with? Select all that apply. I'll tailor my planning, reminders, and support around the areas where you need it most.", options: ACADEMIC_STRUGGLES_OPTIONS, tier: 3 },
+  { kind: "multi", key: "stressReset", prompt: "When life gets busy, what helps you recharge? Select all that apply. I'll use this to encourage healthy routines and suggest breaks when you need them most.", options: STRESS_RESET_OPTIONS, tier: 3 },
+  { kind: "textarea", key: "anythingElse", prompt: "Is there anything else you'd like me to know? This is your space. Tell me about your goals, routines, challenges, preferences, or anything else that will help me support you. There are no right or wrong answers—the more I understand you, the better I can help throughout college.", examples: ANYTHING_ELSE_EXAMPLES, tier: "tail" },
 ];
 
 type FormState = {
@@ -1368,6 +1409,66 @@ function UserBubble({ children }: { children: ReactNode }) {
   );
 }
 
+// Starter lines under the final open question: tap one to copy it to the clipboard so the
+// student can paste and edit rather than face a blank box.
+function CopyableExamples({ examples }: { examples: string[] }) {
+  const [copied, setCopied] = useState<number | null>(null);
+  return (
+    <div style={{ marginTop: 14 }}>
+      <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: T.inkSoft, marginBottom: 8 }}>
+        Need a nudge? Tap one to copy
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {examples.map((ex, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => {
+              const done = () => {
+                setCopied(i);
+                setTimeout(() => setCopied((c) => (c === i ? null : c)), 1600);
+              };
+              if (navigator.clipboard?.writeText) {
+                navigator.clipboard.writeText(ex).then(done).catch(done);
+              } else {
+                done();
+              }
+            }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 10,
+              textAlign: "left",
+              width: "100%",
+              fontFamily: "'DM Sans', system-ui, sans-serif",
+              fontSize: 13,
+              lineHeight: 1.4,
+              color: T.ink,
+              background: T.greenSoft,
+              border: `1px solid ${T.line}`,
+              borderRadius: 10,
+              padding: "9px 12px",
+              cursor: "pointer",
+            }}
+          >
+            <span style={{ flex: 1 }}>&ldquo;{ex}&rdquo;</span>
+            <span style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 600, color: T.greenText }}>
+              {copied === i ? (
+                <>
+                  <Check style={{ width: 12, height: 12 }} /> Copied
+                </>
+              ) : (
+                "Copy"
+              )}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Input({
   step,
   form,
@@ -1535,28 +1636,31 @@ function Input({
   if (step.kind === "textarea") {
     const value = form[step.key] as string;
     return (
-      <textarea
-        autoFocus
-        placeholder={step.placeholder}
-        value={value}
-        disabled={disabled}
-        rows={3}
-        onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setField(step.key, e.target.value)}
-        className="ca-onboard-input"
-        style={{
-          width: "100%",
-          fontFamily: "'DM Sans', system-ui, sans-serif",
-          fontSize: 15,
-          padding: "12px 14px",
-          border: `1.5px solid ${T.line}`,
-          borderRadius: 12,
-          outline: "none",
-          background: T.card,
-          color: T.ink,
-          resize: "vertical",
-          minHeight: 80,
-        }}
-      />
+      <div>
+        <textarea
+          autoFocus
+          placeholder={step.placeholder}
+          value={value}
+          disabled={disabled}
+          rows={3}
+          onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setField(step.key, e.target.value)}
+          className="ca-onboard-input"
+          style={{
+            width: "100%",
+            fontFamily: "'DM Sans', system-ui, sans-serif",
+            fontSize: 15,
+            padding: "12px 14px",
+            border: `1.5px solid ${T.line}`,
+            borderRadius: 12,
+            outline: "none",
+            background: T.card,
+            color: T.ink,
+            resize: "vertical",
+            minHeight: 80,
+          }}
+        />
+        {step.examples && step.examples.length > 0 && <CopyableExamples examples={step.examples} />}
+      </div>
     );
   }
   if (step.kind === "typeahead") {
@@ -1590,7 +1694,7 @@ function Input({
     // in the styled-jsx block) so they don't scroll forever on desktop.
     return (
       <div
-        className={step.options.length >= 7 ? "ca-options-2col" : undefined}
+        className={step.options.length >= 7 && !step.descriptions ? "ca-options-2col" : undefined}
         style={{ display: "flex", flexDirection: "column", gap: 2 }}
       >
         {step.options.map((opt) => {
@@ -1643,7 +1747,14 @@ function Input({
               >
                 {selected && <Check style={{ width: 13, height: 13, color: "#FFFFFF", strokeWidth: 3 }} />}
               </span>
-              <span style={{ flex: 1 }}>{opt}</span>
+              <span style={{ flex: 1 }}>
+                {opt}
+                {step.descriptions?.[opt] && (
+                  <span style={{ display: "block", fontSize: 12.5, fontWeight: 400, color: T.inkSoft, marginTop: 2, lineHeight: 1.35 }}>
+                    {step.descriptions[opt]}
+                  </span>
+                )}
+              </span>
             </button>
           );
         })}
@@ -1779,7 +1890,7 @@ function ClassListInput({
 }) {
   const textFields: Array<{ key: keyof ClassEntry; label: string; placeholder: string }> = [
     { key: "name", label: "Class name", placeholder: "Marketing 301" },
-    { key: "sku", label: "Class SKU", placeholder: "MKT-301-A" },
+    { key: "sku", label: "Course number", placeholder: "e.g. MKT 301" },
     { key: "location", label: "Location", placeholder: "Bryan Hall 215" },
     { key: "professor", label: "Professor", placeholder: "Prof. Lewis" },
   ];
