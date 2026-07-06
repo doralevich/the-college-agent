@@ -63,6 +63,7 @@ export default async function BlogPage() {
         <PageHero
           label="College Agent Blog"
           title="AI that helps college feel manageable."
+          titleSize="36px"
           sub="Real student stories about staying organized, getting through finals, managing internship season, and using The College Agent as a support system for everyday campus life."
         />
 
@@ -74,10 +75,12 @@ export default async function BlogPage() {
                   {post.featuredImageUrl ? (
                     <img src={post.featuredImageUrl} alt="" className="blog-cover-img" />
                   ) : null}
-                  <h2 className="blog-cover-title">{postTitle(post)}</h2>
+                  <div className="blog-cover-meta">
+                    <span className="blog-cover-category">{categoryLabel(post.category)}</span>
+                    <h2 className="blog-cover-title">{postTitle(post)}</h2>
+                  </div>
                 </Link>
                 <div className="blog-card-body">
-                  <div className="blog-card-category">{categoryLabel(post.category)}</div>
                   {post.excerpt ? <p>{noDash(post.excerpt)}</p> : null}
                   <Link className="blog-card-link" href={`/blog/${post.slug.current}`}>
                     Read Article
@@ -121,8 +124,8 @@ function BlogStyles() {
         display: flex; flex-direction: column;
       }
       .blog-cover {
-        position: relative; display: flex; align-items: flex-end;
-        aspect-ratio: 1200 / 640; padding: 20px 22px; overflow: hidden; text-decoration: none;
+        position: relative; display: block;
+        padding: 24px; overflow: hidden; text-decoration: none;
         background:
           linear-gradient(150deg, rgba(61,139,61,.35), rgba(11,18,32,0) 58%),
           var(--navy);
@@ -130,19 +133,21 @@ function BlogStyles() {
       .blog-cover-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
       .blog-cover::after {
         content: ""; position: absolute; inset: 0;
-        background: linear-gradient(to top, rgba(8,14,26,.82), rgba(8,14,26,.12) 72%);
+        background: linear-gradient(to bottom, rgba(8,14,26,.55), rgba(8,14,26,.12) 70%);
+      }
+      .blog-cover-meta { position: relative; z-index: 1; }
+      .blog-cover-category {
+        display: block; font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+        text-transform: uppercase; letter-spacing: .1em; color: #6cc26c; margin-bottom: 12px;
       }
       .blog-cover-title {
-        position: relative; z-index: 1; margin: 0; color: #fff;
+        margin: 0; color: #fff;
         font-size: 18px; line-height: 1.24; font-weight: 850; letter-spacing: -.01em;
       }
-      .blog-card-body { padding: 22px 22px 24px; display: flex; flex-direction: column; flex: 1; }
-      .blog-card-category {
-        font-family: var(--font-mono); font-size: 10px; font-weight: 700;
-        text-transform: uppercase; letter-spacing: .1em; color: var(--green); margin-bottom: 12px;
-      }
+      .blog-card-body { padding: 24px; display: flex; flex-direction: column; flex: 1; }
       .blog-card p {
         color: rgba(11,18,32,.66); font-size: 14px; line-height: 1.65; margin-bottom: 20px;
+        display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
       }
       .blog-card-link {
         margin-top: auto; font-family: var(--font-mono); font-size: 11px; font-weight: 700;

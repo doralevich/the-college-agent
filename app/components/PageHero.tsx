@@ -15,6 +15,7 @@ export function PageHero({
   primary,
   secondary,
   mascot,
+  titleSize,
 }: {
   label: string;
   title: string;
@@ -22,6 +23,7 @@ export function PageHero({
   primary?: Cta;
   secondary?: Cta;
   mascot?: string;
+  titleSize?: string;
 }) {
   const mascotSrc = mascot ?? pickMascot(label);
   return (
@@ -32,7 +34,7 @@ export function PageHero({
           <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "rgba(255,255,255,.5)", marginBottom: 16, display: "block" }}>
             {label}
           </span>
-          <h1 style={{ fontSize: "clamp(26px, 3.2vw, 42px)", fontWeight: 800, color: "#fff", lineHeight: 1.1, letterSpacing: "-.03em", marginBottom: 18 }}>
+          <h1 style={{ fontSize: titleSize ?? "clamp(26px, 3.2vw, 42px)", fontWeight: 800, color: "#fff", lineHeight: 1.1, letterSpacing: "-.03em", marginBottom: 18 }}>
             {title}
           </h1>
           <p style={{ fontSize: "clamp(15px, 1.3vw, 17px)", lineHeight: 1.7, color: "rgba(255,255,255,.65)", maxWidth: 560, margin: `0 0 ${primary || secondary ? "32px" : "0"}` }}>
