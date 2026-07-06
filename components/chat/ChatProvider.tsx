@@ -15,6 +15,10 @@ interface ChatContextValue {
   composerFocusToken: number;
   // Ping the composer to refocus its textarea (e.g. after an attachment lands).
   requestComposerFocus: () => void;
+  // A starter message to drop into the composer (e.g. a New Chat checklist row). The token
+  // changes on every call so the composer picks up even the same text twice.
+  composerSeed: { text: string; token: number };
+  seedComposer: (text: string) => void;
   loadingSessions: boolean;
   selectSession: (sessionId: string | null) => void;
   startNewChat: () => void;
@@ -61,6 +65,7 @@ export function ChatProvider({
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(urlSessionId);
   const [composerFocusToken, setComposerFocusToken] = useState(0);
+  const [composerSeed, setComposerSeed] = useState<{ text: string; token: number }>({ text: "", token: 0 });
   const [loadingSessions, setLoadingSessions] = useState(true);
 
   // Adopt the thread from the URL whenever it changes — a rail click, Back/Forward, or a refresh.
@@ -93,6 +98,13 @@ export function ChatProvider({
   }, [agentId]);
 
   const requestComposerFocus = useCallback(() => setComposerFocusToken((n) => n + 1), []);
+
+  // Seed the composer with a starter message and focus it. Used by the New Chat top bar's
+  // checklist rows ("let me know your quiz/test schedule…") so a click drops the opening
+  // line in and the student just fills in the details.
+  const seedComposer = useCallback((text: string) => {
+    setComposerSeed((s) => ({ text, token: s.token + 1 }));
+  }, []);
 
   const selectSession = useCallback(
     (sessionId: string | null) => {
@@ -193,6 +205,8 @@ export function ChatProvider({
       onChatTab,
       composerFocusToken,
       requestComposerFocus,
+      composerSeed,
+      seedComposer,
       loadingSessions,
       selectSession,
       startNewChat,
@@ -201,7 +215,7 @@ export function ChatProvider({
       renameSession,
       bumpSession,
     }),
-    [agentId, sessions, activeSessionId, onChatTab, composerFocusToken, requestComposerFocus, loadingSessions, selectSession, startNewChat, onSessionCreated, deleteSession, renameSession, bumpSession]
+    [agentId, sessions, activeSessionId, onChatTab, composerFocusToken, requestComposerFocus, composerSeed, seedComposer, loadingSessions, selectSession, startNewChat, onSessionCreated, deleteSession, renameSession, bumpSession]
   );
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
