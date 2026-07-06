@@ -60,6 +60,24 @@ function withPublishedDate<T extends CollegeAgentPost>(post: T): T {
   return override ? { ...post, publishedAt: override } : post;
 }
 
+// Blog content (from Sanity or the fallback) can carry em-dashes. Strip them everywhere the
+// post text is shown, title, excerpt, SEO fields, and body, so no em-dashes reach the site.
+const stripDash = (s?: string) => (s == null ? s : s.replace(/\s*—\s*/g, ", "));
+
+function normalizeText<T extends CollegeAgentPost>(post: T): T {
+  return {
+    ...post,
+    title: stripDash(post.title) as string,
+    excerpt: stripDash(post.excerpt),
+    seoTitle: stripDash(post.seoTitle),
+    seoDescription: stripDash(post.seoDescription),
+    body: post.body?.map((block) => ({
+      ...block,
+      children: block.children?.map((child) => ({ ...child, text: stripDash(child.text) })),
+    })),
+  };
+}
+
 async function sanityFetch<T>(query: string): Promise<T> {
   const url = `https://${PROJECT_ID}.api.sanity.io/v${API_VERSION}/data/query/${DATASET}?query=${encodeURIComponent(query)}`;
   const token = process.env.SANITY_READ_TOKEN || process.env.SANITY_WRITE_TOKEN;
@@ -105,6 +123,7 @@ export async function getCollegeAgentPosts() {
 function normalizePostDates(posts: CollegeAgentPost[]): CollegeAgentPost[] {
   return posts
     .map(withPublishedDate)
+    .map(normalizeText)
     .sort(
       (a, b) =>
         new Date(a.publishedAt ?? 0).getTime() - new Date(b.publishedAt ?? 0).getTime()
@@ -117,10 +136,10 @@ export async function getCollegeAgentPost(slug: string) {
       `*[_type == "post" && !(_id in path("drafts.**")) && slug.current == ${JSON.stringify(slug)} && category in ${categoryList}][0] ${postProjection}`
     );
     const resolved = post || fallbackCollegeAgentPosts.find((item) => item.slug.current === slug) || null;
-    return resolved ? withPublishedDate(resolved) : null;
+    return resolved ? normalizeText(withPublishedDate(resolved)) : null;
   } catch {
     const resolved = fallbackCollegeAgentPosts.find((item) => item.slug.current === slug) || null;
-    return resolved ? withPublishedDate(resolved) : null;
+    return resolved ? normalizeText(withPublishedDate(resolved)) : null;
   }
 }
 
