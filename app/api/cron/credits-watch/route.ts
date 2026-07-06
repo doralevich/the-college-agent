@@ -427,8 +427,11 @@ async function sweepOne(db: DB, ent: EntRow, summary: Record<string, number>) {
   }
 
   const budget = await agent37.getBudget(agentId);
+  // credit_remaining_micros is the one-time headroom (starter + top-ups). Default each leg
+  // to 0 so a legacy/partial budget shape can never turn remainingCents into NaN — a NaN
+  // here silently disables every alert and auto-recharge below (all `NaN < x` are false).
   let remainingCents = Math.floor(
-    (budget.monthly_remaining_micros + budget.topup_remaining_micros) / 10_000
+    ((budget.monthly_remaining_micros ?? 0) + (budget.credit_remaining_micros ?? 0)) / 10_000
   );
 
   // --- Auto-recharge (runs first so a successful charge can prevent the alert) ---

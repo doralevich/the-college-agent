@@ -124,7 +124,9 @@ export interface CreateAgentInput {
   user?: string;
   name?: string;
   metadata?: Record<string, unknown>;
-  budget?: { monthly_cap_micros?: number; topup_micros?: number };
+  // `credit_micros` grants one-time managed-spend headroom at create so the agent's first
+  // LLM calls work before any top-up (docs: agents-api/instances create → budget.credit_micros).
+  budget?: { monthly_cap_micros?: number; credit_micros?: number };
 }
 
 export interface ResizeInput {

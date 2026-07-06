@@ -78,7 +78,10 @@ export interface Budget {
   monthly_consumed_micros: number;
   monthly_remaining_micros: number;
   monthly_period: string;
-  topup_remaining_micros: number;
+  // One-time headroom left (starter grant + purchased top-ups). Agent37's field is
+  // `credit_remaining_micros` — NOT `topup_*` (that name doesn't exist upstream and read
+  // back as undefined, hiding the whole credits balance and NaN-ing the low-credit cron).
+  credit_remaining_micros: number;
   updated_at: number | null;
 }
 

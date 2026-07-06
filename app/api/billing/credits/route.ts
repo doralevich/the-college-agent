@@ -73,7 +73,7 @@ export const GET = route(async () => {
         // Spendable now: what's left of the monthly floor plus remaining top-up credits.
         // Legacy (pre-credits) budgets can miss fields — default each leg to 0 rather
         // than let a single undefined turn the whole balance into NaN.
-        remaining_micros: (budget.monthly_remaining_micros ?? 0) + (budget.topup_remaining_micros ?? 0),
+        remaining_micros: (budget.monthly_remaining_micros ?? 0) + (budget.credit_remaining_micros ?? 0),
         spent_micros: usage?.total_micros ?? 0,
         llm_micros: usage?.by_integration?.llm?.cost_micros ?? 0,
         search_micros: usage?.by_integration?.brave?.cost_micros ?? 0,
