@@ -112,6 +112,9 @@ export function CreditsView() {
                 <div className="mt-1 text-2xl font-semibold tabular-nums">
                   {data.credits ? usd(data.credits.remaining_micros) : "-"}
                 </div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  Available to spend · doesn&apos;t reset monthly
+                </div>
               </div>
               <div className="p-6">
                 <div className="text-xs text-muted-foreground">Spent this month</div>

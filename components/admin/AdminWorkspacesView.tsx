@@ -259,6 +259,7 @@ function InstanceList({ detail, onChanged }: { detail: Detail | undefined; onCha
             <th className="px-3 py-2 font-medium">Template</th>
             <th className="px-3 py-2 font-medium">Resources</th>
             <th className="px-3 py-2 font-medium">Budget (spent / cap)</th>
+            <th className="px-3 py-2 font-medium">Credits (balance)</th>
             <th className="px-3 py-2 font-medium">Usage (period)</th>
             <th className="px-3 py-2 font-medium">Created</th>
             <th className="px-3 py-2 text-right font-medium">Actions</th>
@@ -292,6 +293,12 @@ function InstanceList({ detail, onChanged }: { detail: Detail | undefined; onCha
                 {a.budget
                   ? `${usd(a.budget.monthly_consumed_micros)} / ${usd(a.budget.monthly_cap_micros)}`
                   : "-"}
+              </td>
+              {/* Real spendable money: one-time credit headroom (starter grant + top-ups),
+                  which the monthly cap above deliberately ignores. This is what the student
+                  sees as "Balance", so admin can reconcile a top-up at a glance. */}
+              <td className="px-3 py-2 font-medium tabular-nums text-foreground">
+                {a.budget ? usd(a.budget.credit_remaining_micros) : "-"}
               </td>
               <td className="px-3 py-2 text-muted-foreground">
                 <UsageCell usage={a.usage} />
