@@ -3,9 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  ArrowRight,
   Blocks,
-  CalendarDays,
+  CalendarClock,
   Cloud,
   CloudDrizzle,
   CloudFog,
@@ -13,38 +12,62 @@ import {
   CloudRain,
   CloudSnow,
   CloudSun,
-  ListChecks,
+  FlaskConical,
   MapPin,
+  NotebookPen,
   Sun,
-  Square,
   type LucideIcon,
 } from "lucide-react";
 
-// The New Chat "worth at the top" bar: local weather (from the browser's geolocation),
-// a live date/time, and a short actionable checklist of things the student should keep
-// their agent current on. The checklist rows either seed the composer with a starter
-// message ("let me know your quiz/test schedule…") or link to the tab that owns the data
-// (Integrations for connecting tools). Rendered only on the empty New Chat state.
+// The New Chat "worth at the top" panel: a slim live status strip (local weather from the
+// browser's geolocation + date/time) and a set of quick-start action cards that either seed
+// the composer with a first-person starter ("here's my quiz/test schedule…") or link to the
+// tab that owns the data. Rendered only on the empty New Chat state.
 
 type ClassInfo = { name: string; days: string; time: string };
 
-// Rows that drop a first-person starter into the composer so the student can just fill in
-// the details and send. Kept conversational — this is "tell your agent", not a form.
-const SEED_TASKS: { label: string; hint: string; seed: string }[] = [
+// Quick-start cards. The first three drop a starter line into the composer; the last links
+// to Integrations. Each carries a tint so the icon badge reads as a distinct, modern accent.
+const ACTIONS: {
+  key: string;
+  label: string;
+  hint: string;
+  tint: string;
+  Icon: LucideIcon;
+  seed?: string;
+  href?: string;
+}[] = [
   {
+    key: "schedule",
     label: "Update your class schedule",
-    hint: "Keep your classes, days, and times current",
+    hint: "Keep classes, days, and times current",
+    tint: "#3d8b3d",
+    Icon: CalendarClock,
     seed: "Let's update my class schedule. Here are my classes, with the days and times:\n",
   },
   {
-    label: "Share your notes & textbooks",
-    hint: "So I can help you study straight from them",
+    key: "notes",
+    label: "Add your notes & textbooks",
+    hint: "So I can help you study from them",
+    tint: "#2563eb",
+    Icon: NotebookPen,
     seed: "I'd like to add my notes and textbooks so you can help me study. Here's what I'm working with:\n",
   },
   {
-    label: "Add your quiz, lab & test dates",
-    hint: "I'll track them and plan study time around them",
+    key: "tests",
+    label: "Quiz, lab & test dates",
+    hint: "I'll plan your study time around them",
+    tint: "#7c3aed",
+    Icon: FlaskConical,
     seed: "Here's my quiz, lab, and test schedule so you can keep me ahead of it:\n",
+  },
+  {
+    key: "tools",
+    label: "Connect your tools",
+    hint: "Email, Canvas, calendar & more",
+    tint: "#d97706",
+    Icon: Blocks,
+    href: "/dashboard/integrations",
   },
 ];
 
@@ -64,13 +87,13 @@ function describeWeather(code: number): { label: string; Icon: LucideIcon } {
 }
 
 type WeatherState =
-  | { state: "idle" } // permission not yet granted — show an enable button
+  | { state: "idle" } // permission not yet granted — show an enable link
   | { state: "loading" }
   | { state: "ok"; tempF: number; code: number }
   | { state: "denied" }
   | { state: "unavailable" };
 
-function WeatherCard({ accent }: { accent?: string }) {
+function useWeather() {
   const [wx, setWx] = useState<WeatherState>({ state: "loading" });
 
   const load = useCallback(() => {
@@ -101,8 +124,8 @@ function WeatherCard({ accent }: { accent?: string }) {
     );
   }, []);
 
-  // Only auto-load when the browser already has permission, so students aren't hit with a
-  // location prompt every time they open a new chat. Otherwise show an explicit opt-in.
+  // Only auto-load when permission is already granted, so students aren't prompted for
+  // location every time they open a new chat.
   useEffect(() => {
     let cancelled = false;
     async function decide() {
@@ -126,21 +149,26 @@ function WeatherCard({ accent }: { accent?: string }) {
     };
   }, [load]);
 
-  const wxView = wx.state === "ok" ? describeWeather(wx.code) : null;
+  return { wx, load };
+}
+
+function WeatherPiece() {
+  const { wx, load } = useWeather();
+  const view = wx.state === "ok" ? describeWeather(wx.code) : null;
+  const Icon = view?.Icon ?? MapPin;
 
   return (
-    <div className="flex items-center gap-3 rounded-xl border bg-card p-3.5">
-      <span
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-        style={{ background: accent ? `${accent}1f` : "rgba(61,139,61,.12)", color: accent ?? "var(--primary)" }}
-      >
-        {wxView ? <wxView.Icon className="h-5 w-5" /> : <MapPin className="h-5 w-5" />}
+    <div className="flex items-center gap-2.5">
+      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+        <Icon className="h-[18px] w-[18px]" />
       </span>
-      <div className="min-w-0">
-        <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Local weather</div>
-        {wx.state === "ok" && wxView ? (
-          <div className="truncate text-sm font-semibold text-foreground">
-            {wx.tempF}&deg; · {wxView.label}
+      <div className="leading-tight">
+        <div className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+          Local weather
+        </div>
+        {wx.state === "ok" && view ? (
+          <div className="text-sm font-semibold text-foreground">
+            {wx.tempF}&deg; · {view.label}
           </div>
         ) : wx.state === "loading" ? (
           <div className="text-sm text-muted-foreground">Checking…</div>
@@ -148,7 +176,7 @@ function WeatherCard({ accent }: { accent?: string }) {
           <button
             type="button"
             onClick={load}
-            className="text-sm font-medium text-foreground underline underline-offset-2 hover:opacity-80"
+            className="text-sm font-semibold text-primary hover:underline"
           >
             Turn on
           </button>
@@ -160,9 +188,8 @@ function WeatherCard({ accent }: { accent?: string }) {
   );
 }
 
-function DateCard() {
-  // Null on the server / first paint to avoid a hydration mismatch; the clock fills in on
-  // mount and ticks each minute.
+function DatePiece() {
+  // Null on the server / first paint to avoid a hydration mismatch; fills in on mount.
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
     setNow(new Date());
@@ -175,18 +202,11 @@ function DateCard() {
   const time = now?.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }) ?? "";
 
   return (
-    <div className="flex items-center gap-3 rounded-xl border bg-card p-3.5">
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-foreground/70">
-        <CalendarDays className="h-5 w-5" />
-      </span>
-      <div className="min-w-0">
-        <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-          {weekday || "Today"}
-        </div>
-        <div className="truncate text-sm font-semibold text-foreground">
-          {now ? `${date} · ${time}` : "—"}
-        </div>
+    <div className="text-right leading-tight">
+      <div className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+        {weekday || "Today"}
       </div>
+      <div className="text-sm font-semibold text-foreground">{now ? `${date} · ${time}` : "—"}</div>
     </div>
   );
 }
@@ -201,7 +221,6 @@ export function NewChatTopBar({
   // Drop a starter message into the composer and focus it.
   onSeed: (text: string) => void;
 }) {
-  // If we know today's classes from the intake, lead the schedule row with a live reminder.
   const todaysClasses = useMemo(() => {
     const tokensByDay = [
       ["sun", "sunday"],
@@ -222,55 +241,59 @@ export function NewChatTopBar({
 
   return (
     <div className="w-full max-w-2xl">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <WeatherCard accent={accent} />
-        <DateCard />
+      {/* Live status strip: weather · date/time */}
+      <div
+        className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-2xl border border-border/70 px-4 py-3 shadow-sm"
+        style={{
+          background: accent
+            ? `linear-gradient(120deg, ${accent}12, transparent 70%), var(--card)`
+            : "linear-gradient(120deg, hsl(var(--secondary)) 0%, var(--card) 70%)",
+        }}
+      >
+        <WeatherPiece />
+        <DatePiece />
       </div>
 
-      <div className="mt-3 rounded-xl border bg-card p-4">
-        <div className="mb-1 flex items-center gap-2">
-          <ListChecks className="h-4 w-4 text-muted-foreground" />
-          <h2 className="text-sm font-semibold text-foreground">Keep your agent up to speed</h2>
-        </div>
+      {/* Quick-start cards */}
+      <div className="mt-4 flex items-center justify-between px-0.5">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          Keep your agent up to speed
+        </span>
         {todaysClasses.length > 0 && (
-          <p className="mb-2 text-xs text-muted-foreground">
-            Today:{" "}
-            {todaysClasses.map((c) => (c.time ? `${c.name} at ${c.time}` : c.name)).join(" · ")}
-          </p>
+          <span className="hidden truncate pl-3 text-xs text-muted-foreground sm:block">
+            Today: {todaysClasses.map((c) => (c.time ? `${c.name} at ${c.time}` : c.name)).join(" · ")}
+          </span>
         )}
-        <ul className="-mx-1 divide-y divide-border/70">
-          {SEED_TASKS.map((task) => (
-            <li key={task.label}>
-              <button
-                type="button"
-                onClick={() => onSeed(task.seed)}
-                className="group flex w-full items-center gap-3 rounded-lg px-1 py-2.5 text-left transition-colors hover:bg-secondary/60"
+      </div>
+
+      <div className="mt-2 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+        {ACTIONS.map((a) => {
+          const inner = (
+            <>
+              <span
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                style={{ background: `linear-gradient(135deg, ${a.tint}26, ${a.tint}0d)`, color: a.tint }}
               >
-                <Square className="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-foreground" />
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-medium text-foreground">{task.label}</span>
-                  <span className="block text-xs text-muted-foreground">{task.hint}</span>
-                </span>
-                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
-              </button>
-            </li>
-          ))}
-          <li>
-            <Link
-              href="/dashboard/integrations"
-              className="group flex w-full items-center gap-3 rounded-lg px-1 py-2.5 text-left transition-colors hover:bg-secondary/60"
-            >
-              <Blocks className="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-foreground" />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium text-foreground">Connect your tools</span>
-                <span className="block truncate text-xs text-muted-foreground">
-                  Email, Canvas, calendar, and thousands more
-                </span>
+                <a.Icon className="h-[18px] w-[18px]" />
               </span>
-              <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold text-foreground">{a.label}</span>
+                <span className="block text-xs text-muted-foreground">{a.hint}</span>
+              </span>
+            </>
+          );
+          const cls =
+            "group flex items-center gap-3 rounded-2xl border border-border/70 bg-card p-3.5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-foreground/15 hover:shadow-md";
+          return a.href ? (
+            <Link key={a.key} href={a.href} className={cls}>
+              {inner}
             </Link>
-          </li>
-        </ul>
+          ) : (
+            <button key={a.key} type="button" onClick={() => a.seed && onSeed(a.seed)} className={cls}>
+              {inner}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
