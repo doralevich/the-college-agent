@@ -19,13 +19,28 @@ import {
   MapPin,
   Moon,
   NotebookPen,
+  Settings2,
   Sun,
   Sunrise,
   type LucideIcon,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Remembers whether the student collapsed the panel (per browser).
 const COLLAPSE_KEY = "ca-newchat-topbar-collapsed";
+// Remembers which pieces the student chose to show (per browser).
+const PREFS_KEY = "ca-newchat-topbar-prefs";
+
+type PieceKey = "weather" | "schedule" | "notes" | "tests" | "tools";
+type Prefs = Record<PieceKey, boolean>;
+const DEFAULT_PREFS: Prefs = { weather: true, schedule: true, notes: true, tests: true, tools: true };
 
 // The New Chat "worth at the top" panel, split left/right so it stays compact: an interactive
 // local-weather forecast on the left (current conditions, feels-like, high/low, sunrise, an
@@ -358,9 +373,13 @@ function WeatherCard({ accent, demo }: { accent?: string; demo?: WeatherData }) 
 function ActionsColumn({
   classes,
   onSeed,
+  actions,
+  wide,
 }: {
   classes: ClassInfo[];
   onSeed: (text: string) => void;
+  actions: typeof ACTIONS;
+  wide: boolean;
 }) {
   const todaysClasses = useMemo(() => {
     const tokensByDay = [
@@ -390,8 +409,8 @@ function ActionsColumn({
           Today: {todaysClasses.map((c) => (c.time ? `${c.name} at ${c.time}` : c.name)).join(" · ")}
         </div>
       )}
-      <div className="grid flex-1 auto-rows-fr gap-2">
-        {ACTIONS.map((a) => {
+      <div className={`grid flex-1 auto-rows-fr gap-2${wide ? " sm:grid-cols-2" : ""}`}>
+        {actions.map((a) => {
           const inner = (
             <>
               <span
@@ -436,12 +455,15 @@ export function NewChatTopBar({
   // Preview-only: force the weather card into its rendered state with sample data.
   demoWeather?: WeatherData;
 }) {
-  // Collapsed state is read from localStorage after mount (avoids a hydration mismatch),
-  // so a returning student who hid the panel keeps it hidden.
+  // Collapsed state + per-piece prefs are read from localStorage after mount (avoids a
+  // hydration mismatch), so a returning student keeps their choices.
   const [collapsed, setCollapsed] = useState(false);
+  const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
   useEffect(() => {
     try {
       setCollapsed(localStorage.getItem(COLLAPSE_KEY) === "1");
+      const raw = localStorage.getItem(PREFS_KEY);
+      if (raw) setPrefs((p) => ({ ...p, ...(JSON.parse(raw) as Partial<Prefs>) }));
     } catch {
       /* ignore */
     }
@@ -457,6 +479,21 @@ export function NewChatTopBar({
       return next;
     });
   }, []);
+  const togglePiece = useCallback((key: PieceKey) => {
+    setPrefs((p) => {
+      const next = { ...p, [key]: !p[key] };
+      try {
+        localStorage.setItem(PREFS_KEY, JSON.stringify(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }, []);
+
+  const showWeather = prefs.weather;
+  const activeActions = ACTIONS.filter((a) => prefs[a.key as PieceKey]);
+  const showActions = activeActions.length > 0;
 
   if (collapsed) {
     return (
@@ -473,9 +510,39 @@ export function NewChatTopBar({
     );
   }
 
+  const menuItems: { key: PieceKey; label: string }[] = [
+    { key: "weather", label: "Weather forecast" },
+    ...ACTIONS.map((a) => ({ key: a.key as PieceKey, label: a.label })),
+  ];
+
   return (
     <div className="w-full max-w-2xl">
-      <div className="mb-1.5 flex justify-end">
+      <div className="mb-1.5 flex items-center justify-end gap-1">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              aria-label="Customize this panel"
+              className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground focus:outline-none"
+            >
+              <Settings2 className="h-3.5 w-3.5" /> Customize
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>Show on New Chat</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {menuItems.map((m) => (
+              <DropdownMenuCheckboxItem
+                key={m.key}
+                checked={prefs[m.key]}
+                onCheckedChange={() => togglePiece(m.key)}
+                onSelect={(e) => e.preventDefault()}
+              >
+                {m.label}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
         <button
           type="button"
           onClick={toggle}
@@ -485,10 +552,26 @@ export function NewChatTopBar({
           Hide <ChevronUp className="h-3.5 w-3.5" />
         </button>
       </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <WeatherCard accent={accent} demo={demoWeather} />
-        <ActionsColumn classes={classes} onSeed={onSeed} />
-      </div>
+
+      {showWeather || showActions ? (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {showWeather && (
+            <div className={`h-full${showActions ? "" : " sm:col-span-2"}`}>
+              <WeatherCard accent={accent} demo={demoWeather} />
+            </div>
+          )}
+          {showActions && (
+            <div className={`h-full${showWeather ? "" : " sm:col-span-2"}`}>
+              <ActionsColumn classes={classes} onSeed={onSeed} actions={activeActions} wide={!showWeather} />
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-border/70 bg-card p-4 text-center text-sm text-muted-foreground">
+          Nothing shown here. Use <span className="font-medium text-foreground">Customize</span> to add the
+          weather or your to-dos.
+        </div>
+      )}
     </div>
   );
 }

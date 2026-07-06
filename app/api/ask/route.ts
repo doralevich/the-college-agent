@@ -1,5 +1,5 @@
-import Anthropic from "@anthropic-ai/sdk";
 import { ApiError, json, readJson, route } from "@/lib/http";
+import { chatComplete, friendlyChatError } from "@/lib/anthropic-chat";
 import {
   INTRO_PLAN_AMOUNT_CENTS,
   HOSTING_AMOUNT_CENTS,
@@ -69,27 +69,17 @@ export const POST = route(async (req) => {
     throw new ApiError(400, "invalid_request", "Send at least one user message.");
   }
 
-  let response: Anthropic.Message;
-  try {
-    const client = new Anthropic({ apiKey });
-    response = await client.messages.create({
-      model: "claude-opus-4-8",
-      max_tokens: 700,
-      system: systemPrompt(),
-      messages,
-    });
-  } catch (e) {
-    console.error("[ask] anthropic error", e);
-    throw new ApiError(502, "chat_failed", "I hit a snag on that one. Try again in a moment.");
+  const result = await chatComplete(apiKey, {
+    system: systemPrompt(),
+    messages,
+    maxTokens: 700,
+    tag: "ask",
+  });
+  if (!result.ok) {
+    throw new ApiError(502, "chat_failed", friendlyChatError(result.category));
   }
-
-  const reply = response.content
-    .filter((block): block is Anthropic.TextBlock => block.type === "text")
-    .map((block) => block.text)
-    .join("")
-    .trim();
-  if (!reply) {
+  if (!result.reply) {
     throw new ApiError(502, "empty_reply", "No answer came back. Try rephrasing?");
   }
-  return json({ reply });
+  return json({ reply: result.reply });
 });
