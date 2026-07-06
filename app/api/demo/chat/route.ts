@@ -1,5 +1,5 @@
-import Anthropic from "@anthropic-ai/sdk";
 import { ApiError, json, readJson, route } from "@/lib/http";
+import { chatComplete, friendlyChatError } from "@/lib/anthropic-chat";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 // The demo chat brain. Shared read-only premise, per-session isolation: each visitor's
@@ -64,35 +64,23 @@ export const POST = route(async (req) => {
     throw new ApiError(400, "invalid_request", "Send a message.");
   }
 
-  let response: Anthropic.Message;
-  try {
-    const client = new Anthropic({ apiKey });
-    response = await client.messages.create({
-      model: "claude-opus-4-8",
-      max_tokens: 600,
-      system: systemPrompt(String(session.school ?? "your school"), Number(session.grad_year ?? 2028)),
-      messages,
-    });
-  } catch (e) {
-    // Surface the real Anthropic failure (bad/expired key, model access, rate limit)
-    // in the server logs, but hand the visitor a friendly retry message.
-    console.error("[demo:chat] anthropic error", e);
-    throw new ApiError(502, "chat_failed", "Your agent hit a snag. Give that another try in a moment.");
+  const result = await chatComplete(apiKey, {
+    system: systemPrompt(String(session.school ?? "your school"), Number(session.grad_year ?? 2028)),
+    messages,
+    maxTokens: 600,
+    tag: "demo:chat",
+  });
+  if (!result.ok) {
+    throw new ApiError(502, "chat_failed", friendlyChatError(result.category));
   }
-
-  const reply = response.content
-    .filter((block): block is Anthropic.TextBlock => block.type === "text")
-    .map((block) => block.text)
-    .join("")
-    .trim();
-  if (!reply) throw new ApiError(502, "empty_reply", "No answer came back. Try rephrasing?");
+  if (!result.reply) throw new ApiError(502, "empty_reply", "No answer came back. Try rephrasing?");
 
   const used = (session.message_count as number) + 1;
   const tokens =
     (session.token_count as number) +
-    (response.usage?.input_tokens ?? 0) +
-    (response.usage?.output_tokens ?? 0);
+    (result.usage?.input_tokens ?? 0) +
+    (result.usage?.output_tokens ?? 0);
   await db.from("demo_sessions").update({ message_count: used, token_count: tokens }).eq("id", sessionId);
 
-  return json({ reply, remaining: Math.max(0, cap - used) });
+  return json({ reply: result.reply, remaining: Math.max(0, cap - used) });
 });
