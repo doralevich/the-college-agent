@@ -21,9 +21,12 @@ interface Props {
   // Prominent welcome-state composer (vs the compact docked composer).
   large?: boolean;
   focusToken?: number;
+  // A starter message to load into the textarea (from the New Chat checklist). The token
+  // changes on each request so re-seeding the same text still applies.
+  seed?: { text: string; token: number };
 }
 
-export function ChatComposer({ agentId, isStreaming, att, onSend, onStop, large = false, focusToken = 0 }: Props) {
+export function ChatComposer({ agentId, isStreaming, att, onSend, onStop, large = false, focusToken = 0, seed }: Props) {
   const [text, setText] = useState("");
   // model + provider are always chosen together (one selection); effort is independent. Group
   // them as the composer's outgoing ChatSettings so send is just `{ ...settings, files }`.
@@ -37,6 +40,24 @@ export function ChatComposer({ agentId, isStreaming, att, onSend, onStop, large 
     const frame = requestAnimationFrame(() => textareaRef.current?.focus());
     return () => cancelAnimationFrame(frame);
   }, [focusToken]);
+
+  // Load a seeded starter message, move the caret to the end, size the box to fit, and focus.
+  const seedToken = seed?.token ?? 0;
+  useEffect(() => {
+    if (seedToken === 0 || !seed) return;
+    setText(seed.text);
+    const frame = requestAnimationFrame(() => {
+      const el = textareaRef.current;
+      if (!el) return;
+      el.focus();
+      el.setSelectionRange(el.value.length, el.value.length);
+      el.style.height = "auto";
+      el.style.height = `${Math.max(large ? 76 : 44, Math.min(el.scrollHeight, large ? 180 : 160))}px`;
+    });
+    return () => cancelAnimationFrame(frame);
+    // Intentionally keyed only on the token — re-seeding the same text should still apply.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seedToken]);
 
   // The model switcher is a persistent control, shown once the instance reports at least one model
   // (the older metered gateway exposes a single "default"; current builds expose the full catalog).

@@ -132,56 +132,57 @@ export function WelcomeView({
         }}
         className="ca-welcome-card"
       >
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 26 }}>
-          {avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={mascotSrc}
-              alt={bot}
-              className="ca-mascot"
-              style={{ height: 150, width: 150, objectFit: "cover", borderRadius: "50%" }}
-            />
-          ) : (
-            <Image
-              src="/thecollegeagent.png"
-              alt="Your College Agent"
-              width={150}
-              height={150}
-              className="ca-mascot"
-              style={{ height: 150, width: "auto", objectFit: "contain" }}
-              priority
-            />
-          )}
+        <div className="ca-welcome-hero">
+          <div className="ca-mascot-wrap">
+            {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={mascotSrc}
+                alt={bot}
+                className="ca-mascot"
+                style={{ height: 118, width: 118, objectFit: "cover", borderRadius: "50%" }}
+              />
+            ) : (
+              <Image
+                src="/thecollegeagent.png"
+                alt="Your College Agent"
+                width={118}
+                height={118}
+                className="ca-mascot"
+                style={{ height: 118, width: "auto", objectFit: "contain" }}
+                priority
+              />
+            )}
+          </div>
+
+          <div className="ca-welcome-hero-text">
+            <h1
+              style={{
+                fontFamily: "'Fraunces', Georgia, serif",
+                fontSize: 32,
+                lineHeight: 1.12,
+                fontWeight: 600,
+                letterSpacing: "-.01em",
+                margin: "0 0 12px",
+                color: t.ink,
+              }}
+            >
+              Hey <span style={{ color: t.green }}>{name}</span>, I&apos;m {bot}.
+            </h1>
+
+            <p
+              style={{
+                fontSize: 17,
+                lineHeight: 1.6,
+                color: t.inkSoft,
+                margin: 0,
+              }}
+            >
+              Think of me as your sidekick for everything college throws at you, from your first
+              syllabus all the way to graduation and whatever comes after.
+            </p>
+          </div>
         </div>
-
-        <h1
-          style={{
-            fontFamily: "'Fraunces', Georgia, serif",
-            fontSize: 34,
-            lineHeight: 1.12,
-            fontWeight: 600,
-            letterSpacing: "-.01em",
-            textAlign: "center",
-            margin: "0 0 14px",
-            color: t.ink,
-          }}
-        >
-          Hey <span style={{ color: t.green }}>{name}</span>, I&apos;m {bot}.
-        </h1>
-
-        <p
-          style={{
-            textAlign: "center",
-            fontSize: 17,
-            lineHeight: 1.6,
-            color: t.inkSoft,
-            maxWidth: 480,
-            margin: "0 auto 36px",
-          }}
-        >
-          Think of me as your sidekick for everything college throws at you, from your first
-          syllabus all the way to graduation and whatever comes after.
-        </p>
 
         <ol
           style={{
@@ -242,6 +243,14 @@ export function WelcomeView({
       )}
 
       <style>{`
+        .ca-welcome-hero {
+          display: flex;
+          align-items: center;
+          gap: 26px;
+          margin-bottom: 34px;
+        }
+        .ca-welcome-hero .ca-mascot-wrap { flex: 0 0 auto; }
+        .ca-welcome-hero-text { flex: 1 1 auto; min-width: 0; text-align: left; }
         .ca-mascot {
           animation: ca-bob 4.5s ease-in-out infinite;
           transform-origin: center bottom;
@@ -256,6 +265,8 @@ export function WelcomeView({
         .ca-cta:focus-visible { outline: 3px solid ${t.greenSoft}; outline-offset: 3px; }
         @media (max-width: 560px) {
           .ca-welcome-card { padding: 36px 22px 32px !important; }
+          .ca-welcome-hero { flex-direction: column; gap: 14px; text-align: center; }
+          .ca-welcome-hero-text { text-align: center; }
         }
         @media (prefers-reduced-motion: reduce) {
           .ca-mascot { animation: none; }
