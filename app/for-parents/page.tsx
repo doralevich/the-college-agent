@@ -127,9 +127,9 @@ export default function ForParentsPage() {
         {/* WHAT PARENTS WORRY ABOUT MOST */}
         <section style={{ background: "var(--cream2)", padding: "72px 0" }}>
           <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "var(--green)", marginBottom: 14, display: "block" }}>Common Parent Concerns</span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "var(--green)", marginBottom: 14, display: "block" }}>Parent Questions, Answered</span>
             <h2 style={{ fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 800, color: "var(--navy)", marginBottom: 28, letterSpacing: "-.025em" }}>
-              What Parents Worry About Most, And What The Agent Solves
+              The Questions Parents Ask Most, Answered
             </h2>
             {[
               {
@@ -178,8 +178,10 @@ export default function ForParentsPage() {
               {BENEFITS.map(({ icon: Icon, title, desc }) => (
                 <div key={title} className="ben-card">
                   <div className="ben-icon"><Icon size={22} strokeWidth={1.9} /></div>
-                  <h3>{title}</h3>
-                  <p>{desc}</p>
+                  <div className="ben-text">
+                    <h3>{title}</h3>
+                    <p>{desc}</p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -245,18 +247,6 @@ export default function ForParentsPage() {
           </div>
         </section>
 
-        {/* INTERNAL LINKS */}
-        <section style={{ background: "#fff", padding: "48px 0" }}>
-          <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
-            <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--navy)", marginBottom: 20, letterSpacing: "-.02em" }}>Explore More</h2>
-            <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-              <a href="/for-students" style={{ fontSize: 14, color: "var(--green)", textDecoration: "underline", fontWeight: 600 }}>The Student View →</a>
-              <a href="/about" style={{ fontSize: 14, color: "var(--green)", textDecoration: "underline", fontWeight: 600 }}>About The College Agent →</a>
-              <a href="/faq" style={{ fontSize: 14, color: "var(--green)", textDecoration: "underline", fontWeight: 600 }}>Frequently Asked Questions →</a>
-            </div>
-          </div>
-        </section>
-
       </main>
 
       <Footer />
@@ -267,12 +257,14 @@ export default function ForParentsPage() {
         .ben-card {
           background: var(--cream2, #f8f7f4); border: 1px solid rgba(11,23,41,.07); border-radius: 16px;
           padding: 28px; box-shadow: 0 8px 28px rgba(11,23,41,.04);
+          display: flex; gap: 16px; align-items: flex-start;
         }
         .ben-icon {
-          width: 46px; height: 46px; border-radius: 14px; margin-bottom: 18px;
+          width: 46px; height: 46px; border-radius: 14px; flex-shrink: 0;
           display: flex; align-items: center; justify-content: center;
           background: rgba(61,139,61,.1); color: var(--green);
         }
+        .ben-text { flex: 1; min-width: 0; }
         .ben-card h3 { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 9px; letter-spacing: -.01em; }
         .ben-card p { font-size: 13px; line-height: 1.65; color: rgba(11,23,41,.62); }
         .btn-green {

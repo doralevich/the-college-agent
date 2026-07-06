@@ -237,10 +237,12 @@ export default function ForStudentsPage() {
             </div>
             <div className="feat-grid">
               {FEATURES.map(({ icon: Icon, title, desc }) => (
-                <div key={title} className="feat-card">
+                <div key={title} className="feat-card feat-card--row">
                   <div className="feat-icon"><Icon size={22} strokeWidth={1.9} /></div>
-                  <h3>{title}</h3>
-                  <p>{desc}</p>
+                  <div className="feat-text">
+                    <h3>{title}</h3>
+                    <p>{desc}</p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -338,19 +340,6 @@ export default function ForStudentsPage() {
             </p>
             <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
               <a href="/build" className="btn-green">Build My Agent</a>
-              <a href="/for-parents" className="btn-outline-light">For Parents</a>
-            </div>
-          </div>
-        </section>
-
-        {/* INTERNAL LINKS */}
-        <section style={{ background: "var(--cream2)", padding: "48px 0" }}>
-          <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
-            <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--navy)", marginBottom: 20, letterSpacing: "-.02em" }}>Explore More</h2>
-            <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-              <a href="/study" style={{ fontSize: 14, color: "var(--green)", textDecoration: "underline", fontWeight: 600 }}>AI Study Companion →</a>
-              <a href="/internships" style={{ fontSize: 14, color: "var(--green)", textDecoration: "underline", fontWeight: 600 }}>AI Internship Prep →</a>
-              <a href="/faq" style={{ fontSize: 14, color: "var(--green)", textDecoration: "underline", fontWeight: 600 }}>Frequently Asked Questions →</a>
             </div>
           </div>
         </section>
@@ -392,6 +381,10 @@ export default function ForStudentsPage() {
           display: flex; align-items: center; justify-content: center;
           background: rgba(61,139,61,.1); color: var(--green);
         }
+        /* Icon-beside-text card: the icon sits to the left and the copy wraps next to it. */
+        .feat-card--row { display: flex; gap: 16px; align-items: flex-start; }
+        .feat-card--row .feat-icon { margin-bottom: 0; flex-shrink: 0; }
+        .feat-text { flex: 1; min-width: 0; }
         .feat-card h3 { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 9px; letter-spacing: -.01em; }
         .feat-card p { font-size: 13px; line-height: 1.65; color: rgba(11,23,41,.62); }
         .btn-green {
