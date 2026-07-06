@@ -41,6 +41,10 @@ export const metadata: Metadata = {
   },
 };
 
+// Post excerpts come from Sanity, which sometimes contains em-dashes. Normalize them to
+// commas so blog copy matches the rest of the site (no em-dashes).
+const noDash = (s: string) => s.replace(/\s*—\s*/g, ", ");
+
 export default async function BlogPage() {
   const posts = await getCollegeAgentPosts();
 
@@ -66,19 +70,15 @@ export default async function BlogPage() {
           <div className="blog-grid">
             {posts.map((post) => (
               <article key={post._id} className="blog-card">
-                <Link href={`/blog/${post.slug.current}`} aria-label={postTitle(post)}>
+                <Link href={`/blog/${post.slug.current}`} className="blog-cover" aria-label={postTitle(post)}>
                   {post.featuredImageUrl ? (
-                    <img src={post.featuredImageUrl} alt="" className="blog-card-image" />
-                  ) : (
-                    <div className="blog-card-image blog-card-image-fallback" />
-                  )}
+                    <img src={post.featuredImageUrl} alt="" className="blog-cover-img" />
+                  ) : null}
+                  <h2 className="blog-cover-title">{postTitle(post)}</h2>
                 </Link>
                 <div className="blog-card-body">
                   <div className="blog-card-category">{categoryLabel(post.category)}</div>
-                  <h2>
-                    <Link href={`/blog/${post.slug.current}`}>{postTitle(post)}</Link>
-                  </h2>
-                  {post.excerpt ? <p>{post.excerpt}</p> : null}
+                  {post.excerpt ? <p>{noDash(post.excerpt)}</p> : null}
                   <Link className="blog-card-link" href={`/blog/${post.slug.current}`}>
                     Read Article
                   </Link>
@@ -120,22 +120,26 @@ function BlogStyles() {
         border-radius: 8px; overflow: hidden; box-shadow: 0 14px 38px rgba(11,18,32,.06);
         display: flex; flex-direction: column;
       }
-      .blog-card-image {
-        width: 100%; aspect-ratio: 1200 / 627; object-fit: cover; background: var(--navy);
-      }
-      .blog-card-image-fallback {
+      .blog-cover {
+        position: relative; display: flex; align-items: flex-end;
+        aspect-ratio: 1200 / 640; padding: 20px 22px; overflow: hidden; text-decoration: none;
         background:
-          linear-gradient(135deg, rgba(61,139,61,.24), transparent),
+          linear-gradient(150deg, rgba(61,139,61,.35), rgba(11,18,32,0) 58%),
           var(--navy);
+      }
+      .blog-cover-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      .blog-cover::after {
+        content: ""; position: absolute; inset: 0;
+        background: linear-gradient(to top, rgba(8,14,26,.82), rgba(8,14,26,.12) 72%);
+      }
+      .blog-cover-title {
+        position: relative; z-index: 1; margin: 0; color: #fff;
+        font-size: 18px; line-height: 1.24; font-weight: 850; letter-spacing: -.01em;
       }
       .blog-card-body { padding: 22px 22px 24px; display: flex; flex-direction: column; flex: 1; }
       .blog-card-category {
         font-family: var(--font-mono); font-size: 10px; font-weight: 700;
         text-transform: uppercase; letter-spacing: .1em; color: var(--green); margin-bottom: 12px;
-      }
-      .blog-card h2 {
-        font-size: 18px; line-height: 1.16; letter-spacing: 0; color: var(--navy);
-        margin-bottom: 12px; font-weight: 850;
       }
       .blog-card p {
         color: rgba(11,18,32,.66); font-size: 14px; line-height: 1.65; margin-bottom: 20px;
