@@ -5,14 +5,14 @@ import { NewsletterSignup } from "./NewsletterSignup";
 // dependence on per-page .dark-section rules) so it renders identically on every
 // marketing page.
 
-const CALENDLY = "https://calendly.com/therealdaveo/apolloai";
-
-// Horizontal footer menu.
+// Horizontal footer menu. "Schedule a Consultation" points at the /consultation landing
+// page (which embeds Calendly and fires the Meta booking conversion) rather than jumping
+// straight to Calendly, so every consultation funnels through the tracked page.
 const MENU_LINKS = [
   { label: "FAQ", href: "/faq" },
   { label: "Ambassador Program", href: "/ambassador" },
   { label: "Demo", href: "/demo" },
-  { label: "Schedule a Consultation", href: CALENDLY },
+  { label: "Schedule a Consultation", href: "/consultation" },
 ];
 
 // Privacy + Terms live in the bottom bar opposite the copyright, not in a column.
