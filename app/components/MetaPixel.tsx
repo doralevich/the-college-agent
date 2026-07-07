@@ -48,3 +48,14 @@ export function trackMeta(event: string, params?: Record<string, unknown>) {
     fbq("track", event, params);
   }
 }
+
+// Fire a CUSTOM Meta Pixel event (a name that isn't one of Meta's standard events, e.g. "Demo").
+// Uses fbq('trackCustom', ...) so it shows up in Events Manager and can back a Custom Conversion.
+// Same safe no-op guarding as trackMeta.
+export function trackMetaCustom(event: string, params?: Record<string, unknown>) {
+  if (typeof window === "undefined") return;
+  const fbq = (window as unknown as { fbq?: (...args: unknown[]) => void }).fbq;
+  if (typeof fbq === "function") {
+    fbq("trackCustom", event, params);
+  }
+}
