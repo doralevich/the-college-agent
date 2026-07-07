@@ -2,10 +2,11 @@
 
 import Script from "next/script";
 
-// Meta (Facebook) Pixel — stays dormant until NEXT_PUBLIC_META_PIXEL_ID is set in the
-// environment, so it ships safely and only starts tracking once a real Pixel ID is provided.
+// Meta (Facebook) Pixel — our live Pixel ID is the default so tracking works out of the box on
+// deploy; NEXT_PUBLIC_META_PIXEL_ID overrides it (e.g. a separate test pixel) with no code change.
+// A Pixel ID is a public identifier (exposed in the page source by design), not a secret.
 // Mirrors the Google Analytics setup in app/layout.tsx (next/script, afterInteractive).
-const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || "1800539337578126";
 
 export default function MetaPixel() {
   if (!PIXEL_ID) return null;

@@ -1,12 +1,12 @@
 import crypto from "crypto";
 
-// Meta Conversions API — server-side event delivery for Meta Ads. Stays dormant until both
-// META_PIXEL_ID (or NEXT_PUBLIC_META_PIXEL_ID) and META_CAPI_ACCESS_TOKEN are set, matching the
-// client Pixel gating, so it ships as a no-op and only sends events once credentials exist.
-// Server-side Purchase is more reliable than the browser pixel (iOS / ad-blocker resilient) and
-// is the right place to report a sale, since /build/success redirects before client JS runs.
+// Meta Conversions API — server-side event delivery for Meta Ads. The Pixel ID defaults to our
+// live pixel (matching the client), so the only thing left to activate server-side Purchase is
+// the secret: it stays dormant until META_CAPI_ACCESS_TOKEN is set. Server-side Purchase is more
+// reliable than the browser pixel (iOS / ad-blocker resilient) and is the right place to report a
+// sale, since /build/success redirects before client JS runs.
 
-const PIXEL_ID = process.env.META_PIXEL_ID || process.env.NEXT_PUBLIC_META_PIXEL_ID;
+const PIXEL_ID = process.env.META_PIXEL_ID || process.env.NEXT_PUBLIC_META_PIXEL_ID || "1800539337578126";
 const ACCESS_TOKEN = process.env.META_CAPI_ACCESS_TOKEN;
 const API_VERSION = "v19.0";
 
