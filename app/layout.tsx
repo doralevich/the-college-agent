@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import MetaPixel from "./components/MetaPixel";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const ibmPlexMono = IBM_Plex_Mono({
@@ -105,6 +106,7 @@ export default function RootLayout({
             gtag('config', 'G-3KS91J2QK3');
           `}
         </Script>
+        <MetaPixel />
         {children}
       </body>
     </html>

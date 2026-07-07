@@ -9,6 +9,7 @@ import { findOrCreateAuthUser } from "@/lib/auth/find-or-create-user";
 import { ambassadorByPromoCode, ambassadorBySlug, AMBASSADOR_COUPON_OFF_CENTS, CLEARING_DAYS } from "@/lib/ambassador";
 import { currentPlanAmountCents } from "@/lib/pricing/intro-cutoff";
 import { syncToMailchimp } from "@/lib/newsletter";
+import { sendMetaPurchase } from "@/lib/meta-capi";
 
 // Stripe webhook. This is the ONLY thing that flips entitlements to 'active' (never a
 // user-facing button). It MUST stay out of the proxy.ts auth matcher (no redirects) and
@@ -120,6 +121,22 @@ async function handleCheckoutCompleted(db: DB, session: Stripe.Checkout.Session)
   const customerId = idOf(session.customer);
   const subscriptionId = idOf(session.subscription);
   const paymentIntentId = idOf(session.payment_intent);
+
+  // Meta Conversions API: server-side Purchase for Meta Ads optimization + attribution.
+  // Dormant until META_PIXEL_ID + META_CAPI_ACCESS_TOKEN are set; best-effort so a failure
+  // here can never block account fulfillment.
+  try {
+    if (email && session.amount_total != null) {
+      await sendMetaPurchase({
+        email,
+        valueCents: session.amount_total,
+        currency: (session.currency ?? "usd").toUpperCase(),
+        eventId: session.id,
+      });
+    }
+  } catch (err) {
+    console.error("[stripe webhook] meta capi purchase", session.id, err);
+  }
 
   // Coerce empty string → null (an empty user_id would be an invalid uuid).
   let userId: string | null = session.metadata?.user_id || null;

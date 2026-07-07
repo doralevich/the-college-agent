@@ -66,7 +66,7 @@ const faqSchema = {
       name: "What does The College Agent cost?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "The College Agent is one plan with everything included: $499 one-time to build your agent, plus cloud hosting at $25/month or $250/year (the annual price equals ten monthly payments, so two months are free). Every new account starts with $20 of AI usage credits, and there is a 7-day money-back guarantee. Visit thecollegeagent.ai/build to get started.",
+        text: "The College Agent is one plan with everything included: $599 one-time to build your agent, plus cloud hosting at $25/month or $250/year (the annual price equals ten monthly payments, so two months are free). Every new account starts with $20 of AI usage credits, and there is a 7-day money-back guarantee. Visit thecollegeagent.ai/build to get started.",
       },
     },
     {
@@ -167,7 +167,7 @@ const FAQS = [
     q: "What does The College Agent cost?",
     a: (
       <>
-        <p>One plan, everything included: $499 one-time to build and configure your agent, plus cloud hosting at $25/month or $250/year (the annual price equals ten monthly payments, so two months are free). Every new account starts with $20 of AI usage credits, and there is a 7-day money-back guarantee: if it&apos;s not for you, one email within 7 days gets you a full refund.</p>
+        <p>One plan, everything included: $599 one-time to build and configure your agent, plus cloud hosting at $25/month or $250/year (the annual price equals ten monthly payments, so two months are free). Every new account starts with $20 of AI usage credits, and there is a 7-day money-back guarantee: if it&apos;s not for you, one email within 7 days gets you a full refund.</p>
         <p>To get started, visit <a href="/build" style={{ color: "var(--green)" }}>thecollegeagent.ai/build</a>.</p>
         <p>For context, a single private tutoring session typically costs $80–$150. A college counselor charges $3,000–$10,000. The College Agent covers academic organization, communication support, internship tracking, and career planning, across all four years, for a fraction of what parents typically spend on individual academic services.</p>
         <p>Many parents purchase the agent as a gift for their student, for freshman move-in, a birthday, or as an investment in their four-year success. If you&apos;re a parent considering it for your student, the <a href="/for-parents" style={{ color: "var(--green)" }}>parents page</a> has more context on what to expect.</p>

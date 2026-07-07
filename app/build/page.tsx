@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import BuildNav from "../components/BuildNav";
 import ChatBot from "../components/ChatBot";
+import { trackMeta } from "../components/MetaPixel";
 import {
   PLAN_AMOUNT_CENTS,
   HOSTING_AMOUNT_CENTS,
   HOSTING_ANNUAL_AMOUNT_CENTS,
 } from "@/lib/pricing/intro-cutoff";
 
-// Single price model: one-time platform fee ($499) PLUS recurring hosting, the
+// Single price model: one-time platform fee ($599) PLUS recurring hosting, the
 // student's choice of $25/month or $250/year (annual = 10 x monthly, 2 months free).
 // The Stripe Checkout Session bundles both line items (see app/api/build/checkout);
 // we POST to that endpoint and redirect to the returned session.url so students land
@@ -112,7 +113,7 @@ export default function BuildPage() {
     if (!info.lastName.trim()) return "Last name is required.";
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(info.schoolEmail.trim())) return "Enter a valid school email.";
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(info.personalEmail.trim())) return "Enter a valid personal email.";
-    if (!info.mobile.trim()) return "Phone number is required.";
+    // Phone is optional here to cut pre-payment friction — it's collected again in onboarding.
     if (!agreeTerms) return "Please agree to the Terms & Conditions to continue.";
     return null;
   }
@@ -140,6 +141,8 @@ export default function BuildPage() {
         mobile: info.mobile.trim(),
       }),
     }).catch(() => {});
+    // Top-of-funnel conversion signal for Meta Ads optimization (no-op until the Pixel ID is set).
+    trackMeta("Lead");
 
     try {
       const res = await fetch("/api/build/checkout", {
@@ -159,6 +162,7 @@ export default function BuildPage() {
       if (!res.ok || !body?.url) {
         throw new Error(body?.error?.message ?? `Checkout failed (${res.status})`);
       }
+      trackMeta("InitiateCheckout");
       window.location.href = body.url as string;
     } catch (err) {
       setError((err as Error).message);
@@ -295,7 +299,7 @@ export default function BuildPage() {
                     Let&apos;s do it!
                   </button>
 
-                  <p className="ca-trust">Secure checkout by Stripe</p>
+                  <p className="ca-trust">Secure checkout by Stripe &middot; 7-day money-back guarantee</p>
                 </div>
 
                 <p className="ca-next">
@@ -367,14 +371,13 @@ export default function BuildPage() {
                   </label>
 
                   <label className="ca-field">
-                    <span>Phone</span>
+                    <span>Phone <span style={{ opacity: 0.55, fontWeight: 400 }}>(optional)</span></span>
                     <input
                       type="tel"
                       autoComplete="tel"
                       value={info.mobile}
                       onChange={(e) => setField("mobile", e.target.value)}
                       placeholder="(555) 123-4567"
-                      required
                     />
                   </label>
 
