@@ -9,7 +9,7 @@ const FAQS = [
   },
   {
     q: "What does it cost?",
-    a: "One plan, everything included: $499 one-time to build and configure your agent, plus cloud hosting at $25/month or $250/year (the annual price is ten months, so two months are free). Every new account starts with $20 of AI usage credits.",
+    a: "One plan, everything included: $599 one-time to build and configure your agent, plus cloud hosting at $25/month or $250/year (the annual price is ten months, so two months are free). Every new account starts with $20 of AI usage credits.",
   },
   {
     q: "Is there a refund policy?",

@@ -1,6 +1,6 @@
-// Flat pricing (business numbers locked): one-time platform fee $499, hosting
+// Flat pricing (business numbers locked): one-time platform fee $599, hosting
 // $25/month or $250/year. The annual price IS the discount ("2 months free" = 10 x $25),
-// not a trial. The ambassador coupon ($50 off) takes the one-time fee to $449 at checkout.
+// not a trial. The ambassador coupon ($50 off) takes the one-time fee to $549 at checkout.
 //
 // This module used to carry the intro/regular Aug-15 cutoff. The intro mechanism is
 // retired; the old exports remain as aliases so every page that imported the pair
@@ -8,7 +8,7 @@
 // banners and "intro pricing" copy vanish everywhere without touching each page.
 
 export const PLAN_LOOKUP = "ca_plan";
-export const PLAN_AMOUNT_CENTS = 49900;
+export const PLAN_AMOUNT_CENTS = 59900;
 
 export const HOSTING_LOOKUP = "ca_hosting";
 export const HOSTING_AMOUNT_CENTS = 2500;

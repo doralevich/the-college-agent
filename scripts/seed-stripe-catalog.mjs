@@ -19,7 +19,7 @@ const stripe = new Stripe(key);
 // lookup_key, display name, amount (cents), recurring interval ('month' | 'year' | false).
 const CATALOG = [
   // Current model: flat one-time platform fee + hosting monthly/annual.
-  { key: "ca_plan", name: "The College Agent (Platform Fee)", amount: 49900, recurring: false },
+  { key: "ca_plan", name: "The College Agent (Platform Fee)", amount: 59900, recurring: false },
   { key: "ca_hosting", name: "The College Agent — Hosting", amount: 2500, recurring: "month" },
   { key: "ca_hosting_annual", name: "The College Agent — Hosting (Annual)", amount: 25000, recurring: "year" },
   { key: "plan_undergraduate", name: "The Undergraduate", amount: 19900, recurring: false },
