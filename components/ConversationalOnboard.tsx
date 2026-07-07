@@ -37,18 +37,8 @@ const SURPRISE_NAMES = [
   "Scout", "Sunny", "Theo", "Turbo", "Ziggy", "Zoe",
 ];
 
-// The brand avatar presets (public/avatars, sliced from David's boards): 20 student-style
-// faces and 20 dressed-up bots. Picking one is converted to a File and rides the exact
-// same upload path as a custom image.
-const AVATAR_PRESETS = Array.from(
-  { length: 20 },
-  (_, i) => `/avatars/preset-${String(i + 1).padStart(2, "0")}.webp`
-);
-const BOT_PRESETS = Array.from(
-  { length: 20 },
-  (_, i) => `/avatars/bot-${String(i + 1).padStart(2, "0")}.webp`
-);
-// "College Agent Guys" — the newest mascot set (transparent, sits on the brand-green circle).
+// The "College Agent Guys" mascot avatars (public/avatars/guy-*, transparent). Picking one is
+// converted to a File and rides the exact same upload path as a custom image.
 const GUY_PRESETS = Array.from(
   { length: 12 },
   (_, i) => `/avatars/guy-${String(i + 1).padStart(2, "0")}.webp`
@@ -178,16 +168,6 @@ function AvatarPicker({
 
       <div style={{ fontSize: 12, fontWeight: 600, color: T.inkSoft, letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 10 }}>
         Or pick one of ours
-      </div>
-      {presetGrid(AVATAR_PRESETS, "Avatar")}
-
-      <div style={{ fontSize: 12, fontWeight: 600, color: T.inkSoft, letterSpacing: "0.04em", textTransform: "uppercase", margin: "16px 0 10px" }}>
-        Or pick your bot
-      </div>
-      {presetGrid(BOT_PRESETS, "Bot")}
-
-      <div style={{ fontSize: 12, fontWeight: 600, color: T.inkSoft, letterSpacing: "0.04em", textTransform: "uppercase", margin: "16px 0 10px" }}>
-        Or meet the crew
       </div>
       {presetGrid(GUY_PRESETS, "College Agent")}
     </div>
