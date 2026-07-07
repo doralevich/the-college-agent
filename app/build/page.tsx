@@ -113,7 +113,7 @@ export default function BuildPage() {
     if (!info.lastName.trim()) return "Last name is required.";
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(info.schoolEmail.trim())) return "Enter a valid school email.";
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(info.personalEmail.trim())) return "Enter a valid personal email.";
-    if (!info.mobile.trim()) return "Phone number is required.";
+    // Phone is optional here to cut pre-payment friction — it's collected again in onboarding.
     if (!agreeTerms) return "Please agree to the Terms & Conditions to continue.";
     return null;
   }
@@ -299,7 +299,7 @@ export default function BuildPage() {
                     Let&apos;s do it!
                   </button>
 
-                  <p className="ca-trust">Secure checkout by Stripe</p>
+                  <p className="ca-trust">Secure checkout by Stripe &middot; 7-day money-back guarantee</p>
                 </div>
 
                 <p className="ca-next">
@@ -371,14 +371,13 @@ export default function BuildPage() {
                   </label>
 
                   <label className="ca-field">
-                    <span>Phone</span>
+                    <span>Phone <span style={{ opacity: 0.55, fontWeight: 400 }}>(optional)</span></span>
                     <input
                       type="tel"
                       autoComplete="tel"
                       value={info.mobile}
                       onChange={(e) => setField("mobile", e.target.value)}
                       placeholder="(555) 123-4567"
-                      required
                     />
                   </label>
 
