@@ -22,7 +22,7 @@ function price(cents: number): string {
 export const metadata: Metadata = {
   title: "The College Agent, Your AI Companion for College Students",
   description:
-    "The College Agent is your AI study companion and study partner for all four years of college, from freshman year to your first job offer. Plan your schedule, study smarter, prep for internships, and graduate career-ready.",
+    "Your AI study companion for all four years of college. Plan your schedule, study smarter, prep for internships, and graduate career-ready.",
   alternates: { canonical: "https://thecollegeagent.ai" },
 };
 
@@ -163,7 +163,6 @@ function buildJsonLd() {
       description:
         "An AI study companion and study partner for college students that helps with studying, class schedules, notes, deadlines, internships, and career planning across all four years of college.",
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-      aggregateRating: { "@type": "AggregateRating", ratingValue: "4.8", ratingCount: "127" },
     },
   ],
   };
