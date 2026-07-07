@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import BuildNav from "../components/BuildNav";
 import ChatBot from "../components/ChatBot";
+import { trackMeta } from "../components/MetaPixel";
 import {
   PLAN_AMOUNT_CENTS,
   HOSTING_AMOUNT_CENTS,
@@ -140,6 +141,8 @@ export default function BuildPage() {
         mobile: info.mobile.trim(),
       }),
     }).catch(() => {});
+    // Top-of-funnel conversion signal for Meta Ads optimization (no-op until the Pixel ID is set).
+    trackMeta("Lead");
 
     try {
       const res = await fetch("/api/build/checkout", {
@@ -159,6 +162,7 @@ export default function BuildPage() {
       if (!res.ok || !body?.url) {
         throw new Error(body?.error?.message ?? `Checkout failed (${res.status})`);
       }
+      trackMeta("InitiateCheckout");
       window.location.href = body.url as string;
     } catch (err) {
       setError((err as Error).message);
