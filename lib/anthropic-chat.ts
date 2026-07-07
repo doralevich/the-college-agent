@@ -31,7 +31,13 @@ export type ChatResult =
 
 type MinimalMessage = { role: "user" | "assistant"; content: string };
 
-function categorize(status: number, type?: string): ChatErrorCategory {
+export function categorize(status: number, type?: string, message?: string): ChatErrorCategory {
+  // Credit/billing problems can arrive as a 400 whose type is a generic "invalid_request_error"
+  // and whose real cause lives only in the message ("Your credit balance is too low ..."). Detect
+  // that by text FIRST — before the generic 400 -> bad_request below — so an empty balance shows
+  // the clear "over its usage limit" copy instead of a vague "I hit a snag".
+  const haystack = `${type ?? ""} ${message ?? ""}`;
+  if (/credit|billing|quota|payment|balance is too low/i.test(haystack)) return "credits";
   if (status === 401) return "auth";
   if (status === 403) return "permission";
   if (status === 404) return "not_found";
@@ -39,7 +45,6 @@ function categorize(status: number, type?: string): ChatErrorCategory {
   if (status === 429) return "rate_limit";
   if (status === 500 || status === 503 || status === 529) return "overloaded";
   if (status === 400) return "bad_request";
-  if (type && /credit|billing|quota|payment/i.test(type)) return "credits";
   return "unknown";
 }
 
@@ -78,7 +83,7 @@ export async function chatComplete(
       const err = e as { status?: number; error?: { error?: { type?: string }; type?: string }; message?: string };
       const status = typeof err.status === "number" ? err.status : 0;
       const type = err.error?.error?.type ?? err.error?.type;
-      const category = categorize(status, type);
+      const category = categorize(status, type, err.message);
       const detail = [status || "?", type, err.message].filter(Boolean).join(" ").trim();
       console.error(`[${tag}] ${model} failed: status=${status || "?"} type=${type ?? "?"} category=${category} :: ${err.message ?? ""}`);
       last = { status: status || 502, category, detail };

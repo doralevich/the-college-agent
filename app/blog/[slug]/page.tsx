@@ -62,8 +62,30 @@ export default async function BlogPostPage({ params }: PageProps) {
     notFound();
   }
 
+  const postUrl = `https://thecollegeagent.ai/blog/${post.slug.current}`;
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: postTitle(post),
+    description: post.seoDescription || post.excerpt || "",
+    ...(post.publishedAt ? { datePublished: post.publishedAt, dateModified: post.publishedAt } : {}),
+    image: post.featuredImageUrl ? [post.featuredImageUrl] : ["https://thecollegeagent.ai/og-image.jpg"],
+    url: postUrl,
+    mainEntityOfPage: postUrl,
+    author: { "@type": "Organization", name: "The College Agent", url: "https://thecollegeagent.ai" },
+    publisher: {
+      "@type": "Organization",
+      name: "The College Agent",
+      logo: { "@type": "ImageObject", url: "https://thecollegeagent.ai/college-agent-icon.png" },
+    },
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
       <Nav />
       <main>
         <article>
