@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { pickMascot } from "@/lib/mascots";
+import { trackMetaCustom } from "@/app/components/MetaPixel";
 
 // Entry gate + capped demo chat. The form is framed as "set up your agent," not "give
 // us your info." Two consent boxes, neither pre-checked: email and SMS are separate
@@ -113,6 +114,13 @@ export function DemoExperience({ refSlug }: { refSlug: string }) {
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Fire a Meta "Demo" event once when the demo opens. Every Demo button (nav, footer,
+  // homepage, ad links) routes here, so this one spot captures them all. No-op until the
+  // Pixel ID is set, so it ships safely and only starts counting once Meta is live.
+  useEffect(() => {
+    trackMetaCustom("Demo");
+  }, []);
 
   // Land at the top of the page whenever the demo opens (some entry points scroll-restore
   // to wherever the visitor last was).
