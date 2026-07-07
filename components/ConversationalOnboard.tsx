@@ -48,6 +48,11 @@ const BOT_PRESETS = Array.from(
   { length: 20 },
   (_, i) => `/avatars/bot-${String(i + 1).padStart(2, "0")}.webp`
 );
+// "College Agent Guys" — the newest mascot set (transparent, sits on the brand-green circle).
+const GUY_PRESETS = Array.from(
+  { length: 12 },
+  (_, i) => `/avatars/guy-${String(i + 1).padStart(2, "0")}.webp`
+);
 
 function AvatarPicker({
   avatarFile,
@@ -180,6 +185,11 @@ function AvatarPicker({
         Or pick your bot
       </div>
       {presetGrid(BOT_PRESETS, "Bot")}
+
+      <div style={{ fontSize: 12, fontWeight: 600, color: T.inkSoft, letterSpacing: "0.04em", textTransform: "uppercase", margin: "16px 0 10px" }}>
+        Or meet the crew
+      </div>
+      {presetGrid(GUY_PRESETS, "College Agent")}
     </div>
   );
 }
