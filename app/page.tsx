@@ -206,7 +206,7 @@ export default async function Home() {
               Apollo[Claw] College Edition
             </div>
             <h1 className="hero-h1" style={{ color: "#fff", textAlign: "left" }}>
-              Your personal<br />college AI.
+              Your personal <br />college AI.
             </h1>
             <p className="hero-sub">
               The first AI assistant designed to manage your entire academic life. It understands your classes,
