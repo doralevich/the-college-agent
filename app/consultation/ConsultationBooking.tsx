@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
-import { trackMeta, trackMetaCustom } from "@/app/components/MetaPixel";
 
-// Embedded Calendly booking for the consultation landing page. Reuses the same Calendly
-// David already links from the footer, so consultations land on his existing calendar.
-// When a booking actually completes, Calendly posts a message to the parent window and we
-// fire a Meta conversion (Schedule + a custom Consultation event) — no Calendly-side pixel
-// setup needed. All Meta calls are no-ops until the Pixel is live, so this ships safely.
+// Embedded Calendly booking for the consultation landing page. Reuses the same Calendly David
+// already links from the footer. The Meta conversion fires on the /thank-you page that Calendly
+// redirects to after a completed booking (see app/thank-you), so there is intentionally no
+// tracking here — keeping it in one place avoids double-counting a single booking.
 
 const CALENDLY_URL = "https://calendly.com/therealdaveo/apolloai";
 const WIDGET_SRC = "https://assets.calendly.com/assets/external/widget.js";
@@ -27,18 +25,6 @@ export default function ConsultationBooking() {
       script.async = true;
       document.body.appendChild(script);
     }
-
-    function onMessage(e: MessageEvent) {
-      if (
-        e.origin === "https://calendly.com" &&
-        (e.data as { event?: string })?.event === "calendly.event_scheduled"
-      ) {
-        trackMeta("Schedule");
-        trackMetaCustom("Consultation");
-      }
-    }
-    window.addEventListener("message", onMessage);
-    return () => window.removeEventListener("message", onMessage);
   }, []);
 
   return (
