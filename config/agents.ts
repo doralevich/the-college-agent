@@ -5,10 +5,12 @@ import type { HostingKey } from "@/lib/pricing";
 // preinstalled Claude Code CLI. The template image + publish/register scripts live in
 // ./template (see template/release.sh).
 //
-// Because `college-agent` is a CUSTOM template, it cannot reuse Agent37's reserved ports
-// (3737/7681/8080/9119); the image remaps those surfaces to the non-reserved ports below
-// and the template declares them (template/release.sh). The signed-url allowlist tracks
-// PORTS automatically (app/api/agents/[id]/signed-url/route.ts).
+// The image runs stock Hermes — gateway on 3737, and its surfaces on the ports below.
+// (Earlier builds remapped these off Agent37's reserved range because custom templates
+// couldn't touch it; that restriction is gone — every container port is reachable at
+// {id}-{port}.agent37.app — so the template declares nothing and the ports are stock.)
+// The app opens the surfaces via signed URLs, which mint for any port; the allowlist below
+// is the guard (app/api/agents/[id]/signed-url/route.ts). See template/release.sh.
 // Machine shape is driven by the student's HOSTING plan (lib/pricing). Agent37 only
 // accepts three exact (cpu, memory) combos right now — 2/4, 4/8, 8/16 — with disk
 // bands of 6-20, 20-40, 40-80 GB respectively. We always meet-or-beat what the /build
@@ -48,8 +50,8 @@ export const DEFAULT_AGENT = {
 } as const;
 
 export const PORTS = {
-  // Remapped, non-reserved ports declared by the `college-agent` template.
-  dashboard: 9120, // Hermes dashboard      (stock 9119, reserved)
-  terminal: 7682,  // ttyd terminal — where students run `claude` (stock 7681, reserved)
-  files: 8081,     // file browser          (stock 8080, reserved)
+  // Stock Hermes surface ports. Opened via signed URLs; reachable at {id}-{port}.agent37.app.
+  dashboard: 9119, // Hermes dashboard
+  terminal: 7681,  // ttyd terminal — where students run `claude`
+  files: 8080,     // file browser
 } as const;

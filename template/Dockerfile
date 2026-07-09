@@ -33,16 +33,14 @@ RUN NPM_CONFIG_PREFIX=/usr/local npm install -g \
   && command -v claude >/dev/null \
   && npm cache clean --force
 
-# Re-expose Hermes' surfaces on NON-reserved ports — the control plane rejects custom
-# templates that declare the reserved 3737/7681/8080/9119 (agentPorts.ts), and exposes
-# only declared template ports. The stock entrypoint honors these env overrides. The
-# gateway's port is set by the platform from the template's default port (3738).
-ENV AGENT37_TERMINAL_PORT=7682 \
-    AGENT37_HERMES_DASHBOARD_PORT=9120 \
-    AGENT37_FILEBROWSER_PORT=8081
+# Stock Hermes ports — no remap. Custom templates used to be barred from Agent37's reserved
+# range (3737/7681/8080/9119), so earlier builds moved these; that restriction is gone (every
+# container port is reachable at {id}-{port}.agent37.app), so we run stock. The gateway stays
+# on its default 3737 — the template declares no default_port, so the bare instance URL routes
+# there automatically (see release.sh).
 
-# Documentation only (the platform routes the declared template ports): gateway, terminal,
-# dashboard, files.
-EXPOSE 3738 7682 9120 8081
+# Documentation only (the platform routes every port at {id}-{port}.agent37.app, and the bare
+# instance URL at the default 3737): gateway, terminal, dashboard, files.
+EXPOSE 3737 7681 8080 9119
 
 USER node

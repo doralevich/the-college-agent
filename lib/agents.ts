@@ -1,7 +1,7 @@
 import { agent37 } from "@/lib/agent37";
 import type { Agent, AgentRow, MergedAgent } from "@/lib/types";
 
-// One account-wide listAgents() (live status/resources/ports) + one listTemplates()
+// One account-wide listAgents() (live status/resources) + one listTemplates()
 // (latest image per template, to flag available updates). Either agent37 failure
 // degrades to an empty map rather than throwing, so the dashboard still renders the
 // stored rows. Shared by the member and admin agent-list routes.
@@ -25,7 +25,7 @@ export async function loadLiveAgentState(): Promise<{
 }
 
 // Project a stored AgentRow onto its live agent37 instance, preferring live values
-// (resources/status/ports) and flagging update_available when the running image lags
+// (resources/status) and flagging update_available when the running image lags
 // the template's latest. `live` is undefined when the box isn't in the account listing.
 export function mergeAgent(
   row: AgentRow,
@@ -42,7 +42,6 @@ export function mergeAgent(
     live_status: live?.status ?? row.status,
     status_reason: live?.status_reason ?? null,
     past_due: live?.past_due ?? false,
-    ports: live?.ports ?? [],
     update_available: !!(live?.image_ref && latestImage && live.image_ref !== latestImage),
   };
 }
