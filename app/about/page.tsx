@@ -3,14 +3,15 @@ import Nav from "../components/Nav";
 import { Footer } from "../components/Footer";
 
 export const metadata: Metadata = {
-  title: "About The College Agent, AI built for your entire college journey",
+  title: "About The College Agent — AI Built for Your Entire College Journey",
   description:
-    "The College Agent is a personal AI companion built by Apollo Claw to solve the real challenges college students face, from freshman orientation to senior career planning.",
+    "The College Agent is a personal AI study companion built by Apollo Claw to solve real challenges college students face, from freshman orientation to senior career planning.",
   alternates: { canonical: "https://thecollegeagent.ai/about" },
   openGraph: {
-    title: "About The College Agent, AI built for your entire college journey",
+    type: "website",
+    title: "About The College Agent — AI Built for Your Entire College Journey",
     description:
-      "The College Agent is a personal AI companion built by Apollo Claw to solve the real challenges college students face, from freshman orientation to senior career planning.",
+      "The College Agent is a personal AI study companion built by Apollo Claw to solve real challenges college students face, from freshman orientation to senior career planning.",
     url: "https://thecollegeagent.ai/about",
     images: [{ url: "https://thecollegeagent.ai/og-image.png", width: 1200, height: 630, alt: "The College Agent" }],
   },

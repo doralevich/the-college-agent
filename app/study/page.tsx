@@ -5,9 +5,9 @@ import { Footer } from "../components/Footer";
 import { BookOpenCheck, Clock, FileText, NotebookTabs, Sparkles, TrendingUp } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "AI Study Companion for College Students, The College Agent",
+  title: "AI Study Companion for College — Study Smarter, Retain More",
   description:
-    "The College Agent is your AI study companion, turning notes into study guides, building review schedules, and helping you actually prepare instead of just showing up.",
+    "Your AI study companion turns notes into study guides, builds review schedules, and generates practice questions personalized to your classes and exam dates.",
   keywords: [
     "AI study companion",
     "AI study tool",
@@ -20,9 +20,10 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "https://thecollegeagent.ai/study" },
   openGraph: {
-    title: "AI Study Companion for College Students, The College Agent",
+    type: "website",
+    title: "AI Study Companion for College — Study Smarter, Retain More",
     description:
-      "The College Agent is your AI study companion, turning notes into study guides, building review schedules, and helping you actually prepare instead of just showing up.",
+      "Your AI study companion turns notes into study guides, builds review schedules, and generates practice questions personalized to your classes and exam dates.",
     url: "https://thecollegeagent.ai/study",
     images: [{ url: "https://thecollegeagent.ai/og-image.png", width: 1200, height: 630, alt: "The College Agent" }],
   },

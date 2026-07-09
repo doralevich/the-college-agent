@@ -164,6 +164,52 @@ function buildJsonLd() {
         "An AI study companion and study partner for college students that helps with studying, class schedules, notes, deadlines, internships, and career planning across all four years of college.",
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
     },
+    {
+      "@type": "FAQPage",
+      "@id": "https://thecollegeagent.ai/#faq",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "What is The College Agent?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "The College Agent is a personal AI study companion built specifically for college students. It manages your class schedule, study plans, internship pipeline, and career goals across all four years of college.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "How does The College Agent help with studying?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "The College Agent turns your notes, slides, and readings into structured study guides, builds review schedules backward from your exam dates using spaced repetition, and generates practice questions from your actual course materials.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "How does The College Agent help with internships?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "The College Agent tracks internship deadlines, drafts outreach emails to recruiters and alumni, manages your application pipeline, and prepares you for interviews so you can land your first internship before junior year.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Is The College Agent different from ChatGPT?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes. ChatGPT is a general-purpose tool that starts from zero every conversation. The College Agent is a 4-year AI companion configured for your school, major, classes, and goals — it grows smarter with every semester.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Can high school students use The College Agent?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes. High school students can start building their College Agent in junior or senior year to develop study habits, build a 4-year plan, and arrive at college freshman year already a step ahead.",
+          },
+        },
+      ],
+    },
   ],
   };
 }

@@ -5,9 +5,9 @@ import { Footer } from "../components/Footer";
 import { BriefcaseBusiness, CalendarDays, Mail, NotebookTabs, Sparkles, Target } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "AI for College Students, The College Agent",
+  title: "AI for College Students — The College Agent Platform",
   description:
-    "The only AI built for your whole college experience: classes, studying, internships, social life, and career planning. It grows with you from before freshman year to after graduation.",
+    "The only AI built for your whole college experience: classes, studying, internships, social life, and career planning, from freshman year to graduation.",
   keywords: [
     "AI for college students",
     "AI study companion",
@@ -18,9 +18,10 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "https://thecollegeagent.ai/for-students" },
   openGraph: {
-    title: "AI for College Students, The College Agent",
+    type: "website",
+    title: "AI for College Students — The College Agent Platform",
     description:
-      "The only AI built for your whole college experience: classes, studying, internships, social life, and career planning. It grows with you from before freshman year to after graduation.",
+      "The only AI built for your whole college experience: classes, studying, internships, social life, and career planning, from freshman year to graduation.",
     url: "https://thecollegeagent.ai/for-students",
     images: [{ url: "https://thecollegeagent.ai/og-image.png", width: 1200, height: 630, alt: "The College Agent" }],
   },
@@ -340,6 +341,19 @@ export default function ForStudentsPage() {
             </p>
             <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
               <a href="/build" className="btn-green">Build My Agent</a>
+            </div>
+          </div>
+        </section>
+
+        {/* INTERNAL LINKS */}
+        <section style={{ background: "var(--cream2)", padding: "48px 0" }}>
+          <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--navy)", marginBottom: 20, letterSpacing: "-.02em" }}>Explore More</h2>
+            <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+              <a href="/for-parents" style={{ fontSize: 14, color: "var(--green)", textDecoration: "underline", fontWeight: 600 }}>College Agent for Parents →</a>
+              <a href="/study" style={{ fontSize: 14, color: "var(--green)", textDecoration: "underline", fontWeight: 600 }}>AI Study Companion →</a>
+              <a href="/internships" style={{ fontSize: 14, color: "var(--green)", textDecoration: "underline", fontWeight: 600 }}>AI Internship Prep →</a>
+              <a href="/faq" style={{ fontSize: 14, color: "var(--green)", textDecoration: "underline", fontWeight: 600 }}>Frequently Asked Questions →</a>
             </div>
           </div>
         </section>

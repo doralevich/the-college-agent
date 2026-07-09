@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Inter } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import MetaPixel from "./components/MetaPixel";
+import GoogleAnalytics from "./components/GoogleAnalytics";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const ibmPlexMono = IBM_Plex_Mono({
@@ -59,12 +59,15 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
+  alternates: {
+    canonical: "https://thecollegeagent.ai",
+  },
   openGraph: {
     type: "website",
     url: "https://thecollegeagent.ai",
-    title: "The College Agent, Your AI Companion for College Students",
+    title: "The College Agent — AI Companion for College Students",
     description:
-      "The College Agent is your AI study companion and study partner for all four years of college, from freshman year to your first job offer. Plan your schedule, study smarter, prep for internships, and graduate career-ready.",
+      "Your 4-year AI companion for college. Plan your schedule, study smarter, prep for internships, and graduate career-ready. Built for students, not admissions.",
     siteName: "The College Agent",
     images: [
       {
@@ -94,18 +97,7 @@ export default function RootLayout({
     // hydration (authed surface only), which React would otherwise flag as a mismatch.
     <html lang="en" className={`${inter.variable} ${ibmPlexMono.variable}`} suppressHydrationWarning>
       <body>
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-3KS91J2QK3"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-3KS91J2QK3');
-          `}
-        </Script>
+        <GoogleAnalytics />
         <MetaPixel />
         {children}
       </body>

@@ -3,14 +3,15 @@ import Nav from "../components/Nav";
 import { Footer } from "../components/Footer";
 
 export const metadata: Metadata = {
-  title: "FAQ, The College Agent",
+  title: "FAQ — The College Agent, AI Companion for College Students",
   description:
-    "Answers to the most common questions about The College Agent, what it is, how it works, who it's for, and what it costs.",
+    "Common questions about The College Agent AI study companion: what it is, how it works, who it's for, pricing, privacy, and how it compares to ChatGPT.",
   alternates: { canonical: "https://thecollegeagent.ai/faq" },
   openGraph: {
-    title: "FAQ, The College Agent",
+    type: "website",
+    title: "FAQ — The College Agent, AI Companion for College Students",
     description:
-      "Answers to the most common questions about The College Agent, what it is, how it works, who it's for, and what it costs.",
+      "Common questions about The College Agent AI study companion: what it is, how it works, who it's for, pricing, privacy, and how it compares to ChatGPT.",
     url: "https://thecollegeagent.ai/faq",
     images: [{ url: "https://thecollegeagent.ai/og-image.png", width: 1200, height: 630, alt: "The College Agent" }],
   },
