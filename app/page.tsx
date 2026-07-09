@@ -205,7 +205,7 @@ export default async function Home() {
               <span style={{ color: "var(--green)", fontSize: 14 }}>&#9670;</span>
               Apollo[Claw] College Edition
             </div>
-            <h1 className="hero-h1" style={{ color: "#fff", textAlign: "left" }}>
+            <h1 className="hero-h1" style={{ color: "#fff" }}>
               Your personal <br />college AI.
             </h1>
             <p className="hero-sub">
@@ -485,7 +485,7 @@ export default async function Home() {
         }
         .hero-h1 {
           font-size: clamp(34px, 5vw, 64px); font-weight: 800; line-height: 1.02;
-          letter-spacing: -.035em; color: #fff; margin-bottom: 20px;
+          letter-spacing: -.035em; color: #fff; margin-bottom: 20px; text-align: left;
         }
         .hero-sub {
           font-size: clamp(16px, 1.4vw, 19px); line-height: 1.7;
@@ -662,7 +662,7 @@ export default async function Home() {
         @media (max-width: 640px) {
           /* Stack the hero: mascot on top, centered copy, natural headline wrapping. */
           .hero-row { flex-direction: column; gap: 30px; text-align: center; }
-          .hero-h1 { white-space: normal; font-size: clamp(34px, 10vw, 52px); }
+          .hero-h1 { white-space: normal; font-size: clamp(34px, 10vw, 52px); text-align: center; }
           .hero-h1 br { display: none; }
           .hero-sub { margin-bottom: 28px; }
           .hero-cta-row { justify-content: center; }
