@@ -336,7 +336,7 @@ export default function AmbassadorPage() {
           .hero-shell.hero-with-bot {
             grid-template-columns: 1fr;
             text-align: center;
-            justify-items: center;
+            justify-items: stretch;
           }
           .hero-with-bot .affiliate-copy p {
             margin-left: auto;
@@ -1169,10 +1169,10 @@ export default function AmbassadorPage() {
         }
         @media (max-width: 640px) {
           .affiliate-shell {
-            width: calc(100vw - 80px) !important;
-            max-width: calc(100vw - 80px) !important;
-            margin-left: 16px;
-            margin-right: 64px;
+            width: calc(100% - 40px) !important;
+            max-width: calc(100% - 40px) !important;
+            margin-left: auto;
+            margin-right: auto;
           }
           .affiliate-hero,
           .affiliate-section,
@@ -1188,22 +1188,15 @@ export default function AmbassadorPage() {
           .program-item,
           .ambassador-form,
           .section-heading {
-            width: calc(100vw - 80px);
-            max-width: calc(100vw - 80px);
+            width: 100%;
+            max-width: 100%;
           }
           .affiliate-hero {
             padding: 76px 0 56px;
           }
-          .affiliate-actions,
-          .affiliate-actions a {
-            width: calc(100% - 56px);
-          }
-          .affiliate-copy,
-          .affiliate-panel,
-          .section-heading,
-          .program-grid,
-          .request-grid {
-            padding-right: 56px;
+          .affiliate-actions {
+            width: 100%;
+            justify-content: center;
           }
           .affiliate-actions a {
             min-width: 0;
