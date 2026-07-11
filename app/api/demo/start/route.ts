@@ -13,7 +13,7 @@ import { ambassadorBySlug } from "@/lib/ambassador";
 
 const TTL_HOURS = Number(process.env.DEMO_SESSION_TTL_HOURS ?? 12);
 const MAX_CONCURRENT = Number(process.env.DEMO_MAX_CONCURRENT_SESSIONS ?? 25);
-export const MESSAGE_CAP = Number(process.env.DEMO_MESSAGE_CAP ?? 20);
+export const MESSAGE_CAP = Number(process.env.DEMO_MESSAGE_CAP ?? 10);
 
 type Body = {
   email?: string;
