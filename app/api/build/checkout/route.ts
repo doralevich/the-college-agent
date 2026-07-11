@@ -3,7 +3,7 @@ import { ApiError, json, readJson, route } from "@/lib/http";
 import { ambassadorBySlug } from "@/lib/ambassador";
 import { getStripe } from "@/lib/stripe/client";
 import { priceIdFor } from "@/lib/stripe/prices";
-import { currentPlanLookup, PRO_PLAN_LOOKUP, HOSTING_LOOKUP, HOSTING_ANNUAL_LOOKUP } from "@/lib/pricing/intro-cutoff";
+import { currentPlanLookup, PRO_PLAN_LOOKUP, PRO_HOSTING_LOOKUP, HOSTING_LOOKUP, HOSTING_ANNUAL_LOOKUP } from "@/lib/pricing/intro-cutoff";
 import { getOptionalUserId } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ensureReferralCoupon, resolveReferralCode } from "@/lib/referral";
@@ -66,9 +66,15 @@ export const POST = route(async (req) => {
   const firstName = (body.firstName ?? "").trim();
   const lastName = (body.lastName ?? "").trim();
 
-  const planLookup = body.plan === "pro" ? PRO_PLAN_LOOKUP : currentPlanLookup();
-  const hostingInterval = body.hostingInterval === "annual" ? "annual" : "monthly";
-  const hostingLookup = hostingInterval === "annual" ? HOSTING_ANNUAL_LOOKUP : HOSTING_LOOKUP;
+  const pro = body.plan === "pro";
+  const planLookup = pro ? PRO_PLAN_LOOKUP : currentPlanLookup();
+  // Staff & education hosting is its own monthly price ($159); students choose $25/mo or $250/yr.
+  const hostingInterval = !pro && body.hostingInterval === "annual" ? "annual" : "monthly";
+  const hostingLookup = pro
+    ? PRO_HOSTING_LOOKUP
+    : hostingInterval === "annual"
+    ? HOSTING_ANNUAL_LOOKUP
+    : HOSTING_LOOKUP;
 
   let planPriceId: string;
   let hostingPriceId: string;

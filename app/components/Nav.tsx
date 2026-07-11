@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/client";
 const NAV_LINKS = [
   { label: "For Students", href: "/for-students" },
   { label: "For Parents", href: "/for-parents" },
+  { label: "For Athletics", href: "/for-athletics" },
   { label: "How It Works", href: "/how-it-works" },
   { label: "Demo", href: "/demo" },
   { label: "Blog", href: "/blog" },
