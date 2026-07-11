@@ -7,6 +7,7 @@ import { trackMeta } from "../components/MetaPixel";
 import {
   PLAN_AMOUNT_CENTS,
   PRO_PLAN_AMOUNT_CENTS,
+  PRO_HOSTING_AMOUNT_CENTS,
   HOSTING_AMOUNT_CENTS,
   HOSTING_ANNUAL_AMOUNT_CENTS,
 } from "@/lib/pricing/intro-cutoff";
@@ -95,6 +96,7 @@ export default function BuildPage() {
 
   const planPrice = formatPrice(PLAN_AMOUNT_CENTS);
   const proPrice = formatPrice(PRO_PLAN_AMOUNT_CENTS);
+  const proHostingPrice = formatPrice(PRO_HOSTING_AMOUNT_CENTS);
   const hostingPrice = formatPrice(HOSTING_AMOUNT_CENTS);
   const hostingAnnualPrice = formatPrice(HOSTING_ANNUAL_AMOUNT_CENTS);
 
@@ -327,7 +329,7 @@ export default function BuildPage() {
                     <span className="ca-price">{proPrice}</span>
                     <span className="ca-period">one-time</span>
                   </div>
-                  <p className="ca-savenote">Plus the same hosting above. White-glove setup included.</p>
+                  <p className="ca-savenote">Plus {proHostingPrice}/month hosting. White-glove setup included.</p>
                   <button
                     type="button"
                     className="ca-cta"
@@ -362,7 +364,7 @@ export default function BuildPage() {
                   {plan === "pro" && (
                     <>
                       {" "}
-                      <b>Professional build, {proPrice} one-time.</b>
+                      <b>Professional build, {proPrice} one-time plus {proHostingPrice}/month hosting.</b>
                     </>
                   )}
                 </p>

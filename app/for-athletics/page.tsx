@@ -3,7 +3,7 @@ import Nav from "../components/Nav";
 import { PageHero } from "../components/PageHero";
 import { Footer } from "../components/Footer";
 import { CalendarDays, Plane, UserSearch, ShieldCheck, Mail, Trophy } from "lucide-react";
-import { PRO_PLAN_AMOUNT_CENTS } from "@/lib/pricing/intro-cutoff";
+import { PRO_PLAN_AMOUNT_CENTS, PRO_HOSTING_AMOUNT_CENTS } from "@/lib/pricing/intro-cutoff";
 
 export const metadata: Metadata = {
   title: "AI Agents for College Administration & Athletics, The College Agent",
@@ -75,6 +75,7 @@ function fmtPrice(cents: number): string {
 
 export default function ForAthleticsPage() {
   const proPrice = fmtPrice(PRO_PLAN_AMOUNT_CENTS);
+  const proHosting = fmtPrice(PRO_HOSTING_AMOUNT_CENTS);
   return (
     <>
       <script
@@ -173,7 +174,7 @@ export default function ForAthleticsPage() {
             </h2>
             <div style={{ background: "#fff", border: "2px solid var(--green)", borderRadius: 18, padding: "36px 32px", marginTop: 28, boxShadow: "0 16px 48px rgba(11,23,41,.07)" }}>
               <div style={{ fontSize: 46, fontWeight: 800, color: "var(--green)", letterSpacing: "-.02em", lineHeight: 1 }}>{proPrice}</div>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "rgba(11,23,41,.55)", marginTop: 6 }}>one-time, plus hosting</div>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "rgba(11,23,41,.55)", marginTop: 6 }}>one-time, plus {proHosting}/month hosting</div>
               <p style={{ fontSize: 15, lineHeight: 1.7, color: "rgba(11,23,41,.7)", margin: "18px auto 24px", maxWidth: 440 }}>
                 White-glove setup, a role-geared intake, calendar and email integrations, and an
                 agent that works for your program every day. 7-day money-back guarantee.

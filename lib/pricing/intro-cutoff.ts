@@ -14,6 +14,8 @@ export const PLAN_AMOUNT_CENTS = 59900;
 // priced for a program/department buyer. Sold via /build's staff card (plan: "pro").
 export const PRO_PLAN_LOOKUP = "ca_plan_pro";
 export const PRO_PLAN_AMOUNT_CENTS = 450000;
+export const PRO_HOSTING_LOOKUP = "ca_hosting_pro";
+export const PRO_HOSTING_AMOUNT_CENTS = 15900;
 
 export const HOSTING_LOOKUP = "ca_hosting";
 export const HOSTING_AMOUNT_CENTS = 2500;
