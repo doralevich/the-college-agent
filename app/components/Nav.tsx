@@ -8,10 +8,10 @@ import { createClient } from "@/lib/supabase/client";
 // audience/use-case pages not listed here (High School, Study, Internships, About) stay
 // reachable from the full sitemap in the footer.
 const NAV_LINKS = [
-  { label: "For Students", href: "/for-students" },
-  { label: "For Parents", href: "/for-parents" },
-  { label: "For Athletics", href: "/for-athletics" },
-  { label: "For Administration", href: "/for-administration" },
+  { label: "Students", href: "/for-students" },
+  { label: "Parents", href: "/for-parents" },
+  { label: "Athletics", href: "/for-athletics" },
+  { label: "Administration", href: "/for-administration" },
   { label: "How It Works", href: "/how-it-works" },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "https://apolloclaw.ai/contact" },
@@ -47,9 +47,16 @@ export default function Nav() {
         background: "#fff", borderBottom: "1px solid rgba(11,23,41,.08)",
         boxShadow: "0 1px 4px rgba(11,23,41,.06)",
       }}>
+        {/* Utility bar: account link lives up here, out of the main navigation. The bar
+            (26px) + main row (46px) add up to the same 72px every page offsets for. */}
+        <div className="nav-topbar" style={{ background: "var(--navy, #0b1729)" }}>
+          <div className="nav-topbar-inner">
+            <a href={accountHref} className="nav-topbar-link">{accountLabel}</a>
+          </div>
+        </div>
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          height: 72, maxWidth: 1400, margin: "0 auto", padding: "0 48px",
+          height: 46, maxWidth: 1400, margin: "0 auto", padding: "0 48px",
         }}>
           {/* Logo */}
           <Link href="/">
@@ -72,9 +79,6 @@ export default function Nav() {
 
           {/* Desktop CTA */}
           <div className="nav-cta-desktop">
-            <a href={accountHref} className="nav-login-btn">
-              {accountLabel}
-            </a>
             <a href="/build" className="btn-purple" style={{ fontSize: 12, padding: "10px 22px" }}>
               Build My Agent
             </a>
@@ -104,9 +108,6 @@ export default function Nav() {
             <a href="/build" className="btn-purple nav-mobile-cta" onClick={() => setOpen(false)}>
               Build My Agent
             </a>
-            <a href={accountHref} className="nav-mobile-login" onClick={() => setOpen(false)}>
-              {accountLabel}
-            </a>
           </div>
         )}
       </nav>
@@ -125,13 +126,19 @@ export default function Nav() {
         .nav-cta-desktop {
           display: flex; align-items: center; gap: 20px;
         }
-        .nav-login-btn {
-          font-family: var(--font-mono); font-size: 11px; font-weight: 600;
-          letter-spacing: .06em; color: rgba(11,23,41,.6);
-          border: 1.5px solid rgba(11,23,41,.2); border-radius: 4px;
-          padding: 8px 18px; transition: border-color .15s, color .15s; white-space: nowrap;
+        .nav-topbar-inner {
+          max-width: 1400px; margin: 0 auto; padding: 0 48px;
+          height: 26px; display: flex; align-items: center; justify-content: flex-end;
         }
-        .nav-login-btn:hover { border-color: var(--green); color: var(--green); }
+        .nav-topbar-link {
+          font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+          letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.85);
+          transition: color .15s; white-space: nowrap;
+        }
+        .nav-topbar-link:hover { color: var(--green); }
+        @media (max-width: 1000px) {
+          .nav-topbar-inner { padding: 0 24px; }
+        }
         .nav-hamburger {
           display: none; flex-direction: column; justify-content: center;
           gap: 5px; background: none; border: none; cursor: pointer;
@@ -167,11 +174,6 @@ export default function Nav() {
           font-family: var(--font-mono); font-size: 10px;
           color: rgba(11,23,41,.3); letter-spacing: .06em;
           text-align: center; margin-top: 12px;
-        }
-        .nav-mobile-login {
-          font-family: var(--font-mono); font-size: 12px; font-weight: 600;
-          letter-spacing: .06em; color: rgba(11,23,41,.55);
-          text-align: center; margin-top: 8px; padding: 10px 0;
         }
 
         /* iPad portrait + all mobile: use hamburger */
