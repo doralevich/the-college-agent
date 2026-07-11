@@ -109,7 +109,7 @@ export function DemoExperience({ refSlug }: { refSlug: string }) {
   const [error, setError] = useState<string | null>(null);
 
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [remaining, setRemaining] = useState<number>(20);
+  const [remaining, setRemaining] = useState<number>(10);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
