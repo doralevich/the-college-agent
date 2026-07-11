@@ -19,7 +19,7 @@ export default async function AmbassadorDashboardPage() {
   return (
     <>
       <Nav />
-      <main style={{ paddingTop: 100, minHeight: "100vh", background: "var(--cream2)" }}>
+      <main style={{ paddingTop: 142, minHeight: "100vh", background: "var(--cream2)" }}>
         <div style={{ maxWidth: 860, margin: "0 auto", padding: "40px 24px 100px" }}>
           {!amb ? (
             <NotAnAmbassador email={user.email ?? ""} />

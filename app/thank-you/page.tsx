@@ -20,7 +20,7 @@ export default function ThankYouPage() {
     <>
       <Nav />
       <ThankYouTracking />
-      <main style={{ paddingTop: 72, minHeight: "100vh", background: "var(--cream2)", display: "flex", flexDirection: "column" }}>
+      <main style={{ paddingTop: 114, minHeight: "100vh", background: "var(--cream2)", display: "flex", flexDirection: "column" }}>
         <section style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "80px 24px" }}>
           <div style={{ maxWidth: 600, width: "100%", textAlign: "center", background: "#fff", border: "1px solid rgba(11,23,41,.07)", borderRadius: 20, boxShadow: "0 12px 40px rgba(11,23,41,.06)", padding: "56px 40px" }}>
             <div style={{ width: 68, height: 68, borderRadius: "50%", background: "rgba(61,139,61,.1)", color: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>

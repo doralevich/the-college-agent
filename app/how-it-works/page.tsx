@@ -60,7 +60,7 @@ export default function HowItWorksPage() {
   return (
     <>
       <Nav />
-      <main style={{ paddingTop: 72, minHeight: "100vh", background: "var(--cream2)" }}>
+      <main style={{ paddingTop: 114, minHeight: "100vh", background: "var(--cream2)" }}>
         <PageHero
           label="How It Works"
           title="From sign-up to your own College Agent in about 30 minutes."

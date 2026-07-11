@@ -26,7 +26,7 @@ export default function AmbassadorApplyPage() {
   return (
     <>
       <Nav />
-      <main style={{ paddingTop: 72, minHeight: "100vh", background: "var(--cream2)" }}>
+      <main style={{ paddingTop: 114, minHeight: "100vh", background: "var(--cream2)" }}>
         <section className="affiliate-hero dark-section apply-hero">
           <div className="affiliate-glow" />
           <div className="affiliate-shell">

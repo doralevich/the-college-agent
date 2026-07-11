@@ -76,7 +76,7 @@ export default function ForParentsPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
       <Nav />
-      <main style={{ paddingTop: 72, minHeight: "100vh" }}>
+      <main style={{ paddingTop: 114, minHeight: "100vh" }}>
 
         {/* HERO */}
         <PageHero

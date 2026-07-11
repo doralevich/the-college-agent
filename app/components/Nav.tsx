@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -33,8 +33,25 @@ export default function Nav() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  const accountHref = authed ? "/dashboard" : "/login";
-  const accountLabel = authed ? "Dashboard" : "Log In";
+  // "My Dashboard" dropdown in the utility bar: Open Dashboard / Log Out when signed
+  // in, Log In when not. Closes on outside click.
+  const [acctOpen, setAcctOpen] = useState(false);
+  const acctRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      if (acctRef.current && !acctRef.current.contains(e.target as Node)) setAcctOpen(false);
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+  async function logout() {
+    try {
+      await createClient().auth.signOut();
+    } catch {
+      /* signOut is best-effort; the redirect resets UI state regardless */
+    }
+    window.location.assign("/");
+  }
 
   // External links (e.g. Contact -> apolloclaw.ai) open in a new tab.
   const extProps = (href: string) =>
@@ -47,16 +64,40 @@ export default function Nav() {
         background: "#fff", borderBottom: "1px solid rgba(11,23,41,.08)",
         boxShadow: "0 1px 4px rgba(11,23,41,.06)",
       }}>
-        {/* Utility bar: account link lives up here, out of the main navigation. The bar
-            (26px) + main row (46px) add up to the same 72px every page offsets for. */}
-        <div className="nav-topbar" style={{ background: "var(--navy, #0b1729)" }}>
+        {/* Utility bar (40px: 26 + 7 top/bottom) + main row (logo with 25px above and
+            below) — pages offset with paddingTop: 114 to clear the fixed header. */}
+        <div className="nav-topbar" style={{ background: "var(--navy, #0b1729)", padding: "7px 0" }}>
           <div className="nav-topbar-inner">
-            <a href={accountHref} className="nav-topbar-link">{accountLabel}</a>
+            <div ref={acctRef} style={{ position: "relative" }}>
+              <button
+                type="button"
+                className="nav-topbar-link"
+                aria-haspopup="menu"
+                aria-expanded={acctOpen}
+                onClick={() => setAcctOpen((o) => !o)}
+              >
+                My Dashboard <span aria-hidden style={{ fontSize: 9 }}>&#9662;</span>
+              </button>
+              {acctOpen && (
+                <div className="nav-topbar-menu" role="menu">
+                  {authed ? (
+                    <>
+                      <Link href="/dashboard" className="nav-topbar-item" role="menuitem">Open Dashboard</Link>
+                      <button type="button" className="nav-topbar-item" role="menuitem" onClick={logout}>
+                        Log Out
+                      </button>
+                    </>
+                  ) : (
+                    <a href="/login" className="nav-topbar-item" role="menuitem">Log In</a>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          height: 46, maxWidth: 1400, margin: "0 auto", padding: "0 48px",
+          maxWidth: 1400, margin: "0 auto", padding: "25px 48px",
         }}>
           {/* Logo */}
           <Link href="/">
@@ -134,8 +175,25 @@ export default function Nav() {
           font-family: var(--font-mono); font-size: 11px; font-weight: 600;
           letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.85);
           transition: color .15s; white-space: nowrap;
+          background: none; border: none; cursor: pointer; padding: 0;
+          display: inline-flex; align-items: center; gap: 5px;
         }
         .nav-topbar-link:hover { color: var(--green); }
+        .nav-topbar-menu {
+          position: absolute; right: 0; top: calc(100% + 8px); z-index: 120;
+          background: #fff; border: 1px solid rgba(11,23,41,.1); border-radius: 8px;
+          box-shadow: 0 12px 32px rgba(11,23,41,.16); min-width: 170px; padding: 6px;
+          display: flex; flex-direction: column;
+        }
+        .nav-topbar-item {
+          display: block; width: 100%; text-align: left;
+          font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+          letter-spacing: .06em; text-transform: uppercase; color: rgba(11,23,41,.8);
+          background: none; border: none; cursor: pointer;
+          padding: 9px 12px; border-radius: 6px; transition: background .12s, color .12s;
+          text-decoration: none;
+        }
+        .nav-topbar-item:hover { background: rgba(61,139,61,.08); color: var(--green); }
         @media (max-width: 1000px) {
           .nav-topbar-inner { padding: 0 24px; }
         }
