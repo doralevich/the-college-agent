@@ -21,7 +21,6 @@ import {
   NotebookPen,
   Settings2,
   Sun,
-  Sunrise,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -57,8 +56,8 @@ export type WeatherData = {
   isDay: boolean;
   hiF: number;
   loF: number;
-  sunrise?: string;
-  hours: { label: string; tempF: number; code: number }[];
+  // The next few days (after today) for the banner's mini forecast cards.
+  days: { label: string; hiF: number; loF: number; code: number }[];
 };
 
 const ACTIONS: {
@@ -141,14 +140,6 @@ function weatherSkin(code: number, isDay: boolean): string {
   return "linear-gradient(140deg, rgba(252,211,77,.20), rgba(56,189,248,.14))";
 }
 
-function fmtClock(iso?: string): string | undefined {
-  if (!iso) return undefined;
-  const h = parseInt(iso.slice(11, 13), 10);
-  const m = iso.slice(14, 16);
-  if (!Number.isFinite(h)) return undefined;
-  return `${((h + 11) % 12) + 1}:${m} ${h < 12 ? "AM" : "PM"}`;
-}
-
 type WeatherState =
   | { state: "idle" }
   | { state: "loading" }
@@ -172,8 +163,8 @@ function useWeather(demo?: WeatherData) {
           const url =
             `https://api.open-meteo.com/v1/forecast?latitude=${la.toFixed(3)}&longitude=${lo.toFixed(3)}` +
             `&current=temperature_2m,apparent_temperature,weather_code,is_day` +
-            `&hourly=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,sunrise` +
-            `&forecast_days=1&temperature_unit=fahrenheit&timezone=auto`;
+            `&daily=weather_code,temperature_2m_max,temperature_2m_min` +
+            `&forecast_days=4&temperature_unit=fahrenheit&timezone=auto`;
           const [wxRes, city] = await Promise.all([
             fetch(url).then((r) => r.json()),
             fetch(
@@ -192,17 +183,19 @@ function useWeather(demo?: WeatherData) {
             return;
           }
 
-          const times: string[] = wxRes.hourly?.time ?? [];
-          const temps: number[] = wxRes.hourly?.temperature_2m ?? [];
-          const codes: number[] = wxRes.hourly?.weather_code ?? [];
-          const prefix = String(cur.time ?? "").slice(0, 13);
-          let start = times.findIndex((t) => t.slice(0, 13) === prefix);
-          if (start < 0) start = 0;
-          const hours: WeatherData["hours"] = [];
-          for (let i = start; i < start + 6 && i < times.length; i++) {
-            const h = parseInt(times[i].slice(11, 13), 10);
-            const label = i === start ? "Now" : `${((h + 11) % 12) + 1}${h < 12 ? "a" : "p"}`;
-            hours.push({ label, tempF: Math.round(temps[i]), code: codes[i] });
+          // The next three days (after today) feed the banner's mini forecast cards.
+          const dTimes: string[] = wxRes.daily?.time ?? [];
+          const dMax: number[] = wxRes.daily?.temperature_2m_max ?? [];
+          const dMin: number[] = wxRes.daily?.temperature_2m_min ?? [];
+          const dCodes: number[] = wxRes.daily?.weather_code ?? [];
+          const days: WeatherData["days"] = [];
+          for (let i = 1; i < dTimes.length && days.length < 3; i++) {
+            days.push({
+              label: new Date(`${dTimes[i]}T12:00:00`).toLocaleDateString(undefined, { weekday: "short" }),
+              hiF: Math.round(dMax[i]),
+              loF: Math.round(dMin[i]),
+              code: Number(dCodes[i] ?? 0),
+            });
           }
 
           setWx({
@@ -213,10 +206,9 @@ function useWeather(demo?: WeatherData) {
               feelsF: Math.round(cur.apparent_temperature ?? cur.temperature_2m),
               code: Number(cur.weather_code ?? 0),
               isDay: Number(cur.is_day ?? 1) === 1,
-              hiF: Math.round(wxRes.daily?.temperature_2m_max?.[0] ?? cur.temperature_2m),
-              loF: Math.round(wxRes.daily?.temperature_2m_min?.[0] ?? cur.temperature_2m),
-              sunrise: fmtClock(wxRes.daily?.sunrise?.[0]),
-              hours,
+              hiF: Math.round(dMax[0] ?? cur.temperature_2m),
+              loF: Math.round(dMin[0] ?? cur.temperature_2m),
+              days,
             },
           });
         } catch {
@@ -309,66 +301,56 @@ function WeatherCard({ accent, demo }: { accent?: string; demo?: WeatherData }) 
 
   const d = wx.data;
   const cur = describeWeather(d.code, d.isDay);
+  // Horizontal banner: big current conditions on the left, the next few days as compact
+  // cards on the right (single row, like a classic dashboard weather strip).
   return (
-    <div className={card} style={{ background: `${weatherSkin(d.code, d.isDay)}, var(--card)` }}>
-      {/* Header: location · weekday on the left, time on the right. */}
-      <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-        <span className="inline-flex min-w-0 items-center gap-1">
-          {d.city && (
-            <>
-              <MapPin className="h-3 w-3 shrink-0" />
-              <span className="truncate font-medium text-foreground/70">{d.city}</span>
-              <span aria-hidden>·</span>
-            </>
-          )}
-          <span>{weekday}</span>
-        </span>
-        <span className="shrink-0">
-          {now?.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }) ?? ""}
-        </span>
-      </div>
-
-      {/* Hero: icon + big temperature, with a compact stat stack on the right. */}
-      <div className="mt-2 flex items-center gap-3">
-        <cur.Icon className="h-12 w-12 shrink-0" strokeWidth={1.5} style={{ color: accent ?? "var(--primary)" }} />
-        <div className="min-w-0 leading-none">
-          <div className="text-[40px] font-semibold tracking-tight text-foreground">{d.tempF}&deg;</div>
-          <div className="mt-1 truncate text-sm font-medium text-foreground/70">{cur.label}</div>
-        </div>
-        <div className="ml-auto shrink-0 space-y-0.5 text-right text-[11px] text-muted-foreground">
-          <div>Feels {d.feelsF}&deg;</div>
-          <div>
-            H {d.hiF}&deg; &nbsp;L {d.loF}&deg;
+    <div
+      className="flex flex-wrap items-center gap-x-5 gap-y-3 rounded-2xl border border-border/70 p-4 shadow-sm"
+      style={{ background: `${weatherSkin(d.code, d.isDay)}, var(--card)` }}
+    >
+      {/* Current conditions */}
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        <cur.Icon className="h-11 w-11 shrink-0" strokeWidth={1.5} style={{ color: accent ?? "var(--primary)" }} />
+        <div className="min-w-0 leading-tight">
+          <div className="flex items-baseline gap-2">
+            <span className="text-[34px] font-semibold leading-none tracking-tight text-foreground">{d.tempF}&deg;</span>
+            <span className="truncate text-sm font-medium text-foreground/70">{cur.label}</span>
           </div>
-          {d.sunrise && (
-            <div className="inline-flex items-center gap-1">
-              <Sunrise className="h-3 w-3" />
-              {d.sunrise}
-            </div>
-          )}
+          <div className="mt-1 flex min-w-0 items-center gap-1 text-[11px] text-muted-foreground">
+            {d.city && (
+              <>
+                <MapPin className="h-3 w-3 shrink-0" />
+                <span className="truncate font-medium text-foreground/70">{d.city}</span>
+                <span aria-hidden>·</span>
+              </>
+            )}
+            <span className="shrink-0">{weekday}</span>
+            <span aria-hidden>·</span>
+            <span className="shrink-0">
+              Feels {d.feelsF}&deg; &nbsp;H {d.hiF}&deg; L {d.loF}&deg;
+            </span>
+          </div>
+          <div className="mt-1 truncate text-[11px] text-muted-foreground">
+            {whatToWear(d.feelsF, d.code)}
+          </div>
         </div>
       </div>
 
-      {/* What to wear: a light, single line, no boxed background. */}
-      <div className="mt-3 text-xs text-muted-foreground">
-        <span className="font-medium text-foreground/70">What to wear</span> · {whatToWear(d.feelsF, d.code)}
-      </div>
-
-      {/* Hourly: clean row separated by a hairline, with "Now" gently highlighted. */}
-      {d.hours.length > 0 && (
-        <div className="mt-auto flex gap-0.5 overflow-x-auto border-t border-border/50 pt-3">
-          {d.hours.map((h, i) => {
-            const hv = describeWeather(h.code, d.isDay);
+      {/* Next days */}
+      {d.days.length > 0 && (
+        <div className="flex shrink-0 gap-2">
+          {d.days.map((day, i) => {
+            const dv = describeWeather(day.code, true);
             return (
               <div
                 key={i}
-                className={`flex min-w-[44px] flex-col items-center gap-1.5 rounded-lg px-1.5 py-1.5 ${
-                  i === 0 ? "bg-foreground/[0.04]" : ""
-                }`}
+                className="flex w-[74px] flex-col items-center gap-1 rounded-xl border border-border/60 bg-card/80 px-2 py-2"
               >
-                <span className="text-[10px] font-medium text-muted-foreground">{h.label}</span>
-                <hv.Icon className="h-[18px] w-[18px] text-foreground/60" strokeWidth={1.75} />
-                <span className="text-xs font-semibold text-foreground">{h.tempF}&deg;</span>
+                <span className="text-[11px] font-semibold text-foreground/75">{day.label}</span>
+                <dv.Icon className="h-5 w-5 text-foreground/60" strokeWidth={1.75} />
+                <span className="text-xs font-semibold text-foreground">
+                  {day.hiF}&deg; <span className="font-normal text-muted-foreground">{day.loF}&deg;</span>
+                </span>
               </div>
             );
           })}
@@ -562,16 +544,13 @@ export function NewChatTopBar({
       </div>
 
       {showWeather || showActions ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {showWeather && (
-            <div className={`h-full${showActions ? "" : " sm:col-span-2"}`}>
-              <WeatherCard accent={accent} demo={demoWeather} />
-            </div>
-          )}
+        // Stacked: the weather banner runs full width on top, quick actions in a compact
+        // two-column grid beneath it. Keeps the whole panel short so nothing crowds the
+        // greeting above the composer.
+        <div className="flex flex-col gap-3">
+          {showWeather && <WeatherCard accent={accent} demo={demoWeather} />}
           {showActions && (
-            <div className={`h-full${showWeather ? "" : " sm:col-span-2"}`}>
-              <ActionsColumn classes={classes} onSeed={onSeed} actions={activeActions} wide={!showWeather} />
-            </div>
+            <ActionsColumn classes={classes} onSeed={onSeed} actions={activeActions} wide />
           )}
         </div>
       ) : (

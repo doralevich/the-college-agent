@@ -162,7 +162,7 @@ export function ChatView({
         className={cn(
           "min-h-0",
           showWelcome
-            ? "flex flex-1 flex-col items-center justify-between gap-6 overflow-y-auto px-4 pb-6 pt-5"
+            ? "flex flex-1 flex-col items-center justify-end gap-6 overflow-y-auto px-4 pb-6 pt-5"
             : "flex-1 overflow-y-auto overflow-x-hidden"
         )}
       >
@@ -179,9 +179,8 @@ export function ChatView({
           />
         ) : (
           <>
-            {/* Something of worth at the top: weather, date/time, and a short checklist. */}
-            <NewChatTopBar classes={classes} accent={accent} onSeed={seedComposer} />
-
+            {/* Greeting leads; the weather banner + quick actions sit beneath it, and the
+                whole group seats just above the composer (justify-end on the wrapper). */}
             <div className="flex flex-col items-center gap-2 text-center">
               <h1 className="text-[26px] font-semibold tracking-tight text-foreground sm:text-[30px]">
                 Hi {greetName}, {timeOfDay}.
@@ -196,6 +195,8 @@ export function ChatView({
               )}
               <p className="text-lg text-foreground/75">How can I help you today?</p>
             </div>
+
+            <NewChatTopBar classes={classes} accent={accent} onSeed={seedComposer} />
           </>
         )}
       </div>
