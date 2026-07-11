@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Check, Loader2, Plus, Search, Send, X } from "lucide-react";
+import { Check, Loader2, Plus, Search, X } from "lucide-react";
 import majorsData from "@/data/college-agent-majors.json";
 import ChatBot from "@/app/components/ChatBot";
 
@@ -177,7 +177,8 @@ function AvatarPicker({
 const FONTS_HREF =
   "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=DM+Sans:wght@400;500;600;700&display=swap";
 
-// Voice options — pick any to blend. Each carries a short description shown under the label.
+// Voice options — pick any to blend. 8 options with no sub-text, so the list renders
+// two columns on desktop (see .ca-options-2col) and one on mobile.
 const VOICE_OPTIONS = [
   "Direct & to the point",
   "Calm & thoughtful",
@@ -188,153 +189,64 @@ const VOICE_OPTIONS = [
   "Honest & straightforward",
   "Analytical & curious",
 ];
-const VOICE_DESCRIPTIONS: Record<string, string> = {
-  "Direct & to the point": "Just tell me what I need to know.",
-  "Calm & thoughtful": "Steady, balanced, and reassuring.",
-  "Warm & encouraging": "Positive, supportive, and uplifting.",
-  "Funny & personable": "A little humor makes everything better.",
-  "Motivational & challenging": "Push me to be my best.",
-  "Patient & easygoing": "Explain things clearly without rushing.",
-  "Honest & straightforward": "Tell it to me like it is.",
-  "Analytical & curious": "Help me think through problems and decisions.",
-};
-
-const CHECKIN_OPTIONS = [
-  "Throughout the day",
-  "Every morning",
-  "A few times a week",
-  "Once a week",
-  "Only when I ask",
-  "Whenever something important comes up",
-];
-const CHECKIN_DESCRIPTIONS: Record<string, string> = {
-  "Throughout the day": "Keep me updated and on track.",
-  "Every morning": "Start my day with a personalized briefing.",
-  "A few times a week": "Regular check-ins without too many notifications.",
-  "Once a week": "Send me a weekly overview and what's coming up.",
-  "Only when I ask": "I'll reach out whenever I need you.",
-  "Whenever something important comes up": "Alert me about deadlines, changes, and opportunities as they happen.",
-};
 
 const YEAR_OPTIONS = ["Before College", "Freshman", "Sophomore", "Junior", "Senior", "Graduate Student", "Other"];
 
-// What "success" can mean by year-end.
-const SUCCESS_OPTIONS = [
-  "Achieve my target GPA",
-  "Successfully complete all of my courses",
-  "Land an internship or job",
-  "Get into graduate or professional school",
-  "Build meaningful friendships",
-  "Develop healthier habits",
-  "Improve my physical health",
-  "Prioritize my mental well-being",
-  "Strengthen important relationships",
-  "Take on a leadership role",
-  "Start a personal project or business",
-  "Learn a new skill",
-  "Save more money",
-  "Travel somewhere meaningful",
-  "Stay consistent and achieve my goals",
-];
-
-// Everything here is wired in the Integrations tab (Composio catalog), so the
-// intake can promise the full set. Selected labels land on the onboard
-// submission for the Integrations tab to spotlight.
-const INTEGRATION_OPTIONS = [
-  "Canvas",
-  "Blackbaud",
-  "Google Classroom",
-  "Google Calendar",
-  "Gmail",
-  "Outlook",
-  "School email",
-  "Microsoft Teams",
-  "Google Drive",
-  "Dropbox",
-  "Notion",
-  "Todoist",
-];
-
 const PRIORITY_OPTIONS = [
-  "Grades & academic performance",
-  "Skill building & certifications",
-  "Grad / professional school prep",
+  "Academic performance",
+  "Skills & certifications",
+  "Grad school prep",
   "Mental health",
-  "Physical health, fitness & sleep",
-  "Spirituality, faith or values",
-  "Friendships & social life",
-  "Family relationships",
-  "Romantic life & dating",
+  "Fitness & sleep",
+  "Faith & values",
+  "Friends & social life",
+  "Family",
+  "Dating & relationships",
   "Networking & mentorship",
-  "Career prep & internships",
-  "Leadership & extracurriculars",
-  "Financial stability & earning",
+  "Career & internships",
+  "Leadership & clubs",
+  "Money & earning",
   "Travel or study abroad",
-  "Time management & organization",
-  "Creative projects & hobbies",
+  "Time management",
+  "Creative projects",
   "Personal growth",
-  "Community service & impact",
+  "Community service",
 ];
 
-// Tier-3 short option lists. Emoji lead the labels per the latest copy.
+// Tier-3 short option lists. Plain labels, no emoji, short enough not to wrap in the
+// two-column layout.
 const LIVING_OPTIONS = [
-  "🏫 On-campus residence hall or dorm",
-  "🏠 Off-campus apartment or house",
-  "👨‍👩‍👧 Living with family",
-  "🏛 Greek house",
-  "✍️ Other",
+  "On-campus dorm",
+  "Off-campus apartment",
+  "With family",
+  "Greek house",
+  "Other",
 ];
 const CLUBS_OPTIONS = [
-  "🎓 Academic or pre-professional organizations",
-  "🌍 Cultural or identity-based organizations",
-  "🤝 Community service or volunteer groups",
-  "🎭 Arts, music, or performing arts",
-  "✨ Religious or spiritual organizations",
-  "🗳 Political or advocacy groups",
-  "🎮 Recreational or hobby clubs",
-  "🏛 Student government",
-  "🌱 None right now—but I'd like to get involved",
-  "🚫 None at the moment",
+  "Academic clubs",
+  "Cultural groups",
+  "Community service",
+  "Arts & performance",
+  "Religious groups",
+  "Political & advocacy",
+  "Hobby clubs",
+  "Student government",
+  "None yet, want to join",
+  "None right now",
 ];
 const SPORTS_OPTIONS = [
-  "🏆 Varsity Athletics",
-  "🥇 Club Sports",
-  "⚽ Intramural Sports",
-  "💪 I work out regularly, but I'm not on a team",
-  "🚫 Not at the moment",
+  "Varsity athletics",
+  "Club sports",
+  "Intramurals",
+  "I work out on my own",
+  "Not right now",
 ];
 const AFTER_COLLEGE_OPTIONS = [
-  "💼 Start my career",
-  "🎓 Attend graduate or professional school",
-  "🌍 Take a gap year",
-  "🚀 Start a business or build something of my own",
-  "🤔 I'm still figuring it out",
-];
-const ACADEMIC_STRUGGLES_OPTIONS = [
-  "🎯 Staying focused",
-  "⏳ Procrastination",
-  "😰 Test anxiety",
-  "✍️ Writing papers and essays",
-  "➗ Math or problem-solving courses",
-  "📚 Keeping up with reading assignments",
-  "📅 Time management and staying organized",
-  "🙋 Asking for help or reaching out to professors",
-  "🎒 Balancing school with work, sports, or activities",
-  "💭 None of these—I just want to stay ahead",
-];
-const STRESS_RESET_OPTIONS = [
-  "🏃 Exercise or staying active",
-  "😴 Getting enough sleep",
-  "👥 Spending time with friends",
-  "🌿 Taking some time for myself",
-  "🎵 Listening to music",
-  "🌞 Getting outside",
-  "💬 Talking things through with someone",
-  "💪 I usually just push through",
-  "🎮 Gaming or hobbies",
-  "🧘 Meditation, mindfulness, or prayer",
-  "🍿 Watching TV or movies",
-  "✍️ Reading, journaling, or another creative outlet",
+  "Start my career",
+  "Grad or professional school",
+  "Gap year",
+  "Start a business",
+  "Still figuring it out",
 ];
 
 // Tap-to-copy starter lines shown under the final open-ended question.
@@ -361,7 +273,10 @@ type Step =
   | { kind: "text"; key: TextKey; prompt: string; placeholder?: string; inputType?: "text" | "email" | "tel"; required?: boolean; tier?: Tier; showIf?: (form: FormState) => boolean }
   | { kind: "textarea"; key: TextKey; prompt: string; placeholder?: string; examples?: string[]; required?: boolean; tier?: Tier }
   | { kind: "multi"; key: MultiKey; prompt: string; options: string[]; descriptions?: Record<string, string>; max?: number; required?: boolean; tier?: Tier }
-  | { kind: "single"; key: SingleKey; prompt: string; options: string[]; required?: boolean; tier?: Tier }
+  // allowOther: selecting "Other" reveals a write-in field whose text becomes the answer.
+  | { kind: "single"; key: SingleKey; prompt: string; options: string[]; allowOther?: boolean; required?: boolean; tier?: Tier }
+  // Combined academics page: year (two-column radio) + major + minor on one screen.
+  | { kind: "academics"; key: "academics"; prompt: string; tier?: Tier }
   // School typeahead backed by /api/schools (College Scorecard proxy).
   | { kind: "typeahead"; key: TextKey; prompt: string; placeholder?: string; required?: boolean; tier?: Tier }
   // Grouped dropdown with search (majors/minors). extraOptions inject non-major
@@ -424,76 +339,46 @@ const STEPS: Step[] = [
     kind: "intro",
     key: "__intro",
     prompt:
-      "Hi {firstName}! I'm your College Agent. I'm excited to get to know you. It only takes a few minutes to personalize me, and everything you share helps me become a better partner throughout college. The more I learn about you now, the smarter I'll be when you need me later.",
+      "Hi {firstName}!\nI'm your College Agent, and excited to get to know you. This intake form takes a few minutes to personalize me, and everything you share helps me become a better partner throughout college.\nThe more I learn about you now, the smarter I'll be when you need me later.",
   },
-  { kind: "text", key: "agentName", prompt: "What would you like to call me? Every great partnership starts with a name. Give me any name you'd like, or leave it blank and I'll simply be your College Agent.", placeholder: "Type a name..." },
-  { kind: "image", key: "avatarFile", prompt: "Want to give me a face? Upload a photo or image (PNG or JPG), or choose one of our defaults. You can always change it later." },
-  { kind: "text", key: "firstName", prompt: "And what should I call you? Just your first name is perfect.", placeholder: "Your first name", required: true },
-  { kind: "text", key: "lastName", prompt: "And your last name", placeholder: "Your last name", required: true },
+  { kind: "text", key: "agentName", prompt: "What would you like to call me?", placeholder: "Type a name..." },
+  { kind: "image", key: "avatarFile", prompt: "Want to give me a face? Pick an avatar or upload your own." },
+  { kind: "text", key: "firstName", prompt: "And what should I call you?", placeholder: "Your first name", required: true },
+  { kind: "text", key: "lastName", prompt: "And your last name?", placeholder: "Your last name", required: true },
   { kind: "typeahead", key: "school", prompt: "What school do you go to?", placeholder: "Start typing your school...", required: true },
   { kind: "text", key: "schoolEmail", prompt: "What's your school email?", placeholder: "you@school.edu", inputType: "email", required: true },
   { kind: "text", key: "personalEmail", prompt: "What's your personal email?", placeholder: "you@email.com", inputType: "email" },
   { kind: "text", key: "phone", prompt: "What's your mobile number?", placeholder: "(555) 555-5555", inputType: "tel", required: true },
   {
-    kind: "branch",
-    key: "wantTier2",
-    prompt:
-      "Awesome—we've got the basics covered. Now the fun part. The more I know about your classes, schedule, goals, and how you like to work, the more personal—and more helpful—I become. Instead of giving generic answers, I'll be able to help in ways tailored to your college life. Ready to keep going? It only gets better from here.",
-    yesLabel: "Let's keep going",
-    noLabel: "I'm good for now",
-  },
-  {
     kind: "multi",
     key: "topPriority",
-    prompt: "What do you want to get out of college? Choose everything that's important to you. The more I understand your priorities, the better I can help you reach them.",
+    prompt: "What do you want to get out of college?",
     options: PRIORITY_OPTIONS,
     required: true,
     tier: 2,
   },
-  {
-    kind: "multi",
-    key: "agentHandleFirst",
-    prompt: "What do you hope to accomplish this semester and this year? Select everything that's important to you. I'll use your goals to personalize my planning, prioritization, and support every step of the way.",
-    options: SUCCESS_OPTIONS,
-    required: true,
-    tier: 2,
-  },
-  { kind: "multi", key: "responseStyle", prompt: "How should I communicate with you? Choose all that fit. I'll adapt my style to match how you like to be coached, reminded, and supported.", options: VOICE_OPTIONS, descriptions: VOICE_DESCRIPTIONS, required: true, tier: 2 },
-  { kind: "multi", key: "checkinFrequency", prompt: "How often would you like me to check in? Choose all that fit. I'll reach out when it matters, in the way that works best for you.", options: CHECKIN_OPTIONS, descriptions: CHECKIN_DESCRIPTIONS, required: true, tier: 2 },
-  {
-    kind: "multi",
-    key: "integrationsWanted",
-    prompt:
-      "Which tools do you already use? Select everything that applies. I'll connect with the tools you already rely on to help manage your classes, schedule, email, files, and more. You can always add or change integrations later.",
-    options: INTEGRATION_OPTIONS,
-    tier: 2,
-  },
+  { kind: "multi", key: "responseStyle", prompt: "How should I communicate with you?", options: VOICE_OPTIONS, required: true, tier: 2 },
   {
     kind: "classList",
     key: "classes",
-    prompt: "Let's get your semester organized. We'll add your classes one at a time. Just enter the course name, meeting days and times, professor, location, and course number if you have it. The more I know about your classes, the better I can organize your schedule, track deadlines, and help you stay ahead all semester.",
-    tier: 2,
-  },
-  {
-    kind: "branch",
-    key: "wantDeepDive",
-    prompt: "Great start! Let's make me even more useful. The more I know about your life, the better I can help you stay organized, make smarter decisions, and keep you one step ahead. Just a few more questions and we'll be there.",
-    yesLabel: "Yes, let's keep going",
-    noLabel: "No, that's enough for now",
+    prompt: "Let's get your semester organized. Add your classes one at a time.",
     tier: 2,
   },
   // Tier 3 — only shown if wantDeepDive === "yes". Short radios and checkbox lists.
-  { kind: "single", key: "year", prompt: "Where are you in your college journey? Choose your current year. I'll tailor my guidance, reminders, and priorities to match where you are.", options: YEAR_OPTIONS, tier: 3 },
-  { kind: "select", key: "major", prompt: "What's your major?", placeholder: "Search majors...", groups: MAJOR_GROUPS, tier: 3 },
-  { kind: "select", key: "minor", prompt: "Any minor or second focus?", placeholder: "Search minors...", groups: MAJOR_GROUPS, extraOptions: ["Not yet", "None"], tier: 3 },
-  { kind: "single", key: "livingSituation", prompt: "Where will you be living this year? Where you live helps me personalize reminders, planning, and day-to-day support.", options: LIVING_OPTIONS, tier: 3 },
-  { kind: "multi", key: "clubs", prompt: "What clubs or organizations are you involved in? Select all that apply. I'll help you keep track of meetings, events, leadership opportunities, and important deadlines.", options: CLUBS_OPTIONS, tier: 3 },
-  { kind: "multi", key: "sportsTeams", prompt: "Are you involved in sports or athletics? Select all that apply. I'll help you balance practices, games, travel, training, and your academic schedule.", options: SPORTS_OPTIONS, tier: 3 },
-  { kind: "text", key: "whichSports", prompt: "Which sport?", placeholder: "Soccer, lacrosse, swimming...", tier: 3, showIf: (f) => f.sportsTeams.some((s) => s === "🏆 Varsity Athletics" || s === "🥇 Club Sports" || s === "⚽ Intramural Sports") },
-  { kind: "single", key: "afterCollege", prompt: "What are your plans after college? Choose the option that best fits today. Don't worry—you can always update it as your goals evolve.", options: AFTER_COLLEGE_OPTIONS, tier: 3 },
-  { kind: "multi", key: "academicStruggles", prompt: "What academic challenges would you like me to help with? Select all that apply. I'll tailor my planning, reminders, and support around the areas where you need it most.", options: ACADEMIC_STRUGGLES_OPTIONS, tier: 3 },
-  { kind: "multi", key: "stressReset", prompt: "When life gets busy, what helps you recharge? Select all that apply. I'll use this to encourage healthy routines and suggest breaks when you need them most.", options: STRESS_RESET_OPTIONS, tier: 3 },
-  { kind: "textarea", key: "anythingElse", prompt: "Is there anything else you'd like me to know? This is your space. Tell me about your goals, routines, challenges, preferences, or anything else that will help me support you. There are no right or wrong answers—the more I understand you, the better I can help throughout college.", examples: ANYTHING_ELSE_EXAMPLES, tier: "tail" },
+  { kind: "academics", key: "academics", prompt: "Where are you in your college journey?", tier: 3 },
+  { kind: "single", key: "livingSituation", prompt: "Where are you living this year?", options: LIVING_OPTIONS, allowOther: true, tier: 3 },
+  { kind: "multi", key: "clubs", prompt: "What clubs or organizations are you involved in?", options: CLUBS_OPTIONS, tier: 3 },
+  { kind: "multi", key: "sportsTeams", prompt: "Are you involved in sports or athletics?", options: SPORTS_OPTIONS, tier: 3 },
+  { kind: "text", key: "whichSports", prompt: "Which sport?", placeholder: "Soccer, lacrosse, swimming...", tier: 3, showIf: (f) => f.sportsTeams.some((s) => s === "Varsity athletics" || s === "Club sports" || s === "Intramurals") },
+  { kind: "single", key: "afterCollege", prompt: "What's the plan after college?", options: AFTER_COLLEGE_OPTIONS, tier: 3 },
+  {
+    kind: "textarea",
+    key: "anythingElse",
+    prompt:
+      "Is there anything else you'd like me to know?\n• Goals\n• Routines\n• Challenges\n• Preferences\n\nWhat makes our working together a huge success?",
+    examples: ANYTHING_ELSE_EXAMPLES,
+    tier: "tail",
+  },
 ];
 
 type FormState = {
@@ -670,7 +555,6 @@ export function ConversationalOnboard({
   // Flips after a successful submit + provision: the wizard's final frame is the
   // "That's it" completion pane with the Open chat CTA (per the onboarding spec),
   // not a silent bounce into the dashboard.
-  const [completed, setCompleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Files don't serialize cleanly to localStorage, so avatar lives in component state
   // only — students who refresh mid-flow keep their text answers but re-pick the image.
@@ -803,6 +687,10 @@ export function ConversationalOnboard({
       if (!form.classes.length) return "(none added)";
       return form.classes.map((c) => c.name).filter(Boolean).join(", ") || "(none added)";
     }
+    if (step.kind === "academics") {
+      const parts = [form.year, form.major, form.minor].map((s) => String(s || "").trim()).filter(Boolean);
+      return parts.length ? parts.join(" · ") : "(skipped)";
+    }
     const value = form[step.key as keyof FormState];
     if (Array.isArray(value)) return value.length ? value.join(", ") : "(skipped)";
     const v = String(value || "").trim();
@@ -813,7 +701,7 @@ export function ConversationalOnboard({
   function isRequired(step: Step): boolean {
     if (step.kind === "intro" || step.kind === "info" || step.kind === "image") return false;
     if (step.kind === "branch") return true;
-    if (step.kind === "classList") return false;
+    if (step.kind === "classList" || step.kind === "academics") return false;
     return !!step.required;
   }
 
@@ -825,6 +713,7 @@ export function ConversationalOnboard({
       return v === "yes" || v === "no";
     }
     if (step.kind === "classList") return form.classes.length > 0;
+    if (step.kind === "academics") return !!(form.year || form.major || form.minor);
     const value = form[step.key as keyof FormState];
     if (Array.isArray(value)) return value.length > 0;
     return !!String(value || "").trim();
@@ -833,7 +722,7 @@ export function ConversationalOnboard({
   function validateCurrent(): string | null {
     if (current.kind === "intro" || current.kind === "info") return null;
     if (current.kind === "image") return null;
-    if (current.kind === "classList") return null;
+    if (current.kind === "classList" || current.kind === "academics") return null;
     if (current.kind === "branch") {
       const v = form[current.key];
       if (v !== "yes" && v !== "no") return "Pick one.";
@@ -948,10 +837,10 @@ export function ConversationalOnboard({
         router.refresh();
         return;
       }
-      // Success: show the completion pane. Open chat does a full navigation so the
-      // server re-reads hasAgent and lands on the live Chat tab.
-      setSubmitting(false);
-      setCompleted(true);
+      // Success: land on the dashboard Welcome page. Full navigation (not client route)
+      // so the server re-reads hasAgent and the Welcome card renders the live greeting.
+      // The building screen stays up until the browser actually navigates.
+      window.location.assign("/dashboard/welcome");
     } catch (e) {
       setError((e as Error).message);
       setSubmitting(false);
@@ -959,8 +848,10 @@ export function ConversationalOnboard({
   }
 
   const progress = useMemo(
-    () => (completed ? 100 : Math.round(((stepIdx + (submitting ? 1 : 0)) / visibleSteps.length) * 100)),
-    [stepIdx, submitting, completed, visibleSteps.length],
+    // Submitting counts as the final step done — the bar sits full while the agent builds
+    // and we navigate straight to /dashboard/welcome from there.
+    () => Math.round(((stepIdx + (submitting ? 1 : 0)) / visibleSteps.length) * 100),
+    [stepIdx, submitting, visibleSteps.length],
   );
 
   return (
@@ -981,7 +872,7 @@ export function ConversationalOnboard({
     >
       {/* Welcome header above the wizard card — first page only. Once the student moves
           past the intro it disappears, so every later question sits higher on the screen. */}
-      {stepIdx === 0 && !completed && (
+      {stepIdx === 0 && (
       <div className="ca-onboard-header" style={{ width: "100%", maxWidth: 620, textAlign: "center", marginBottom: 18 }}>
         <div
           style={{
@@ -1032,7 +923,8 @@ export function ConversationalOnboard({
           boxShadow: "0 1px 2px rgba(26,36,33,.04), 0 24px 60px -28px rgba(27,94,42,.28)",
           display: "flex",
           flexDirection: "column",
-          overflow: "hidden",
+          // No overflow:hidden — the major/minor dropdown menus overhang the card bottom
+          // and must not be clipped (they scroll internally).
         }}
       >
         {/* Progress bar — a rounded pill inside the top padding so the card's
@@ -1051,92 +943,6 @@ export function ConversationalOnboard({
           </div>
         </div>
 
-        {completed ? (
-          // The spec's completion moment: distinct from the chat opening hello, one CTA.
-          <div
-            className="ca-q-body"
-            style={{
-              padding: "44px 44px 48px",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              textAlign: "center",
-            }}
-          >
-            <div
-              style={{
-                width: 72,
-                height: 72,
-                borderRadius: "50%",
-                background: T.greenSoft,
-                overflow: "hidden",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 18,
-              }}
-            >
-              {avatarPreview ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={avatarPreview} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              ) : (
-                <Image src="/thecollegeagent.png" alt="" width={72} height={72} style={{ objectFit: "contain", width: "100%", height: "100%" }} />
-              )}
-            </div>
-            <h1
-              style={{
-                fontFamily: "'Fraunces', Georgia, serif",
-                fontSize: 28,
-                fontWeight: 600,
-                lineHeight: 1.2,
-                color: T.ink,
-                margin: "0 0 10px",
-              }}
-            >
-              {displayBotName} is ready.
-            </h1>
-            <p style={{ fontSize: 15, lineHeight: 1.6, color: T.inkSoft, maxWidth: 420, margin: "0 0 26px" }}>
-              It already knows your classes, your goals, and how you like to work. Let&apos;s show
-              you what to do first.
-            </p>
-            <button
-              type="button"
-              className="ca-onboard-cta"
-              onClick={() => window.location.assign("/dashboard/now-what")}
-              style={{
-                border: "none",
-                cursor: "pointer",
-                fontFamily: "'DM Sans', system-ui, sans-serif",
-                fontSize: 15,
-                fontWeight: 600,
-                color: "#fff",
-                background: T.green,
-                padding: "13px 34px",
-                borderRadius: 10,
-                transition: "background .15s",
-              }}
-            >
-              Now what? Show me
-            </button>
-            <button
-              type="button"
-              onClick={() => window.location.assign("/dashboard/chat")}
-              style={{
-                marginTop: 12,
-                border: "none",
-                background: "transparent",
-                cursor: "pointer",
-                fontFamily: "'DM Sans', system-ui, sans-serif",
-                fontSize: 13.5,
-                fontWeight: 600,
-                color: T.greenText,
-                textDecoration: "underline",
-              }}
-            >
-              or jump straight into chat
-            </button>
-          </div>
-        ) : (
         <>
         <div className="ca-q-body" style={{ padding: "20px 36px", minHeight: 260, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           {/* Mascot + question header: side by side on desktop, a small icon stacked on
@@ -1176,6 +982,7 @@ export function ConversationalOnboard({
                   lineHeight: 1.45,
                   color: T.ink,
                   margin: 0,
+                  whiteSpace: "pre-line",
                 }}
               >
                 {current.prompt.replace("{firstName}", displayFirstName)}
@@ -1184,15 +991,49 @@ export function ConversationalOnboard({
           </div>
 
           {submitting ? (
-            <div style={{ padding: "16px 0" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, color: T.ink, fontSize: 15, fontWeight: 600 }}>
-                <Loader2 className="animate-spin" style={{ width: 16, height: 16, flex: "0 0 auto" }} />
-                Building {displayBotName}. This takes a minute or two.
+            // The build moment gets a proper centered stage: agent face, big headline,
+            // and the rotating tips at reading size (not a footnote).
+            <div style={{ padding: "26px 0 12px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
+              <div
+                style={{
+                  width: 84,
+                  height: 84,
+                  borderRadius: "50%",
+                  background: T.greenSoft,
+                  overflow: "hidden",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 18,
+                }}
+              >
+                {avatarPreview ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={avatarPreview} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  <Image src="/thecollegeagent.png" alt="" width={84} height={84} style={{ objectFit: "contain", width: "100%", height: "100%" }} />
+                )}
+              </div>
+              <h2
+                style={{
+                  fontFamily: "'Fraunces', Georgia, serif",
+                  fontSize: 26,
+                  fontWeight: 600,
+                  lineHeight: 1.25,
+                  color: T.ink,
+                  margin: "0 0 8px",
+                }}
+              >
+                Building {displayBotName}...
+              </h2>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, color: T.inkSoft, fontSize: 14, fontWeight: 500 }}>
+                <Loader2 className="animate-spin" style={{ width: 15, height: 15, flex: "0 0 auto" }} />
+                This takes a minute or two.
               </div>
               <div
                 key={buildTipIdx}
                 className="ca-build-tip"
-                style={{ marginTop: 12, color: T.inkSoft, fontSize: 14, lineHeight: 1.55, minHeight: 44 }}
+                style={{ marginTop: 24, color: T.ink, fontSize: 19, fontWeight: 600, lineHeight: 1.5, minHeight: 60, maxWidth: 440 }}
               >
                 {BUILD_TIPS[buildTipIdx].replace(/\{name\}/g, displayBotName)}
               </div>
@@ -1293,7 +1134,6 @@ export function ConversationalOnboard({
           Saves automatically. Close this tab and come back any time.
         </div>
         </>
-        )}
       </div>
 
       {/* Questions mid-intake happen ("do I need my syllabus now?") — keep the same
@@ -1751,14 +1591,114 @@ function Input({
       </div>
     );
   }
+  if (step.kind === "academics") {
+    // Year + major + minor on one page. Year is a compact two-column radio grid;
+    // major/minor reuse the searchable dropdown.
+    const sectionLabel: React.CSSProperties = {
+      fontFamily: "'DM Sans', system-ui, sans-serif",
+      fontSize: 12,
+      fontWeight: 600,
+      color: T.inkSoft,
+      letterSpacing: "0.04em",
+      textTransform: "uppercase",
+      marginBottom: 8,
+    };
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+        <div>
+          <div style={sectionLabel}>Year</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, columnGap: 12 }}>
+            {YEAR_OPTIONS.map((opt) => {
+              const selected = form.year === opt;
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  disabled={disabled}
+                  onClick={() => setField("year", opt)}
+                  style={{
+                    fontFamily: "'DM Sans', system-ui, sans-serif",
+                    fontSize: 14,
+                    fontWeight: 500,
+                    padding: "8px 10px",
+                    borderRadius: 8,
+                    border: "none",
+                    background: selected ? T.greenSoft : "transparent",
+                    color: T.ink,
+                    cursor: disabled ? "not-allowed" : "pointer",
+                    transition: "background .12s",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    textAlign: "left",
+                    width: "100%",
+                  }}
+                >
+                  <span
+                    aria-hidden
+                    style={{
+                      flex: "0 0 auto",
+                      width: 18,
+                      height: 18,
+                      borderRadius: "50%",
+                      border: `1.5px solid ${selected ? T.green : T.line}`,
+                      background: T.card,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      transition: "border-color .12s",
+                    }}
+                  >
+                    {selected && <span style={{ width: 9, height: 9, borderRadius: "50%", background: T.green }} />}
+                  </span>
+                  {opt}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <div>
+          <div style={sectionLabel}>Major</div>
+          <MajorSelect
+            value={form.major}
+            placeholder="Search majors..."
+            groups={MAJOR_GROUPS}
+            disabled={disabled}
+            onChange={(v) => setField("major", v)}
+          />
+        </div>
+        <div>
+          <div style={sectionLabel}>Minor or second focus</div>
+          <MajorSelect
+            value={form.minor}
+            placeholder="Search minors..."
+            groups={MAJOR_GROUPS}
+            extraOptions={["Not yet", "None"]}
+            disabled={disabled}
+            onChange={(v) => setField("minor", v)}
+          />
+        </div>
+      </div>
+    );
+  }
   if (step.kind === "single") {
     const value = form[step.key] as string;
+    // Custom write-in: with allowOther, any value that isn't a listed option means
+    // "Other" is active and holds the typed text.
+    const customActive = !!step.allowOther && !!value && !step.options.includes(value);
     // Vertical aligned radio list — same shape as the checkbox list, with a round
-    // bullet instead of a square. Pick-one semantics.
+    // bullet instead of a square. Pick-one semantics. 5+ options read as two
+    // columns on desktop (one on mobile), same as long checkbox lists.
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <div>
+      <div
+        className={step.options.length >= 5 ? "ca-options-2col" : undefined}
+        style={{ display: "flex", flexDirection: "column", gap: 2 }}
+      >
         {step.options.map((opt) => {
-          const selected = value === opt;
+          const selected = value === opt || (opt === "Other" && customActive);
           return (
             <button
               key={opt}
@@ -1815,6 +1755,30 @@ function Input({
             </button>
           );
         })}
+      </div>
+      {step.allowOther && (value === "Other" || customActive) && (
+        <input
+          type="text"
+          autoFocus
+          placeholder="Tell me more..."
+          value={value === "Other" ? "" : value}
+          disabled={disabled}
+          onChange={(e) => setField(step.key, e.target.value || "Other")}
+          className="ca-onboard-input"
+          style={{
+            width: "100%",
+            marginTop: 10,
+            fontFamily: "'DM Sans', system-ui, sans-serif",
+            fontSize: 16,
+            padding: "12px 14px",
+            border: `1.5px solid ${T.line}`,
+            borderRadius: 10,
+            outline: "none",
+            background: T.card,
+            color: T.ink,
+          }}
+        />
+      )}
       </div>
     );
   }

@@ -322,7 +322,6 @@ function PostOnboardCta({ hasAgent, onOpenChat }: { hasAgent: boolean; onOpenCha
         >
           Open Chat
         </button>
-        <p style={{ marginTop: 14, fontSize: 13, color: t.inkSoft }}>Takes about two minutes to get rolling.</p>
       </div>
     );
   }
