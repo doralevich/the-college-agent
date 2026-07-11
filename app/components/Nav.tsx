@@ -12,7 +12,6 @@ const NAV_LINKS = [
   { label: "For Parents", href: "/for-parents" },
   { label: "For Athletics", href: "/for-athletics" },
   { label: "How It Works", href: "/how-it-works" },
-  { label: "Demo", href: "/demo" },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "https://apolloclaw.ai/contact" },
 ];
