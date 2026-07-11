@@ -22,7 +22,7 @@ export default function OrgsPage() {
   return (
     <>
       <Nav />
-      <main style={{ paddingTop: 100, minHeight: "100vh", background: "var(--cream2)" }}>
+      <main style={{ paddingTop: 142, minHeight: "100vh", background: "var(--cream2)" }}>
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "40px 24px 100px" }}>
           <div style={{ textAlign: "center", marginBottom: 34 }}>
             <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--green)" }}>

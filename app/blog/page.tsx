@@ -59,7 +59,7 @@ export default async function BlogPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
       <Nav />
-      <main style={{ paddingTop: 72 }}>
+      <main style={{ paddingTop: 114 }}>
         <PageHero
           label="College Agent Blog"
           title="AI that helps college feel manageable."

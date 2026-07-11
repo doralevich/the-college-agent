@@ -189,7 +189,7 @@ export default async function Home() {
 
       {/* HERO */}
       <section className="dark-section" style={{
-        padding: "120px 0 90px",
+        padding: "162px 0 90px",
         overflow: "hidden",
       }}>
         <div className="hero-glow" />

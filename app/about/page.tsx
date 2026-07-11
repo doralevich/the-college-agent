@@ -33,7 +33,7 @@ export default function AboutPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
       <Nav />
-      <main style={{ paddingTop: 100, minHeight: "100vh", background: "var(--cream2)" }}>
+      <main style={{ paddingTop: 142, minHeight: "100vh", background: "var(--cream2)" }}>
         <div style={{ maxWidth: 760, margin: "0 auto", padding: "48px 24px 100px" }}>
           <span className="mono-label">Our Mission</span>
           <h1 style={{ fontSize: "clamp(30px, 4vw, 48px)", fontWeight: 800, color: "var(--navy)", marginTop: 10, marginBottom: 20, lineHeight: 1.08, letterSpacing: "-.03em" }}>

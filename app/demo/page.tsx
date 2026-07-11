@@ -23,7 +23,7 @@ export default async function DemoPage({ searchParams }: { searchParams: Promise
   return (
     <>
       <Nav />
-      <main style={{ paddingTop: 72, minHeight: "100vh", background: "var(--cream2)" }}>
+      <main style={{ paddingTop: 114, minHeight: "100vh", background: "var(--cream2)" }}>
         <DemoExperience refSlug={typeof ref === "string" ? ref : ""} />
       </main>
       <Footer />

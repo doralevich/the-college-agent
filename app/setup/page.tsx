@@ -77,7 +77,7 @@ export default function SetupPage() {
   return (
     <>
       <Nav />
-      <main style={{ paddingTop: 100, minHeight: "100vh", background: "var(--cream2)" }}>
+      <main style={{ paddingTop: 142, minHeight: "100vh", background: "var(--cream2)" }}>
         <div className="dark-section" style={{ padding: "52px 24px" }}>
           <div style={{ maxWidth: 660, margin: "0 auto" }}>
             <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: "rgba(255,255,255,.4)" }}>Technical Setup</span>
