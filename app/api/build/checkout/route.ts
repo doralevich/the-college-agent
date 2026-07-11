@@ -34,6 +34,8 @@ type Body = {
   // Which build: the student plan (default) or the professional build for
   // faculty / administration / athletic departments ($4,500).
   plan?: "student" | "pro";
+  // Audience picked on /build's "who is this for" step (Student, Faculty, ...).
+  buyerRole?: string;
 };
 
 // Only these add-on amounts exist in the UI; anything else is ignored, never billed.
@@ -97,6 +99,8 @@ export const POST = route(async (req) => {
   // invoice.paid; metadata is what we read on checkout.session.completed). Carry
   // names so the webhook can stamp them on the freshly-created auth user.
   const metadata: Record<string, string> = { plan_lookup: planLookup, plan_type: body.plan === "pro" ? "pro" : "student" };
+  const buyerRole = (body.buyerRole ?? "").trim().slice(0, 60);
+  if (buyerRole) metadata.buyer_role = buyerRole;
   if (userId) metadata.user_id = userId;
   if (firstName) metadata.first_name = firstName;
   if (lastName) metadata.last_name = lastName;
