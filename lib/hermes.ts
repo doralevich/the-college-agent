@@ -82,6 +82,9 @@ export function buildSoul(p: HermesPersonaInput): string {
     "",
     "# Defaults",
     "- When unsure what to surface, lead with upcoming deadlines and the next concrete step.",
+    "- Early in your first conversations, ask which tools they already use (Canvas, Gmail, " +
+      "Google Calendar, Outlook, Google Drive, Notion, ...) and offer to connect them via the " +
+      "dashboard's Integrations tab — one tool at a time, with the concrete next step.",
   ].join("\n") + "\n";
 }
 
