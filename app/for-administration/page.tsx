@@ -2,26 +2,26 @@ import type { Metadata } from "next";
 import Nav from "../components/Nav";
 import { PageHero } from "../components/PageHero";
 import { Footer } from "../components/Footer";
-import { CalendarDays, Plane, UserSearch, ShieldCheck, Mail, Trophy } from "lucide-react";
+import { CalendarDays, Mail, FolderOpen, PartyPopper, Wallet, ClipboardList } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "AI Agents for College Administration & Athletics, The College Agent",
+  title: "AI Agents for College Administration & Staff, The College Agent",
   description:
-    "A professional AI agent for your office, program, or team. Scheduling, travel, recruiting coordination, compliance deadlines, communications, and game-day operations, handled. Built for college administration and athletic departments.",
+    "A professional AI agent for admissions, advising, the registrar, student affairs, and every campus office. Scheduling, communications, documents, events, and reporting, handled.",
   keywords: [
-    "AI assistant for athletic departments",
     "AI for college administration",
-    "athletic department operations software",
-    "AI agent for coaches",
-    "college staff AI assistant",
-    "recruiting coordination AI",
+    "AI assistant for university staff",
+    "higher ed administrative AI",
+    "AI for admissions office",
+    "AI for registrar",
+    "campus office AI assistant",
   ],
-  alternates: { canonical: "https://thecollegeagent.ai/for-athletics" },
+  alternates: { canonical: "https://thecollegeagent.ai/for-administration" },
   openGraph: {
-    title: "AI Agents for College Administration & Athletics",
+    title: "AI Agents for College Administration & Staff",
     description:
-      "A professional AI agent for your office, program, or team. Scheduling, travel, recruiting, compliance, communications, and game-day operations, handled.",
-    url: "https://thecollegeagent.ai/for-athletics",
+      "A professional AI agent for admissions, advising, the registrar, student affairs, and every campus office. Scheduling, communications, documents, events, and reporting, handled.",
+    url: "https://thecollegeagent.ai/for-administration",
     images: [{ url: "https://thecollegeagent.ai/og-image.png", width: 1200, height: 630, alt: "The College Agent" }],
   },
 };
@@ -31,7 +31,7 @@ const breadcrumbSchema = {
   "@type": "BreadcrumbList",
   itemListElement: [
     { "@type": "ListItem", position: 1, name: "Home", item: "https://thecollegeagent.ai" },
-    { "@type": "ListItem", position: 2, name: "For Administration & Athletics", item: "https://thecollegeagent.ai/for-athletics" },
+    { "@type": "ListItem", position: 2, name: "For Administration", item: "https://thecollegeagent.ai/for-administration" },
   ],
 };
 
@@ -39,36 +39,36 @@ const CAPABILITIES = [
   {
     icon: CalendarDays,
     title: "Calendar & Scheduling",
-    desc: "Practices, meetings, facilities, staff schedules, and the fifty small changes a week that come with them. Your agent keeps the calendar honest and everyone notified.",
-  },
-  {
-    icon: Plane,
-    title: "Team & Department Travel",
-    desc: "Itineraries, rosters, hotel blocks, bus and flight times, meal stops, and the packet that has to reach everyone by Thursday. Planned, drafted, and tracked.",
-  },
-  {
-    icon: UserSearch,
-    title: "Recruiting Coordination",
-    desc: "Visit schedules, follow-up emails, prospect notes, and reminders on contact windows, so no recruit slips because the week got busy.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Compliance & Deadlines",
-    desc: "Eligibility paperwork, filing dates, required trainings, and renewal windows, surfaced before they're urgent, never after.",
+    desc: "Office hours, committee meetings, advising appointments, and room bookings, coordinated across everyone's calendars without the email ping-pong.",
   },
   {
     icon: Mail,
-    title: "Communications",
-    desc: "Emails to staff, athletes, parents, and campus partners, drafted in your voice and ready to send. Meeting notes and follow-ups captured while they're fresh.",
+    title: "Email & Communications",
+    desc: "Responses to students and families, announcements, reminder campaigns, and follow-ups, drafted in your office's voice and ready to review.",
   },
   {
-    icon: Trophy,
-    title: "Event & Game-Day Operations",
-    desc: "Run-of-show, staffing lists, vendor confirmations, and day-of checklists for games and events, organized in one place your whole staff can rely on.",
+    icon: FolderOpen,
+    title: "Documents & Records",
+    desc: "Forms, files, and paperwork organized and findable. Summaries of long documents in seconds, and templates for the letters you write every week.",
+  },
+  {
+    icon: PartyPopper,
+    title: "Event Planning",
+    desc: "Orientation, open houses, commencement, and everything between: run-of-show, vendor follow-ups, staffing lists, and day-of checklists.",
+  },
+  {
+    icon: Wallet,
+    title: "Budgets & Reporting",
+    desc: "Expense tracking, purchase follow-ups, and the recurring reports leadership asks for, drafted from your numbers on schedule.",
+  },
+  {
+    icon: ClipboardList,
+    title: "Deadlines & Compliance",
+    desc: "Filing dates, accreditation requirements, renewal windows, and required trainings, surfaced before they're urgent, never after.",
   },
 ];
 
-export default function ForAthleticsPage() {
+export default function ForAdministrationPage() {
   return (
     <>
       <script
@@ -80,9 +80,9 @@ export default function ForAthleticsPage() {
 
         {/* HERO */}
         <PageHero
-          label="For Athletic Departments"
-          title="Your program's busywork, handled."
-          sub="A professional AI agent built for your office, department, or team. It learns your role, your calendar, and your season, then runs the scheduling, travel, communications, and deadlines that eat your week. Live in 30 minutes."
+          label="For Administration & Staff"
+          title="Run your office without the busywork."
+          sub="A professional AI agent for admissions, advising, the registrar, student affairs, and every campus office. It learns your role and your rhythms, then handles the scheduling, communications, documents, and deadlines that eat your week. Live in 30 minutes."
           primary={{ label: "Build a Professional Agent", href: "/build?plan=pro" }}
           secondary={{ label: "Book a Consultation", href: "/consultation" }}
         />
@@ -92,16 +92,16 @@ export default function ForAthleticsPage() {
           <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
             <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "var(--green)", marginBottom: 14, display: "block" }}>The Reality</span>
             <h2 style={{ fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 800, color: "var(--navy)", marginBottom: 20, letterSpacing: "-.025em" }}>
-              Your best people spend their days on logistics.
+              Campus offices run on people who are stretched thin.
             </h2>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
-              Coaches recruiting at 10 PM. Operations staff rebuilding a travel itinerary for the
-              third time. Administrators chasing signatures and filing dates. The work that wins
-              seasons and serves students gets squeezed by the work that just keeps the lights on.
+              The inbox never empties. The same questions arrive every day. Reports are due, events
+              are coming, and the calendar is a negotiation. The work that actually serves students
+              gets squeezed by the work that just keeps the office running.
             </p>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)" }}>
-              The College Agent gives every staff member a professional AI agent that knows their
-              role, their department, and their school, and takes the logistics off their plate.
+              The College Agent gives each staff member a professional AI agent that knows their
+              role, their office, and their school, and takes the busywork off their plate.
             </p>
           </div>
         </section>
@@ -112,11 +112,11 @@ export default function ForAthleticsPage() {
             <div style={{ textAlign: "center", marginBottom: 48 }}>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "var(--green)", marginBottom: 14, display: "block" }}>What It Handles</span>
               <h2 style={{ fontSize: "clamp(24px, 3vw, 38px)", fontWeight: 800, color: "var(--navy)", letterSpacing: "-.025em" }}>
-                Built around how a department actually runs.
+                Built around how an office actually runs.
               </h2>
               <p style={{ maxWidth: 700, margin: "16px auto 0", fontSize: 16, lineHeight: 1.7, color: "rgba(11,23,41,.66)" }}>
-                During setup, your agent learns your title, your team or office, and what you want
-                off your plate. Then it gets to work.
+                During setup, your agent learns your title, your office, and what you want off your
+                plate. Then it gets to work.
               </p>
             </div>
             <div className="cap-grid">
@@ -133,39 +133,14 @@ export default function ForAthleticsPage() {
           </div>
         </section>
 
-        {/* HOW IT WORKS */}
-        <section style={{ background: "#fff", padding: "72px 0" }}>
-          <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "var(--green)", marginBottom: 14, display: "block" }}>How It Works</span>
-            <h2 style={{ fontSize: "clamp(24px, 3vw, 34px)", fontWeight: 800, color: "var(--navy)", marginBottom: 24, letterSpacing: "-.025em" }}>
-              Live before your next staff meeting.
-            </h2>
-            <ol style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 18 }}>
-              {[
-                ["Purchase the professional build", "One checkout for your office or program. Need several agents or a department rollout? Book a consultation and we'll structure it."],
-                ["A five-minute intake, geared to your role", "Pick Administration or Athletic Department, tell it your title and team, and choose what to take off your plate."],
-                ["Your agent goes live in about 30 minutes", "Connected to your calendar and email if you want, checking in proactively, and getting smarter about your program every week."],
-              ].map(([title, desc], i) => (
-                <li key={title} style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
-                  <span style={{ flex: "0 0 auto", width: 34, height: 34, borderRadius: "50%", background: "rgba(61,139,61,.1)", color: "var(--green)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 15 }}>{i + 1}</span>
-                  <div>
-                    <h3 style={{ fontSize: 17, fontWeight: 800, color: "var(--navy)", marginBottom: 6 }}>{title}</h3>
-                    <p style={{ fontSize: 15, lineHeight: 1.7, color: "rgba(11,23,41,.66)", margin: 0 }}>{desc}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
-
         {/* Cross-link + consultation nudge (no public pricing on this page). */}
-        <section style={{ background: "var(--cream2)", padding: "40px 0" }}>
+        <section style={{ background: "#fff", padding: "40px 0" }}>
           <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
             <p style={{ fontSize: 14.5, lineHeight: 1.7, color: "rgba(11,23,41,.6)", margin: 0 }}>
-              Rolling out to a whole staff or department? <a href="/consultation" style={{ color: "var(--green)", textDecoration: "underline" }}>Book a consultation</a> and we&apos;ll build a plan for your program.
+              Rolling out to a whole office or division? <a href="/consultation" style={{ color: "var(--green)", textDecoration: "underline" }}>Book a consultation</a> and we&apos;ll build a plan.
             </p>
             <p style={{ fontSize: 13.5, lineHeight: 1.7, color: "rgba(11,23,41,.55)", marginTop: 8, marginBottom: 0 }}>
-              In admissions, advising, or another campus office? See <a href="/for-administration" style={{ color: "var(--green)", textDecoration: "underline" }}>The College Agent for Administration</a>.
+              In athletics? See <a href="/for-athletics" style={{ color: "var(--green)", textDecoration: "underline" }}>The College Agent for Athletic Departments</a>.
             </p>
           </div>
         </section>
@@ -177,7 +152,7 @@ export default function ForAthleticsPage() {
               Give your staff their week back.
             </h2>
             <p style={{ fontSize: 17, lineHeight: 1.7, color: "rgba(255,255,255,.7)", maxWidth: 560, margin: "0 auto 30px" }}>
-              The logistics don&apos;t stop in-season or out. Put an agent on them, and let your
+              The busywork doesn&apos;t slow down between semesters. Put an agent on it, and let your
               people do the work only they can do.
             </p>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center" }}>
