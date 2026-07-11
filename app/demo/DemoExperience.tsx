@@ -129,6 +129,9 @@ export function DemoExperience({ refSlug }: { refSlug: string }) {
   }, []);
 
   useEffect(() => {
+    // Only once a conversation exists — on first load this would drag the page down
+    // to the bottom anchor and undo the scroll-to-top above.
+    if (messages.length === 0) return;
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, thinking]);
 
@@ -163,7 +166,7 @@ export function DemoExperience({ refSlug }: { refSlug: string }) {
       setMessages([
         {
           role: "assistant",
-          content: `Hey${firstName ? ` ${firstName}` : ""}! I'm a demo of what YOUR College Agent would be like at ${school.trim()}. Ask me to plan your week, break down a syllabus, quiz you before a test, or draft an email to a professor. What's on your plate?`,
+          content: `Hey${firstName ? ` ${firstName}` : ""}! I'm a demo of what YOUR College Agent would be like at ${school.trim()}.\n\nAsk me to plan your week, break down a syllabus, quiz you before a test, or draft an email to a professor. What's on your plate?`,
         },
       ]);
       setStep("chat");
@@ -344,12 +347,12 @@ export function DemoExperience({ refSlug }: { refSlug: string }) {
   return (
     <section style={{ maxWidth: 720, margin: "0 auto", padding: "36px 24px 90px" }}>
       <div style={{ background: "#fff", border: "1px solid rgba(11,23,41,.08)", borderRadius: 16, overflow: "hidden", display: "flex", flexDirection: "column", height: "min(72vh, 680px)" }}>
-        <div style={{ background: "var(--navy)", color: "#fff", padding: "14px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ background: "var(--green)", color: "#fff", padding: "14px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <div style={{ fontSize: 14, fontWeight: 700 }}>{agentTitle}</div>
-            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.55)" }}>{school}</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.75)" }}>{school}</div>
           </div>
-          <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: remaining <= 5 ? "#FCD34D" : "rgba(255,255,255,.55)" }}>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: remaining <= 5 ? "#FCD34D" : "rgba(255,255,255,.75)" }}>
             {remaining} message{remaining === 1 ? "" : "s"} left
           </span>
         </div>
