@@ -80,9 +80,9 @@ export default function ForAdministrationPage() {
 
         {/* HERO */}
         <PageHero
-          label="For Administration & Staff"
+          label="For Faculty, Administration & Staff"
           title="Run your office without the busywork."
-          sub="A professional AI agent for admissions, advising, the registrar, student affairs, and every campus office. It learns your role and your rhythms, then handles the scheduling, communications, documents, and deadlines that eat your week. Live in 30 minutes."
+          sub="A professional AI agent for professors, admissions, advising, the registrar, student affairs, and every campus office. It learns your role and your rhythms, then handles the scheduling, communications, documents, and deadlines that eat your week. Live in 30 minutes."
           primary={{ label: "Build a Professional Agent", href: "/build?plan=pro" }}
           secondary={{ label: "Book a Consultation", href: "/consultation" }}
         />
@@ -100,8 +100,10 @@ export default function ForAdministrationPage() {
               gets squeezed by the work that just keeps the office running.
             </p>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)" }}>
-              The College Agent gives each staff member a professional AI agent that knows their
-              role, their office, and their school, and takes the busywork off their plate.
+              The College Agent gives every professor and staff member a professional AI agent
+              that knows their role, their office, and their school, and takes the busywork off
+              their plate. Faculty use it for office hours, course logistics, and communications;
+              offices use it to keep the whole operation moving.
             </p>
           </div>
         </section>

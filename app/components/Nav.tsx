@@ -11,6 +11,7 @@ const NAV_LINKS = [
   { label: "For Students", href: "/for-students" },
   { label: "For Parents", href: "/for-parents" },
   { label: "For Athletics", href: "/for-athletics" },
+  { label: "For Administration", href: "/for-administration" },
   { label: "How It Works", href: "/how-it-works" },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "https://apolloclaw.ai/contact" },

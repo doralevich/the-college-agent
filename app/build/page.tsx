@@ -39,7 +39,7 @@ function formatPrice(cents: number): string {
 }
 
 export default function BuildPage() {
-  const [step, setStep] = useState<"welcome" | "plan" | "info">("welcome");
+  const [step, setStep] = useState<"welcome" | "who" | "plan" | "info">("welcome");
   const [info, setInfo] = useState<InfoForm>({
     firstName: "",
     lastName: "",
@@ -60,12 +60,20 @@ export default function BuildPage() {
   // Which build is being bought: the student plan (default) or the professional build
   // for faculty / administration / athletic departments. Deep-linkable via ?plan=pro.
   const [plan, setPlan] = useState<"student" | "pro">("student");
+  // Which audience they picked on the "who" step; rides checkout metadata so the
+  // post-payment intake and our records agree with what they were charged.
+  const [buyerRole, setBuyerRole] = useState<string>("");
   // Referral code from ?ref=... — kept in localStorage so it survives the multi-step
   // flow and a canceled-checkout round trip. Applied server-side at checkout.
   const [ref, setRef] = useState<string>("");
 
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("plan") === "pro") setPlan("pro");
+    // Deep link from the athletics/administration pages: they already told us who they
+    // are, so land straight on the professional plan card.
+    if (new URLSearchParams(window.location.search).get("plan") === "pro") {
+      setPlan("pro");
+      setStep("plan");
+    }
     const fromUrl = new URLSearchParams(window.location.search).get("ref")?.trim() ?? "";
     if (fromUrl) {
       localStorage.setItem("ca-ref", fromUrl);
@@ -100,7 +108,15 @@ export default function BuildPage() {
   const hostingPrice = formatPrice(HOSTING_AMOUNT_CENTS);
   const hostingAnnualPrice = formatPrice(HOSTING_ANNUAL_AMOUNT_CENTS);
 
-  function continueToPlan() {
+  function continueToWho() {
+    setError(null);
+    setStep("who");
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function chooseWho(role: string, planFor: "student" | "pro") {
+    setBuyerRole(role);
+    setPlan(planFor);
     setError(null);
     setStep("plan");
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
@@ -163,6 +179,7 @@ export default function BuildPage() {
           termsAccepted: agreeTerms,
           hostingInterval,
           plan,
+          ...(buyerRole ? { buyerRole } : {}),
           ...(extraCents > 0 ? { extraCreditsCents: extraCents } : {}),
           ...(ref ? { ref } : {}),
         }),
@@ -218,7 +235,7 @@ export default function BuildPage() {
                 </ul>
 
                 <div className="ca-welcome-cta-wrap">
-                  <button type="button" className="ca-cta" onClick={continueToPlan}>
+                  <button type="button" className="ca-cta" onClick={continueToWho}>
                     Let&apos;s get started
                   </button>
                   <p className="ca-trust">One plan. Everything included.</p>
@@ -226,7 +243,28 @@ export default function BuildPage() {
               </>
             )}
 
-            {step === "plan" && (
+            {step === "who" && (
+              <>
+                <p className="ca-eyebrow">Get started</p>
+                <h2 className="ca-h2">Who is this agent for?</h2>
+                <p className="ca-sub">Pick the one that fits, and we&apos;ll set up the right build.</p>
+                <div className="ca-who-grid">
+                  {[
+                    { role: "Student", label: "A student", desc: "Classes, deadlines, studying, and campus life.", plan: "student" as const },
+                    { role: "Faculty", label: "Faculty / Professor", desc: "Teaching, office hours, research, and communications.", plan: "pro" as const },
+                    { role: "Administration / Staff", label: "Administration / Staff", desc: "Admissions, advising, the registrar, and campus offices.", plan: "pro" as const },
+                    { role: "Athletic Department", label: "Athletic Department", desc: "Coaches, operations, recruiting, and game day.", plan: "pro" as const },
+                  ].map((o) => (
+                    <button key={o.role} type="button" className="ca-who-opt" onClick={() => chooseWho(o.role, o.plan)}>
+                      <span className="ca-who-label">{o.label}</span>
+                      <span className="ca-who-desc">{o.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {step === "plan" && plan === "student" && (
               <>
                 <p className="ca-eyebrow">Get started</p>
                 <h2 className="ca-h2">One plan. Everything included.</h2>
@@ -304,41 +342,55 @@ export default function BuildPage() {
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    className="ca-cta"
-                    onClick={() => {
-                      setPlan("student");
-                      continueToInfo();
-                    }}
-                  >
+                  <button type="button" className="ca-cta" onClick={continueToInfo}>
                     Let&apos;s do it!
                   </button>
 
                   <p className="ca-trust">Secure checkout by Stripe &middot; 7-day money-back guarantee</p>
                 </div>
 
+                <p className="ca-next">
+                  After checkout you&apos;ll fill out a <b>2-minute onboarding form</b>, and your agent
+                  goes live within 30 minutes.
+                </p>
+
+                <p className="ca-custom">
+                  Not a student?{" "}
+                  <button type="button" className="ca-switch-link" onClick={() => setStep("who")}>Change who this is for</button>
+                </p>
+              </>
+            )}
+
+            {step === "plan" && plan === "pro" && (
+              <>
+                <p className="ca-eyebrow">Get started</p>
+                <h2 className="ca-h2">The professional build.</h2>
+                <p className="ca-sub">
+                  For faculty, administration, and athletic departments. White-glove setup, a
+                  role-geared intake, and an agent that runs your busywork.
+                </p>
+
                 <div className="ca-card ca-card-pro">
-                  <h3 className="ca-plan-name">For Faculty, Administration &amp; Athletics</h3>
+                  <h3 className="ca-plan-name">The College Agent — Professional</h3>
                   <p className="ca-plan-desc">
-                    A professional build for your office, program, or team. Scheduling, travel,
-                    recruiting coordination, compliance deadlines, communications, and game-day
-                    operations, run by an agent that knows your department.
+                    Built for your office, program, or team. Scheduling, travel, recruiting
+                    coordination, compliance deadlines, communications, and game-day operations,
+                    run by an agent that knows your department.
                   </p>
                   <div className="ca-price-row">
                     <span className="ca-price">{proPrice}</span>
                     <span className="ca-period">one-time</span>
                   </div>
                   <p className="ca-savenote">Plus {proHostingPrice}/month hosting. White-glove setup included.</p>
-                  <button
-                    type="button"
-                    className="ca-cta"
-                    onClick={() => {
-                      setPlan("pro");
-                      continueToInfo();
-                    }}
-                  >
-                    Build a professional agent
+                  <ul className="ca-features">
+                    <li><span className="ca-check"><CheckIcon /></span>Your own professional AI agent, built and set up for you</li>
+                    <li><span className="ca-check"><CheckIcon /></span>Geared to your role, team, and season in a 5-minute intake</li>
+                    <li><span className="ca-check"><CheckIcon /></span>Connect your calendar, email, and the tools you already use</li>
+                    <li><span className="ca-check"><CheckIcon /></span>Works on the web and Telegram, any device</li>
+                    <li><span className="ca-check"><CheckIcon /></span>7-day money-back guarantee</li>
+                  </ul>
+                  <button type="button" className="ca-cta" onClick={continueToInfo}>
+                    Build my professional agent
                   </button>
                   <p className="ca-trust">Piloting with athletic departments now &middot; Questions? <a href="/consultation" style={{ color: "var(--ca-green)", textDecoration: "underline" }}>Book a consultation</a></p>
                 </div>
@@ -349,8 +401,8 @@ export default function BuildPage() {
                 </p>
 
                 <p className="ca-custom">
-                  Need something custom for your program or club?{" "}
-                  <a href="mailto:david@apolloclaw.ai">Get in touch</a>.
+                  Buying for a student?{" "}
+                  <button type="button" className="ca-switch-link" onClick={() => setStep("who")}>Change who this is for</button>
                 </p>
               </>
             )}
@@ -582,6 +634,44 @@ export default function BuildPage() {
           color: #fff;
         }
 
+        .ca-who-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+          max-width: 560px;
+          margin: 0 auto;
+        }
+        @media (max-width: 560px) { .ca-who-grid { grid-template-columns: 1fr; } }
+        .ca-who-opt {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          text-align: left;
+          background: var(--ca-white);
+          border: 1.5px solid var(--ca-line);
+          border-radius: 14px;
+          padding: 20px 18px;
+          cursor: pointer;
+          transition: border-color .15s, box-shadow .15s, transform .06s;
+          font-family: var(--ca-sans);
+        }
+        .ca-who-opt:hover {
+          border-color: var(--ca-green);
+          box-shadow: 0 8px 24px rgba(45,122,58,.12);
+        }
+        .ca-who-opt:active { transform: scale(.99); }
+        .ca-who-label { font-size: 16px; font-weight: 700; color: var(--ca-ink); }
+        .ca-who-desc { font-size: 13px; line-height: 1.5; color: var(--ca-body); }
+        .ca-switch-link {
+          border: none;
+          background: transparent;
+          color: var(--ca-green);
+          font-family: inherit;
+          font-size: inherit;
+          cursor: pointer;
+          text-decoration: underline;
+          padding: 0;
+        }
         .ca-card-pro {
           border-color: var(--ca-ink);
           background: #fff;
