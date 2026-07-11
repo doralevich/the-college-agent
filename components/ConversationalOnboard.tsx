@@ -207,6 +207,24 @@ const STAFF_FOCUS_OPTIONS = [
   "Document organization",
 ];
 
+const STAFF_SIZE_OPTIONS = [
+  "Just me",
+  "2 to 10 people",
+  "11 to 25 people",
+  "26 to 50 people",
+  "More than 50",
+];
+const COORDINATE_OPTIONS = [
+  "Coaches",
+  "Athletes / students",
+  "Parents & families",
+  "Campus administration",
+  "Compliance office",
+  "Vendors & venues",
+  "Media & communications",
+  "Donors & boosters",
+];
+
 const PRIORITY_OPTIONS = [
   "Academic performance",
   "Skills & certifications",
@@ -326,6 +344,8 @@ type TextKey =
   | "whichSports"
   | "roleTitle"
   | "department"
+  | "sportsOversee"
+  | "crunchTimes"
   | "anythingElse";
 type MultiKey =
   | "checkinFrequency"
@@ -336,9 +356,10 @@ type MultiKey =
   | "clubs"
   | "sportsTeams"
   | "staffFocus"
+  | "coordinateWith"
   | "academicStruggles"
   | "stressReset";
-type SingleKey = "role" | "year" | "livingSituation" | "greekLife" | "workStatus" | "afterCollege";
+type SingleKey = "role" | "staffSize" | "year" | "livingSituation" | "greekLife" | "workStatus" | "afterCollege";
 
 // Role branch: students get the college-life flow; faculty/administration/athletics get a
 // short professional flow (title, team/office, what to take off their plate). Until the role
@@ -377,8 +398,10 @@ const STEPS: Step[] = [
   { kind: "text", key: "personalEmail", prompt: "What's your personal email?", placeholder: "you@email.com", inputType: "email" },
   { kind: "text", key: "phone", prompt: "What's your mobile number?", placeholder: "(555) 555-5555", inputType: "tel", required: true },
   // ---- Staff flow (faculty / administration / athletics) ----
-  { kind: "text", key: "roleTitle", prompt: "What's your role or title?", placeholder: "Head Coach, Director of Operations, Professor...", required: true, showIf: isStaff },
+  { kind: "text", key: "roleTitle", prompt: "What's your role or title?", placeholder: "Head Coach, Athletic Director, Professor...", required: true, showIf: isStaff },
   { kind: "text", key: "department", prompt: "What team, department, or office are you with?", placeholder: "Men's Basketball, Admissions, Athletics...", showIf: isStaff },
+  { kind: "text", key: "sportsOversee", prompt: "Which sports or programs do you oversee?", placeholder: "All varsity sports, men's basketball, club programs...", showIf: (f) => f.role === "Athletic Department" },
+  { kind: "single", key: "staffSize", prompt: "How big is the staff you work with?", options: STAFF_SIZE_OPTIONS, showIf: isStaff },
   {
     kind: "multi",
     key: "staffFocus",
@@ -387,6 +410,8 @@ const STEPS: Step[] = [
     required: true,
     showIf: isStaff,
   },
+  { kind: "multi", key: "coordinateWith", prompt: "Who do you coordinate with most?", options: COORDINATE_OPTIONS, showIf: isStaff },
+  { kind: "text", key: "crunchTimes", prompt: "When are your crunch periods?", placeholder: "August preseason, signing day, March tournaments...", showIf: isStaff },
   // ---- Student flow ----
   {
     kind: "multi",
@@ -425,7 +450,11 @@ type FormState = {
   role: string;
   roleTitle: string;
   department: string;
+  sportsOversee: string;
+  staffSize: string;
   staffFocus: string[];
+  coordinateWith: string[];
+  crunchTimes: string;
   firstName: string;
   lastName: string;
   agentName: string;
@@ -461,7 +490,11 @@ const EMPTY: FormState = {
   role: "",
   roleTitle: "",
   department: "",
+  sportsOversee: "",
+  staffSize: "",
   staffFocus: [],
+  coordinateWith: [],
+  crunchTimes: "",
   firstName: "",
   lastName: "",
   agentName: "",
@@ -821,7 +854,11 @@ export function ConversationalOnboard({
           role: form.role,
           roleTitle: form.roleTitle.trim(),
           department: form.department.trim(),
+          sportsOversee: form.sportsOversee.trim(),
+          staffSize: form.staffSize,
           staffFocus: form.staffFocus,
+          coordinateWith: form.coordinateWith,
+          crunchTimes: form.crunchTimes.trim(),
           firstName: form.firstName.trim(),
           lastName: form.lastName.trim(),
           agentName: form.agentName.trim(),
@@ -1379,11 +1416,8 @@ function Input({
   removeClass: (idx: number) => void;
 }) {
   if (step.kind === "intro") {
-    return (
-      <p style={{ fontSize: 13, color: T.inkSoft, margin: 0 }}>
-        Click <span style={{ color: T.green, fontWeight: 600 }}>I&apos;m ready</span> to begin.
-      </p>
-    );
+    // The intro bubble says it all — the Continue button is self-evident.
+    return null;
   }
   if (step.kind === "info") {
     return (

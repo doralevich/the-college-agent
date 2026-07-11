@@ -6,6 +6,7 @@ import ChatBot from "../components/ChatBot";
 import { trackMeta } from "../components/MetaPixel";
 import {
   PLAN_AMOUNT_CENTS,
+  PRO_PLAN_AMOUNT_CENTS,
   HOSTING_AMOUNT_CENTS,
   HOSTING_ANNUAL_AMOUNT_CENTS,
 } from "@/lib/pricing/intro-cutoff";
@@ -55,11 +56,15 @@ export default function BuildPage() {
   const [extraCents, setExtraCents] = useState(0);
   // Hosting billing choice: $25/month or $250/year (2 months free on annual).
   const [hostingInterval, setHostingInterval] = useState<"monthly" | "annual">("monthly");
+  // Which build is being bought: the student plan (default) or the professional build
+  // for faculty / administration / athletic departments. Deep-linkable via ?plan=pro.
+  const [plan, setPlan] = useState<"student" | "pro">("student");
   // Referral code from ?ref=... — kept in localStorage so it survives the multi-step
   // flow and a canceled-checkout round trip. Applied server-side at checkout.
   const [ref, setRef] = useState<string>("");
 
   useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("plan") === "pro") setPlan("pro");
     const fromUrl = new URLSearchParams(window.location.search).get("ref")?.trim() ?? "";
     if (fromUrl) {
       localStorage.setItem("ca-ref", fromUrl);
@@ -89,6 +94,7 @@ export default function BuildPage() {
   }, []);
 
   const planPrice = formatPrice(PLAN_AMOUNT_CENTS);
+  const proPrice = formatPrice(PRO_PLAN_AMOUNT_CENTS);
   const hostingPrice = formatPrice(HOSTING_AMOUNT_CENTS);
   const hostingAnnualPrice = formatPrice(HOSTING_ANNUAL_AMOUNT_CENTS);
 
@@ -154,6 +160,7 @@ export default function BuildPage() {
           lastName: info.lastName.trim(),
           termsAccepted: agreeTerms,
           hostingInterval,
+          plan,
           ...(extraCents > 0 ? { extraCreditsCents: extraCents } : {}),
           ...(ref ? { ref } : {}),
         }),
@@ -295,11 +302,43 @@ export default function BuildPage() {
                     </div>
                   </div>
 
-                  <button type="button" className="ca-cta" onClick={continueToInfo}>
+                  <button
+                    type="button"
+                    className="ca-cta"
+                    onClick={() => {
+                      setPlan("student");
+                      continueToInfo();
+                    }}
+                  >
                     Let&apos;s do it!
                   </button>
 
                   <p className="ca-trust">Secure checkout by Stripe &middot; 7-day money-back guarantee</p>
+                </div>
+
+                <div className="ca-card ca-card-pro">
+                  <h3 className="ca-plan-name">For Faculty, Administration &amp; Athletics</h3>
+                  <p className="ca-plan-desc">
+                    A professional build for your office, program, or team. Scheduling, travel,
+                    recruiting coordination, compliance deadlines, communications, and game-day
+                    operations, run by an agent that knows your department.
+                  </p>
+                  <div className="ca-price-row">
+                    <span className="ca-price">{proPrice}</span>
+                    <span className="ca-period">one-time</span>
+                  </div>
+                  <p className="ca-savenote">Plus the same hosting above. White-glove setup included.</p>
+                  <button
+                    type="button"
+                    className="ca-cta"
+                    onClick={() => {
+                      setPlan("pro");
+                      continueToInfo();
+                    }}
+                  >
+                    Build a professional agent
+                  </button>
+                  <p className="ca-trust">Piloting with athletic departments now &middot; Questions? <a href="/consultation" style={{ color: "var(--ca-green)", textDecoration: "underline" }}>Book a consultation</a></p>
                 </div>
 
                 <p className="ca-next">
@@ -320,6 +359,12 @@ export default function BuildPage() {
                 <h2 className="ca-h2">Tell us about yourself.</h2>
                 <p className="ca-sub">
                   Quick details so we know who&apos;s building this agent. Next step is secure payment.
+                  {plan === "pro" && (
+                    <>
+                      {" "}
+                      <b>Professional build, {proPrice} one-time.</b>
+                    </>
+                  )}
                 </p>
 
                 <form className="ca-form" onSubmit={handleContinueToPayment} noValidate>
@@ -535,6 +580,11 @@ export default function BuildPage() {
           color: #fff;
         }
 
+        .ca-card-pro {
+          border-color: var(--ca-ink);
+          background: #fff;
+          margin-top: 18px;
+        }
         .ca-card {
           border: 2px solid var(--ca-green);
           background: var(--ca-green-tint);

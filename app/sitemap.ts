@@ -11,6 +11,7 @@ const publicRoutes: { route: string; priority: number; changeFrequency: "weekly"
   { route: "/for-students", priority: 0.9, changeFrequency: "monthly" },
   { route: "/for-parents", priority: 0.9, changeFrequency: "monthly" },
   { route: "/for-high-school", priority: 0.8, changeFrequency: "monthly" },
+  { route: "/for-athletics", priority: 0.8, changeFrequency: "monthly" },
   { route: "/study", priority: 0.8, changeFrequency: "monthly" },
   { route: "/internships", priority: 0.8, changeFrequency: "monthly" },
   { route: "/faq", priority: 0.7, changeFrequency: "monthly" },
