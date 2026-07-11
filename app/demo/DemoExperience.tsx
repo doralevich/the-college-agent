@@ -113,7 +113,8 @@ export function DemoExperience({ refSlug }: { refSlug: string }) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  // The chat transcript's own scroll container — new messages scroll THIS, never the page.
+  const scrollerRef = useRef<HTMLDivElement>(null);
 
   // Fire a Meta "Demo" event once when the demo opens. Every Demo button (nav, footer,
   // homepage, ad links) routes here, so this one spot captures them all. No-op until the
@@ -129,10 +130,12 @@ export function DemoExperience({ refSlug }: { refSlug: string }) {
   }, []);
 
   useEffect(() => {
-    // Only once a conversation exists — on first load this would drag the page down
-    // to the bottom anchor and undo the scroll-to-top above.
+    // Keep the newest message in view by scrolling the transcript box itself.
+    // scrollIntoView would scroll every ancestor including the page, which made the
+    // whole page jump to the bottom on each reply.
     if (messages.length === 0) return;
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = scrollerRef.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [messages, thinking]);
 
   // "David Chen" -> "David"; used to personalize the greeting.
@@ -357,7 +360,7 @@ export function DemoExperience({ refSlug }: { refSlug: string }) {
           </span>
         </div>
 
-        <div style={{ flex: 1, overflowY: "auto", padding: "20px 18px", display: "flex", flexDirection: "column", gap: 12 }}>
+        <div ref={scrollerRef} style={{ flex: 1, overflowY: "auto", padding: "20px 18px", display: "flex", flexDirection: "column", gap: 12 }}>
           {messages.map((m, i) => (
             <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
               <div
@@ -386,7 +389,6 @@ export function DemoExperience({ refSlug }: { refSlug: string }) {
               </a>
             </div>
           )}
-          <div ref={bottomRef} />
         </div>
 
         <div style={{ borderTop: "1px solid rgba(11,23,41,.08)", padding: "12px 14px", display: "flex", gap: 8 }}>
