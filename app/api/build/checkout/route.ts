@@ -3,7 +3,7 @@ import { ApiError, json, readJson, route } from "@/lib/http";
 import { ambassadorBySlug } from "@/lib/ambassador";
 import { getStripe } from "@/lib/stripe/client";
 import { priceIdFor } from "@/lib/stripe/prices";
-import { currentPlanLookup, HOSTING_LOOKUP, HOSTING_ANNUAL_LOOKUP } from "@/lib/pricing/intro-cutoff";
+import { currentPlanLookup, PRO_PLAN_LOOKUP, HOSTING_LOOKUP, HOSTING_ANNUAL_LOOKUP } from "@/lib/pricing/intro-cutoff";
 import { getOptionalUserId } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ensureReferralCoupon, resolveReferralCode } from "@/lib/referral";
@@ -31,6 +31,9 @@ type Body = {
   extraCreditsCents?: number;
   // Hosting billing choice from the plan card: $25/month (default) or $250/year.
   hostingInterval?: "monthly" | "annual";
+  // Which build: the student plan (default) or the professional build for
+  // faculty / administration / athletic departments ($4,500).
+  plan?: "student" | "pro";
 };
 
 // Only these add-on amounts exist in the UI; anything else is ignored, never billed.
@@ -63,7 +66,7 @@ export const POST = route(async (req) => {
   const firstName = (body.firstName ?? "").trim();
   const lastName = (body.lastName ?? "").trim();
 
-  const planLookup = currentPlanLookup();
+  const planLookup = body.plan === "pro" ? PRO_PLAN_LOOKUP : currentPlanLookup();
   const hostingInterval = body.hostingInterval === "annual" ? "annual" : "monthly";
   const hostingLookup = hostingInterval === "annual" ? HOSTING_ANNUAL_LOOKUP : HOSTING_LOOKUP;
 
@@ -87,7 +90,7 @@ export const POST = route(async (req) => {
   // Metadata travels back on the webhook (subscription_data is what we read on
   // invoice.paid; metadata is what we read on checkout.session.completed). Carry
   // names so the webhook can stamp them on the freshly-created auth user.
-  const metadata: Record<string, string> = { plan_lookup: planLookup };
+  const metadata: Record<string, string> = { plan_lookup: planLookup, plan_type: body.plan === "pro" ? "pro" : "student" };
   if (userId) metadata.user_id = userId;
   if (firstName) metadata.first_name = firstName;
   if (lastName) metadata.last_name = lastName;

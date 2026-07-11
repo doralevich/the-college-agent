@@ -10,6 +10,11 @@
 export const PLAN_LOOKUP = "ca_plan";
 export const PLAN_AMOUNT_CENTS = 59900;
 
+// Professional build (faculty / administration / athletic department): same agent,
+// priced for a program/department buyer. Sold via /build's staff card (plan: "pro").
+export const PRO_PLAN_LOOKUP = "ca_plan_pro";
+export const PRO_PLAN_AMOUNT_CENTS = 450000;
+
 export const HOSTING_LOOKUP = "ca_hosting";
 export const HOSTING_AMOUNT_CENTS = 2500;
 export const HOSTING_ANNUAL_LOOKUP = "ca_hosting_annual";

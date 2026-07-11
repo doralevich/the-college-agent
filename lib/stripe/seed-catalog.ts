@@ -18,6 +18,8 @@ const CATALOG: CatalogItem[] = [
   // The College Agent — flat pricing: $599 one-time platform fee, hosting $25/month
   // or $250/year (annual = 10 x monthly, "2 months free").
   { key: "ca_plan", name: "The College Agent (Platform Fee)", amount: 59900, recurring: false },
+  // Professional build for faculty / administration / athletic departments.
+  { key: "ca_plan_pro", name: "The College Agent — Professional (Staff & Athletics)", amount: 450000, recurring: false },
   { key: "ca_hosting", name: "The College Agent — Hosting", amount: 2500, recurring: "month" },
   { key: "ca_hosting_annual", name: "The College Agent — Hosting (Annual)", amount: 25000, recurring: "year" },
   // Legacy configurator catalog (multi-tier /build configurator) — keep seeded for

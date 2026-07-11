@@ -117,7 +117,11 @@ export function buildUserProfile(p: HermesPersonaInput): string {
   // Staff-flow facts (empty for students, so nothing is added).
   add("Role", q(p, "roleTitle") || (q(p, "role") !== "Student" ? q(p, "role") : ""));
   add("Team / department", q(p, "department"));
+  add("Oversees", q(p, "sportsOversee"));
+  add("Staff size", q(p, "staffSize"));
   add("Wants handled", q(p, "staffFocus"));
+  add("Coordinates with", q(p, "coordinateWith"));
+  add("Crunch periods", q(p, "crunchTimes"));
   add("Year", (p.year || "").trim());
   add("Major", (p.major || "").trim());
   add("Top priority this semester", q(p, "topPriority"));
