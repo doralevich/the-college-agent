@@ -192,6 +192,21 @@ const VOICE_OPTIONS = [
 
 const YEAR_OPTIONS = ["Before College", "Freshman", "Sophomore", "Junior", "Senior", "Graduate Student", "Other"];
 
+// Staff flow (faculty / administration / athletic department): what the agent should
+// handle. Geared to the work an office or program actually runs day to day.
+const STAFF_FOCUS_OPTIONS = [
+  "Calendar & scheduling",
+  "Team or department travel",
+  "Recruiting coordination",
+  "Compliance & deadlines",
+  "Email & communications",
+  "Event & game-day planning",
+  "Practice & staff schedules",
+  "Budget & expense tracking",
+  "Meeting notes & follow-ups",
+  "Document organization",
+];
+
 const PRIORITY_OPTIONS = [
   "Academic performance",
   "Skills & certifications",
@@ -269,14 +284,15 @@ const MAJOR_GROUPS: MajorGroup[] = (majorsData as { groups: MajorGroup[] }).grou
 // `tier: "tail"` -> shown unless the student exited early at wantTier2.
 type Tier = 2 | 3 | "tail";
 type Step =
-  // `showIf` gates conditional follow-ups (e.g. "Which one(s)?" only after a Yes).
+  // `showIf` gates conditional steps — role-branch questions (student vs staff) and
+  // follow-ups (e.g. "Which sport?" only after picking a team).
   | { kind: "text"; key: TextKey; prompt: string; placeholder?: string; inputType?: "text" | "email" | "tel"; required?: boolean; tier?: Tier; showIf?: (form: FormState) => boolean }
-  | { kind: "textarea"; key: TextKey; prompt: string; placeholder?: string; examples?: string[]; required?: boolean; tier?: Tier }
-  | { kind: "multi"; key: MultiKey; prompt: string; options: string[]; descriptions?: Record<string, string>; max?: number; required?: boolean; tier?: Tier }
+  | { kind: "textarea"; key: TextKey; prompt: string; placeholder?: string; examples?: string[]; required?: boolean; tier?: Tier; showIf?: (form: FormState) => boolean }
+  | { kind: "multi"; key: MultiKey; prompt: string; options: string[]; descriptions?: Record<string, string>; max?: number; required?: boolean; tier?: Tier; showIf?: (form: FormState) => boolean }
   // allowOther: selecting "Other" reveals a write-in field whose text becomes the answer.
-  | { kind: "single"; key: SingleKey; prompt: string; options: string[]; allowOther?: boolean; required?: boolean; tier?: Tier }
+  | { kind: "single"; key: SingleKey; prompt: string; options: string[]; allowOther?: boolean; required?: boolean; tier?: Tier; showIf?: (form: FormState) => boolean }
   // Combined academics page: year (two-column radio) + major + minor on one screen.
-  | { kind: "academics"; key: "academics"; prompt: string; tier?: Tier }
+  | { kind: "academics"; key: "academics"; prompt: string; tier?: Tier; showIf?: (form: FormState) => boolean }
   // School typeahead backed by /api/schools (College Scorecard proxy).
   | { kind: "typeahead"; key: TextKey; prompt: string; placeholder?: string; required?: boolean; tier?: Tier }
   // Grouped dropdown with search (majors/minors). extraOptions inject non-major
@@ -290,7 +306,7 @@ type Step =
   // exit); wantDeepDive then narrows tier-3 if they keep going.
   | { kind: "branch"; key: BranchKey; prompt: string; yesLabel?: string; noLabel?: string; tier?: Tier }
   // Repeating list of classes — name + days + time + location + professor + SKU.
-  | { kind: "classList"; key: "classes"; prompt: string; tier?: Tier };
+  | { kind: "classList"; key: "classes"; prompt: string; tier?: Tier; showIf?: (form: FormState) => boolean };
 
 type MajorGroup = { label: string; majors: string[] };
 
@@ -308,6 +324,8 @@ type TextKey =
   | "minor"
   | "greekOrg"
   | "whichSports"
+  | "roleTitle"
+  | "department"
   | "anythingElse";
 type MultiKey =
   | "checkinFrequency"
@@ -317,9 +335,17 @@ type MultiKey =
   | "integrationsWanted"
   | "clubs"
   | "sportsTeams"
+  | "staffFocus"
   | "academicStruggles"
   | "stressReset";
-type SingleKey = "year" | "livingSituation" | "greekLife" | "workStatus" | "afterCollege";
+type SingleKey = "role" | "year" | "livingSituation" | "greekLife" | "workStatus" | "afterCollege";
+
+// Role branch: students get the college-life flow; faculty/administration/athletics get a
+// short professional flow (title, team/office, what to take off their plate). Until the role
+// is answered the form counts the student flow (the default audience).
+const ROLE_OPTIONS = ["Student", "Faculty", "Administration / Staff", "Athletic Department"];
+const isStaff = (f: FormState) => !!f.role && f.role !== "Student";
+const isStudent = (f: FormState) => !isStaff(f);
 
 export type ClassEntry = {
   name: string;
@@ -341,14 +367,27 @@ const STEPS: Step[] = [
     prompt:
       "Hi {firstName}!\nI'm your College Agent, and excited to get to know you. This intake form takes a few minutes to personalize me, and everything you share helps me become a better partner throughout college.\nThe more I learn about you now, the smarter I'll be when you need me later.",
   },
+  { kind: "single", key: "role", prompt: "Which best describes you?", options: ROLE_OPTIONS, required: true },
   { kind: "text", key: "agentName", prompt: "What would you like to call me?", placeholder: "Type a name..." },
   { kind: "image", key: "avatarFile", prompt: "Want to give me a face? Pick an avatar or upload your own." },
   { kind: "text", key: "firstName", prompt: "And what should I call you?", placeholder: "Your first name", required: true },
   { kind: "text", key: "lastName", prompt: "And your last name?", placeholder: "Your last name", required: true },
-  { kind: "typeahead", key: "school", prompt: "What school do you go to?", placeholder: "Start typing your school...", required: true },
+  { kind: "typeahead", key: "school", prompt: "What school are you with?", placeholder: "Start typing your school...", required: true },
   { kind: "text", key: "schoolEmail", prompt: "What's your school email?", placeholder: "you@school.edu", inputType: "email", required: true },
   { kind: "text", key: "personalEmail", prompt: "What's your personal email?", placeholder: "you@email.com", inputType: "email" },
   { kind: "text", key: "phone", prompt: "What's your mobile number?", placeholder: "(555) 555-5555", inputType: "tel", required: true },
+  // ---- Staff flow (faculty / administration / athletics) ----
+  { kind: "text", key: "roleTitle", prompt: "What's your role or title?", placeholder: "Head Coach, Director of Operations, Professor...", required: true, showIf: isStaff },
+  { kind: "text", key: "department", prompt: "What team, department, or office are you with?", placeholder: "Men's Basketball, Admissions, Athletics...", showIf: isStaff },
+  {
+    kind: "multi",
+    key: "staffFocus",
+    prompt: "What should I take off your plate?",
+    options: STAFF_FOCUS_OPTIONS,
+    required: true,
+    showIf: isStaff,
+  },
+  // ---- Student flow ----
   {
     kind: "multi",
     key: "topPriority",
@@ -356,6 +395,7 @@ const STEPS: Step[] = [
     options: PRIORITY_OPTIONS,
     required: true,
     tier: 2,
+    showIf: isStudent,
   },
   { kind: "multi", key: "responseStyle", prompt: "How should I communicate with you?", options: VOICE_OPTIONS, required: true, tier: 2 },
   {
@@ -363,14 +403,14 @@ const STEPS: Step[] = [
     key: "classes",
     prompt: "Let's get your semester organized. Add your classes one at a time.",
     tier: 2,
+    showIf: isStudent,
   },
-  // Tier 3 — only shown if wantDeepDive === "yes". Short radios and checkbox lists.
-  { kind: "academics", key: "academics", prompt: "Where are you in your college journey?", tier: 3 },
-  { kind: "single", key: "livingSituation", prompt: "Where are you living this year?", options: LIVING_OPTIONS, allowOther: true, tier: 3 },
-  { kind: "multi", key: "clubs", prompt: "What clubs or organizations are you involved in?", options: CLUBS_OPTIONS, tier: 3 },
-  { kind: "multi", key: "sportsTeams", prompt: "Are you involved in sports or athletics?", options: SPORTS_OPTIONS, tier: 3 },
-  { kind: "text", key: "whichSports", prompt: "Which sport?", placeholder: "Soccer, lacrosse, swimming...", tier: 3, showIf: (f) => f.sportsTeams.some((s) => s === "Varsity athletics" || s === "Club sports" || s === "Intramurals") },
-  { kind: "single", key: "afterCollege", prompt: "What's the plan after college?", options: AFTER_COLLEGE_OPTIONS, tier: 3 },
+  { kind: "academics", key: "academics", prompt: "Where are you in your college journey?", tier: 3, showIf: isStudent },
+  { kind: "single", key: "livingSituation", prompt: "Where are you living this year?", options: LIVING_OPTIONS, allowOther: true, tier: 3, showIf: isStudent },
+  { kind: "multi", key: "clubs", prompt: "What clubs or organizations are you involved in?", options: CLUBS_OPTIONS, tier: 3, showIf: isStudent },
+  { kind: "multi", key: "sportsTeams", prompt: "Are you involved in sports or athletics?", options: SPORTS_OPTIONS, tier: 3, showIf: isStudent },
+  { kind: "text", key: "whichSports", prompt: "Which sport?", placeholder: "Soccer, lacrosse, swimming...", tier: 3, showIf: (f) => isStudent(f) && f.sportsTeams.some((s) => s === "Varsity athletics" || s === "Club sports" || s === "Intramurals") },
+  { kind: "single", key: "afterCollege", prompt: "What's the plan after college?", options: AFTER_COLLEGE_OPTIONS, tier: 3, showIf: isStudent },
   {
     kind: "textarea",
     key: "anythingElse",
@@ -382,6 +422,10 @@ const STEPS: Step[] = [
 ];
 
 type FormState = {
+  role: string;
+  roleTitle: string;
+  department: string;
+  staffFocus: string[];
   firstName: string;
   lastName: string;
   agentName: string;
@@ -414,6 +458,10 @@ type FormState = {
 };
 
 const EMPTY: FormState = {
+  role: "",
+  roleTitle: "",
+  department: "",
+  staffFocus: [],
   firstName: "",
   lastName: "",
   agentName: "",
@@ -586,7 +634,7 @@ export function ConversationalOnboard({
     return STEPS.filter((s) => {
       if ((s.kind === "text" || s.kind === "textarea" || s.kind === "typeahead") && prefilledKeys.has(s.key)) return false;
       // Conditional follow-ups ("Which one(s)?") only exist while their trigger answer holds.
-      if (s.kind === "text" && s.showIf && !s.showIf(form)) return false;
+      if ("showIf" in s && s.showIf && !s.showIf(form)) return false;
       const tier = "tier" in s ? s.tier : undefined;
       // Default is to SHOW tier 2 / 3 / tail. Only hide when the student explicitly
       // tapped "no" on the matching branch, so the branch step's CTA stays
@@ -770,6 +818,10 @@ export function ConversationalOnboard({
       body.append(
         "data",
         JSON.stringify({
+          role: form.role,
+          roleTitle: form.roleTitle.trim(),
+          department: form.department.trim(),
+          staffFocus: form.staffFocus,
           firstName: form.firstName.trim(),
           lastName: form.lastName.trim(),
           agentName: form.agentName.trim(),
