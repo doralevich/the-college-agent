@@ -83,7 +83,7 @@ const ASK_CATEGORIES = [
     label: "Career",
     asks: [
       "Punch up my resume and LinkedIn profile.",
-      "Find internships I should apply for this month.",
+      "Prepare my schedule for graduate school.",
       "Get me ready for Tuesday's interview.",
     ],
   },
