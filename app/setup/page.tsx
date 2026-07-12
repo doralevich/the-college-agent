@@ -149,7 +149,7 @@ export default function SetupPage() {
               </label>
               <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", padding: "10px 14px", border: "1.5px solid", borderColor: providers.openai ? "var(--green)" : "rgba(11,23,41,.12)", borderRadius: 8, background: providers.openai ? "rgba(61,139,61,.04)" : "#fff", transition: "all .15s" }}>
                 <input type="checkbox" checked={providers.openai} onChange={() => toggleProvider("openai")} style={{ width: 16, height: 16, accentColor: "var(--green)", cursor: "pointer" }} />
-                <span style={{ fontSize: 14, color: "var(--navy)" }}><strong>OpenAI</strong>, ChatGPT (GPT-5, GPT-4o)</span>
+                <span style={{ fontSize: 14, color: "var(--navy)" }}><strong>OpenAI</strong>, ChatGPT (GPT-5.6 Sol, Terra, Luna)</span>
               </label>
             </div>
 

@@ -140,6 +140,7 @@ export interface AgentModel {
   label: string;
   owned_by?: string;
   provider?: string;
+  display_provider?: string;
   is_default?: boolean;
 }
 

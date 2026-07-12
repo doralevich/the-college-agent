@@ -59,8 +59,7 @@ export function ChatComposer({ agentId, isStreaming, att, onSend, onStop, large 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seedToken]);
 
-  // The model switcher is a persistent control, shown once the instance reports at least one model
-  // (the older metered gateway exposes a single "default"; current builds expose the full catalog).
+  // The model switcher is a persistent control, shown once the instance reports at least one model.
   // It stays hidden until the list resolves and hides if the call returns nothing (e.g. fetch
   // failed) — the agent default still runs, and there's no appear-then-vanish flicker. Memoized so
   // the controlled textarea's per-keystroke re-renders don't re-scan the model groups.
@@ -84,7 +83,16 @@ export function ChatComposer({ agentId, isStreaming, att, onSend, onStop, large 
     const trimmed = text.trim();
     if ((!trimmed && !att.hasFiles) || att.blocksSend) return;
     const attachments = att.takeAttachments();
-    onSend(trimmed, { ...settings, files: attachments.map((a) => a.path), attachments });
+    // Send the curated default explicitly. Otherwise a checked Sonnet row paired with a null
+    // setting would still make older Hermes configs run Agent37's generic default model.
+    const selectedModel = findModel(groups, settings.model ?? defaultModel);
+    onSend(trimmed, {
+      ...settings,
+      model: selectedModel?.id ?? settings.model,
+      provider: selectedModel?.provider ?? settings.provider,
+      files: attachments.map((a) => a.path),
+      attachments,
+    });
     setText("");
     if (textareaRef.current) textareaRef.current.style.height = "auto";
   };

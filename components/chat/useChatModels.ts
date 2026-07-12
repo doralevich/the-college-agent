@@ -27,12 +27,13 @@ export function useChatModels(agentId: string): ChatModelsState {
         if (cancelled) return;
         const byProvider = new Map<string, ModelOption[]>();
         for (const m of res.data ?? []) {
-          // Current builds report the provider slug as `owned_by`; the older metered build used
-          // `provider`. Group + send whichever the instance provides.
+          // The display provider groups the curated catalog by vendor. Keep the gateway's actual
+          // provider on the option because that is what POST /v1/responses expects.
           const provider = m.owned_by ?? m.provider ?? "model";
-          const arr = byProvider.get(provider) ?? [];
+          const displayProvider = m.display_provider ?? provider;
+          const arr = byProvider.get(displayProvider) ?? [];
           arr.push({ id: m.id, label: m.label, provider });
-          byProvider.set(provider, arr);
+          byProvider.set(displayProvider, arr);
         }
         // Prefer the explicit default; fall back to whichever model is flagged is_default.
         const defaultModel = res.default_model ?? (res.data ?? []).find((m) => m.is_default)?.id ?? null;

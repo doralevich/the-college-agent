@@ -209,8 +209,10 @@ const b64 = (s: string) => Buffer.from(s, "utf8").toString("base64");
 // Model to pin when a student brings their own provider key. Must be UN-prefixed for a direct
 // provider — `hermes doctor` rejects vendor-prefixed slugs like `anthropic/...` (those are for
 // aggregators like openrouter). Adjust freely.
-const BYO_ANTHROPIC_MODEL = "claude-sonnet-4-6";
-const BYO_OPENAI_MODEL = "gpt-5";
+export const MANAGED_DEFAULT_MODEL = "anthropic/claude-sonnet-5";
+const MANAGED_PROVIDER = "custom:Agent37";
+const BYO_ANTHROPIC_MODEL = "claude-sonnet-5";
+const BYO_OPENAI_MODEL = "gpt-5.6-sol";
 
 export type ConfigureResult = { ok: boolean; detail: string };
 
@@ -259,18 +261,17 @@ export async function configureHermes(
     : [];
 
   // BYO key wins: repoint off the metered gateway to the standard provider (Anthropic first if
-  // both). No key => leave the gateway config untouched.
+  // both). Platform agents are explicitly pinned to the product default instead of inheriting the
+  // Agent37 gateway's generic `default` alias.
   const byo = opts.anthropicKey
     ? { provider: "anthropic", model: BYO_ANTHROPIC_MODEL }
     : opts.openaiKey
       ? { provider: "openai", model: BYO_OPENAI_MODEL }
-      : null;
-  const modelBlock = byo
-    ? [
-        `hermes config set model.provider ${byo.provider} >/dev/null 2>&1 || echo MODEL_SET_WARN`,
-        `hermes config set model.default ${byo.model} >/dev/null 2>&1 || echo MODEL_SET_WARN`,
-      ]
-    : [];
+      : { provider: MANAGED_PROVIDER, model: MANAGED_DEFAULT_MODEL };
+  const modelBlock = [
+    `hermes config set model.provider ${byo.provider} >/dev/null 2>&1 || echo MODEL_SET_WARN`,
+    `hermes config set model.default ${byo.model} >/dev/null 2>&1 || echo MODEL_SET_WARN`,
+  ];
 
   // Single shell script (Agent37 exec runs it in a shell). Best-effort + idempotent.
   const script = [
@@ -361,7 +362,9 @@ export async function switchModelProvider(
       `touch "$HOME/.hermes/.env"`,
       `grep -vE '^(ANTHROPIC_API_KEY|OPENAI_API_KEY)=' "$HOME/.hermes/.env" > "$HOME/.hermes/.env.tmp" 2>/dev/null || true`,
       `mv "$HOME/.hermes/.env.tmp" "$HOME/.hermes/.env" && chmod 600 "$HOME/.hermes/.env"`,
-      `[ -f "$HOME/.hermes/config.platform.yaml" ] && cp "$HOME/.hermes/config.platform.yaml" "$HOME/.hermes/config.yaml" || echo RESTORE_WARN`
+      `[ -f "$HOME/.hermes/config.platform.yaml" ] && cp "$HOME/.hermes/config.platform.yaml" "$HOME/.hermes/config.yaml" || echo RESTORE_WARN`,
+      `hermes config set model.provider ${MANAGED_PROVIDER} >/dev/null 2>&1 || echo MODEL_SET_WARN`,
+      `hermes config set model.default ${MANAGED_DEFAULT_MODEL} >/dev/null 2>&1 || echo MODEL_SET_WARN`
     );
   } else {
     const envKey = target.provider === "anthropic" ? "ANTHROPIC_API_KEY" : "OPENAI_API_KEY";

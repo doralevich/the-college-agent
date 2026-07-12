@@ -1,5 +1,6 @@
 import { instanceFetch } from "@/lib/agent37";
 import { requireAgentAccess } from "@/lib/auth";
+import { isApprovedChatModelId } from "@/lib/chat-models";
 import { ApiError, readJson, route, upstreamErrorMessage } from "@/lib/http";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -26,6 +27,9 @@ export const POST = route(async (request: Request, { params }: Ctx) => {
   const files = Array.isArray(body.files) ? body.files.filter(Boolean) : [];
   if (!input && files.length === 0) {
     throw new ApiError(400, "invalid_request", "input is required");
+  }
+  if (body.model && !isApprovedChatModelId(body.model)) {
+    throw new ApiError(400, "invalid_request", "model is not available");
   }
   // The Agents API marks `input` required; for a files-only turn supply a sensible default
   // prompt so we always send a non-empty input rather than relying on "" being accepted.
