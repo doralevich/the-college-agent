@@ -100,6 +100,20 @@ const ASK_CATEGORIES = [
       "Remind me about Mom's birthday and help me pick a gift.",
     ],
   },
+  {
+    label: "Athletics",
+    asks: [
+      "Build the travel itinerary for Saturday's away game.",
+      "What recruiting contact windows open this month?",
+    ],
+  },
+  {
+    label: "Administration",
+    asks: [
+      "Draft the orientation reminder email to first-year families.",
+      "Summarize this policy update for Monday's staff meeting.",
+    ],
+  },
 ];
 
 function buildJsonLd() {
@@ -265,7 +279,7 @@ export default async function Home() {
           <div className="asks-band">
             <div className="asks-head">
               <span className="mono-label asks-eyebrow" style={{ color: "rgba(61,139,61,.85)" }}>Just Ask. It&apos;s Handled.</span>
-              <h3>Real conversations <br />with my Agent.</h3>
+              <h3>Real conversations with my Agent.</h3>
             </div>
             <div className="asks-cats">
               {ASK_CATEGORIES.map((cat) => (
@@ -577,7 +591,7 @@ export default async function Home() {
           font-size: clamp(22px, 2.6vw, 30px); font-weight: 800; color: #fff;
           letter-spacing: -.02em; line-height: 1.2;
         }
-        .asks-cats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; align-items: start; }
+        .asks-cats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px 22px; align-items: start; }
         .ask-cat-label {
           font-family: var(--font-mono); font-size: 11px; font-weight: 700; text-transform: uppercase;
           letter-spacing: .1em; color: rgba(61,139,61,.9); margin-bottom: 14px; padding-bottom: 10px;
