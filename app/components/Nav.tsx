@@ -68,6 +68,9 @@ export default function Nav() {
             below) — pages offset with paddingTop: 114 to clear the fixed header. */}
         <div className="nav-topbar" style={{ background: "var(--navy, #0b1729)", padding: "7px 0" }}>
           <div className="nav-topbar-inner">
+            <a href="mailto:hello@thecollegeagent.ai" className="nav-topbar-link" style={{ marginRight: "auto" }}>
+              hello@thecollegeagent.ai
+            </a>
             <div ref={acctRef} style={{ position: "relative" }}>
               <button
                 type="button"
@@ -173,7 +176,7 @@ export default function Nav() {
         }
         .nav-topbar-link {
           font-family: var(--font-mono); font-size: 11px; font-weight: 600;
-          letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.85);
+          letter-spacing: .08em; text-transform: none; color: rgba(255,255,255,.85);
           transition: color .15s; white-space: nowrap;
           background: none; border: none; cursor: pointer; padding: 0;
           display: inline-flex; align-items: center; gap: 5px;
