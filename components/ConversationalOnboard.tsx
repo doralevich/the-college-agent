@@ -1033,7 +1033,7 @@ export function ConversationalOnboard({
         </div>
 
         <>
-        <div className="ca-q-body" style={{ padding: "20px 36px", minHeight: 260, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div key={current.key} className="ca-q-body ca-step-anim" style={{ padding: "20px 36px", minHeight: 260, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           {/* Mascot + question header: side by side on desktop, a small icon stacked on
               top with the question full-width on phones (see the media block below). */}
           <div className="ca-q-row" style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 18 }}>
@@ -1065,10 +1065,10 @@ export function ConversationalOnboard({
               <h1
                 className="ca-q-prompt"
                 style={{
-                  fontFamily: "'DM Sans', system-ui, sans-serif",
-                  fontSize: 18,
-                  fontWeight: 400,
-                  lineHeight: 1.45,
+                  fontFamily: "'Fraunces', Georgia, serif",
+                  fontSize: 21,
+                  fontWeight: 500,
+                  lineHeight: 1.35,
                   color: T.ink,
                   margin: 0,
                   whiteSpace: "pre-line",
@@ -1205,6 +1205,7 @@ export function ConversationalOnboard({
               background: T.green,
               padding: "12px 28px",
               borderRadius: 10,
+              boxShadow: "0 8px 18px -8px rgba(27,94,42,.55)",
               opacity: submitting || (isRequired(current) && !isAnswered(current)) ? 0.55 : 1,
               transition: "background .15s, opacity .15s",
               display: "inline-flex",
@@ -1233,6 +1234,11 @@ export function ConversationalOnboard({
         .ca-onboard-cta:hover:not(:disabled) { background: ${T.greenDeep}; }
         .ca-onboard-cta:focus-visible { outline: 3px solid ${T.greenSoft}; outline-offset: 3px; }
         .ca-onboard-back:hover:not(:disabled) { background: ${T.greenSoft}; color: ${T.ink}; }
+        /* Answer cards lift gently on hover; each question slides in as it appears. */
+        .ca-opt:hover:not(:disabled) { box-shadow: 0 4px 14px -6px rgba(27,94,42,.35); }
+        .ca-step-anim { animation: ca-step-in .28s ease; }
+        @keyframes ca-step-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { .ca-step-anim { animation: none; } .ca-opt { transition: none; } }
         /* Each rotating build prompt fades in as it swaps (key change remounts the node). */
         .ca-build-tip { animation: ca-tip-fade .45s ease; }
         @keyframes ca-tip-fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
@@ -1260,7 +1266,7 @@ export function ConversationalOnboard({
           }
           .ca-q-row { display: block !important; margin-bottom: 14px !important; }
           .ca-q-mascot { width: 34px !important; height: 34px !important; margin: 0 auto 10px !important; }
-          .ca-onboard-card h1.ca-q-prompt { font-size: 16px !important; line-height: 1.4 !important; }
+          .ca-onboard-card h1.ca-q-prompt { font-size: 18px !important; line-height: 1.35 !important; }
           .ca-q-footer { padding-top: 10px !important; padding-bottom: 12px !important; }
           .ca-q-hint { padding-top: 4px !important; padding-bottom: 10px !important; font-size: 11px !important; }
           /* 16px inputs on phones or iOS Safari zooms-and-pans the page on focus. */
@@ -1611,7 +1617,7 @@ function Input({
     return (
       <div
         className={step.options.length >= 7 && !step.descriptions ? "ca-options-2col" : undefined}
-        style={{ display: "flex", flexDirection: "column", gap: 2 }}
+        style={{ display: "flex", flexDirection: "column", gap: 8 }}
       >
         {step.options.map((opt) => {
           const selected = value.includes(opt);
@@ -1627,18 +1633,19 @@ function Input({
                 if (selected) setField(step.key, value.filter((v) => v !== opt));
                 else setField(step.key, [...value, opt]);
               }}
+              className="ca-opt"
               style={{
                 fontFamily: "'DM Sans', system-ui, sans-serif",
                 fontSize: 14,
                 fontWeight: 500,
-                padding: "10px 12px",
-                borderRadius: 8,
-                border: "none",
-                background: selected ? T.greenSoft : "transparent",
+                padding: "11px 13px",
+                borderRadius: 10,
+                border: `1px solid ${selected ? T.green : T.line}`,
+                background: selected ? T.greenSoft : T.card,
                 color: T.ink,
                 cursor: disabled || tooMany ? "not-allowed" : "pointer",
                 opacity: tooMany ? 0.5 : 1,
-                transition: "background .12s",
+                transition: "background .12s, border-color .12s, box-shadow .12s",
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
@@ -1693,7 +1700,7 @@ function Input({
       <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
         <div>
           <div style={sectionLabel}>Year</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, columnGap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, columnGap: 12 }}>
             {YEAR_OPTIONS.map((opt) => {
               const selected = form.year === opt;
               return (
@@ -1704,17 +1711,18 @@ function Input({
                   aria-checked={selected}
                   disabled={disabled}
                   onClick={() => setField("year", opt)}
+                  className="ca-opt"
                   style={{
                     fontFamily: "'DM Sans', system-ui, sans-serif",
                     fontSize: 14,
                     fontWeight: 500,
-                    padding: "8px 10px",
-                    borderRadius: 8,
-                    border: "none",
-                    background: selected ? T.greenSoft : "transparent",
+                    padding: "9px 11px",
+                    borderRadius: 10,
+                    border: `1px solid ${selected ? T.green : T.line}`,
+                    background: selected ? T.greenSoft : T.card,
                     color: T.ink,
                     cursor: disabled ? "not-allowed" : "pointer",
-                    transition: "background .12s",
+                    transition: "background .12s, border-color .12s, box-shadow .12s",
                     display: "flex",
                     alignItems: "center",
                     gap: 10,
@@ -1781,7 +1789,7 @@ function Input({
       <div>
       <div
         className={step.options.length >= 5 ? "ca-options-2col" : undefined}
-        style={{ display: "flex", flexDirection: "column", gap: 2 }}
+        style={{ display: "flex", flexDirection: "column", gap: 8 }}
       >
         {step.options.map((opt) => {
           const selected = value === opt || (opt === "Other" && customActive);
@@ -1793,17 +1801,18 @@ function Input({
               aria-checked={selected}
               disabled={disabled}
               onClick={() => setField(step.key, opt)}
+              className="ca-opt"
               style={{
                 fontFamily: "'DM Sans', system-ui, sans-serif",
                 fontSize: 14,
                 fontWeight: 500,
-                padding: "10px 12px",
-                borderRadius: 8,
-                border: "none",
-                background: selected ? T.greenSoft : "transparent",
+                padding: "11px 13px",
+                borderRadius: 10,
+                border: `1px solid ${selected ? T.green : T.line}`,
+                background: selected ? T.greenSoft : T.card,
                 color: T.ink,
                 cursor: disabled ? "not-allowed" : "pointer",
-                transition: "background .12s",
+                transition: "background .12s, border-color .12s, box-shadow .12s",
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
