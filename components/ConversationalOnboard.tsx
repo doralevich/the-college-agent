@@ -309,9 +309,11 @@ type Step =
   // `note` renders as a small clarifying line under the prompt (e.g. which email is the login).
   | { kind: "text"; key: TextKey; prompt: string; note?: string; placeholder?: string; inputType?: "text" | "email" | "tel"; required?: boolean; tier?: Tier; showIf?: (form: FormState) => boolean }
   | { kind: "textarea"; key: TextKey; prompt: string; note?: string; placeholder?: string; examples?: string[]; required?: boolean; tier?: Tier; showIf?: (form: FormState) => boolean }
-  | { kind: "multi"; key: MultiKey; prompt: string; options: string[]; descriptions?: Record<string, string>; max?: number; required?: boolean; tier?: Tier; showIf?: (form: FormState) => boolean }
+  // detailKey renders an optional free-text box UNDER the options, on the same screen —
+  // so a follow-up ("tell me more") isn't its own numbered question.
+  | { kind: "multi"; key: MultiKey; prompt: string; options: string[]; descriptions?: Record<string, string>; max?: number; required?: boolean; detailKey?: TextKey; detailLabel?: string; detailPlaceholder?: string; tier?: Tier; showIf?: (form: FormState) => boolean }
   // allowOther: selecting "Other" reveals a write-in field whose text becomes the answer.
-  | { kind: "single"; key: SingleKey; prompt: string; options: string[]; allowOther?: boolean; required?: boolean; tier?: Tier; showIf?: (form: FormState) => boolean }
+  | { kind: "single"; key: SingleKey; prompt: string; options: string[]; allowOther?: boolean; required?: boolean; detailKey?: TextKey; detailLabel?: string; detailPlaceholder?: string; tier?: Tier; showIf?: (form: FormState) => boolean }
   // Combined academics page: year (two-column radio) + major + minor on one screen.
   | { kind: "academics"; key: "academics"; prompt: string; tier?: Tier; showIf?: (form: FormState) => boolean }
   // School typeahead backed by /api/schools (College Scorecard proxy).
@@ -451,23 +453,31 @@ const STEPS: Step[] = [
   { kind: "text", key: "greekOrg", prompt: "What fraternity or sorority are you in?", placeholder: "Sigma Chi, Alpha Phi...", tier: 3, showIf: (f) => isStudent(f) && f.livingSituation === "Fraternity/Sorority House" },
   { kind: "text", key: "greekRole", prompt: "Do you have a role in your chapter?", placeholder: "Social chair, treasurer, rush captain... or just 'member'", tier: 3, showIf: (f) => isStudent(f) && f.livingSituation === "Fraternity/Sorority House" },
   { kind: "single", key: "greekAmbassador", prompt: "Would you be interested in being a College Agent Ambassador for your chapter?", options: ["Yes, tell me more", "Maybe later", "No thanks"], tier: 3, showIf: (f) => isStudent(f) && f.livingSituation === "Fraternity/Sorority House" },
-  { kind: "multi", key: "clubs", prompt: "What clubs or organizations are you involved in?", options: CLUBS_OPTIONS, tier: 3, showIf: isStudent },
-  // Follow-up to the clubs checkboxes: the actual names and details, free-form. Only
-  // asked when they picked at least one real category (not the two "None" options).
   {
-    kind: "textarea",
-    key: "clubsDetail",
-    prompt: "Share the names, and any other information you want me to know.",
-    placeholder: "Club names, your role, meeting nights, events you're planning...",
+    kind: "multi",
+    key: "clubs",
+    prompt: "What clubs or organizations are you involved in?",
+    options: CLUBS_OPTIONS,
+    detailKey: "clubsDetail",
+    detailLabel: "Share the names, and anything else you want me to know.",
+    detailPlaceholder: "Club names, your role, meeting nights, events you're planning...",
     tier: 3,
-    showIf: (f) => isStudent(f) && f.clubs.some((c) => !c.startsWith("None")),
+    showIf: isStudent,
   },
   { kind: "multi", key: "sportsTeams", prompt: "Are you involved in sports or athletics?", options: SPORTS_OPTIONS, tier: 3, showIf: isStudent },
   { kind: "text", key: "whichSports", prompt: "Which sport?", placeholder: "Soccer, lacrosse, swimming...", tier: 3, showIf: (f) => isStudent(f) && f.sportsTeams.some((s) => s === "Varsity athletics" || s === "Club sports" || s === "Intramurals") },
   { kind: "textarea", key: "summerPlans", prompt: "What's the plan for your summers?", placeholder: "Internships, summer classes, working, travel — whatever you're thinking.", tier: 3, showIf: isStudent },
-  { kind: "single", key: "afterCollege", prompt: "What's the plan for after college?", options: AFTER_COLLEGE_OPTIONS, tier: 3, showIf: isStudent },
-  // Free-text follow-up so the choice above gets names, places, and timelines attached.
-  { kind: "textarea", key: "afterCollegeDetail", prompt: "Tell me more about the plan.", placeholder: "Grad schools you're eyeing, dream companies, cities, timelines...", tier: 3, showIf: (f) => isStudent(f) && !!f.afterCollege },
+  {
+    kind: "single",
+    key: "afterCollege",
+    prompt: "What's the plan for after college?",
+    options: AFTER_COLLEGE_OPTIONS,
+    detailKey: "afterCollegeDetail",
+    detailLabel: "Tell me more about that.",
+    detailPlaceholder: "Grad schools you're eyeing, dream companies, cities, timelines...",
+    tier: 3,
+    showIf: isStudent,
+  },
   {
     kind: "textarea",
     key: "anythingElse",
@@ -1667,6 +1677,7 @@ function Input({
     // Long lists (7+) split into two columns on wider screens (see .ca-options-2col
     // in the styled-jsx block) so they don't scroll forever on desktop.
     return (
+      <div>
       <div
         className={step.options.length >= 7 && !step.descriptions ? "ca-options-2col" : undefined}
         style={{ display: "flex", flexDirection: "column", gap: 8 }}
@@ -1733,6 +1744,8 @@ function Input({
             </button>
           );
         })}
+      </div>
+      {step.detailKey && <DetailBox step={step} form={form} setField={setField} disabled={disabled} />}
       </div>
     );
   }
@@ -1926,10 +1939,57 @@ function Input({
           }}
         />
       )}
+      {step.detailKey && <DetailBox step={step} form={form} setField={setField} disabled={disabled} />}
       </div>
     );
   }
   return null;
+}
+
+// The inline "tell me more" box: an optional free-text field that renders under a
+// single/multi question's options, so a follow-up stays part of the same screen
+// instead of becoming its own numbered step.
+function DetailBox({
+  step,
+  form,
+  setField,
+  disabled,
+}: {
+  step: { detailKey?: TextKey; detailLabel?: string; detailPlaceholder?: string };
+  form: FormState;
+  setField: <K extends keyof FormState>(key: K, value: FormState[K]) => void;
+  disabled: boolean;
+}) {
+  if (!step.detailKey) return null;
+  const key = step.detailKey;
+  return (
+    <div style={{ marginTop: 12 }}>
+      {step.detailLabel && (
+        <div style={{ fontSize: 13, fontWeight: 600, color: T.inkSoft, marginBottom: 6 }}>{step.detailLabel}</div>
+      )}
+      <textarea
+        value={(form[key] as string) ?? ""}
+        placeholder={step.detailPlaceholder}
+        disabled={disabled}
+        rows={3}
+        onChange={(e) => setField(key, e.target.value as FormState[TextKey])}
+        className="ca-onboard-input"
+        style={{
+          width: "100%",
+          fontFamily: "'DM Sans', system-ui, sans-serif",
+          fontSize: 15,
+          padding: "12px 14px",
+          border: `1.5px solid ${T.line}`,
+          borderRadius: 10,
+          outline: "none",
+          background: T.card,
+          color: T.ink,
+          resize: "vertical",
+          minHeight: 84,
+        }}
+      />
+    </div>
+  );
 }
 
 // Day/time pickers write plain strings into ClassEntry ("Mon / Wed / Fri",
