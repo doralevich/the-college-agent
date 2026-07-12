@@ -769,14 +769,14 @@ export default function BuildPage() {
         }
         .ca-check {
           flex: 0 0 auto;
-          width: 20px; height: 20px;
+          width: 24px; height: 24px;
           border-radius: 50%;
-          background: var(--ca-green-check);
-          color: var(--ca-green-dark);
+          background: var(--ca-green);
+          color: #fff;
           display: flex; align-items: center; justify-content: center;
           margin-top: 1px;
         }
-        .ca-check svg { width: 12px; height: 12px; }
+        .ca-check svg { width: 13px; height: 13px; }
 
         .ca-cta {
           display: flex;
@@ -962,7 +962,7 @@ export default function BuildPage() {
 function CheckIcon() {
   return (
     <svg viewBox="0 0 12 12" fill="none">
-      <path d="M2.5 6.2l2.2 2.2 4.8-4.8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M2.5 6.2l2.2 2.2 4.8-4.8" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
