@@ -252,12 +252,13 @@ export default async function Home() {
               Apollo[Claw] College Edition
             </div>
             <h1 className="hero-h1" style={{ color: "#fff" }}>
-              The AI study companion<br />built for college.
+              The AI assistant built <br />for college life.
             </h1>
+            <p className="hero-punch">It learns from you! That&apos;s the difference!</p>
             <p className="hero-sub">
-              The first AI assistant designed to manage your entire academic life. It understands your classes,
-              assignments, deadlines, notes, study plans, calendar, professor emails, internships, and goals.
-              It remembers what matters, keeps work moving, and becomes smarter with every semester.
+              It understands your classes, assignments, deadlines, notes, study plans, calendar,
+              professor emails, internships, and goals. It remembers what matters, keeps work
+              moving, and becomes smarter with every semester.
             </p>
             <div className="hero-cta-row" style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 28 }}>
               <a href="/build" className="btn-purple">Build My Agent</a>
@@ -542,6 +543,10 @@ export default async function Home() {
           font-size: clamp(34px, 5vw, 64px); font-weight: 800; line-height: 1.02;
           letter-spacing: -.035em; color: #fff; margin-bottom: 20px; text-align: left;
         }
+        .hero-punch {
+          font-size: clamp(17px, 1.6vw, 21px); font-weight: 700; color: var(--green);
+          margin: 0 0 14px; letter-spacing: -.01em;
+        }
         .hero-sub {
           font-size: clamp(16px, 1.4vw, 19px); line-height: 1.7;
           color: rgba(255,255,255,.65); max-width: 680px; margin: 0 0 36px;
@@ -733,7 +738,11 @@ export default async function Home() {
           .hero-row { flex-direction: column; gap: 30px; text-align: center; }
           .hero-h1 { white-space: normal; font-size: clamp(34px, 10vw, 52px); text-align: center; }
           .hero-h1 br { display: none; }
-          .hero-sub { margin-bottom: 28px; }
+          .hero-punch {
+          font-size: clamp(17px, 1.6vw, 21px); font-weight: 700; color: var(--green);
+          margin: 0 0 14px; letter-spacing: -.01em;
+        }
+        .hero-sub { margin-bottom: 28px; }
           .hero-cta-row { justify-content: center; }
           .hero-mascot-wrap { flex: 0 0 auto; order: -1; margin: 0 auto; }
           .hero-mascot { max-width: 200px; }
