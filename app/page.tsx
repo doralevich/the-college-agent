@@ -324,8 +324,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* EXPLAINER + TESTIMONIALS */}
-
       {/* HOW IT WORKS */}
       <section id="how-it-works" className="dark-section" style={{ padding: "80px 0" }}>
         <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
