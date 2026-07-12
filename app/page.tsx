@@ -9,7 +9,7 @@ import { BookOpenCheck, Blocks, BriefcaseBusiness, GraduationCap, Mail, Network,
 import { categoryLabel, getCollegeAgentPosts, postTitle } from "@/lib/sanity-blog";
 import { INTRO_PLAN_AMOUNT_CENTS, HOSTING_AMOUNT_CENTS } from "@/lib/pricing/intro-cutoff";
 
-const CALENDLY = "https://calendly.com/therealdaveo/apolloai";
+const CALENDLY = "https://calendly.com/therealdaveo/the-college-agent-consult";
 
 // Re-render every 5 minutes so the "most recent posts" section rotates on its own as
 // new posts publish (and pricing flips automatically when the intro window closes).

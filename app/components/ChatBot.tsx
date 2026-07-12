@@ -7,7 +7,7 @@ import { useState, useRef, useEffect } from "react";
 // script that ignored what visitors typed. A persistent Calendly link keeps the
 // talk-to-a-human path one tap away.
 
-const CALENDLY = "https://calendly.com/therealdaveo/apolloai";
+const CALENDLY = "https://calendly.com/therealdaveo/the-college-agent-consult";
 
 const GREETING =
   "Hi! Ask me anything about The College Agent: what it does, pricing, how it works, or whether it fits your student. I'll give you a straight answer.";
