@@ -44,7 +44,7 @@ AGENT37_API_KEY="${AGENT37_API_KEY:-$(read_env AGENT37_API_KEY)}"
 
 IMAGE="${IMAGE:-ghcr.io/apolloclawplatform/college-agent}"
 # Bump this every release — image tags are immutable (date + a revision letter: a, b, c…).
-TAG="${TAG:-2026.07.08a}"
+TAG="${TAG:-2026.07.12a}"
 NAME="${TEMPLATE_NAME:-college-agent}"
 HERMES_TAG="${HERMES_TAG:-$(resolve_hermes_tag || true)}"
 : "${HERMES_TAG:?could not resolve a Hermes tag from GHCR — set HERMES_TAG explicitly, e.g. HERMES_TAG=2026.06.26b}"
