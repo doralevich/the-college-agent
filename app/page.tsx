@@ -84,6 +84,7 @@ const ASK_CATEGORIES = [
     asks: [
       "Draft an email to Professor Chen asking about my grade.",
       "Write a professional email to my advisor.",
+      "Write a thank-you note to my internship interviewer.",
     ],
   },
   {
@@ -91,6 +92,7 @@ const ASK_CATEGORIES = [
     asks: [
       "Update my resume for this internship application.",
       "Find internships I should apply for this month.",
+      "Get me ready for Tuesday's interview.",
     ],
   },
   {
@@ -98,20 +100,23 @@ const ASK_CATEGORIES = [
     asks: [
       "Find the best flights home for fall break.",
       "Remind me about Mom's birthday and help me pick a gift.",
+      "Build me a monthly budget I can actually keep.",
     ],
   },
   {
     label: "Athletics",
     asks: [
-      "Build the travel itinerary for Saturday's away game.",
-      "What recruiting contact windows open this month?",
+      "Run our season travel and keep the whole staff in sync.",
+      "Keep recruiting organized from first contact to signing day.",
+      "Track every compliance deadline across the program.",
     ],
   },
   {
     label: "Administration",
     asks: [
-      "Draft the orientation reminder email to first-year families.",
-      "Summarize this policy update for Monday's staff meeting.",
+      "Run orientation from planning through day-of execution.",
+      "Keep our office's reports and deadlines on schedule.",
+      "Draft communications to students, families, and campus partners.",
     ],
   },
 ];
