@@ -267,9 +267,6 @@ export default async function Home() {
             <p style={{ fontSize: 14, lineHeight: 1.7, color: "rgba(255,255,255,.5)", maxWidth: 520, marginBottom: 0 }}>
               Built for every stage of college. Manage classes, study smarter, land internships, and prepare for your career, from freshman orientation to graduation.
             </p>
-            <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.3)", letterSpacing: ".04em" }}>
-              Built on Apollo[Claw] infrastructure. Live in 30 minutes.
-            </p>
           </div>
 
           {/* RIGHT: mascot */}
@@ -540,7 +537,7 @@ export default async function Home() {
           padding: 6px 14px; border-radius: 99px; margin-bottom: 28px;
         }
         .hero-h1 {
-          font-size: clamp(34px, 5vw, 64px); font-weight: 800; line-height: 1.02;
+          font-size: clamp(30px, 4vw, 50px); font-weight: 800; line-height: 1.06;
           letter-spacing: -.035em; color: #fff; margin-bottom: 20px; text-align: left;
         }
         .hero-punch {
