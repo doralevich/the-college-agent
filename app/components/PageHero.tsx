@@ -27,7 +27,7 @@ export function PageHero({
 }) {
   const mascotSrc = mascot ?? pickMascot(label);
   return (
-    <section style={{ background: "var(--navy, #0b1729)", padding: "64px 0 60px", overflow: "hidden", position: "relative" }}>
+    <section className="ph-hero" style={{ padding: "64px 0 60px", overflow: "hidden", position: "relative" }}>
       <div className="ph-glow" />
       <div className="ph-row" style={{ position: "relative", zIndex: 1, maxWidth: 1160, margin: "0 auto", padding: "0 24px", alignItems: "center", justifyContent: "space-between", gap: 24 }}>
         <div style={{ flex: "1 1 480px", minWidth: 0 }}>
@@ -54,6 +54,16 @@ export function PageHero({
       </div>
 
       <style>{`
+        /* Blueprint grid over the navy hero: subtle squares that brighten toward the
+           center and dissolve at the edges. Shared by every marketing page header. */
+        .ph-hero {
+          background:
+            radial-gradient(130% 130% at 50% 38%, rgba(11,23,41,0) 0%, rgba(11,23,41,0) 52%, var(--navy, #0b1729) 93%),
+            linear-gradient(rgba(255,255,255,.055) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,.055) 1px, transparent 1px),
+            var(--navy, #0b1729);
+          background-size: 100% 100%, 84px 84px, 84px 84px, auto;
+        }
         .ph-glow {
           position: absolute; top: -20%; left: 50%; transform: translateX(-50%);
           width: 70%; height: 120%;

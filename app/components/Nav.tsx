@@ -14,7 +14,7 @@ const NAV_LINKS = [
   { label: "Administration", href: "/for-administration" },
   { label: "How It Works", href: "/how-it-works" },
   { label: "Blog", href: "/blog" },
-  { label: "Contact", href: "https://apolloclaw.ai/contact" },
+  { label: "Contact", href: "/contact" },
 ];
 
 export default function Nav() {
@@ -53,7 +53,7 @@ export default function Nav() {
     window.location.assign("/");
   }
 
-  // External links (e.g. Contact -> apolloclaw.ai) open in a new tab.
+  // External links open in a new tab.
   const extProps = (href: string) =>
     href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {};
 

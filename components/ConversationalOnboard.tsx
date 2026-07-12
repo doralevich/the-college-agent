@@ -304,7 +304,8 @@ type Tier = 2 | 3 | "tail";
 type Step =
   // `showIf` gates conditional steps — role-branch questions (student vs staff) and
   // follow-ups (e.g. "Which sport?" only after picking a team).
-  | { kind: "text"; key: TextKey; prompt: string; placeholder?: string; inputType?: "text" | "email" | "tel"; required?: boolean; tier?: Tier; showIf?: (form: FormState) => boolean }
+  // `note` renders as a small clarifying line under the prompt (e.g. which email is the login).
+  | { kind: "text"; key: TextKey; prompt: string; note?: string; placeholder?: string; inputType?: "text" | "email" | "tel"; required?: boolean; tier?: Tier; showIf?: (form: FormState) => boolean }
   | { kind: "textarea"; key: TextKey; prompt: string; placeholder?: string; examples?: string[]; required?: boolean; tier?: Tier; showIf?: (form: FormState) => boolean }
   | { kind: "multi"; key: MultiKey; prompt: string; options: string[]; descriptions?: Record<string, string>; max?: number; required?: boolean; tier?: Tier; showIf?: (form: FormState) => boolean }
   // allowOther: selecting "Other" reveals a write-in field whose text becomes the answer.
@@ -402,8 +403,8 @@ const STEPS: Step[] = [
   { kind: "text", key: "firstName", prompt: "And what should I call you?", placeholder: "Your first name", required: true },
   { kind: "text", key: "lastName", prompt: "And your last name?", placeholder: "Your last name", required: true },
   { kind: "typeahead", key: "school", prompt: "What school are you with?", placeholder: "Start typing your school...", required: true },
-  { kind: "text", key: "schoolEmail", prompt: "What's your school email?", placeholder: "you@school.edu", inputType: "email", required: true },
-  { kind: "text", key: "personalEmail", prompt: "What's your personal email?", placeholder: "you@email.com", inputType: "email" },
+  { kind: "text", key: "schoolEmail", prompt: "What's your school email?", note: "This is the email you'll use to log in to your account.", placeholder: "you@school.edu", inputType: "email", required: true },
+  { kind: "text", key: "personalEmail", prompt: "What's your personal email?", note: "Optional — just a second way to reach you. Your school email stays your login.", placeholder: "you@email.com", inputType: "email" },
   { kind: "text", key: "phone", prompt: "What's your mobile number?", placeholder: "(555) 555-5555", inputType: "tel", required: true },
   // ---- Staff flow (faculty / administration / athletics) ----
   { kind: "text", key: "roleTitle", prompt: "What's your role or title?", placeholder: "Head Coach, Athletic Director, Professor...", required: true, showIf: isStaff },
@@ -1084,6 +1085,11 @@ export function ConversationalOnboard({
               >
                 {current.prompt.replace("{firstName}", displayFirstName)}
               </h1>
+              {"note" in current && current.note && (
+                <p style={{ fontSize: 13, lineHeight: 1.5, color: T.inkSoft, margin: "7px 0 0" }}>
+                  {current.note}
+                </p>
+              )}
             </div>
           </div>
 
@@ -1945,11 +1951,11 @@ function ClassListInput({
   removeClass: (idx: number) => void;
   disabled: boolean;
 }) {
+  // Location and professor were dropped from the form to keep it simple (the fields
+  // still exist on ClassEntry, so they can return later without a data change).
   const textFields: Array<{ key: keyof ClassEntry; label: string; placeholder: string }> = [
     { key: "name", label: "Class name", placeholder: "Marketing 301" },
     { key: "sku", label: "Course number", placeholder: "e.g. MKT 301" },
-    { key: "location", label: "Location", placeholder: "Bryan Hall 215" },
-    { key: "professor", label: "Professor", placeholder: "Prof. Lewis" },
   ];
   const canAdd = !!draft.name.trim();
 
@@ -2222,7 +2228,7 @@ function ClassListInput({
           }}
         >
           <Plus style={{ width: 14, height: 14 }} />
-          {classes.length === 0 ? "Add first class" : "Add another class"}
+          {classes.length === 0 ? "Add class" : "Add another class"}
         </button>
       </div>
     </div>

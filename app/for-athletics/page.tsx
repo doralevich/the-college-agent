@@ -161,7 +161,7 @@ export default function ForAthleticsPage() {
 
         {/* FINAL CTA — the rollout + cross-link nudges live here, under the buttons,
             instead of in their own band. */}
-        <section className="dark-section" style={{ padding: "76px 0" }}>
+        <section className="dark-section cta-grid-bg" style={{ padding: "76px 0" }}>
           <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
             <h2 style={{ fontSize: "clamp(26px, 3.4vw, 40px)", fontWeight: 800, color: "#fff", letterSpacing: "-.025em", marginBottom: 16 }}>
               Give your staff their week back.
@@ -188,6 +188,19 @@ export default function ForAthleticsPage() {
 
       <style>{`
         .dark-section { background: var(--navy, #0b1729); }
+        /* Dark twin of the /build graph-paper arc: fine + major grid lines over navy,
+           under a soft green glow that dissolves toward the bottom. */
+        .cta-grid-bg {
+          background:
+            radial-gradient(125% 74% at 50% 0%, rgba(11,23,41,0) 0%, rgba(11,23,41,0) 30%, var(--navy, #0b1729) 62%, var(--navy, #0b1729) 100%),
+            linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px),
+            linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px),
+            radial-gradient(92% 48% at 50% 0%, rgba(61,139,61,.30) 0%, rgba(61,139,61,.10) 45%, rgba(11,23,41,0) 74%),
+            var(--navy, #0b1729);
+          background-size: 100% 100%, 64px 64px, 64px 64px, 16px 16px, 16px 16px, 100% 100%, auto;
+        }
         .cap-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
         .cap-card {
           background: #fff; border: 1px solid rgba(11,23,41,.07); border-radius: 16px;
