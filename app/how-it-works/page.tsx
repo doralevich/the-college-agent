@@ -103,26 +103,7 @@ export default function HowItWorksPage() {
               time, for any reason. If you ever decide to delete your account, grab everything
               first and walk away with it. No lock-in, ever.
             </p>
-            <p style={{ fontSize: 14, lineHeight: 1.7, color: "rgba(11,23,41,.55)", maxWidth: 640, margin: "0 auto" }}>
-              The details live in our{" "}
-              <a href="/privacy" style={{ color: "var(--green)", textDecoration: "underline" }}>Privacy Policy</a>{" "}
-              and{" "}
-              <a href="/terms" style={{ color: "var(--green)", textDecoration: "underline" }}>Terms &amp; Conditions</a>.
-            </p>
-          </div>
-        </section>
-
-        {/* CTA */}
-        <section style={{ background: "var(--navy, #0b1729)", padding: "64px 0" }}>
-          <div style={{ maxWidth: 680, margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
-            <h2 style={{ fontSize: "clamp(24px, 2.8vw, 34px)", fontWeight: 800, color: "#fff", marginBottom: 14, letterSpacing: "-.025em" }}>
-              Ready when you are.
-            </h2>
-            <p style={{ fontSize: 15, lineHeight: 1.7, color: "rgba(255,255,255,.6)", marginBottom: 28 }}>
-              Thirty minutes from now, you could have an agent that knows your classes, your
-              schedule, and your goals.
-            </p>
-            <a href="/build" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", padding: "14px 30px", borderRadius: 4, boxShadow: "0 8px 24px rgba(61,139,61,.3)", textDecoration: "none" }}>
+            <a href="/build" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", padding: "14px 30px", borderRadius: 4, boxShadow: "0 8px 24px rgba(61,139,61,.3)", textDecoration: "none", marginTop: 14 }}>
               Let&apos;s Get Started
             </a>
           </div>
