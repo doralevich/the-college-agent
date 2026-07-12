@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import SchoolMarquee from "./components/SchoolMarquee";
-import Explainer from "./components/Explainer";
 import ChatBot from "./components/ChatBot";
 import Nav from "./components/Nav";
 import IntegrationGlobe from "./components/IntegrationGlobe";
@@ -326,7 +325,6 @@ export default async function Home() {
       </section>
 
       {/* EXPLAINER + TESTIMONIALS */}
-      <Explainer />
 
       {/* HOW IT WORKS */}
       <section id="how-it-works" className="dark-section" style={{ padding: "80px 0" }}>
