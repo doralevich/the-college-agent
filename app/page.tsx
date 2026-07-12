@@ -96,6 +96,14 @@ const ASK_CATEGORIES = [
     ],
   },
   {
+    label: "Clubs & Activities",
+    asks: [
+      "Keep my club meetings and events on my calendar.",
+      "Plan our fundraiser from idea to event day.",
+      "Remind me about intramural games and practices.",
+    ],
+  },
+  {
     label: "Athletics",
     asks: [
       "Run our season travel and keep the whole staff in sync.",
