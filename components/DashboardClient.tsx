@@ -279,7 +279,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
             composer draft, and the model selection survive leaving and returning to the tab. */}
         {hasAgent && chatOpened && (
           <div className={cn("h-full", !isChat && "hidden")}>
-            <ChatView firstName={firstName} classes={classes} accent={schoolAccent} avatarUrl={avatarUrl} />
+            <ChatView firstName={firstName} classes={classes} accent={schoolAccent} avatarUrl={avatarUrl} agentName={agentName} intake={intake} />
           </div>
         )}
         {/* Files mirrors Chat: full-height, kept MOUNTED (just hidden) so the current directory,
