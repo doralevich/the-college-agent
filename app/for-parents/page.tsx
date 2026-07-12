@@ -215,26 +215,6 @@ export default function ForParentsPage() {
           </div>
         </section>
 
-        {/* WHAT PARENTS SAY */}
-        <section style={{ background: "#fff", padding: "72px 0" }}>
-          <div style={{ maxWidth: 1000, margin: "0 auto", padding: "0 24px" }}>
-            <div style={{ textAlign: "center", marginBottom: 40 }}>
-              <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "var(--green)", marginBottom: 14, display: "block" }}>What Parents Say</span>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20 }}>
-              {[
-                "My daughter is more organized than she's ever been. Instead of reminding her about deadlines, we spend our conversations talking about college, not managing it.",
-                "The biggest difference isn't grades. It's confidence. He has a system now.",
-                "I wanted my son to become more independent without feeling like I had to constantly check in. The College Agent gave him that structure.",
-              ].map((quote) => (
-                <div key={quote} style={{ background: "var(--cream2)", borderRadius: 14, padding: "26px 28px", border: "1px solid rgba(11,23,41,.06)" }}>
-                  <p style={{ fontSize: 15, lineHeight: 1.7, color: "rgba(11,23,41,.78)", margin: 0, fontStyle: "italic" }}>&ldquo;{quote}&rdquo;</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* FINAL CTA */}
         <section className="dark-section" style={{ padding: "76px 0" }}>
           <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
