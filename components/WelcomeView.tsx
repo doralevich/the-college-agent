@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ConversationalOnboard, type OnboardPrefill } from "@/components/ConversationalOnboard";
-import { ReferralCard } from "@/components/ReferralCard";
 
 // First-run landing on the student dashboard. Greets as Frankenstein (the agent's
 // persona), lists the three things to do, and offers one big button into Chat.
@@ -233,14 +232,6 @@ export function WelcomeView({
 
         {Cta}
       </div>
-
-      {/* Give a month, get a month — quiet, below the welcome card, only once there's
-          an agent worth telling friends about. */}
-      {hasAgent && (
-        <div style={{ width: "100%", maxWidth: 620, marginTop: 16 }}>
-          <ReferralCard />
-        </div>
-      )}
 
       <style>{`
         .ca-welcome-hero {

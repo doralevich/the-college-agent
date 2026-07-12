@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Blocks, Bot, Check, Coins, Compass, Home, ListChecks, Loader2, LogOut, Menu, MessageSquare, RotateCcw, Settings2, Sparkles, X } from "lucide-react";
+import { Blocks, Bot, Check, Coins, Compass, Gift, ListChecks, Loader2, LogOut, Menu, MessageSquare, RotateCcw, Settings2, X } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "@/lib/supabase/client";
 import { usd } from "@/lib/format";
@@ -22,9 +22,8 @@ import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { ChatView } from "@/components/chat/ChatView";
 import { FilesView } from "@/components/files/FilesView";
 import { IntegrationsView } from "@/components/IntegrationsView";
-import { NowWhatView } from "@/components/NowWhatView";
-import { ShortcutsView } from "@/components/ShortcutsView";
 import { WelcomeView } from "@/components/WelcomeView";
+import { StartHereView } from "@/components/StartHereView";
 import type { OnboardPrefill } from "@/components/ConversationalOnboard";
 
 type Props = {
@@ -90,17 +89,15 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
     // and the persistent greeting + Open Chat CTA post-agent. The rest of the agent-bound
     // surfaces (Chat, Your Agent) only appear after the agent is provisioned. Files has
     // been hidden from the sidebar (still routable directly if needed).
-    ...(paid ? [{ id: "welcome" as DashboardTabId, label: "Welcome", icon: Home }] : []),
+    // "Start Here" combines the old Welcome, Now what?, and Shortcuts into one
+    // orientation surface (onboarding pre-agent; greeting + first moves + examples after).
+    ...(paid ? [{ id: "start-here" as DashboardTabId, label: "Start Here", icon: Compass }] : []),
     ...(hasAgent
       ? [
-          // David's ordering: orientation first (Now what?, Checklist), then Chat, then
-          // the plumbing (Integrations, Shortcuts, API Credits). Icons stay monochrome
-          // (Apple-style uniform sidebar, per David).
-          { id: "now-what" as DashboardTabId, label: "Now what?", icon: Compass },
           { id: "checklist" as DashboardTabId, label: "Checklist", icon: ListChecks },
           { id: "chat" as DashboardTabId, label: "Chat", icon: MessageSquare },
           { id: "integrations" as DashboardTabId, label: "Integrations", icon: Blocks },
-          { id: "shortcuts" as DashboardTabId, label: "Shortcuts", icon: Sparkles },
+          { id: "refer" as DashboardTabId, label: "Refer & Earn", icon: Gift },
           { id: "credits" as DashboardTabId, label: "API Credits", icon: Coins },
         ]
       : paid
@@ -302,10 +299,22 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
                   <div>
                     <h1 className="text-2xl font-semibold tracking-tight">Credits</h1>
                     <p className="text-sm text-muted-foreground">
-                      Fund your agent's AI usage and earn free months by sharing.
+                      Fund your agent&apos;s AI usage: balance, top-ups, and auto-recharge.
                     </p>
                   </div>
                   <CreditsView />
+                </div>
+              ) : hasAgent && active === "refer" ? (
+                // Refer & Earn — its own tab so the referral link isn't buried at the
+                // bottom of another page.
+                <div className="mx-auto max-w-xl space-y-6">
+                  <div>
+                    <h1 className="text-2xl font-semibold tracking-tight">Refer &amp; Earn</h1>
+                    <p className="text-sm text-muted-foreground">
+                      Share your link. Give a friend their first month free, and earn a free month
+                      yourself, no limit.
+                    </p>
+                  </div>
                   <ReferralCard />
                 </div>
               ) : active === "settings" ||
@@ -329,14 +338,12 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
                 />
               ) : active === "integrations" && agentId ? (
                 <IntegrationsView agentId={agentId} />
-              ) : active === "shortcuts" && hasAgent ? (
-                <ShortcutsView />
-              ) : active === "now-what" && hasAgent ? (
-                <NowWhatView onOpenChat={() => openDashboardTab("chat")} avatarUrl={avatarUrl} agentName={agentName} />
               ) : active === "checklist" && hasAgent ? (
                 <ChecklistView userId={userId} firstName={firstName} intake={intake} />
-              ) : active === "welcome" && paid ? (
-                <WelcomeView
+              ) : (active === "start-here" || active === "welcome" || active === "now-what" || active === "shortcuts") && paid ? (
+                // Start Here: onboarding (pre-agent), then greeting + first moves + example
+                // prompts (post-agent). Old /welcome, /now-what, /shortcuts links land here.
+                <StartHereView
                   firstName={firstName}
                   agentName={agentName}
                   avatarUrl={avatarUrl}
@@ -556,10 +563,14 @@ function normalizeDashboardTab(
   // Usage Credits lives inside Settings; the sidebar pill and chat top-up links
   // deep-link here.
   if (requestedTab === "credits" && hasAgent) return "credits";
+  // Old orientation routes now live under "Start Here".
+  if (requestedTab === "welcome" || requestedTab === "now-what" || requestedTab === "shortcuts") {
+    if (tabs.some((t) => t.id === "start-here")) return "start-here";
+  }
   if (requestedTab && tabs.some((t) => t.id === requestedTab)) return requestedTab;
-  // Welcome is the default whenever it's available (every paid student) — it covers
-  // both the conversational onboarding (pre-agent) and the static greeting (post-agent).
-  if (tabs.some((t) => t.id === "welcome")) return "welcome";
+  // Start Here is the default whenever it's available (every paid student) — it covers
+  // both the conversational onboarding (pre-agent) and the greeting (post-agent).
+  if (tabs.some((t) => t.id === "start-here")) return "start-here";
   return hasAgent ? "chat" : "agents";
 }
 
