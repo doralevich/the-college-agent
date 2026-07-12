@@ -135,6 +135,11 @@ export function ChatComposer({ agentId, isStreaming, att, onSend, onStop, large 
       <div className="flex items-center gap-2 px-3 pb-3">
         <div className="flex min-w-0 items-center gap-1.5">
           <AttachButton onFiles={att.addFiles} disabled={isStreaming} />
+          <EffortMenu
+            value={settings.reasoningEffort}
+            disabled={isStreaming}
+            onChange={(reasoningEffort) => setSettings((s) => ({ ...s, reasoningEffort }))}
+          />
           {totalModels >= 1 && (
             <ModelMenu
               groups={groups}
@@ -145,11 +150,6 @@ export function ChatComposer({ agentId, isStreaming, att, onSend, onStop, large 
               onChange={(model, provider) => setSettings((s) => ({ ...s, model, provider }))}
             />
           )}
-          <EffortMenu
-            value={settings.reasoningEffort}
-            disabled={isStreaming}
-            onChange={(reasoningEffort) => setSettings((s) => ({ ...s, reasoningEffort }))}
-          />
         </div>
         <div className="ml-auto flex shrink-0 items-center">
           {isStreaming ? (
