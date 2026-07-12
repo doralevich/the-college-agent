@@ -26,7 +26,6 @@ type InfoForm = {
   firstName: string;
   lastName: string;
   schoolEmail: string;
-  personalEmail: string;
   mobile: string;
 };
 
@@ -44,7 +43,6 @@ export default function BuildPage() {
     firstName: "",
     lastName: "",
     schoolEmail: "",
-    personalEmail: "",
     mobile: "",
   });
   const [loading, setLoading] = useState(false);
@@ -136,7 +134,6 @@ export default function BuildPage() {
     if (!info.firstName.trim()) return "First name is required.";
     if (!info.lastName.trim()) return "Last name is required.";
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(info.schoolEmail.trim())) return "Enter a valid school email.";
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(info.personalEmail.trim())) return "Enter a valid personal email.";
     // Phone is optional here to cut pre-payment friction — it's collected again in onboarding.
     if (!agreeTerms) return "Please agree to the Terms & Conditions to continue.";
     return null;
@@ -161,7 +158,6 @@ export default function BuildPage() {
         firstName: info.firstName.trim(),
         lastName: info.lastName.trim(),
         schoolEmail: info.schoolEmail.trim(),
-        personalEmail: info.personalEmail.trim(),
         mobile: info.mobile.trim(),
       }),
     }).catch(() => {});
@@ -206,14 +202,14 @@ export default function BuildPage() {
 
             {step === "welcome" && (
               <>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/thecollegeagent.png"
-                  alt="The College Agent"
-                  className="ca-welcome-bot"
-                />
-                <p className="ca-eyebrow">Welcome</p>
-                <h2 className="ca-h2">Meet your College Agent.</h2>
+                <div className="ca-head-row">
+                  <div>
+                    <p className="ca-eyebrow" style={{ textAlign: "left" }}>Welcome</p>
+                    <h2 className="ca-h2" style={{ textAlign: "left" }}>Meet your College Agent.</h2>
+                  </div>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/avatars/guy-01.webp" alt="The College Agent waving" className="ca-head-guy" />
+                </div>
                 <p className="ca-sub">
                   Not another chatbot. Not homework help. A personal AI agent built around your
                   classes, your calendar, and your life, in your corner from day one to graduation.
@@ -409,8 +405,14 @@ export default function BuildPage() {
 
             {step === "info" && (
               <>
-                <p className="ca-eyebrow">Step 1 of 2</p>
-                <h2 className="ca-h2">Tell us about yourself.</h2>
+                <div className="ca-head-row">
+                  <div>
+                    <p className="ca-eyebrow" style={{ textAlign: "left" }}>Step 1 of 2</p>
+                    <h2 className="ca-h2" style={{ textAlign: "left" }}>Tell us about yourself.</h2>
+                  </div>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/avatars/guy-04.webp" alt="The College Agent" className="ca-head-guy" />
+                </div>
                 <p className="ca-sub">
                   Quick details so we know who&apos;s building this agent. Next step is secure payment.
                   {plan === "pro" && (
@@ -455,18 +457,9 @@ export default function BuildPage() {
                       placeholder="you@school.edu"
                       required
                     />
-                  </label>
-
-                  <label className="ca-field">
-                    <span>Personal email</span>
-                    <input
-                      type="email"
-                      autoComplete="email"
-                      value={info.personalEmail}
-                      onChange={(e) => setField("personalEmail", e.target.value)}
-                      placeholder="you@gmail.com"
-                      required
-                    />
+                    <span style={{ fontWeight: 400, fontSize: 12, color: "var(--ca-muted)" }}>
+                      This is the email you&apos;ll use to log in to your agent.
+                    </span>
                   </label>
 
                   <label className="ca-field">
@@ -518,11 +511,15 @@ export default function BuildPage() {
           style={{
             fontFamily: "var(--font-mono)",
             fontSize: 11,
-            color: "rgba(255,255,255,.25)",
+            color: "rgba(255,255,255,.92)",
             letterSpacing: ".04em",
           }}
         >
           &copy; 2026 Apollo[Claw]. All rights reserved. &nbsp;&middot;&nbsp; thecollegeagent.ai
+          &nbsp;&middot;&nbsp;{" "}
+          <a href="mailto:david@apolloclaw.ai" style={{ color: "rgba(255,255,255,.92)", textDecoration: "underline" }}>
+            david@apolloclaw.ai
+          </a>
         </p>
       </footer>
 
@@ -723,12 +720,22 @@ export default function BuildPage() {
           min-height: 18px;
         }
 
-        .ca-welcome-bot {
-          display: block;
-          width: 132px;
+        .ca-head-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 18px;
+          max-width: 560px;
+          margin: 0 auto 6px;
+        }
+        .ca-head-guy {
+          flex: 0 0 auto;
+          width: 104px;
           height: auto;
-          margin: 0 auto 22px;
-          filter: drop-shadow(0 14px 28px rgba(45,122,58,.22));
+          filter: drop-shadow(0 12px 24px rgba(45,122,58,.25));
+        }
+        @media (max-width: 560px) {
+          .ca-head-guy { width: 78px; }
         }
         .ca-welcome-points {
           list-style: none;
