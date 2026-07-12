@@ -8,15 +8,9 @@ import { ShieldCheck, Sparkles } from "lucide-react";
 import { categoryLabel, getCollegeAgentPosts, postTitle } from "@/lib/sanity-blog";
 import { INTRO_PLAN_AMOUNT_CENTS, HOSTING_AMOUNT_CENTS } from "@/lib/pricing/intro-cutoff";
 
-const CALENDLY = "https://calendly.com/therealdaveo/the-college-agent-consult";
-
 // Re-render every 5 minutes so the "most recent posts" section rotates on its own as
 // new posts publish (and pricing flips automatically when the intro window closes).
 export const revalidate = 300;
-
-function price(cents: number): string {
-  return "$" + (cents / 100).toLocaleString("en-US", { minimumFractionDigits: cents % 100 ? 2 : 0, maximumFractionDigits: 2 });
-}
 
 export const metadata: Metadata = {
   title: "The College Agent: AI Study Companion for College Students",
@@ -375,50 +369,6 @@ export default async function Home() {
           </div>
         </div>
       </section>
-
-      {/* HOW IT WORKS */}
-      <section id="how-it-works" className="dark-section" style={{ padding: "80px 0" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
-          <div style={{ textAlign: "center", marginBottom: 48 }}>
-            <h2 className="section-title" style={{ color: "#fff" }}>
-              Select &rarr; Configure &rarr; Live
-            </h2>
-          </div>
-          <div className="process-grid">
-            {[
-              { n: "1", phase: "Step 1", title: "Sign Up", desc: "Two minutes at thecollegeagent.ai/build: your name, school email, and phone. No account to create first, no password to invent." },
-              { n: "2", phase: "Step 2", title: "One Plan, Everything Included", desc: `${price(INTRO_PLAN_AMOUNT_CENTS)} one-time to build your agent, plus hosting at ${price(HOSTING_AMOUNT_CENTS)}/month or $250/year (two months free), with $20 of AI credits included. Secure checkout by Stripe and a 7-day money-back guarantee.` },
-              { n: "3", phase: "Step 3", title: "Five-Minute Intake", desc: "Name your agent, give it a face, and tell it about your school, your classes, and how you like to work. It saves as you go." },
-              { n: "4", phase: "Step 4", title: "Your Agent Comes to Life", desc: "Live within 30 minutes: personalized with everything you shared, in your dashboard and on Telegram. Feed it a syllabus and watch it go." },
-            ].map((step) => (
-              <div key={step.n} style={{ display: "flex", gap: 20 }}>
-                <div className="proc-circle" style={{ flexShrink: 0 }}>{step.n}</div>
-                <div>
-                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".1em", color: "rgba(61,139,61,.7)", marginBottom: 5 }}>
-                    {step.phase}
-                  </div>
-                  <h3 style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8 }}>{step.title}</h3>
-                  <p style={{ fontSize: 14, lineHeight: 1.75, color: "rgba(255,255,255,.55)" }}>{step.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div style={{ textAlign: "center", marginTop: 40 }}>
-            <a
-              href="/how-it-works"
-              style={{ fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: "rgba(61,139,61,.9)", textDecoration: "underline", textUnderlineOffset: 4 }}
-            >
-              The full process, step by step
-            </a>
-          </div>
-          <style>{`
-            @media (max-width: 680px) {
-              #how-it-works .proc-grid { grid-template-columns: 1fr; }
-            }
-          `}</style>
-        </div>
-      </section>
-
 
       {/* INTEGRATIONS */}
       <IntegrationGlobe />
