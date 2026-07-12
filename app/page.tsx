@@ -310,7 +310,7 @@ export default async function Home() {
           <div className="asks-band">
             <div className="asks-head">
               <span className="mono-label asks-eyebrow" style={{ color: "rgba(61,139,61,.85)" }}>Just Ask. It&apos;s Handled.</span>
-              <h3>Real things students ask<br />on day one.</h3>
+              <h3>Real conversations <br />with my Agent.</h3>
             </div>
             <div className="asks-cats">
               {ASK_CATEGORIES.map((cat) => (
