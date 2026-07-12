@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import BuildNav from "../components/BuildNav";
-import ChatBot from "../components/ChatBot";
 import { trackMeta } from "../components/MetaPixel";
 import {
   PLAN_AMOUNT_CENTS,
@@ -525,8 +524,6 @@ export default function BuildPage() {
       </footer>
       </div>
 
-      {/* Checkout questions happen right here, keep the Help Me widget in reach. */}
-      <ChatBot />
 
       <style>{`
         .ca-checkout {
