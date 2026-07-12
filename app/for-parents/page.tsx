@@ -215,19 +215,6 @@ export default function ForParentsPage() {
           </div>
         </section>
 
-        {/* FINAL CTA */}
-        <section className="dark-section" style={{ padding: "76px 0" }}>
-          <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
-            <h2 style={{ fontSize: "clamp(26px, 3.4vw, 40px)", fontWeight: 800, color: "#fff", letterSpacing: "-.025em", marginBottom: 16 }}>
-              Give Them the Advantage They&apos;ll Use Every Day.
-            </h2>
-            <p style={{ fontSize: 17, lineHeight: 1.7, color: "rgba(255,255,255,.7)", maxWidth: 560, margin: "0 auto 30px" }}>
-              College is one of the biggest transitions of your student&apos;s life. Give them a personalized College Agent that helps them stay organized, build confidence, and prepare for everything that comes next.
-            </p>
-            <a href="/build" className="btn-green">Build My Agent</a>
-          </div>
-        </section>
-
         {/* INTERNAL LINKS */}
         <section style={{ background: "var(--cream2)", padding: "48px 0" }}>
           <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>

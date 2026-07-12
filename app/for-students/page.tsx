@@ -364,21 +364,6 @@ export default function ForStudentsPage() {
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="dark-section" style={{ padding: "72px 0" }}>
-          <div style={{ maxWidth: 680, margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
-            <h2 style={{ fontSize: "clamp(26px, 3vw, 38px)", fontWeight: 800, color: "#fff", marginBottom: 16, letterSpacing: "-.03em" }}>
-              Ready to build your College Agent?
-            </h2>
-            <p style={{ fontSize: 16, lineHeight: 1.7, color: "rgba(255,255,255,.6)", marginBottom: 32 }}>
-              Start college with a personalized AI companion that grows with you, keeping your classes, deadlines, studying, internships, and goals organized from day one through graduation. Because when everything is connected, everything moves forward.
-            </p>
-            <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
-              <a href="/build" className="btn-green">Build My Agent</a>
-            </div>
-          </div>
-        </section>
-
         {/* INTERNAL LINKS */}
         <section style={{ background: "var(--cream2)", padding: "48px 0" }}>
           <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
