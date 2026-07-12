@@ -5,7 +5,7 @@ import ChatBot from "./components/ChatBot";
 import Nav from "./components/Nav";
 import IntegrationGlobe from "./components/IntegrationGlobe";
 import { Footer } from "./components/Footer";
-import { BookOpenCheck, Blocks, BriefcaseBusiness, GraduationCap, Mail, Network, NotebookTabs, ShieldCheck, Sparkles } from "lucide-react";
+import { ShieldCheck, Sparkles } from "lucide-react";
 import { categoryLabel, getCollegeAgentPosts, postTitle } from "@/lib/sanity-blog";
 import { INTRO_PLAN_AMOUNT_CENTS, HOSTING_AMOUNT_CENTS } from "@/lib/pricing/intro-cutoff";
 
@@ -28,42 +28,42 @@ export const metadata: Metadata = {
 
 const AGENT_WAYS = [
   {
-    icon: GraduationCap,
+    guy: "/avatars/guy-12.webp",
     title: "Own Your Schedule",
     desc: "Your classes, calendar, deadlines, and commitments, all in one place. Your College Agent keeps everything organized, so you always know what's next.",
   },
   {
-    icon: BookOpenCheck,
+    guy: "/avatars/guy-04.webp",
     title: "Never Miss a Deadline",
     desc: "Upload a syllabus once, and every assignment, quiz, exam, and due date is tracked automatically, with reminders sent well before each due date.",
   },
   {
-    icon: NotebookTabs,
+    guy: "/avatars/guy-02.webp",
     title: "Study Smarter",
     desc: "Personalized study plans, practice questions, quizzes, and review schedules that adapt to your workload, exams, and changing priorities.",
   },
   {
-    icon: Mail,
+    guy: "/avatars/guy-11.webp",
     title: "Write with Confidence",
     desc: "Draft professional emails to professors, advisors, recruiters, and classmates in your own voice, ready to review and send.",
   },
   {
-    icon: Network,
+    guy: "/avatars/guy-03.webp",
     title: "Manage Your Entire College Life",
     desc: "From classes and campus events to travel, budgets, clubs, and personal goals, your College Agent keeps everything organized in one place.",
   },
   {
-    icon: BriefcaseBusiness,
+    guy: "/avatars/guy-09.webp",
     title: "Build Your Career Early",
     desc: "Create a stronger resume, optimize your LinkedIn profile, find internships, prepare for interviews, and build your professional network, starting freshman year.",
   },
   {
-    icon: Blocks,
+    guy: "/avatars/guy-08.webp",
     title: "Connected to Your Tools",
     desc: "Works with the apps students already rely on, including calendars, email, cloud storage, notes, and learning platforms, bringing everything together in one place.",
   },
   {
-    icon: ShieldCheck,
+    guy: "/avatars/guy-05.webp",
     title: "Always Available",
     desc: "Your College Agent is available 24/7 to answer questions, organize tasks, plan your schedule, and help you stay ahead whenever you need it.",
   },
@@ -297,9 +297,10 @@ export default async function Home() {
             </p>
           </div>
           <div className="uc-grid">
-            {AGENT_WAYS.map(({ icon: Icon, title, desc }) => (
+            {AGENT_WAYS.map(({ guy, title, desc }) => (
               <div key={title} className="uc-card">
-                <div className="uc-icon-flat"><Icon size={26} strokeWidth={1.6} /></div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={guy} alt="" className="uc-guy" loading="lazy" />
                 <div className="uc-card-text">
                   <h3>{title}</h3>
                   <p>{desc}</p>
@@ -600,21 +601,19 @@ export default async function Home() {
           border-color: rgba(61,139,61,.35);
           box-shadow: 0 18px 44px rgba(11,23,41,.10);
         }
-        .uc-icon-flat {
-          width: 54px; height: 54px; border-radius: 15px; flex-shrink: 0;
-          display: flex; align-items: center; justify-content: center;
-          background: linear-gradient(135deg, rgba(61,139,61,.16), rgba(61,139,61,.07));
-          color: var(--green);
+        .uc-guy {
+          width: 74px; height: auto; flex-shrink: 0; align-self: center;
+          filter: drop-shadow(0 10px 18px rgba(27,94,42,.22));
           transition: transform .18s ease;
         }
-        .uc-card:hover .uc-icon-flat { transform: scale(1.08); }
+        .uc-card:hover .uc-guy { transform: scale(1.07); }
         .uc-card-text { min-width: 0; }
         .uc-card h3 { font-size: 19px; font-weight: 800; color: var(--navy); margin-bottom: 8px; letter-spacing: -.015em; }
         .uc-card p { font-size: 14.5px; line-height: 1.68; color: rgba(11,23,41,.66); }
         @media (prefers-reduced-motion: reduce) {
-          .uc-card, .uc-icon-flat { transition: none; }
+          .uc-card, .uc-guy { transition: none; }
           .uc-card:hover { transform: none; }
-          .uc-card:hover .uc-icon-flat { transform: none; }
+          .uc-card:hover .uc-guy { transform: none; }
         }
 
         /* POWER ASKS */

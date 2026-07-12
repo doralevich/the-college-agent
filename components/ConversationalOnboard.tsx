@@ -1665,10 +1665,10 @@ function Input({
                 aria-hidden
                 style={{
                   flex: "0 0 auto",
-                  width: 20,
-                  height: 20,
-                  borderRadius: 5,
-                  border: `1.5px solid ${selected ? T.green : T.line}`,
+                  width: 24,
+                  height: 24,
+                  borderRadius: 7,
+                  border: `2px solid ${selected ? T.green : "#B9C4BC"}`,
                   background: selected ? T.green : T.card,
                   display: "inline-flex",
                   alignItems: "center",
@@ -1676,7 +1676,7 @@ function Input({
                   transition: "background .12s, border-color .12s",
                 }}
               >
-                {selected && <Check style={{ width: 13, height: 13, color: "#FFFFFF", strokeWidth: 3 }} />}
+                {selected && <Check style={{ width: 16, height: 16, color: "#FFFFFF", strokeWidth: 3.5 }} />}
               </span>
               <span style={{ flex: 1 }}>
                 {opt}
@@ -1742,10 +1742,10 @@ function Input({
                     aria-hidden
                     style={{
                       flex: "0 0 auto",
-                      width: 18,
-                      height: 18,
+                      width: 22,
+                      height: 22,
                       borderRadius: "50%",
-                      border: `1.5px solid ${selected ? T.green : T.line}`,
+                      border: `2px solid ${selected ? T.green : "#B9C4BC"}`,
                       background: T.card,
                       display: "inline-flex",
                       alignItems: "center",
@@ -1753,7 +1753,7 @@ function Input({
                       transition: "border-color .12s",
                     }}
                   >
-                    {selected && <span style={{ width: 9, height: 9, borderRadius: "50%", background: T.green }} />}
+                    {selected && <span style={{ width: 11, height: 11, borderRadius: "50%", background: T.green }} />}
                   </span>
                   {opt}
                 </button>
@@ -1832,10 +1832,10 @@ function Input({
                 aria-hidden
                 style={{
                   flex: "0 0 auto",
-                  width: 20,
-                  height: 20,
+                  width: 24,
+                  height: 24,
                   borderRadius: "50%",
-                  border: `1.5px solid ${selected ? T.green : T.line}`,
+                  border: `2px solid ${selected ? T.green : "#B9C4BC"}`,
                   background: T.card,
                   display: "inline-flex",
                   alignItems: "center",
@@ -1846,8 +1846,8 @@ function Input({
                 {selected && (
                   <span
                     style={{
-                      width: 10,
-                      height: 10,
+                      width: 12,
+                      height: 12,
                       borderRadius: "50%",
                       background: T.green,
                     }}
