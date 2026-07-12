@@ -328,7 +328,6 @@ export default async function Home() {
       <section id="how-it-works" className="dark-section" style={{ padding: "80px 0" }}>
         <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
-            <span className="mono-label" style={{ color: "rgba(61,139,61,.7)" }}>The Process</span>
             <h2 className="section-title" style={{ color: "#fff" }}>
               Select &rarr; Configure &rarr; Live
             </h2>
