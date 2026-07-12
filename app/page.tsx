@@ -239,10 +239,12 @@ export default async function Home() {
       {/* WHAT THE COLLEGE AGENT DOES */}
       <section id="what-it-does" style={{ background: "#fff", padding: "72px 0 78px" }}>
         <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px" }}>
-          <div style={{ textAlign: "center", marginBottom: 44 }}>
+          <div style={{ textAlign: "center", marginBottom: 52 }}>
             <span className="mono-label">What The College Agent Does</span>
-            <h2 className="section-title ways-title">Your personal college operating system.</h2>
-            <p className="section-sub" style={{ maxWidth: 720, margin: "14px auto 0" }}>
+            <h2 className="section-title ways-title">
+              Your personal college <span style={{ color: "var(--green)" }}>operating system.</span>
+            </h2>
+            <p className="section-sub ways-sub" style={{ maxWidth: 760, margin: "18px auto 0" }}>
               More than answering questions, your College Agent helps run your academic life. It organizes
               your classes, tracks assignments, manages deadlines, drafts emails, plans your schedule, and
               helps you stay ahead, all in one place.
@@ -251,7 +253,7 @@ export default async function Home() {
           <div className="uc-grid">
             {AGENT_WAYS.map(({ icon: Icon, title, desc }) => (
               <div key={title} className="uc-card">
-                <div className="uc-icon-flat"><Icon size={22} strokeWidth={1.5} /></div>
+                <div className="uc-icon-flat"><Icon size={26} strokeWidth={1.6} /></div>
                 <div className="uc-card-text">
                   <h3>{title}</h3>
                   <p>{desc}</p>
@@ -530,22 +532,38 @@ export default async function Home() {
         .dual-card h2 { font-size: 24px; line-height: 1.12; letter-spacing: -.03em; color: var(--navy); margin-bottom: 14px; }
         .dual-card p { font-size: 15px; line-height: 1.72; color: rgba(11,23,41,.72); }
 
-        /* USE CASES — icon sits beside the text (sleeker flat line icons). */
-        .ways-title { white-space: nowrap; }
-        .uc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+        /* USE CASES — the "what we do" showcase. Oversized header, roomy cards with a
+           hover lift so the section reads as the main event, not a feature list. */
+        .ways-title { white-space: nowrap; font-size: clamp(30px, 4.4vw, 54px); }
+        .ways-sub { font-size: 17.5px; }
+        .uc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
         .uc-card {
-          background: var(--cream2); border: 1px solid rgba(11,23,41,.07); border-radius: 16px;
-          padding: 24px 26px; box-shadow: 0 8px 28px rgba(11,23,41,.04);
-          display: flex; gap: 18px; align-items: flex-start;
+          background: var(--cream2); border: 1px solid rgba(11,23,41,.07); border-radius: 18px;
+          padding: 28px 30px; box-shadow: 0 8px 28px rgba(11,23,41,.04);
+          display: flex; gap: 20px; align-items: flex-start;
+          transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+        }
+        .uc-card:hover {
+          transform: translateY(-4px);
+          border-color: rgba(61,139,61,.35);
+          box-shadow: 0 18px 44px rgba(11,23,41,.10);
         }
         .uc-icon-flat {
-          width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+          width: 54px; height: 54px; border-radius: 15px; flex-shrink: 0;
           display: flex; align-items: center; justify-content: center;
-          background: rgba(61,139,61,.1); color: var(--green);
+          background: linear-gradient(135deg, rgba(61,139,61,.16), rgba(61,139,61,.07));
+          color: var(--green);
+          transition: transform .18s ease;
         }
+        .uc-card:hover .uc-icon-flat { transform: scale(1.08); }
         .uc-card-text { min-width: 0; }
-        .uc-card h3 { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 6px; letter-spacing: -.01em; }
-        .uc-card p { font-size: 13.5px; line-height: 1.62; color: rgba(11,23,41,.62); }
+        .uc-card h3 { font-size: 19px; font-weight: 800; color: var(--navy); margin-bottom: 8px; letter-spacing: -.015em; }
+        .uc-card p { font-size: 14.5px; line-height: 1.68; color: rgba(11,23,41,.66); }
+        @media (prefers-reduced-motion: reduce) {
+          .uc-card, .uc-icon-flat { transition: none; }
+          .uc-card:hover { transform: none; }
+          .uc-card:hover .uc-icon-flat { transform: none; }
+        }
 
         /* POWER ASKS */
         .asks-band {
