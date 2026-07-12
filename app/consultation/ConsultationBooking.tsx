@@ -7,7 +7,7 @@ import { useEffect } from "react";
 // redirects to after a completed booking (see app/thank-you), so there is intentionally no
 // tracking here — keeping it in one place avoids double-counting a single booking.
 
-const CALENDLY_URL = "https://calendly.com/therealdaveo/apolloai";
+const CALENDLY_URL = "https://calendly.com/therealdaveo/the-college-agent-consult";
 const WIDGET_SRC = "https://assets.calendly.com/assets/external/widget.js";
 
 type CalendlyGlobal = { initInlineWidgets?: () => void };
