@@ -129,6 +129,10 @@ export function buildUserProfile(p: HermesPersonaInput): string {
   add("Academic goal", q(p, "academicGoal"));
   add("Career goal", q(p, "careerGoal"));
   add("Personal goal", q(p, "personalGoal"));
+  add("Summer plans", q(p, "summerPlans"));
+  add("Plan after college", [q(p, "afterCollege"), q(p, "afterCollegeDetail")].filter(Boolean).join(" — "));
+  add("Clubs / orgs", [q(p, "clubs"), q(p, "clubsDetail")].filter(Boolean).join(" — "));
+  add("Fraternity / sorority", [q(p, "greekOrg"), q(p, "greekRole")].filter(Boolean).join(", "));
   add("Preferred contact channels", q(p, "preferredChannels"));
   add("Preferred check-in cadence", q(p, "checkinFrequency"));
   add("Wants proactively surfaced", q(p, "agentTopics"));
