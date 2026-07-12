@@ -729,12 +729,12 @@ export default function BuildPage() {
         }
         .ca-head-guy {
           flex: 0 0 auto;
-          width: 104px;
+          width: 158px;
           height: auto;
-          filter: drop-shadow(0 12px 24px rgba(45,122,58,.25));
+          filter: drop-shadow(0 14px 28px rgba(45,122,58,.28));
         }
         @media (max-width: 560px) {
-          .ca-head-guy { width: 78px; }
+          .ca-head-guy { width: 104px; }
         }
         .ca-welcome-points {
           list-style: none;
