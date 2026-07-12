@@ -87,24 +87,32 @@ export default function ForAdministrationPage() {
           secondary={{ label: "Book a Consultation", href: "/consultation" }}
         />
 
-        {/* THE PROBLEM */}
+        {/* THE PROBLEM — copy on the left, the agent team at their laptop on the right.
+            The image has a white background, so it sits on this white section only. */}
         <section style={{ background: "#fff", padding: "72px 0" }}>
-          <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "var(--green)", marginBottom: 14, display: "block" }}>The Reality</span>
-            <h2 style={{ fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 800, color: "var(--navy)", marginBottom: 20, letterSpacing: "-.025em" }}>
-              Campus offices run on people who are stretched thin.
-            </h2>
-            <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
-              The inbox never empties. The same questions arrive every day. Reports are due, events
-              are coming, and the calendar is a negotiation. The work that actually serves students
-              gets squeezed by the work that just keeps the office running.
-            </p>
-            <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)" }}>
-              The College Agent gives every professor and staff member a professional AI agent
-              that knows their role, their office, and their school, and takes the busywork off
-              their plate. Faculty use it for office hours, course logistics, and communications;
-              offices use it to keep the whole operation moving.
-            </p>
+          <div className="reality-row" style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
+            <div style={{ flex: "1 1 460px", minWidth: 0 }}>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "var(--green)", marginBottom: 14, display: "block" }}>The Reality</span>
+              <h2 style={{ fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 800, color: "var(--navy)", marginBottom: 20, letterSpacing: "-.025em" }}>
+                Campus offices run on people who are stretched thin.
+              </h2>
+              <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
+                The inbox never empties. The same questions arrive every day. Reports are due, events
+                are coming, and the calendar is a negotiation. The work that actually serves students
+                gets squeezed by the work that just keeps the office running.
+              </p>
+              <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)" }}>
+                The College Agent gives every professor and staff member a professional AI agent
+                that knows their role, their office, and their school, and takes the busywork off
+                their plate. Faculty use it for office hours, course logistics, and communications;
+                offices use it to keep the whole operation moving.
+              </p>
+            </div>
+            <div className="reality-art">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/agents/agent-admin-team.webp" alt="A team of College Agent robots working together at a laptop" />
+              <div className="reality-caption">One agent per staff member. A whole office, covered.</div>
+            </div>
           </div>
         </section>
 
@@ -124,7 +132,7 @@ export default function ForAdministrationPage() {
             <div className="cap-grid">
               {CAPABILITIES.map(({ icon: Icon, title, desc }) => (
                 <div key={title} className="cap-card">
-                  <div className="cap-icon"><Icon size={22} strokeWidth={1.9} /></div>
+                  <div className="cap-icon"><Icon size={26} strokeWidth={2.2} /></div>
                   <div className="cap-text">
                     <h3>{title}</h3>
                     <p>{desc}</p>
@@ -135,19 +143,8 @@ export default function ForAdministrationPage() {
           </div>
         </section>
 
-        {/* Cross-link + consultation nudge (no public pricing on this page). */}
-        <section style={{ background: "#fff", padding: "40px 0" }}>
-          <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
-            <p style={{ fontSize: 14.5, lineHeight: 1.7, color: "rgba(11,23,41,.6)", margin: 0 }}>
-              Rolling out to a whole office or division? <a href="/consultation" style={{ color: "var(--green)", textDecoration: "underline" }}>Book a consultation</a> and we&apos;ll build a plan.
-            </p>
-            <p style={{ fontSize: 13.5, lineHeight: 1.7, color: "rgba(11,23,41,.55)", marginTop: 8, marginBottom: 0 }}>
-              In athletics? See <a href="/for-athletics" style={{ color: "var(--green)", textDecoration: "underline" }}>The College Agent for Athletic Departments</a>.
-            </p>
-          </div>
-        </section>
-
-        {/* FINAL CTA */}
+        {/* FINAL CTA — the rollout + cross-link nudges live here, under the buttons,
+            instead of in their own band. */}
         <section className="dark-section" style={{ padding: "76px 0" }}>
           <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
             <h2 style={{ fontSize: "clamp(26px, 3.4vw, 40px)", fontWeight: 800, color: "#fff", letterSpacing: "-.025em", marginBottom: 16 }}>
@@ -161,6 +158,11 @@ export default function ForAdministrationPage() {
               <a href="/build?plan=pro" className="btn-green">Build a Professional Agent</a>
               <a href="/consultation" className="btn-outline">Book a Consultation</a>
             </div>
+            <p style={{ fontSize: 14.5, lineHeight: 1.7, color: "rgba(255,255,255,.65)", margin: "28px auto 0" }}>
+              Rolling out to a whole office or division? <a href="/consultation" style={{ color: "var(--green)", textDecoration: "underline" }}>Book a consultation</a> and we&apos;ll build a plan.
+              <br />
+              In athletics? See <a href="/for-athletics" style={{ color: "var(--green)", textDecoration: "underline" }}>The College Agent for Athletic Departments</a>.
+            </p>
           </div>
         </section>
 
@@ -176,10 +178,23 @@ export default function ForAdministrationPage() {
           padding: 28px; box-shadow: 0 8px 28px rgba(11,23,41,.04);
           display: flex; gap: 16px; align-items: flex-start;
         }
+        /* Flat solid tiles: bold green square, white glyph, matching the student/parent pages. */
         .cap-icon {
-          width: 46px; height: 46px; border-radius: 14px; flex-shrink: 0;
+          width: 54px; height: 54px; border-radius: 16px; flex-shrink: 0;
           display: flex; align-items: center; justify-content: center;
-          background: rgba(61,139,61,.1); color: var(--green);
+          background: var(--green); color: #fff;
+          box-shadow: 0 8px 18px rgba(61,139,61,.28);
+        }
+        .reality-row { display: flex; align-items: center; gap: 48px; }
+        .reality-art { flex: 0 1 440px; min-width: 0; text-align: center; }
+        .reality-art img { width: 100%; max-width: 440px; height: auto; display: block; }
+        .reality-caption {
+          margin-top: 10px; font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+          letter-spacing: .08em; text-transform: uppercase; color: rgba(11,23,41,.5);
+        }
+        @media (max-width: 920px) {
+          .reality-row { flex-direction: column; align-items: stretch; gap: 32px; }
+          .reality-art { margin: 0 auto; }
         }
         .cap-text { flex: 1; min-width: 0; }
         .cap-card h3 { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 9px; letter-spacing: -.01em; }

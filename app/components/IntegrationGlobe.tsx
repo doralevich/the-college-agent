@@ -158,7 +158,7 @@ export default function IntegrationGlobe() {
     <section id="integrations" className="integration-globe-section">
       <div className="integration-globe-heading">
         <span className="mono-label">Integrations</span>
-        <h2 className="section-title">Works with the tools<br />you already use</h2>
+        <h2 className="section-title">Works with the tools you already use</h2>
         <p className="section-sub">
           Connect to 250+ apps, from Gmail and Canvas to Blackbaud and Office 365, right out of the box.
         </p>
@@ -202,14 +202,16 @@ export default function IntegrationGlobe() {
           padding: 78px 0 70px;
           overflow: hidden;
         }
+        /* Heading and sub each get the full section width so they read as two clean,
+           single lines on desktop instead of a cramped block. */
         .integration-globe-heading {
           text-align: center;
-          max-width: 680px;
+          max-width: 980px;
           margin: 0 auto 42px;
           padding: 0 24px;
         }
         .integration-globe-heading :global(.section-sub) {
-          max-width: 520px;
+          max-width: 100%;
           margin: 14px auto 0;
         }
         .integration-globe-wrap {

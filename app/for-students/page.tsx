@@ -1,7 +1,9 @@
+/* eslint-disable @next/next/no-img-element */
 import type { Metadata } from "next";
 import Nav from "../components/Nav";
 import { PageHero } from "../components/PageHero";
 import { Footer } from "../components/Footer";
+import { composioLogoUrl } from "@/lib/integration-catalog";
 import { BriefcaseBusiness, CalendarDays, Mail, NotebookTabs, Sparkles, Target } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -69,35 +71,53 @@ const FEATURES = [
 ];
 
 // "Most effective uses" — the college-operating-system framing, in second person.
+// Each gets its own College Agent Guy so the section matches the homepage's mascot cards.
 const EFFECTIVE_USES = [
   {
+    guy: "/avatars/guy-01.webp",
     title: "Start Strong",
     desc: "Begin college with a plan. Add your class schedule, syllabi, professors, deadlines, clubs, and campus commitments. Your agent organizes everything before the semester gets busy.",
   },
   {
+    guy: "/avatars/guy-04.webp",
     title: "Never Miss a Deadline",
     desc: "Every syllabus becomes a personalized action plan with assignments, quizzes, exams, reminders, and study blocks, so you always know what's due and what's coming next.",
   },
   {
+    guy: "/avatars/guy-02.webp",
     title: "Study Smarter",
     desc: "Transform notes, lectures, readings, and textbooks into personalized study guides, review schedules, practice quizzes, and exam prep tailored to your workload.",
   },
   {
+    guy: "/avatars/guy-11.webp",
     title: "Communicate with Confidence",
     desc: "Draft polished emails to professors, teaching assistants, advisors, recruiters, and classmates in your own voice, professional, clear, and ready to send.",
   },
   {
+    guy: "/avatars/guy-06.webp",
     title: "Balance Your College Life",
     desc: "Keep classes, clubs, events, work, travel, friendships, and personal commitments organized in one place, making it easier to stay involved without becoming overwhelmed.",
   },
   {
+    guy: "/avatars/guy-09.webp",
     title: "Build Your Career Early",
     desc: "Create your resume, strengthen your LinkedIn profile, track internships, grow your professional network, and prepare for interviews, starting freshman year instead of scrambling as a senior.",
   },
   {
+    guy: "/avatars/guy-07.webp",
     title: "Stay Independent. Give Everyone Peace of Mind.",
     desc: "Your College Agent helps you stay organized, accountable, and prepared while giving your parents confidence that you have a system in place to support you every step of the way.",
   },
+];
+
+// The tools name-dropped in the first-semester chat section, with real catalog logos.
+const SEMESTER_TOOLS = [
+  { slug: "canvas", label: "Canvas" },
+  { slug: "gmail", label: "Gmail" },
+  { slug: "googlecalendar", label: "Google Calendar" },
+  { slug: "googledrive", label: "Google Drive" },
+  { slug: "notion", label: "Notion" },
+  { slug: "outlook", label: "Outlook" },
 ];
 
 // The complete catalog, life stage by life stage. This is the "name them all" section:
@@ -200,24 +220,26 @@ export default function ForStudentsPage() {
           secondary={{ label: "See Everything It Does", href: "#everything" }}
         />
 
-        {/* COLLEGE OPERATING SYSTEM: the "most effective uses" framing */}
+        {/* COLLEGE OPERATING SYSTEM: the "most effective uses" framing, as mascot cards
+            matching the homepage's use-case grid. */}
         <section style={{ background: "#fff", padding: "72px 0" }}>
-          <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 24px" }}>
+          <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px" }}>
             <div style={{ textAlign: "center", marginBottom: 48 }}>
               <span className="mono-label-green">How Students Use Their College Agent</span>
-              <h2 className="section-title">Your personal college operating system.</h2>
-              <p className="section-sub" style={{ maxWidth: 640, margin: "14px auto 0" }}>
-                More than homework help. More than a chatbot. Your College Agent keeps every part
-                of your college life organized, from your first week on campus to graduation.
+              <h2 className="section-title os-title">Your personal college operating system.</h2>
+              <p className="section-sub" style={{ maxWidth: 920, margin: "14px auto 0" }}>
+                More than homework help. More than a chatbot. Your College Agent keeps every part of your college life organized,
+                <br className="os-br" />
+                from your first week on campus to graduation.
               </p>
             </div>
-            <div style={{ display: "grid", gap: 26 }}>
-              {EFFECTIVE_USES.map(({ title, desc }, i) => (
-                <div key={title} style={{ display: "flex", gap: 18, alignItems: "flex-start" }}>
-                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(61,139,61,.1)", border: "2px solid var(--green)", color: "var(--green)", fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>{i + 1}</div>
-                  <div>
-                    <h3 style={{ fontSize: 16, fontWeight: 800, color: "var(--navy)", margin: "0 0 5px", letterSpacing: "-.01em" }}>{title}</h3>
-                    <p style={{ fontSize: 14.5, lineHeight: 1.7, color: "rgba(11,23,41,.68)", margin: 0 }}>{desc}</p>
+            <div className="uc-grid">
+              {EFFECTIVE_USES.map(({ guy, title, desc }) => (
+                <div key={title} className="uc-card">
+                  <img src={guy} alt="" className="uc-guy" loading="lazy" />
+                  <div className="uc-card-text">
+                    <h3>{title}</h3>
+                    <p>{desc}</p>
                   </div>
                 </div>
               ))}
@@ -231,14 +253,14 @@ export default function ForStudentsPage() {
             <div style={{ textAlign: "center", marginBottom: 48 }}>
               <span className="mono-label-green">What Your Agent Does</span>
               <h2 className="section-title">Everything college. One intelligent agent.</h2>
-              <p className="section-sub" style={{ maxWidth: 680, margin: "14px auto 0" }}>
+              <p className="section-sub" style={{ maxWidth: 920, margin: "14px auto 0" }}>
                 Your College Agent brings every part of your academic life together, from classes and studying to internships, communication, and everything in between. Instead of juggling apps, calendars, notes, and to-do lists, you have one intelligent system that keeps you organized, prepared, and moving forward.
               </p>
             </div>
             <div className="feat-grid">
               {FEATURES.map(({ icon: Icon, title, desc }) => (
                 <div key={title} className="feat-card feat-card--row">
-                  <div className="feat-icon"><Icon size={22} strokeWidth={1.9} /></div>
+                  <div className="feat-icon"><Icon size={26} strokeWidth={2.2} /></div>
                   <div className="feat-text">
                     <h3>{title}</h3>
                     <p>{desc}</p>
@@ -255,7 +277,7 @@ export default function ForStudentsPage() {
             <div style={{ textAlign: "center", marginBottom: 48 }}>
               <span className="mono-label-green">Everything It Does</span>
               <h2 className="section-title">One Agent. Every Stage of Your Journey.</h2>
-              <p className="section-sub" style={{ maxWidth: 680, margin: "14px auto 0" }}>
+              <p className="section-sub" style={{ maxWidth: 920, margin: "14px auto 0" }}>
                 From your first campus tour to your first job. Your College Agent isn&apos;t built
                 for a single class or semester. It learns about you, remembers what matters, and
                 evolves alongside you throughout college, and beyond.
@@ -310,22 +332,50 @@ export default function ForStudentsPage() {
           </div>
         </section>
 
-        {/* WHAT YOUR FIRST SEMESTER LOOKS LIKE WITH AI */}
+        {/* WHAT YOUR FIRST SEMESTER LOOKS LIKE: shown as a real chat + the connected tools,
+            instead of a wall of text. */}
         <section style={{ background: "#fff", padding: "72px 0" }}>
-          <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
-            <span className="mono-label-green">Your First Semester</span>
-            <h2 style={{ fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 800, color: "var(--navy)", marginBottom: 20, letterSpacing: "-.025em" }}>
-              Powered by your College Agent.
-            </h2>
-            <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
-              What college feels like with your own AI agent. The first few weeks of college move fast. New classes. New professors. New friends. Syllabi, deadlines, club meetings, and a calendar that fills up almost overnight. Most students spend the first month reacting. With The College Agent, you start with a plan.
-            </p>
-            <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
-              Before classes begin, your schedule is organized. Your syllabi become assignments and deadlines. Study time is built into your week. Office hours, exams, and important dates are already on your calendar. When you need to email a professor, your draft is ready before you open your inbox.
-            </p>
-            <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 16 }}>
-              By midterms, you&apos;re not cramming, you&apos;re following a study plan that&apos;s been working since the first week of class. By the end of the semester, your College Agent understands your schedule, professors, priorities, and goals. It isn&apos;t just helping you stay organized anymore, it&apos;s helping you stay ahead.
-            </p>
+          <div className="sem-row" style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
+            <div className="sem-copy">
+              <span className="mono-label-green">Your First Semester</span>
+              <h2 style={{ fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 800, color: "var(--navy)", marginBottom: 18, letterSpacing: "-.025em" }}>
+                Week one, handled.
+              </h2>
+              <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 24 }}>
+                The first weeks of college move fast: new classes, new professors, and a calendar
+                that fills up overnight. Most students spend the first month reacting. With your
+                College Agent, you start with a plan, and by midterms you&apos;re following a study
+                system that&apos;s been working since day one.
+              </p>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "rgba(11,23,41,.45)", marginBottom: 12 }}>
+                Connected to your tools
+              </div>
+              <div className="sem-tools">
+                {SEMESTER_TOOLS.map(({ slug, label }) => (
+                  <span key={slug} className="sem-tool">
+                    <img src={composioLogoUrl(slug)} alt="" loading="lazy" aria-hidden />
+                    {label}
+                  </span>
+                ))}
+                <span className="sem-tool sem-tool--more">+ 250 more</span>
+              </div>
+            </div>
+
+            <div className="sem-chat" aria-hidden>
+              <div className="sem-chat-head">
+                <img src="/avatars/guy-03.webp" alt="" />
+                <div>
+                  <strong>Your College Agent</strong>
+                  <span><i className="sem-dot" /> Online 24/7</span>
+                </div>
+              </div>
+              <div className="sem-chat-body">
+                <div className="sem-msg me">Just uploaded all four of my syllabi 📎</div>
+                <div className="sem-msg bot">Done! 47 deadlines are on your calendar. First up: Bio 101 quiz Friday. Want a study plan?</div>
+                <div className="sem-msg me">Yes! But I work Tuesday nights.</div>
+                <div className="sem-msg bot">No problem. Review blocks Wednesday and Thursday, flashcards ready tonight. I also drafted your office-hours email to Professor Rivera. 💪</div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -371,15 +421,52 @@ export default function ForStudentsPage() {
           line-height: 1.08; letter-spacing: -.02em; color: var(--navy);
         }
         .section-sub { font-size: 16px; line-height: 1.75; color: rgba(11,23,41,.62); }
+        /* "Your personal college operating system." stays on one line; the sub breaks
+           before "from your first week on campus to graduation." on desktop. */
+        .os-title { white-space: nowrap; }
+        @media (max-width: 600px) { .os-title { white-space: normal; } }
+        @media (max-width: 920px) { .os-br { display: none; } }
+
+        /* Mascot use-case cards, matching the homepage's interactive boxes. */
+        .uc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .uc-grid .uc-card:last-child { grid-column: 1 / -1; }
+        .uc-card {
+          background: var(--cream2); border: 1px solid rgba(11,23,41,.07); border-radius: 18px;
+          padding: 28px 30px; box-shadow: 0 8px 28px rgba(11,23,41,.04);
+          display: flex; gap: 20px; align-items: flex-start;
+          transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+        }
+        .uc-card:hover {
+          transform: translateY(-4px);
+          border-color: rgba(61,139,61,.35);
+          box-shadow: 0 18px 44px rgba(11,23,41,.10);
+        }
+        .uc-guy {
+          width: 74px; height: auto; flex-shrink: 0; align-self: center;
+          filter: drop-shadow(0 10px 18px rgba(27,94,42,.22));
+          transition: transform .18s ease;
+        }
+        .uc-card:hover .uc-guy { transform: scale(1.07); }
+        .uc-card-text { min-width: 0; }
+        .uc-card h3 { font-size: 19px; font-weight: 800; color: var(--navy); margin-bottom: 8px; letter-spacing: -.015em; }
+        .uc-card p { font-size: 14.5px; line-height: 1.68; color: rgba(11,23,41,.66); }
+        @media (prefers-reduced-motion: reduce) {
+          .uc-card, .uc-guy { transition: none; }
+          .uc-card:hover { transform: none; }
+          .uc-card:hover .uc-guy { transform: none; }
+        }
+        @media (max-width: 720px) { .uc-grid { grid-template-columns: 1fr; } }
         .feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
         .feat-card {
           background: #fff; border: 1px solid rgba(11,23,41,.07); border-radius: 16px;
           padding: 28px; box-shadow: 0 8px 28px rgba(11,23,41,.04);
         }
+        /* Flat solid tiles: bold green square, white glyph, instead of the washed-out tint. */
         .feat-icon {
-          width: 46px; height: 46px; border-radius: 14px; margin-bottom: 18px;
+          width: 54px; height: 54px; border-radius: 16px; margin-bottom: 18px;
           display: flex; align-items: center; justify-content: center;
-          background: rgba(61,139,61,.1); color: var(--green);
+          background: var(--green); color: #fff;
+          box-shadow: 0 8px 18px rgba(61,139,61,.28);
         }
         /* Icon-beside-text card: the icon sits to the left and the copy wraps next to it. */
         .feat-card--row { display: flex; gap: 16px; align-items: flex-start; }
@@ -410,31 +497,79 @@ export default function ForStudentsPage() {
         @media (max-width: 900px) { .feat-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 600px) { .feat-grid, .everything-grid { grid-template-columns: 1fr; } }
 
-        /* Sleek journey roadmap: a single rail with numbered nodes, before college to after graduation. */
-        .roadmap { position: relative; max-width: 760px; margin: 0 auto; }
+        /* Journey road map: a dashed center line like a route on a map, with numbered stops
+           and stage cards alternating left/right of the road. */
+        .roadmap { position: relative; max-width: 980px; margin: 0 auto; }
         .roadmap::before {
-          content: ""; position: absolute; left: 27px; top: 27px; bottom: 27px; width: 2px;
-          background: linear-gradient(rgba(61,139,61,.35), rgba(61,139,61,.12));
+          content: ""; position: absolute; left: 50%; top: 30px; bottom: 30px;
+          border-left: 3px dashed rgba(61,139,61,.45); transform: translateX(-50%);
         }
-        .roadmap-item { display: grid; grid-template-columns: 54px 1fr; gap: 24px; align-items: start; }
-        .roadmap-rail { display: flex; justify-content: center; }
+        .roadmap-item { display: grid; grid-template-columns: 1fr 110px 1fr; align-items: center; margin-bottom: 30px; }
+        .roadmap-item:last-child { margin-bottom: 0; }
+        .roadmap-rail { grid-column: 2; grid-row: 1; display: flex; justify-content: center; }
         .roadmap-node {
           position: relative; z-index: 1;
-          width: 54px; height: 54px; border-radius: 50%;
-          background: #fff; border: 2px solid var(--green); color: var(--green);
+          width: 56px; height: 56px; border-radius: 50%;
+          background: #fff; border: 2.5px solid var(--green); color: var(--green);
           font-family: var(--font-mono); font-size: 15px; font-weight: 700;
           display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 6px 18px rgba(61,139,61,.16); flex-shrink: 0;
+          box-shadow: 0 6px 18px rgba(61,139,61,.18); flex-shrink: 0;
         }
-        .roadmap-card { padding-bottom: 36px; }
-        .roadmap-item:last-child .roadmap-card { padding-bottom: 0; }
-        .roadmap-stage { font-size: 18px; font-weight: 800; color: var(--navy); margin: 4px 0 7px; letter-spacing: -.015em; }
-        .roadmap-card p { font-size: 15px; line-height: 1.75; color: rgba(11,23,41,.68); margin: 0; }
-        @media (max-width: 560px) {
-          .roadmap::before { left: 21px; top: 21px; bottom: 21px; }
-          .roadmap-item { grid-template-columns: 42px 1fr; gap: 16px; }
-          .roadmap-node { width: 42px; height: 42px; font-size: 13px; }
-          .roadmap-card { padding-bottom: 28px; }
+        .roadmap-card {
+          grid-column: 3; grid-row: 1;
+          background: var(--cream2); border: 1px solid rgba(11,23,41,.07); border-radius: 16px;
+          padding: 22px 26px; box-shadow: 0 8px 28px rgba(11,23,41,.05);
+        }
+        .roadmap-item:nth-child(even) .roadmap-card { grid-column: 1; }
+        .roadmap-stage { font-size: 18px; font-weight: 800; color: var(--navy); margin: 0 0 7px; letter-spacing: -.015em; }
+        .roadmap-card p { font-size: 14.5px; line-height: 1.7; color: rgba(11,23,41,.68); margin: 0; }
+        @media (max-width: 760px) {
+          .roadmap::before { left: 23px; transform: none; }
+          .roadmap-item { grid-template-columns: 46px 1fr; gap: 16px; margin-bottom: 22px; align-items: start; }
+          .roadmap-rail { grid-column: 1; }
+          .roadmap-card, .roadmap-item:nth-child(even) .roadmap-card { grid-column: 2; }
+          .roadmap-node { width: 46px; height: 46px; font-size: 13px; }
+        }
+
+        /* First-semester chat mockup + tool chips. */
+        .sem-row { display: flex; align-items: center; gap: 48px; }
+        .sem-copy { flex: 1 1 460px; min-width: 0; }
+        .sem-tools { display: flex; flex-wrap: wrap; gap: 10px; }
+        .sem-tool {
+          display: inline-flex; align-items: center; gap: 8px;
+          background: #fff; border: 1px solid rgba(11,23,41,.12); border-radius: 999px;
+          padding: 7px 14px 7px 9px; font-size: 12.5px; font-weight: 600; color: var(--navy);
+          box-shadow: 0 3px 10px rgba(11,23,41,.06);
+        }
+        .sem-tool img { width: 20px; height: 20px; object-fit: contain; }
+        .sem-tool--more {
+          padding: 7px 14px; color: var(--green);
+          border: 1.5px dashed rgba(61,139,61,.5); background: rgba(61,139,61,.05); box-shadow: none;
+        }
+        .sem-chat {
+          flex: 0 1 440px; min-width: 0;
+          background: var(--cream2); border: 1px solid rgba(11,23,41,.08); border-radius: 22px;
+          box-shadow: 0 24px 60px rgba(11,23,41,.13); overflow: hidden;
+        }
+        .sem-chat-head {
+          display: flex; align-items: center; gap: 12px;
+          padding: 14px 18px; background: var(--navy); color: #fff;
+        }
+        .sem-chat-head img { width: 40px; height: 40px; object-fit: contain; background: #fff; border-radius: 50%; padding: 3px; }
+        .sem-chat-head strong { display: block; font-size: 14px; font-weight: 800; letter-spacing: -.01em; }
+        .sem-chat-head span {
+          display: flex; align-items: center; gap: 6px; margin-top: 2px;
+          font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em;
+          text-transform: uppercase; color: rgba(255,255,255,.65);
+        }
+        .sem-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; display: inline-block; }
+        .sem-chat-body { display: flex; flex-direction: column; gap: 10px; padding: 20px 18px 22px; }
+        .sem-msg { max-width: 86%; padding: 11px 15px; border-radius: 16px; font-size: 13.5px; line-height: 1.55; }
+        .sem-msg.me { align-self: flex-end; background: var(--green); color: #fff; border-bottom-right-radius: 4px; }
+        .sem-msg.bot { align-self: flex-start; background: #fff; color: var(--navy); border: 1px solid rgba(11,23,41,.08); border-bottom-left-radius: 4px; }
+        @media (max-width: 920px) {
+          .sem-row { flex-direction: column; align-items: stretch; gap: 36px; }
+          .sem-chat { flex: 1 1 auto; }
         }
       `}</style>
     </>
