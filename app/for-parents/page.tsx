@@ -178,7 +178,7 @@ export default function ForParentsPage() {
             <div className="ben-grid">
               {BENEFITS.map(({ icon: Icon, title, desc }) => (
                 <div key={title} className="ben-card">
-                  <div className="ben-icon"><Icon size={22} strokeWidth={1.9} /></div>
+                  <div className="ben-icon"><Icon size={26} strokeWidth={2.2} /></div>
                   <div className="ben-text">
                     <h3>{title}</h3>
                     <p>{desc}</p>
@@ -253,10 +253,12 @@ export default function ForParentsPage() {
           padding: 28px; box-shadow: 0 8px 28px rgba(11,23,41,.04);
           display: flex; gap: 16px; align-items: flex-start;
         }
+        /* Flat solid tiles: bold green square, white glyph, instead of the washed-out tint. */
         .ben-icon {
-          width: 46px; height: 46px; border-radius: 14px; flex-shrink: 0;
+          width: 54px; height: 54px; border-radius: 16px; flex-shrink: 0;
           display: flex; align-items: center; justify-content: center;
-          background: rgba(61,139,61,.1); color: var(--green);
+          background: var(--green); color: #fff;
+          box-shadow: 0 8px 18px rgba(61,139,61,.28);
         }
         .ben-text { flex: 1; min-width: 0; }
         .ben-card h3 { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 9px; letter-spacing: -.01em; }

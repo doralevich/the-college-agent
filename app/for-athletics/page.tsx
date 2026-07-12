@@ -78,13 +78,14 @@ export default function ForAthleticsPage() {
       <Nav />
       <main style={{ paddingTop: 114, minHeight: "100vh" }}>
 
-        {/* HERO */}
+        {/* HERO — pinned to the crossed-arms Guy: the confident, game-ready pose. */}
         <PageHero
           label="For Athletic Departments"
           title="Your program's busywork, handled."
           sub="A professional AI agent built for your office, department, or team. It learns your role, your calendar, and your season, then runs the scheduling, travel, communications, and deadlines that eat your week. Live in 30 minutes."
           primary={{ label: "Build a Professional Agent", href: "/build?plan=pro" }}
           secondary={{ label: "Book a Consultation", href: "/consultation" }}
+          mascot="/avatars/guy-09.webp"
         />
 
         {/* THE PROBLEM */}
@@ -122,7 +123,7 @@ export default function ForAthleticsPage() {
             <div className="cap-grid">
               {CAPABILITIES.map(({ icon: Icon, title, desc }) => (
                 <div key={title} className="cap-card">
-                  <div className="cap-icon"><Icon size={22} strokeWidth={1.9} /></div>
+                  <div className="cap-icon"><Icon size={26} strokeWidth={2.2} /></div>
                   <div className="cap-text">
                     <h3>{title}</h3>
                     <p>{desc}</p>
@@ -158,19 +159,8 @@ export default function ForAthleticsPage() {
           </div>
         </section>
 
-        {/* Cross-link + consultation nudge (no public pricing on this page). */}
-        <section style={{ background: "var(--cream2)", padding: "40px 0" }}>
-          <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
-            <p style={{ fontSize: 14.5, lineHeight: 1.7, color: "rgba(11,23,41,.6)", margin: 0 }}>
-              Rolling out to a whole staff or department? <a href="/consultation" style={{ color: "var(--green)", textDecoration: "underline" }}>Book a consultation</a> and we&apos;ll build a plan for your program.
-            </p>
-            <p style={{ fontSize: 13.5, lineHeight: 1.7, color: "rgba(11,23,41,.55)", marginTop: 8, marginBottom: 0 }}>
-              In admissions, advising, or another campus office? See <a href="/for-administration" style={{ color: "var(--green)", textDecoration: "underline" }}>The College Agent for Administration</a>.
-            </p>
-          </div>
-        </section>
-
-        {/* FINAL CTA */}
+        {/* FINAL CTA — the rollout + cross-link nudges live here, under the buttons,
+            instead of in their own band. */}
         <section className="dark-section" style={{ padding: "76px 0" }}>
           <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
             <h2 style={{ fontSize: "clamp(26px, 3.4vw, 40px)", fontWeight: 800, color: "#fff", letterSpacing: "-.025em", marginBottom: 16 }}>
@@ -184,6 +174,11 @@ export default function ForAthleticsPage() {
               <a href="/build?plan=pro" className="btn-green">Build a Professional Agent</a>
               <a href="/consultation" className="btn-outline">Book a Consultation</a>
             </div>
+            <p style={{ fontSize: 14.5, lineHeight: 1.7, color: "rgba(255,255,255,.65)", margin: "28px auto 0" }}>
+              Rolling out to a whole staff or department? <a href="/consultation" style={{ color: "var(--green)", textDecoration: "underline" }}>Book a consultation</a> and we&apos;ll build a plan for your program.
+              <br />
+              In admissions, advising, or another campus office? See <a href="/for-administration" style={{ color: "var(--green)", textDecoration: "underline" }}>The College Agent for Administration</a>.
+            </p>
           </div>
         </section>
 
@@ -199,10 +194,12 @@ export default function ForAthleticsPage() {
           padding: 28px; box-shadow: 0 8px 28px rgba(11,23,41,.04);
           display: flex; gap: 16px; align-items: flex-start;
         }
+        /* Flat solid tiles: bold green square, white glyph, matching the student/parent pages. */
         .cap-icon {
-          width: 46px; height: 46px; border-radius: 14px; flex-shrink: 0;
+          width: 54px; height: 54px; border-radius: 16px; flex-shrink: 0;
           display: flex; align-items: center; justify-content: center;
-          background: rgba(61,139,61,.1); color: var(--green);
+          background: var(--green); color: #fff;
+          box-shadow: 0 8px 18px rgba(61,139,61,.28);
         }
         .cap-text { flex: 1; min-width: 0; }
         .cap-card h3 { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 9px; letter-spacing: -.01em; }
