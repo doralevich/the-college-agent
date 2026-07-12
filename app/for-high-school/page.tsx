@@ -5,9 +5,9 @@ import { Footer } from "../components/Footer";
 import { BookOpenCheck, CalendarDays, GraduationCap, NotebookTabs, Sparkles, TrendingUp } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Get Ready for College with AI, The College Agent for High Schoolers",
+  title: "AI College Prep for High Schoolers — The College Agent",
   description:
-    "Start building the habits, skills, and plans that will define your college years before you even arrive on campus. AI college prep for high school students.",
+    "Build the habits, skills, and plans that define your college years before you arrive on campus. AI college prep for high school students, junior and senior year.",
   keywords: [
     "AI for high school students",
     "AI college prep",
@@ -18,9 +18,10 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "https://thecollegeagent.ai/for-high-school" },
   openGraph: {
-    title: "Get Ready for College with AI, The College Agent for High Schoolers",
+    type: "website",
+    title: "AI College Prep for High Schoolers — The College Agent",
     description:
-      "Start building the habits, skills, and plans that will define your college years before you even arrive on campus.",
+      "Build the habits, skills, and plans that define your college years before you arrive on campus. AI college prep for high school students, junior and senior year.",
     url: "https://thecollegeagent.ai/for-high-school",
     images: [{ url: "https://thecollegeagent.ai/og-image.png", width: 1200, height: 630, alt: "The College Agent" }],
   },

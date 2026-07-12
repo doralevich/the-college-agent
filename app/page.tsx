@@ -13,9 +13,9 @@ import { INTRO_PLAN_AMOUNT_CENTS, HOSTING_AMOUNT_CENTS } from "@/lib/pricing/int
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "The College Agent, Your AI Companion for College Students",
+  title: "The College Agent: AI Study Companion for College Students",
   description:
-    "Your AI study companion for all four years of college. Plan your schedule, study smarter, prep for internships, and graduate career-ready.",
+    "The College Agent is your AI study companion for all four years of college — plan your schedule, study smarter, prep for internships, and build your career.",
   alternates: { canonical: "https://thecollegeagent.ai" },
 };
 
@@ -176,6 +176,52 @@ function buildJsonLd() {
         "An AI study companion and study partner for college students that helps with studying, class schedules, notes, deadlines, internships, and career planning across all four years of college.",
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
     },
+    {
+      "@type": "FAQPage",
+      "@id": "https://thecollegeagent.ai/#faq",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "What is The College Agent?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "The College Agent is a personal AI study companion built specifically for college students — not an admissions tool. It's a 4-year companion that manages your academics, class schedules, study plans, internship pipeline, and career goals across all four years of college. It grows smarter every semester and stays with you from freshman orientation to graduation.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "How does The College Agent help college students?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "The College Agent helps college students manage their entire academic and professional life — organizing class schedules, tracking deadlines, building personalized study plans, drafting professor emails, preparing for internship applications, and planning their career path. It's one AI companion that handles everything, from studying smarter to landing your first internship.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Can The College Agent help with internship prep?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes. The College Agent tracks internship deadlines, drafts outreach emails to recruiters and alumni, manages your application pipeline, and prepares you for interviews so you can land your first internship before junior year.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Is The College Agent just for freshmen?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "No. The College Agent is built for all four years of college. Freshmen use it to get organized and build strong habits. Sophomores and juniors use it to lock in internships and build their professional network. Seniors use it to manage career planning, interviews, and the job search. It grows with you every semester.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "How is The College Agent different from ChatGPT?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "ChatGPT is a general-purpose tool that starts from zero every conversation. The College Agent is a 4-year AI companion configured for your school, major, classes, and goals — it grows smarter with every semester. It has context about your schedule, your professors, your internship timeline, and your career direction. ChatGPT can answer questions. The College Agent manages your college life.",
+          },
+        },
+      ],
+    },
   ],
   };
 }
@@ -294,6 +340,10 @@ export default async function Home() {
             <div style={{ textAlign: "center", marginTop: 32 }}>
               <a href="/build" className="btn-purple">Build My Agent</a>
             </div>
+            <div style={{ textAlign: "center", marginTop: 20, display: "flex", justifyContent: "center", gap: 28, flexWrap: "wrap" }}>
+              <a href="/study" style={{ fontSize: 13, fontWeight: 600, color: "var(--green)", textDecoration: "underline", textUnderlineOffset: 3 }}>AI Study Companion &rarr;</a>
+              <a href="/internships" style={{ fontSize: 13, fontWeight: 600, color: "var(--green)", textDecoration: "underline", textUnderlineOffset: 3 }}>AI Internship Prep &rarr;</a>
+            </div>
           </div>
         </div>
       </section>
@@ -307,12 +357,14 @@ export default async function Home() {
               <span className="dual-tag dual-tag-student">For Students</span>
               <h2>Your college life, handled.</h2>
               <p>Your personal AI agent helps manage classes, deadlines, professor emails, study plans, internship prep, and goals, so you stay organized, prepared, and one step ahead.</p>
+              <a href="/for-students" style={{ display: "inline-block", marginTop: 16, fontSize: 13, fontWeight: 600, color: "var(--green)", textDecoration: "underline", textUnderlineOffset: 3 }}>See how it works for students &rarr;</a>
             </div>
             <div className="dual-card dual-card-parent">
               <div className="dual-icon"><ShieldCheck size={24} strokeWidth={1.9} /></div>
               <span className="dual-tag dual-tag-parent">For Parents</span>
               <h2>A four-year advantage.</h2>
               <p>More than tutoring. More than AI. Give your student a personalized support system that keeps them organized, accountable, and prepared, from the first day of college to the first job offer.</p>
+              <a href="/for-parents" style={{ display: "inline-block", marginTop: 16, fontSize: 13, fontWeight: 600, color: "var(--navy)", textDecoration: "underline", textUnderlineOffset: 3 }}>See how it works for parents &rarr;</a>
             </div>
           </div>
         </div>

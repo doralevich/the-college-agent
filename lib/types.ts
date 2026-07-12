@@ -53,7 +53,10 @@ export interface Agent {
   template: string;
   image_ref: string;
   resources: { cpu: number; memory: number; disk: number };
-  ports: { port: number; default: boolean; url: string }[];
+  // The instance's bare address (https://{id}.agent37.app), routed to the template's
+  // default_port. Every other container port is reachable at {id}-{port}.agent37.app; the
+  // app opens the remapped surfaces via signed URLs (see config/agents.ts, signed-url route).
+  url: string;
   user: string | null;
   name: string | null;
   metadata: Record<string, unknown> | null;
@@ -68,7 +71,9 @@ export interface Template {
   image_ref: string;
   agents: string[];
   description: string;
-  ports: { port: number; default: boolean }[];
+  // The port the bare instance URL routes to (also injected as the gateway's port). Null
+  // when the template leaves it unset (Agent37 then defaults routing to 3737).
+  default_port: number | null;
   created: number | null;
   updated: number | null;
 }
@@ -99,7 +104,6 @@ export interface MergedAgent extends AgentRow {
   live_status: string | null;
   status_reason: Agent["status_reason"];
   past_due: boolean;
-  ports: Agent["ports"];
   update_available: boolean;
 }
 

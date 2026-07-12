@@ -5,9 +5,9 @@ import { Footer } from "../components/Footer";
 import { BriefcaseBusiness, CalendarDays, FileText, Mail, Network, TrendingUp } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "AI Internship Prep for College Students, The College Agent",
+  title: "AI Internship Prep — Land Your First Internship Before Junior Year",
   description:
-    "The College Agent manages your entire internship pipeline, from target company research to offer negotiation. Land your first internship before junior year.",
+    "The College Agent manages your internship pipeline from target company research to offer negotiation. Start freshman year, land your first internship before junior year.",
   keywords: [
     "AI internship prep",
     "internship help for college students",
@@ -18,9 +18,10 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "https://thecollegeagent.ai/internships" },
   openGraph: {
-    title: "AI Internship Prep for College Students, The College Agent",
+    type: "website",
+    title: "AI Internship Prep — Land Your First Internship Before Junior Year",
     description:
-      "The College Agent manages your entire internship pipeline, from target company research to offer negotiation. Land your first internship before junior year.",
+      "The College Agent manages your internship pipeline from target company research to offer negotiation. Start freshman year, land your first internship before junior year.",
     url: "https://thecollegeagent.ai/internships",
     images: [{ url: "https://thecollegeagent.ai/og-image.png", width: 1200, height: 630, alt: "The College Agent" }],
   },

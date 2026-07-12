@@ -44,7 +44,7 @@ AGENT37_API_KEY="${AGENT37_API_KEY:-$(read_env AGENT37_API_KEY)}"
 
 IMAGE="${IMAGE:-ghcr.io/apolloclawplatform/college-agent}"
 # Bump this every release — image tags are immutable (date + a revision letter: a, b, c…).
-TAG="${TAG:-2026.06.26c}"
+TAG="${TAG:-2026.07.12a}"
 NAME="${TEMPLATE_NAME:-college-agent}"
 HERMES_TAG="${HERMES_TAG:-$(resolve_hermes_tag || true)}"
 : "${HERMES_TAG:?could not resolve a Hermes tag from GHCR — set HERMES_TAG explicitly, e.g. HERMES_TAG=2026.06.26b}"
@@ -57,17 +57,19 @@ docker buildx build --platform linux/amd64 --pull \
   --build-arg "HERMES_TAG=${HERMES_TAG}" \
   -t "${IMAGE}:${TAG}" --push "${DIR}"
 
+# The template declares nothing about ports. We run stock Hermes (gateway on 3737), and 3737
+# is Agent37's default, so the bare instance URL (https://{id}.agent37.app) routes to it with
+# no default_port. Every other surface is reachable at {id}-{port}.agent37.app; the app opens
+# terminal/dashboard/files via signed URLs (config/agents.ts). The old "ports": [...] array is
+# gone — Agent37 now 400s it on template create/update. default_port is sent as null so a
+# re-run always CLEARS any earlier value (PATCH is partial — omitting it would leave a stale
+# port behind).
 BODY=$(cat <<JSON
 {
   "name": "${NAME}",
   "image_ref": "${IMAGE}:${TAG}",
   "description": "The College Agent — Hermes + Claude Code.",
-  "ports": [
-    { "port": 3738, "default": true },
-    { "port": 7682 },
-    { "port": 9120 },
-    { "port": 8081 }
-  ]
+  "default_port": null
 }
 JSON
 )

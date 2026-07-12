@@ -4,11 +4,11 @@ import type { Agent, Budget, FileEntry, FileListResponse, IntegrationConnections
 const BASE = (process.env.AGENT37_API_BASE_URL || "https://api.agent37.com").replace(/\/$/, "");
 
 // The per-instance Agents API (chat: /v1/responses, /v1/models, /v1/sessions, /v1/files) is
-// served on the INSTANCE host — the bare instance URL `https://{id}.agent37.app`, default port
-// 3737 — NOT the control-plane BASE above (which owns instance lifecycle: start/stop/exec/etc).
-// The `college-agent` template remaps only its OWN surfaces off the reserved ports (see
-// config/agents.ts), leaving the platform agents API on the bare host. Overridable via env in
-// case the apex domain ever differs by environment.
+// served on the INSTANCE host — the bare instance URL `https://{id}.agent37.app` — NOT the
+// control-plane BASE above (which owns instance lifecycle: start/stop/exec/etc). The bare URL
+// routes to the instance's default port, which for `college-agent` is the stock Hermes gateway
+// on 3737 (the template declares no default_port; see config/agents.ts + template/release.sh).
+// Overridable via env in case the apex domain ever differs by environment.
 const INSTANCE_DOMAIN = process.env.AGENT37_INSTANCE_DOMAIN || "agent37.app";
 
 function instanceBaseUrl(id: string): string {

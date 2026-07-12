@@ -27,14 +27,14 @@ const breadcrumbSchema = {
 };
 
 export const metadata: Metadata = {
-  title: "College Agent Blog | AI Tips for College Students",
+  title: "College Agent Blog — AI Tips and Advice for College Students",
   description:
-    "Practical stories and advice for using The College Agent to manage classes, deadlines, internships, wellbeing, and college life.",
+    "Practical stories and guides on using AI for college: studying, managing deadlines, landing internships, campus life, and building your career as a student.",
   alternates: { canonical: "https://thecollegeagent.ai/blog" },
   openGraph: {
-    title: "College Agent Blog",
+    title: "College Agent Blog — AI Tips and Advice for College Students",
     description:
-      "AI productivity, academic success, internship, and student life advice from The College Agent.",
+      "Practical stories and guides on using AI for college: studying, managing deadlines, landing internships, campus life, and building your career as a student.",
     url: "https://thecollegeagent.ai/blog",
     images: [{ url: "/og-image.jpg", width: 1200, height: 1200, alt: "The College Agent" }],
     type: "website",
