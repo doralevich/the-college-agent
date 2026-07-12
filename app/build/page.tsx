@@ -723,19 +723,19 @@ export default function BuildPage() {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 22px;
-          max-width: 560px;
+          gap: 24px;
+          max-width: 648px;
           margin: 0 auto 26px;
         }
         .ca-head-guy {
           flex: 0 0 auto;
-          width: 210px;
+          width: 260px;
           height: auto;
-          margin: -10px 0;
-          filter: drop-shadow(0 16px 32px rgba(45,122,58,.3));
+          margin: -14px 0;
+          filter: drop-shadow(0 18px 36px rgba(45,122,58,.32));
         }
         @media (max-width: 560px) {
-          .ca-head-guy { width: 132px; margin: 0; }
+          .ca-head-guy { width: 150px; margin: 0; }
         }
         .ca-welcome-points {
           list-style: none;
