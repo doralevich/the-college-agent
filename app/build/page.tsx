@@ -207,7 +207,7 @@ export default function BuildPage() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p className="ca-eyebrow" style={{ textAlign: "left" }}>Welcome</p>
                     <h2 className="ca-h2" style={{ textAlign: "left" }}>Meet your College Agent.</h2>
-                    <p className="ca-sub" style={{ textAlign: "left", margin: "10px 0 0", maxWidth: "none", fontSize: 14 }}>
+                    <p className="ca-sub" style={{ textAlign: "left", margin: "10px 0 0", maxWidth: "none", fontSize: 15 }}>
                       Not another chatbot. Not homework help. A personal AI agent built around your
                       classes, your calendar, and your life, in your corner from day one to graduation.
                     </p>
