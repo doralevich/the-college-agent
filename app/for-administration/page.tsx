@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Nav from "../components/Nav";
 import { PageHero } from "../components/PageHero";
 import { Footer } from "../components/Footer";
+import { AgentChatDemo } from "../components/AgentChatDemo";
 import { CalendarDays, Mail, FolderOpen, PartyPopper, Wallet, ClipboardList } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -142,6 +143,27 @@ export default function ForAdministrationPage() {
             </div>
           </div>
         </section>
+
+        {/* SHOW, DON'T TELL: a busy-week chat, office-side. */}
+        <AgentChatDemo
+          label="A Typical Week"
+          heading="The busywork, handled."
+          body="Your agent learns your office, your role, and your rhythms, then takes the repetitive work off your plate: the same student emails, the scheduling, the reports, and the follow-ups that never quite end."
+          agentName="Your Campus Agent"
+          guy="/avatars/guy-11.webp"
+          background="var(--cream2)"
+          tools={[
+            { slug: "outlook", label: "Outlook" },
+            { slug: "googlecalendar", label: "Google Calendar" },
+            { slug: "googledrive", label: "Google Drive" },
+          ]}
+          messages={[
+            { from: "me", text: "I'm drowning in student emails about registration." },
+            { from: "bot", text: "I drafted replies to the 18 most common ones — same questions, personalized to each student. Want to review before they send?" },
+            { from: "me", text: "Yes. And can you book the advising sessions?" },
+            { from: "bot", text: "Done — 12 students scheduled into your open slots next week, confirmations sent, everything on your calendar. 📋" },
+          ]}
+        />
 
         {/* FINAL CTA — the rollout + cross-link nudges live here, under the buttons,
             instead of in their own band. */}

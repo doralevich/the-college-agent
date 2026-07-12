@@ -3,6 +3,7 @@ import SchoolMarquee from "./components/SchoolMarquee";
 import ChatBot from "./components/ChatBot";
 import Nav from "./components/Nav";
 import IntegrationGlobe from "./components/IntegrationGlobe";
+import { AgentChatDemo } from "./components/AgentChatDemo";
 import { Footer } from "./components/Footer";
 import { ShieldCheck, Sparkles } from "lucide-react";
 import { categoryLabel, getCollegeAgentPosts, postTitle } from "@/lib/sanity-blog";
@@ -249,6 +250,7 @@ export default async function Home() {
       <section className="dark-section hero-grid-bg" style={{
         padding: "162px 0 90px",
         overflow: "hidden",
+        position: "relative",
       }}>
         <div className="hero-glow" />
         <div className="hero-row" style={{
@@ -347,6 +349,41 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* SHOW, DON'T TELL: two chat mockups — first week and finals. */}
+      <AgentChatDemo
+        label="Your First Semester"
+        heading="Week one, handled."
+        body="The first weeks of college move fast: new classes, new professors, and a calendar that fills up overnight. Most students spend the first month reacting. With your College Agent, you start with a plan."
+        tools={[
+          { slug: "canvas", label: "Canvas" },
+          { slug: "gmail", label: "Gmail" },
+          { slug: "googlecalendar", label: "Google Calendar" },
+          { slug: "notion", label: "Notion" },
+        ]}
+        background="var(--cream2)"
+        messages={[
+          { from: "me", text: "Just uploaded all four of my syllabi 📎" },
+          { from: "bot", text: "Done! 47 deadlines are on your calendar. First up: Bio 101 quiz Friday. Want a study plan?" },
+          { from: "me", text: "Yes! But I work Tuesday nights." },
+          { from: "bot", text: "No problem. Review blocks Wednesday and Thursday, flashcards ready tonight. I also drafted your office-hours email to Professor Rivera. 💪" },
+        ]}
+      />
+
+      <AgentChatDemo
+        label="End of Semester"
+        heading="Ready for finals."
+        body="By finals, your agent already knows your classes, your deadlines, and how you study. Instead of cramming, you walk in with a plan it built weeks ago, one exam at a time."
+        reverse
+        background="#fff"
+        guy="/avatars/guy-02.webp"
+        messages={[
+          { from: "me", text: "Finals week is going to bury me 😩" },
+          { from: "bot", text: "Not this year. Four exams over six days — I built a day-by-day plan, heaviest subject first." },
+          { from: "me", text: "Can you quiz me on Orgo?" },
+          { from: "bot", text: "15 questions from your Chapter 9–12 notes, hardest last. Ready when you are. 📚" },
+        ]}
+      />
 
       {/* DUAL BUYER */}
       <section style={{ background: "var(--cream2)", padding: "70px 0" }}>
@@ -481,12 +518,6 @@ export default async function Home() {
         .btn-disabled { opacity: .4; pointer-events: none; }
 
         /* HERO */
-        .hero-grid-bg {
-          position: absolute; inset: 0;
-          background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
-          background-size: 40px 40px; pointer-events: none;
-        }
         .hero-glow {
           position: absolute; top: -20%; left: 50%; transform: translateX(-50%);
           width: 70%; height: 120%;

@@ -21,6 +21,7 @@ const publicRoutes: { route: string; priority: number; changeFrequency: "weekly"
   { route: "/blog", priority: 0.8, changeFrequency: "weekly" },
   { route: "/build", priority: 0.8, changeFrequency: "monthly" },
   { route: "/how-it-works", priority: 0.8, changeFrequency: "monthly" },
+  { route: "/what-is-an-agent", priority: 0.7, changeFrequency: "monthly" },
   { route: "/demo", priority: 0.7, changeFrequency: "monthly" },
   { route: "/consultation", priority: 0.7, changeFrequency: "monthly" },
   { route: "/contact", priority: 0.6, changeFrequency: "monthly" },

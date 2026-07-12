@@ -77,7 +77,7 @@ function AvatarPicker({
   }
 
   const presetGrid = (srcs: string[], kind: string) => (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(52px, 1fr))", gap: 10 }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
       {srcs.map((src, i) => (
         <button
           key={src}
@@ -441,7 +441,7 @@ const STEPS: Step[] = [
   {
     kind: "classList",
     key: "classes",
-    prompt: "Let's get your semester organized. Add your classes one at a time.",
+    prompt: "Add your classes one at a time.",
     tier: 2,
     showIf: isStudent,
   },
@@ -1041,7 +1041,7 @@ export function ConversationalOnboard({
         >
           Welcome{displayFirstName && displayFirstName !== "there" ? `, ${displayFirstName}` : ""}!
         </h1>
-        <p style={{ fontSize: 16, lineHeight: 1.6, color: T.inkSoft, maxWidth: 500, margin: "0 auto" }}>
+        <p style={{ fontSize: 16, lineHeight: 1.6, color: T.inkSoft, maxWidth: 620, margin: "0 auto" }}>
           Let&apos;s build your College Agent. A few quick questions about you, your classes, and how you
           like to work, so your agent is personalized from day one. It saves as you go.
         </p>
@@ -1053,7 +1053,7 @@ export function ConversationalOnboard({
         style={{
           background: T.card,
           width: "100%",
-          maxWidth: 620,
+          maxWidth: 760,
           border: `1px solid ${T.line}`,
           borderRadius: 20,
           boxShadow: "0 1px 2px rgba(26,36,33,.04), 0 24px 60px -28px rgba(27,94,42,.28)",
@@ -1088,8 +1088,8 @@ export function ConversationalOnboard({
               className="ca-q-mascot"
               style={{
                 flex: "0 0 auto",
-                width: 52,
-                height: 52,
+                width: 72,
+                height: 72,
                 borderRadius: "50%",
                 background: T.greenSoft,
                 overflow: "hidden",
@@ -1102,7 +1102,7 @@ export function ConversationalOnboard({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={avatarPreview} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               ) : (
-                <Image src={guyFor(current.key)} alt="" width={52} height={52} style={{ objectFit: "contain", width: "100%", height: "100%" }} />
+                <Image src={guyFor(current.key)} alt="" width={72} height={72} style={{ objectFit: "contain", width: "100%", height: "100%" }} />
               )}
             </div>
             <div style={{ flex: 1, paddingTop: 2, minWidth: 0 }}>
@@ -1113,9 +1113,9 @@ export function ConversationalOnboard({
                 className="ca-q-prompt"
                 style={{
                   fontFamily: "'Fraunces', Georgia, serif",
-                  fontSize: 21,
+                  fontSize: 18,
                   fontWeight: 500,
-                  lineHeight: 1.35,
+                  lineHeight: 1.4,
                   color: T.ink,
                   margin: 0,
                   whiteSpace: "pre-line",

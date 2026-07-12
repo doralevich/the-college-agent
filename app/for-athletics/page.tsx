@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Nav from "../components/Nav";
 import { PageHero } from "../components/PageHero";
 import { Footer } from "../components/Footer";
+import { AgentChatDemo } from "../components/AgentChatDemo";
 import { CalendarDays, Plane, UserSearch, ShieldCheck, Mail, Trophy } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -158,6 +159,27 @@ export default function ForAthleticsPage() {
             </ol>
           </div>
         </section>
+
+        {/* SHOW, DON'T TELL: a game-week chat, staff-side. */}
+        <AgentChatDemo
+          label="A Typical Game Week"
+          heading="The logistics, handled."
+          body="Your agent learns your season, your roster, and your calendar, then runs the moving pieces that eat your staff's week: travel changes, notifications, compliance dates, and the emails waiting on you."
+          agentName="Your Athletics Agent"
+          guy="/avatars/guy-09.webp"
+          background="var(--cream2)"
+          tools={[
+            { slug: "outlook", label: "Outlook" },
+            { slug: "googlecalendar", label: "Google Calendar" },
+            { slug: "gmail", label: "Gmail" },
+          ]}
+          messages={[
+            { from: "me", text: "Bus for Saturday's away game just moved to 6 AM." },
+            { from: "bot", text: "Updated. I've notified all 22 players and 4 staff, pushed the new departure to everyone's calendar, and moved the pregame meal to 5:15." },
+            { from: "me", text: "Did the two transfers' eligibility paperwork go in?" },
+            { from: "bot", text: "Both submitted Tuesday, compliance confirmed receipt. I'll flag you the moment anything's outstanding before the deadline. 🏀" },
+          ]}
+        />
 
         {/* FINAL CTA — the rollout + cross-link nudges live here, under the buttons,
             instead of in their own band. */}

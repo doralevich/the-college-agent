@@ -9,8 +9,11 @@ import { NewsletterSignup } from "./NewsletterSignup";
 // page (which embeds Calendly and fires the Meta booking conversion) rather than jumping
 // straight to Calendly, so every consultation funnels through the tracked page.
 const MENU_LINKS = [
+  { label: "For Students", href: "/for-students" },
+  { label: "For Parents", href: "/for-parents" },
   { label: "For Athletics", href: "/for-athletics" },
   { label: "For Administration", href: "/for-administration" },
+  { label: "Contact", href: "/contact" },
   { label: "FAQ", href: "/faq" },
   { label: "Ambassador Program", href: "/ambassador" },
   { label: "Demo", href: "/demo" },
@@ -73,10 +76,7 @@ export function Footer() {
       {/* Copyright + legal (bottom) */}
       <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
         <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.95)", letterSpacing: ".04em" }}>
-          &copy; 2026 Apollo[Claw]. All rights reserved. &nbsp;&middot;&nbsp;{" "}
-          <a href="mailto:hello@thecollegeagent.ai" className="footer-link" style={{ color: "#fff", textDecoration: "none" }}>
-            hello@thecollegeagent.ai
-          </a>
+          &copy; 2026 Apollo[Claw]. All rights reserved.
         </div>
         <div style={{ display: "flex", gap: 20 }}>
           {LEGAL_LINKS.map((link) => (

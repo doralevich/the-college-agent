@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Nav from "../components/Nav";
 import { PageHero } from "../components/PageHero";
 import { Footer } from "../components/Footer";
-import { composioLogoUrl } from "@/lib/integration-catalog";
+import { AgentChatDemo } from "../components/AgentChatDemo";
 import { BriefcaseBusiness, CalendarDays, Mail, NotebookTabs, Sparkles, Target } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -272,6 +272,37 @@ export default function ForStudentsPage() {
           </div>
         </section>
 
+        {/* SHOW, DON'T TELL: two chat mockups — first week and finals — right under
+            "What Your Agent Does". */}
+        <AgentChatDemo
+          label="Your First Semester"
+          heading="Week one, handled."
+          body="The first weeks of college move fast: new classes, new professors, and a calendar that fills up overnight. Most students spend the first month reacting. With your College Agent, you start with a plan, and by midterms you're following a study system that's been working since day one."
+          tools={SEMESTER_TOOLS}
+          background="#fff"
+          messages={[
+            { from: "me", text: "Just uploaded all four of my syllabi 📎" },
+            { from: "bot", text: "Done! 47 deadlines are on your calendar. First up: Bio 101 quiz Friday. Want a study plan?" },
+            { from: "me", text: "Yes! But I work Tuesday nights." },
+            { from: "bot", text: "No problem. Review blocks Wednesday and Thursday, flashcards ready tonight. I also drafted your office-hours email to Professor Rivera. 💪" },
+          ]}
+        />
+
+        <AgentChatDemo
+          label="End of Semester"
+          heading="Ready for finals."
+          body="By the time finals hit, your agent already knows your classes, your deadlines, and how you study. Instead of cramming, you walk in with a plan it built weeks ago, one exam at a time."
+          reverse
+          background="var(--cream2)"
+          guy="/avatars/guy-02.webp"
+          messages={[
+            { from: "me", text: "Finals week is going to bury me 😩" },
+            { from: "bot", text: "Not this year. Four exams over six days — I built a day-by-day plan, heaviest subject first." },
+            { from: "me", text: "Can you quiz me on Orgo?" },
+            { from: "bot", text: "15 questions from your Chapter 9–12 notes, hardest last. Ready when you are. 📚" },
+          ]}
+        />
+
         {/* THE FULL JOURNEY: before college through after graduation */}
         <section id="everything" style={{ background: "#fff", padding: "72px 0", scrollMarginTop: 90 }}>
           <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
@@ -329,53 +360,6 @@ export default function ForStudentsPage() {
             </p>
             <div style={{ textAlign: "center", marginTop: 32 }}>
               <a href="/build" className="btn-green">Build My Agent</a>
-            </div>
-          </div>
-        </section>
-
-        {/* WHAT YOUR FIRST SEMESTER LOOKS LIKE: shown as a real chat + the connected tools,
-            instead of a wall of text. */}
-        <section style={{ background: "#fff", padding: "72px 0" }}>
-          <div className="sem-row" style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
-            <div className="sem-copy">
-              <span className="mono-label-green">Your First Semester</span>
-              <h2 style={{ fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 800, color: "var(--navy)", marginBottom: 18, letterSpacing: "-.025em" }}>
-                Week one, handled.
-              </h2>
-              <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 24 }}>
-                The first weeks of college move fast: new classes, new professors, and a calendar
-                that fills up overnight. Most students spend the first month reacting. With your
-                College Agent, you start with a plan, and by midterms you&apos;re following a study
-                system that&apos;s been working since day one.
-              </p>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".1em", color: "rgba(11,23,41,.45)", marginBottom: 12 }}>
-                Connected to your tools
-              </div>
-              <div className="sem-tools">
-                {SEMESTER_TOOLS.map(({ slug, label }) => (
-                  <span key={slug} className="sem-tool">
-                    <img src={composioLogoUrl(slug)} alt="" loading="lazy" aria-hidden />
-                    {label}
-                  </span>
-                ))}
-                <span className="sem-tool sem-tool--more">+ 250 more</span>
-              </div>
-            </div>
-
-            <div className="sem-chat" aria-hidden>
-              <div className="sem-chat-head">
-                <img src="/avatars/guy-03.webp" alt="" />
-                <div>
-                  <strong>Your College Agent</strong>
-                  <span><i className="sem-dot" /> Online 24/7</span>
-                </div>
-              </div>
-              <div className="sem-chat-body">
-                <div className="sem-msg me">Just uploaded all four of my syllabi 📎</div>
-                <div className="sem-msg bot">Done! 47 deadlines are on your calendar. First up: Bio 101 quiz Friday. Want a study plan?</div>
-                <div className="sem-msg me">Yes! But I work Tuesday nights.</div>
-                <div className="sem-msg bot">No problem. Review blocks Wednesday and Thursday, flashcards ready tonight. I also drafted your office-hours email to Professor Rivera. 💪</div>
-              </div>
             </div>
           </div>
         </section>
@@ -543,47 +527,6 @@ export default function ForStudentsPage() {
           .roadmap-rail { grid-column: 1; }
           .roadmap-card, .roadmap-item:nth-child(even) .roadmap-card { grid-column: 2; }
           .roadmap-node { width: 46px; height: 46px; font-size: 13px; }
-        }
-
-        /* First-semester chat mockup + tool chips. */
-        .sem-row { display: flex; align-items: center; gap: 48px; }
-        .sem-copy { flex: 1 1 460px; min-width: 0; }
-        .sem-tools { display: flex; flex-wrap: wrap; gap: 10px; }
-        .sem-tool {
-          display: inline-flex; align-items: center; gap: 8px;
-          background: #fff; border: 1px solid rgba(11,23,41,.12); border-radius: 999px;
-          padding: 7px 14px 7px 9px; font-size: 12.5px; font-weight: 600; color: var(--navy);
-          box-shadow: 0 3px 10px rgba(11,23,41,.06);
-        }
-        .sem-tool img { width: 20px; height: 20px; object-fit: contain; }
-        .sem-tool--more {
-          padding: 7px 14px; color: var(--green);
-          border: 1.5px dashed rgba(61,139,61,.5); background: rgba(61,139,61,.05); box-shadow: none;
-        }
-        .sem-chat {
-          flex: 0 1 440px; min-width: 0;
-          background: var(--cream2); border: 1px solid rgba(11,23,41,.08); border-radius: 22px;
-          box-shadow: 0 24px 60px rgba(11,23,41,.13); overflow: hidden;
-        }
-        .sem-chat-head {
-          display: flex; align-items: center; gap: 12px;
-          padding: 14px 18px; background: var(--navy); color: #fff;
-        }
-        .sem-chat-head img { width: 40px; height: 40px; object-fit: contain; background: #fff; border-radius: 50%; padding: 3px; }
-        .sem-chat-head strong { display: block; font-size: 14px; font-weight: 800; letter-spacing: -.01em; }
-        .sem-chat-head span {
-          display: flex; align-items: center; gap: 6px; margin-top: 2px;
-          font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em;
-          text-transform: uppercase; color: rgba(255,255,255,.65);
-        }
-        .sem-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; display: inline-block; }
-        .sem-chat-body { display: flex; flex-direction: column; gap: 10px; padding: 20px 18px 22px; }
-        .sem-msg { max-width: 86%; padding: 11px 15px; border-radius: 16px; font-size: 13.5px; line-height: 1.55; }
-        .sem-msg.me { align-self: flex-end; background: var(--green); color: #fff; border-bottom-right-radius: 4px; }
-        .sem-msg.bot { align-self: flex-start; background: #fff; color: var(--navy); border: 1px solid rgba(11,23,41,.08); border-bottom-left-radius: 4px; }
-        @media (max-width: 920px) {
-          .sem-row { flex-direction: column; align-items: stretch; gap: 36px; }
-          .sem-chat { flex: 1 1 auto; }
         }
       `}</style>
     </>
