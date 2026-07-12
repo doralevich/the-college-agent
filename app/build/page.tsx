@@ -203,17 +203,17 @@ export default function BuildPage() {
             {step === "welcome" && (
               <>
                 <div className="ca-head-row">
-                  <div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <p className="ca-eyebrow" style={{ textAlign: "left" }}>Welcome</p>
                     <h2 className="ca-h2" style={{ textAlign: "left" }}>Meet your College Agent.</h2>
+                    <p className="ca-sub" style={{ textAlign: "left", margin: "10px 0 0", maxWidth: 420 }}>
+                      Not another chatbot. Not homework help. A personal AI agent built around your
+                      classes, your calendar, and your life, in your corner from day one to graduation.
+                    </p>
                   </div>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="/avatars/guy-01.webp" alt="The College Agent waving" className="ca-head-guy" />
                 </div>
-                <p className="ca-sub">
-                  Not another chatbot. Not homework help. A personal AI agent built around your
-                  classes, your calendar, and your life, in your corner from day one to graduation.
-                </p>
 
                 <ul className="ca-welcome-points">
                   <li>
@@ -406,22 +406,22 @@ export default function BuildPage() {
             {step === "info" && (
               <>
                 <div className="ca-head-row">
-                  <div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <p className="ca-eyebrow" style={{ textAlign: "left" }}>Step 1 of 2</p>
                     <h2 className="ca-h2" style={{ textAlign: "left" }}>Tell us about yourself.</h2>
+                    <p className="ca-sub" style={{ textAlign: "left", margin: "10px 0 0", maxWidth: 420 }}>
+                      Quick details so we know who&apos;s building this agent. Next step is secure payment.
+                      {plan === "pro" && (
+                        <>
+                          {" "}
+                          <b>Professional build, {proPrice} one-time plus {proHostingPrice}/month hosting.</b>
+                        </>
+                      )}
+                    </p>
                   </div>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="/avatars/guy-04.webp" alt="The College Agent" className="ca-head-guy" />
                 </div>
-                <p className="ca-sub">
-                  Quick details so we know who&apos;s building this agent. Next step is secure payment.
-                  {plan === "pro" && (
-                    <>
-                      {" "}
-                      <b>Professional build, {proPrice} one-time plus {proHostingPrice}/month hosting.</b>
-                    </>
-                  )}
-                </p>
 
                 <form className="ca-form" onSubmit={handleContinueToPayment} noValidate>
                   <div className="ca-row">
@@ -724,9 +724,9 @@ export default function BuildPage() {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 18px;
+          gap: 22px;
           max-width: 560px;
-          margin: 0 auto 6px;
+          margin: 0 auto 26px;
         }
         .ca-head-guy {
           flex: 0 0 auto;
