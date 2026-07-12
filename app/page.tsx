@@ -275,13 +275,10 @@ export default async function Home() {
               learns your personal frameworks, communication style, deadlines, decision-making
               patterns, and your goals and priorities.
             </p>
-            <div className="hero-cta-row" style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 28 }}>
+            <div className="hero-cta-row" style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 0 }}>
               <a href="/build" className="btn-purple">Build My Agent</a>
               <a href="/demo" className="btn-outline">Try the Free Demo</a>
             </div>
-            <p style={{ fontSize: 14, lineHeight: 1.7, color: "rgba(255,255,255,.5)", maxWidth: 520, marginBottom: 0 }}>
-              Built for every stage of college. Manage classes, study smarter, land internships, and prepare for your career, from freshman orientation to graduation.
-            </p>
           </div>
 
           {/* RIGHT: mascot */}
