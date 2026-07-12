@@ -95,52 +95,18 @@ function stepsFor(audience: Audience): Step[] {
 }
 
 export default function HowItWorksSteps() {
-  const [audience, setAudience] = useState<Audience>("student");
   const [open, setOpen] = useState(0);
 
-  const steps = stepsFor(audience);
-
-  const pick = (a: Audience) => {
-    setAudience(a);
-    setOpen(0);
-  };
+  const steps = stepsFor("student");
 
   return (
     <div className="hiw">
-      {/* WHO ARE YOU — the answer rewrites every step below, pricing included. */}
-      <div className="hiw-toggle" role="tablist" aria-label="Who is this agent for?">
-        <button
-          role="tab"
-          aria-selected={audience === "student"}
-          className={`hiw-tab ${audience === "student" ? "on" : ""}`}
-          onClick={() => pick("student")}
-        >
-          <img src="/avatars/guy-03.webp" alt="" />
-          <span>
-            <strong>I&apos;m a College Student</strong>
-            <em>Your whole college life, organized</em>
-          </span>
-        </button>
-        <button
-          role="tab"
-          aria-selected={audience === "staff"}
-          className={`hiw-tab ${audience === "staff" ? "on" : ""}`}
-          onClick={() => pick("staff")}
-        >
-          <img src="/avatars/guy-09.webp" alt="" />
-          <span>
-            <strong>Faculty &middot; Administration &middot; Athletics</strong>
-            <em>A professional agent for your office or program</em>
-          </span>
-        </button>
-      </div>
-
       {/* THE STEPS — click a step to expand it; one open at a time. */}
       <div className="hiw-steps">
         {steps.map(({ title, body }, i) => {
           const isOpen = open === i;
           return (
-            <div key={`${audience}-${title}`} className={`hiw-step ${isOpen ? "open" : ""}`}>
+            <div key={title} className={`hiw-step ${isOpen ? "open" : ""}`}>
               <button className="hiw-step-head" onClick={() => setOpen(isOpen ? -1 : i)} aria-expanded={isOpen}>
                 <span className="hiw-node">{i + 1}</span>
                 <span className="hiw-step-title">{title}</span>
@@ -166,16 +132,8 @@ export default function HowItWorksSteps() {
         })}
       </div>
 
-      {/* CTA follows the audience. */}
       <div className="hiw-cta">
-        {audience === "student" ? (
-          <a href="/build" className="hiw-btn">Build My Agent</a>
-        ) : (
-          <>
-            <a href="/build?plan=pro" className="hiw-btn">Build a Professional Agent</a>
-            <a href="/consultation" className="hiw-btn-outline">Book a Consultation</a>
-          </>
-        )}
+        <a href="/build" className="hiw-btn">Build My Agent</a>
       </div>
 
       <style>{`

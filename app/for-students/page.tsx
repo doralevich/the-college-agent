@@ -364,19 +364,6 @@ export default function ForStudentsPage() {
           </div>
         </section>
 
-        {/* INTERNAL LINKS */}
-        <section style={{ background: "var(--cream2)", padding: "48px 0" }}>
-          <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px" }}>
-            <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--navy)", marginBottom: 20, letterSpacing: "-.02em" }}>Explore More</h2>
-            <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-              <a href="/for-parents" style={{ fontSize: 14, color: "var(--green)", textDecoration: "underline", fontWeight: 600 }}>College Agent for Parents →</a>
-              <a href="/study" style={{ fontSize: 14, color: "var(--green)", textDecoration: "underline", fontWeight: 600 }}>AI Study Companion →</a>
-              <a href="/internships" style={{ fontSize: 14, color: "var(--green)", textDecoration: "underline", fontWeight: 600 }}>AI Internship Prep →</a>
-              <a href="/faq" style={{ fontSize: 14, color: "var(--green)", textDecoration: "underline", fontWeight: 600 }}>Frequently Asked Questions →</a>
-            </div>
-          </div>
-        </section>
-
       </main>
 
       <Footer />
