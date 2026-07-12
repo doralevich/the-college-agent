@@ -543,17 +543,7 @@ export default function BuildPage() {
 
           box-sizing: border-box;
           font-family: var(--ca-sans);
-          /* Graph-paper arc: fine grid + bolder major lines under a soft green glow at
-             the top, dissolving into clean white in a wide ellipse. Pure CSS. */
-          background:
-            radial-gradient(125% 74% at 50% 0%, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 30%, #fff 60%, #fff 100%),
-            linear-gradient(rgba(45,122,58,.11) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(45,122,58,.11) 1px, transparent 1px),
-            linear-gradient(rgba(45,122,58,.05) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(45,122,58,.05) 1px, transparent 1px),
-            radial-gradient(92% 48% at 50% 0%, rgba(45,122,58,.12) 0%, rgba(45,122,58,.04) 45%, rgba(255,255,255,0) 74%),
-            #fff;
-          background-size: 100% 100%, 64px 64px, 64px 64px, 16px 16px, 16px 16px, 100% 100%, auto;
+          background: var(--ca-cream);
           color: var(--ca-ink);
           padding: 64px 20px;
           display: flex;

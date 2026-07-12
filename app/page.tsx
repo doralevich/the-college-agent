@@ -246,7 +246,7 @@ export default async function Home() {
       <Nav />
 
       {/* HERO */}
-      <section className="dark-section" style={{
+      <section className="dark-section hero-grid-bg" style={{
         padding: "162px 0 90px",
         overflow: "hidden",
       }}>
@@ -492,6 +492,16 @@ export default async function Home() {
           width: 70%; height: 120%;
           background: radial-gradient(ellipse at center, rgba(61,139,61,.12) 0%, transparent 60%);
           pointer-events: none;
+        }
+        /* Blueprint grid over the navy hero: subtle squares that brighten toward the
+           center and dissolve at the edges. */
+        .hero-grid-bg {
+          background:
+            radial-gradient(130% 130% at 50% 38%, rgba(11,23,41,0) 0%, rgba(11,23,41,0) 52%, var(--navy, #0b1729) 93%),
+            linear-gradient(rgba(255,255,255,.055) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,.055) 1px, transparent 1px),
+            var(--navy, #0b1729);
+          background-size: 100% 100%, 84px 84px, 84px 84px, auto;
         }
         .hero-badge {
           display: inline-flex; align-items: center; gap: 8px;

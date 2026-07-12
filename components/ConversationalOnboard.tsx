@@ -249,10 +249,9 @@ const PRIORITY_OPTIONS = [
 // Tier-3 short option lists. Plain labels, no emoji, short enough not to wrap in the
 // two-column layout.
 const LIVING_OPTIONS = [
-  "On-campus dorm",
-  "Off-campus apartment",
-  "With family",
-  "Greek house",
+  "On-Campus",
+  "Off-Campus",
+  "Fraternity/Sorority House",
   "Other",
 ];
 const CLUBS_OPTIONS = [
@@ -282,13 +281,16 @@ const AFTER_COLLEGE_OPTIONS = [
   "Still figuring it out",
 ];
 
-// Tap-to-copy starter lines shown under the final open-ended question.
+// Tap-to-copy starter lines shown under the final open-ended question. Each one is a
+// concrete instruction the agent can actually act on, mapped to the prompt's bullets
+// (goals, routines, challenges, preferences).
 const ANYTHING_ELSE_EXAMPLES = [
-  "I tend to procrastinate unless I have reminders.",
-  "I'm working 20 hours a week.",
-  "I'm the first person in my family to go to college.",
-  "I learn best with visual examples.",
   "I want you to push me when I start falling behind.",
+  "My goal is a 3.5 GPA this semester. Hold me to it.",
+  "Mornings are for the gym. Plan my day around it.",
+  "Big exams stress me out. Get me studying a week early, not the night before.",
+  "Protect my weekends. Pack the work into weekdays.",
+  "Remind me twice: a few days out, then the day before.",
 ];
 
 // Curated major list (grouped) loaded from data/college-agent-majors.json. The
@@ -304,8 +306,9 @@ type Tier = 2 | 3 | "tail";
 type Step =
   // `showIf` gates conditional steps — role-branch questions (student vs staff) and
   // follow-ups (e.g. "Which sport?" only after picking a team).
-  | { kind: "text"; key: TextKey; prompt: string; placeholder?: string; inputType?: "text" | "email" | "tel"; required?: boolean; tier?: Tier; showIf?: (form: FormState) => boolean }
-  | { kind: "textarea"; key: TextKey; prompt: string; placeholder?: string; examples?: string[]; required?: boolean; tier?: Tier; showIf?: (form: FormState) => boolean }
+  // `note` renders as a small clarifying line under the prompt (e.g. which email is the login).
+  | { kind: "text"; key: TextKey; prompt: string; note?: string; placeholder?: string; inputType?: "text" | "email" | "tel"; required?: boolean; tier?: Tier; showIf?: (form: FormState) => boolean }
+  | { kind: "textarea"; key: TextKey; prompt: string; note?: string; placeholder?: string; examples?: string[]; required?: boolean; tier?: Tier; showIf?: (form: FormState) => boolean }
   | { kind: "multi"; key: MultiKey; prompt: string; options: string[]; descriptions?: Record<string, string>; max?: number; required?: boolean; tier?: Tier; showIf?: (form: FormState) => boolean }
   // allowOther: selecting "Other" reveals a write-in field whose text becomes the answer.
   | { kind: "single"; key: SingleKey; prompt: string; options: string[]; allowOther?: boolean; required?: boolean; tier?: Tier; showIf?: (form: FormState) => boolean }
@@ -346,6 +349,10 @@ type TextKey =
   | "department"
   | "sportsOversee"
   | "crunchTimes"
+  | "clubsDetail"
+  | "greekRole"
+  | "summerPlans"
+  | "afterCollegeDetail"
   | "anythingElse";
 type MultiKey =
   | "checkinFrequency"
@@ -359,7 +366,7 @@ type MultiKey =
   | "coordinateWith"
   | "academicStruggles"
   | "stressReset";
-type SingleKey = "role" | "staffSize" | "year" | "livingSituation" | "greekLife" | "workStatus" | "afterCollege";
+type SingleKey = "role" | "staffSize" | "year" | "livingSituation" | "greekLife" | "greekAmbassador" | "workStatus" | "afterCollege";
 
 // Role branch: students get the college-life flow; faculty/administration/athletics get a
 // short professional flow (title, team/office, what to take off their plate). Until the role
@@ -402,8 +409,8 @@ const STEPS: Step[] = [
   { kind: "text", key: "firstName", prompt: "And what should I call you?", placeholder: "Your first name", required: true },
   { kind: "text", key: "lastName", prompt: "And your last name?", placeholder: "Your last name", required: true },
   { kind: "typeahead", key: "school", prompt: "What school are you with?", placeholder: "Start typing your school...", required: true },
-  { kind: "text", key: "schoolEmail", prompt: "What's your school email?", placeholder: "you@school.edu", inputType: "email", required: true },
-  { kind: "text", key: "personalEmail", prompt: "What's your personal email?", placeholder: "you@email.com", inputType: "email" },
+  { kind: "text", key: "schoolEmail", prompt: "What's your school email?", note: "This is the email you'll use to log in to your account.", placeholder: "you@school.edu", inputType: "email", required: true },
+  { kind: "text", key: "personalEmail", prompt: "What's your personal email?", note: "Optional — just a second way to reach you. Your school email stays your login.", placeholder: "you@email.com", inputType: "email" },
   { kind: "text", key: "phone", prompt: "What's your mobile number?", placeholder: "(555) 555-5555", inputType: "tel", required: true },
   // ---- Staff flow (faculty / administration / athletics) ----
   { kind: "text", key: "roleTitle", prompt: "What's your role or title?", placeholder: "Head Coach, Athletic Director, Professor...", required: true, showIf: isStaff },
@@ -440,15 +447,32 @@ const STEPS: Step[] = [
   },
   { kind: "academics", key: "academics", prompt: "Where are you in your college journey?", tier: 3, showIf: isStudent },
   { kind: "single", key: "livingSituation", prompt: "Where are you living this year?", options: LIVING_OPTIONS, allowOther: true, tier: 3, showIf: isStudent },
+  // Greek-life follow-ups, only when they live in a fraternity/sorority house.
+  { kind: "text", key: "greekOrg", prompt: "What fraternity or sorority are you in?", placeholder: "Sigma Chi, Alpha Phi...", tier: 3, showIf: (f) => isStudent(f) && f.livingSituation === "Fraternity/Sorority House" },
+  { kind: "text", key: "greekRole", prompt: "Do you have a role in your chapter?", placeholder: "Social chair, treasurer, rush captain... or just 'member'", tier: 3, showIf: (f) => isStudent(f) && f.livingSituation === "Fraternity/Sorority House" },
+  { kind: "single", key: "greekAmbassador", prompt: "Would you be interested in being a College Agent Ambassador for your chapter?", options: ["Yes, tell me more", "Maybe later", "No thanks"], tier: 3, showIf: (f) => isStudent(f) && f.livingSituation === "Fraternity/Sorority House" },
   { kind: "multi", key: "clubs", prompt: "What clubs or organizations are you involved in?", options: CLUBS_OPTIONS, tier: 3, showIf: isStudent },
+  // Follow-up to the clubs checkboxes: the actual names and details, free-form. Only
+  // asked when they picked at least one real category (not the two "None" options).
+  {
+    kind: "textarea",
+    key: "clubsDetail",
+    prompt: "Share the names, and any other information you want me to know.",
+    placeholder: "Club names, your role, meeting nights, events you're planning...",
+    tier: 3,
+    showIf: (f) => isStudent(f) && f.clubs.some((c) => !c.startsWith("None")),
+  },
   { kind: "multi", key: "sportsTeams", prompt: "Are you involved in sports or athletics?", options: SPORTS_OPTIONS, tier: 3, showIf: isStudent },
   { kind: "text", key: "whichSports", prompt: "Which sport?", placeholder: "Soccer, lacrosse, swimming...", tier: 3, showIf: (f) => isStudent(f) && f.sportsTeams.some((s) => s === "Varsity athletics" || s === "Club sports" || s === "Intramurals") },
-  { kind: "single", key: "afterCollege", prompt: "What's the plan after college?", options: AFTER_COLLEGE_OPTIONS, tier: 3, showIf: isStudent },
+  { kind: "textarea", key: "summerPlans", prompt: "What's the plan for your summers?", placeholder: "Internships, summer classes, working, travel — whatever you're thinking.", tier: 3, showIf: isStudent },
+  { kind: "single", key: "afterCollege", prompt: "What's the plan for after college?", options: AFTER_COLLEGE_OPTIONS, tier: 3, showIf: isStudent },
+  // Free-text follow-up so the choice above gets names, places, and timelines attached.
+  { kind: "textarea", key: "afterCollegeDetail", prompt: "Tell me more about the plan.", placeholder: "Grad schools you're eyeing, dream companies, cities, timelines...", tier: 3, showIf: (f) => isStudent(f) && !!f.afterCollege },
   {
     kind: "textarea",
     key: "anythingElse",
-    prompt:
-      "Is there anything else you'd like me to know?\n• Goals\n• Routines\n• Challenges\n• Preferences\n\nWhat makes our working together a huge success?",
+    prompt: "Is there anything else you'd like me to know?",
+    note: "• Goals\n• Routines\n• Challenges\n• Preferences\n\nWhat makes our working together a huge success?",
     examples: ANYTHING_ELSE_EXAMPLES,
     tier: "tail",
   },
@@ -484,7 +508,12 @@ type FormState = {
   livingSituation: string;
   greekLife: string;
   greekOrg: string;
+  greekRole: string;
+  greekAmbassador: string;
   clubs: string[];
+  clubsDetail: string;
+  summerPlans: string;
+  afterCollegeDetail: string;
   sportsTeams: string[];
   whichSports: string;
   workStatus: string;
@@ -524,7 +553,12 @@ const EMPTY: FormState = {
   livingSituation: "",
   greekLife: "",
   greekOrg: "",
+  greekRole: "",
+  greekAmbassador: "",
   clubs: [],
+  clubsDetail: "",
+  summerPlans: "",
+  afterCollegeDetail: "",
   sportsTeams: [],
   whichSports: "",
   workStatus: "",
@@ -891,7 +925,12 @@ export function ConversationalOnboard({
           livingSituation: form.livingSituation,
           greekLife: form.greekLife,
           greekOrg: form.greekOrg.trim(),
+          greekRole: form.greekRole.trim(),
+          greekAmbassador: form.greekAmbassador,
           clubs: form.clubs,
+          clubsDetail: form.clubsDetail.trim(),
+          summerPlans: form.summerPlans.trim(),
+          afterCollegeDetail: form.afterCollegeDetail.trim(),
           sportsTeams: form.sportsTeams,
           whichSports: form.whichSports.trim(),
           workStatus: form.workStatus,
@@ -1084,6 +1123,11 @@ export function ConversationalOnboard({
               >
                 {current.prompt.replace("{firstName}", displayFirstName)}
               </h1>
+              {"note" in current && current.note && (
+                <p style={{ fontSize: 13, lineHeight: 1.55, color: T.inkSoft, margin: "7px 0 0", whiteSpace: "pre-line" }}>
+                  {current.note}
+                </p>
+              )}
             </div>
           </div>
 
@@ -1945,11 +1989,11 @@ function ClassListInput({
   removeClass: (idx: number) => void;
   disabled: boolean;
 }) {
+  // Location and professor were dropped from the form to keep it simple (the fields
+  // still exist on ClassEntry, so they can return later without a data change).
   const textFields: Array<{ key: keyof ClassEntry; label: string; placeholder: string }> = [
     { key: "name", label: "Class name", placeholder: "Marketing 301" },
     { key: "sku", label: "Course number", placeholder: "e.g. MKT 301" },
-    { key: "location", label: "Location", placeholder: "Bryan Hall 215" },
-    { key: "professor", label: "Professor", placeholder: "Prof. Lewis" },
   ];
   const canAdd = !!draft.name.trim();
 
@@ -2222,7 +2266,7 @@ function ClassListInput({
           }}
         >
           <Plus style={{ width: 14, height: 14 }} />
-          {classes.length === 0 ? "Add first class" : "Add another class"}
+          {classes.length === 0 ? "Add class" : "Add another class"}
         </button>
       </div>
     </div>
