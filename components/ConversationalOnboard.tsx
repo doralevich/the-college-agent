@@ -381,6 +381,14 @@ const EMPTY_CLASS: ClassEntry = { name: "", days: "", time: "", location: "", pr
 
 // `{firstName}` is interpolated from the prop at render time so the intro can greet
 // the student by name (pulled from /build lead-capture). Missing → falls back to "there".
+// A different College Agent Guy fronts each question (stable per question key), so the
+// form feels alive as students move through it. The student's uploaded avatar still wins.
+function guyFor(seed: string): string {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  return GUY_PRESETS[h % GUY_PRESETS.length];
+}
+
 const STEPS: Step[] = [
   {
     kind: "intro",
@@ -1055,7 +1063,7 @@ export function ConversationalOnboard({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={avatarPreview} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               ) : (
-                <Image src="/thecollegeagent.png" alt="" width={52} height={52} style={{ objectFit: "contain", width: "100%", height: "100%" }} />
+                <Image src={guyFor(current.key)} alt="" width={52} height={52} style={{ objectFit: "contain", width: "100%", height: "100%" }} />
               )}
             </div>
             <div style={{ flex: 1, paddingTop: 2, minWidth: 0 }}>
