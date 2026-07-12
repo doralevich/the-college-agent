@@ -80,14 +80,6 @@ const ASK_CATEGORIES = [
     ],
   },
   {
-    label: "Communication",
-    asks: [
-      "Draft an email to Professor Chen asking about my grade.",
-      "Write a professional email to my advisor.",
-      "Write a thank-you note to my internship interviewer.",
-    ],
-  },
-  {
     label: "Career",
     asks: [
       "Update my resume for this internship application.",
