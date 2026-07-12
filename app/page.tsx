@@ -270,9 +270,10 @@ export default async function Home() {
             </h1>
             <p className="hero-punch">The College Agent &mdash; More Than AI. Your Personal Operating System.</p>
             <p className="hero-sub">
-              It understands your classes, assignments, deadlines, notes, study plans, calendar,
-              professor emails, internships, and goals. It remembers what matters, keeps work
-              moving, and becomes smarter with every semester.
+              The College Agent isn&apos;t another AI tool; it&apos;s a personalized 24/7 operating
+              system built entirely around your life. Unlike general-purpose AI, The College Agent
+              learns your personal frameworks, communication style, deadlines, decision-making
+              patterns, and your goals and priorities.
             </p>
             <div className="hero-cta-row" style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 28 }}>
               <a href="/build" className="btn-purple">Build My Agent</a>
