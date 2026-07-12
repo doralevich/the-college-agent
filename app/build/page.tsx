@@ -207,7 +207,7 @@ export default function BuildPage() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p className="ca-eyebrow" style={{ textAlign: "left" }}>Welcome</p>
                     <h2 className="ca-h2" style={{ textAlign: "left" }}>Meet your College Agent.</h2>
-                    <p className="ca-sub" style={{ textAlign: "left", margin: "10px 0 0", maxWidth: 420 }}>
+                    <p className="ca-sub" style={{ textAlign: "left", margin: "10px 0 0", maxWidth: "none", fontSize: 14 }}>
                       Not another chatbot. Not homework help. A personal AI agent built around your
                       classes, your calendar, and your life, in your corner from day one to graduation.
                     </p>
@@ -410,7 +410,7 @@ export default function BuildPage() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p className="ca-eyebrow" style={{ textAlign: "left" }}>Step 1 of 2</p>
                     <h2 className="ca-h2" style={{ textAlign: "left" }}>Tell us about yourself.</h2>
-                    <p className="ca-sub" style={{ textAlign: "left", margin: "10px 0 0", maxWidth: 420 }}>
+                    <p className="ca-sub" style={{ textAlign: "left", margin: "10px 0 0", maxWidth: "none", fontSize: 14 }}>
                       Quick details so we know who&apos;s building this agent. Next step is secure payment.
                       {plan === "pro" && (
                         <>
@@ -724,8 +724,8 @@ export default function BuildPage() {
           align-items: center;
           justify-content: space-between;
           gap: 24px;
-          max-width: 648px;
-          margin: 0 auto 26px;
+          max-width: 100%;
+          margin: 0 0 26px;
         }
         .ca-head-guy {
           flex: 0 0 auto;
@@ -739,9 +739,9 @@ export default function BuildPage() {
         }
         .ca-welcome-points {
           list-style: none;
-          margin: 30px auto 34px;
+          margin: 30px 0 34px;
           padding: 0;
-          max-width: 520px;
+          max-width: 100%;
           text-align: left;
         }
         .ca-welcome-points li {
