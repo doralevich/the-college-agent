@@ -74,8 +74,8 @@ export function Footer() {
       <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
         <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,.95)", letterSpacing: ".04em" }}>
           &copy; 2026 Apollo[Claw]. All rights reserved. &nbsp;&middot;&nbsp;{" "}
-          <a href="mailto:david@apolloclaw.ai" className="footer-link" style={{ color: "#fff", textDecoration: "none" }}>
-            david@apolloclaw.ai
+          <a href="mailto:hello@thecollegeagent.ai" className="footer-link" style={{ color: "#fff", textDecoration: "none" }}>
+            hello@thecollegeagent.ai
           </a>
         </div>
         <div style={{ display: "flex", gap: 20 }}>

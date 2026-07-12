@@ -196,7 +196,9 @@ export default function BuildPage() {
     <>
       <BuildNav />
 
-      <main style={{ paddingTop: 72 }}>
+      {/* Column layout so the footer pins to the bottom even on short steps. */}
+      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <main style={{ paddingTop: 72, flex: 1 }}>
         <section className="ca-checkout">
           <div className="ca-panel">
 
@@ -515,13 +517,13 @@ export default function BuildPage() {
             letterSpacing: ".04em",
           }}
         >
-          &copy; 2026 Apollo[Claw]. All rights reserved. &nbsp;&middot;&nbsp; thecollegeagent.ai
-          &nbsp;&middot;&nbsp;{" "}
-          <a href="mailto:david@apolloclaw.ai" style={{ color: "rgba(255,255,255,.92)", textDecoration: "underline" }}>
-            david@apolloclaw.ai
+          &copy; 2026 Apollo[Claw]. All rights reserved. &nbsp;&middot;&nbsp;{" "}
+          <a href="mailto:hello@thecollegeagent.ai" style={{ color: "rgba(255,255,255,.92)", textDecoration: "underline" }}>
+            hello@thecollegeagent.ai
           </a>
         </p>
       </footer>
+      </div>
 
       {/* Checkout questions happen right here, keep the Help Me widget in reach. */}
       <ChatBot />
