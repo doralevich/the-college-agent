@@ -9,10 +9,10 @@ import { NewsletterSignup } from "./NewsletterSignup";
 // page (which embeds Calendly and fires the Meta booking conversion) rather than jumping
 // straight to Calendly, so every consultation funnels through the tracked page.
 const MENU_LINKS = [
-  { label: "For Students", href: "/for-students" },
-  { label: "For Parents", href: "/for-parents" },
-  { label: "For Athletics", href: "/for-athletics" },
-  { label: "For Administration", href: "/for-administration" },
+  { label: "Students", href: "/for-students" },
+  { label: "Parents", href: "/for-parents" },
+  { label: "Athletics", href: "/for-athletics" },
+  { label: "Administration", href: "/for-administration" },
   { label: "Contact", href: "/contact" },
   { label: "FAQ", href: "/faq" },
   { label: "Ambassador Program", href: "/ambassador" },

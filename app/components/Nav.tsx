@@ -12,14 +12,15 @@ type NavItem = { label: string; href?: string; children?: NavChild[] };
 const NAV_LINKS: NavItem[] = [
   { label: "Students", href: "/for-students" },
   { label: "Parents", href: "/for-parents" },
-  { label: "Athletics", href: "/for-athletics" },
-  { label: "Administration", href: "/for-administration" },
   { label: "How It Works", href: "/how-it-works" },
   {
     label: "Resources",
     children: [
       { label: "Blog", href: "/blog" },
       { label: "What Is an Agent?", href: "/what-is-an-agent" },
+      { label: "FAQ", href: "/faq" },
+      { label: "For Athletics", href: "/for-athletics" },
+      { label: "For Administration", href: "/for-administration" },
       { label: "Become an Ambassador", href: "/ambassador" },
     ],
   },
