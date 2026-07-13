@@ -268,7 +268,7 @@ export default async function Home() {
             <h1 className="hero-h1" style={{ color: "#fff" }}>
               The AI assistant built <br />for college life.
             </h1>
-            <p className="hero-punch">The College Agent &mdash; More Than AI. Your Personal Operating System.</p>
+            <p className="hero-punch">The College Agent. More Than AI. Your Personal Operating System.</p>
             <p className="hero-sub">
               The College Agent isn&apos;t another AI tool; it&apos;s a personalized 24/7 operating
               system built entirely around your life. Unlike general-purpose AI, The College Agent
