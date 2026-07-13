@@ -27,40 +27,17 @@ const breadcrumbSchema = {
   ],
 };
 
-// The comparison, framed positively: a great chatbot is a tool you pick up; an agent is a
-// teammate that already knows you. We're not knocking ChatGPT — an agent is built on the
-// same powerful AI, plus the four things a chatbot doesn't have.
-const COMPARISON: { dimension: string; chatbot: string; agent: string }[] = [
-  {
-    dimension: "Memory",
-    chatbot: "Starts fresh every conversation. You re-explain yourself each time.",
-    agent: "Remembers you, your classes, your goals, and your history, and gets smarter every week.",
-  },
-  {
-    dimension: "Context",
-    chatbot: "Knows the whole internet, but nothing about your life.",
-    agent: "Knows your schedule, your syllabi, your deadlines, and how you like to work.",
-  },
-  {
-    dimension: "Action",
-    chatbot: "Gives you an answer to copy and paste.",
-    agent: "Actually does the work: drafts the email, builds the study plan, tracks the deadline.",
-  },
-  {
-    dimension: "Initiative",
-    chatbot: "Waits for you to ask.",
-    agent: "Checks in first: reminds you before things are due, and flags what's coming.",
-  },
-  {
-    dimension: "Your tools",
-    chatbot: "Lives in its own window.",
-    agent: "Connects to Canvas, Gmail, your calendar, and 250+ apps you already use.",
-  },
-  {
-    dimension: "Ownership",
-    chatbot: "A shared tool everyone uses the same way.",
-    agent: "Yours. Named by you, trained on you, working only for you.",
-  },
+// The comparison (copy by Jill): chatbots answer questions; the College Agent accomplishes
+// goals. Two columns, paired line for line.
+const COMPARISON: { chatbot: string; agent: string }[] = [
+  { chatbot: "Responds to prompts", agent: "Works proactively on your behalf" },
+  { chatbot: "Starts with a blank conversation", agent: "Knows your classes, schedule, deadlines, and goals" },
+  { chatbot: "Answers one question at a time", agent: "Manages ongoing tasks across your semester" },
+  { chatbot: "Requires you to provide context repeatedly", agent: "Remembers and uses your personalized information" },
+  { chatbot: "Generates content", agent: "Organizes, plans, tracks, and takes action" },
+  { chatbot: "General-purpose AI", agent: "Built specifically for college students" },
+  { chatbot: "Waits for instructions", agent: "Anticipates needs and keeps you on track" },
+  { chatbot: "One conversation", agent: "A continuous academic workflow" },
 ];
 
 const PILLARS = [
@@ -98,22 +75,6 @@ export default function WhatIsAnAgentPage() {
           secondary={{ label: "Try the Free Demo", href: "/demo" }}
         />
 
-        {/* THE ONE-LINER */}
-        <section style={{ background: "#fff", padding: "72px 0" }}>
-          <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
-            <span className="mono-label-green">The Short Version</span>
-            <h2 style={{ fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 800, color: "var(--navy)", letterSpacing: "-.025em", margin: "0 0 18px" }}>
-              A chatbot answers. An agent gets it done.
-            </h2>
-            <p style={{ fontSize: 17, lineHeight: 1.8, color: "rgba(11,23,41,.7)", margin: 0 }}>
-              A chatbot is a brilliant tool you pick up when you have a question. An agent is a
-              teammate that already knows you, works in the background, and hands you finished
-              work, not just answers. Same great AI underneath, built to actually help you run
-              your life.
-            </p>
-          </div>
-        </section>
-
         {/* THE THREE PILLARS */}
         <section style={{ background: "var(--cream2)", padding: "72px 0" }}>
           <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
@@ -142,27 +103,21 @@ export default function WhatIsAnAgentPage() {
             <div style={{ textAlign: "center", marginBottom: 40 }}>
               <span className="mono-label-green">Side by Side</span>
               <h2 style={{ fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 800, color: "var(--navy)", letterSpacing: "-.025em", margin: 0 }}>
-                A chatbot vs. your College Agent.
+                Chatbots answer questions. AI agents help you accomplish goals.
               </h2>
             </div>
             <div className="cmp">
               <div className="cmp-head">
-                <div className="cmp-dim" />
-                <div className="cmp-col cmp-col--bot">A chatbot (like ChatGPT)</div>
-                <div className="cmp-col cmp-col--agent">Your College Agent</div>
+                <div className="cmp-col cmp-col--bot">ChatBots</div>
+                <div className="cmp-col cmp-col--agent">The College Agent</div>
               </div>
-              {COMPARISON.map(({ dimension, chatbot, agent }) => (
-                <div key={dimension} className="cmp-row">
-                  <div className="cmp-dim">{dimension}</div>
+              {COMPARISON.map(({ chatbot, agent }) => (
+                <div key={chatbot} className="cmp-row">
                   <div className="cmp-cell cmp-cell--bot">{chatbot}</div>
                   <div className="cmp-cell cmp-cell--agent">{agent}</div>
                 </div>
               ))}
             </div>
-            <p style={{ textAlign: "center", marginTop: 26, fontSize: 14, lineHeight: 1.7, color: "rgba(11,23,41,.55)", maxWidth: 640, marginLeft: "auto", marginRight: "auto" }}>
-              None of this makes chatbots bad, they&apos;re incredible. An agent just picks up
-              where a chatbot leaves off: it turns great answers into finished work, built around you.
-            </p>
           </div>
         </section>
 
@@ -217,9 +172,9 @@ export default function WhatIsAnAgentPage() {
         .pillar-card p { font-size: 14.5px; line-height: 1.65; color: rgba(11,23,41,.66); margin: 0; }
         @media (max-width: 800px) { .pillar-grid { grid-template-columns: 1fr; } }
 
-        /* Comparison table: dimension label + two columns, agent column highlighted green. */
+        /* Comparison table: two columns (Chatbots vs The College Agent), agent column green. */
         .cmp { border: 1px solid rgba(11,23,41,.1); border-radius: 16px; overflow: hidden; }
-        .cmp-head, .cmp-row { display: grid; grid-template-columns: 130px 1fr 1fr; }
+        .cmp-head, .cmp-row { display: grid; grid-template-columns: 1fr 1fr; }
         .cmp-head { background: var(--navy); }
         .cmp-col { padding: 16px 18px; font-size: 13px; font-weight: 700; color: #fff; letter-spacing: -.01em; }
         .cmp-col--agent { background: var(--green); }
@@ -232,9 +187,8 @@ export default function WhatIsAnAgentPage() {
         @media (max-width: 720px) {
           .cmp-head { display: none; }
           .cmp-row { grid-template-columns: 1fr; }
-          .cmp-dim { padding-bottom: 4px; background: rgba(11,23,41,.03); }
-          .cmp-cell--bot::before { content: "Chatbot: "; font-weight: 700; color: rgba(11,23,41,.4); }
-          .cmp-cell--agent::before { content: "Your Agent: "; font-weight: 700; color: var(--green); }
+          .cmp-cell--bot::before { content: "ChatBots: "; font-weight: 700; color: rgba(11,23,41,.4); }
+          .cmp-cell--agent::before { content: "The College Agent: "; font-weight: 700; color: var(--green); }
           .cmp-cell { border-left: none; }
         }
 
