@@ -4,6 +4,7 @@ import Nav from "../components/Nav";
 import { PageHero } from "../components/PageHero";
 import { Footer } from "../components/Footer";
 import { AcademicAssistant } from "../components/AcademicAssistant";
+import { FiftyWays } from "../components/FiftyWays";
 import { AgentChatDemo } from "../components/AgentChatDemo";
 import { BriefcaseBusiness, CalendarDays, Mail, NotebookTabs, Sparkles, Target } from "lucide-react";
 
@@ -282,6 +283,9 @@ export default function ForStudentsPage() {
             </div>
           </div>
         </section>
+
+        {/* 50 WAYS — the comprehensive capability list */}
+        <FiftyWays background="var(--cream2)" />
 
       </main>
 
