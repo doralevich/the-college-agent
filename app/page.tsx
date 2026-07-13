@@ -3,9 +3,7 @@ import SchoolMarquee from "./components/SchoolMarquee";
 import ChatBot from "./components/ChatBot";
 import Nav from "./components/Nav";
 import IntegrationGlobe from "./components/IntegrationGlobe";
-import { AgentChatDemo } from "./components/AgentChatDemo";
 import { Footer } from "./components/Footer";
-import { ShieldCheck, Sparkles } from "lucide-react";
 import { categoryLabel, getCollegeAgentPosts, postTitle } from "@/lib/sanity-blog";
 import { INTRO_PLAN_AMOUNT_CENTS, HOSTING_AMOUNT_CENTS } from "@/lib/pricing/intro-cutoff";
 
@@ -343,63 +341,6 @@ export default async function Home() {
             <div style={{ textAlign: "center", marginTop: 20, display: "flex", justifyContent: "center", gap: 28, flexWrap: "wrap" }}>
               <a href="/study" style={{ fontSize: 13, fontWeight: 600, color: "var(--green)", textDecoration: "underline", textUnderlineOffset: 3 }}>AI Study Companion &rarr;</a>
               <a href="/internships" style={{ fontSize: 13, fontWeight: 600, color: "var(--green)", textDecoration: "underline", textUnderlineOffset: 3 }}>AI Internship Prep &rarr;</a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SHOW, DON'T TELL: two chat mockups — first week and finals. */}
-      <AgentChatDemo
-        label="Your First Semester"
-        heading="Week one, handled."
-        body="The first weeks of college move fast: new classes, new professors, and a calendar that fills up overnight. Most students spend the first month reacting. With your College Agent, you start with a plan."
-        tools={[
-          { slug: "canvas", label: "Canvas" },
-          { slug: "gmail", label: "Gmail" },
-          { slug: "googlecalendar", label: "Google Calendar" },
-          { slug: "notion", label: "Notion" },
-        ]}
-        background="var(--cream2)"
-        messages={[
-          { from: "me", text: "Just uploaded all four of my syllabi 📎" },
-          { from: "bot", text: "Done! 47 deadlines are on your calendar. First up: Bio 101 quiz Friday. Want a study plan?" },
-          { from: "me", text: "Yes! But I work Tuesday nights." },
-          { from: "bot", text: "No problem. Review blocks Wednesday and Thursday, flashcards ready tonight. I also drafted your office-hours email to Professor Rivera. 💪" },
-        ]}
-      />
-
-      <AgentChatDemo
-        label="End of Semester"
-        heading="Ready for finals."
-        body="By finals, your agent already knows your classes, your deadlines, and how you study. Instead of cramming, you walk in with a plan it built weeks ago, one exam at a time."
-        reverse
-        background="#fff"
-        guy="/avatars/guy-02.webp"
-        messages={[
-          { from: "me", text: "Finals week is going to bury me 😩" },
-          { from: "bot", text: "Not this year. Four exams over six days — I built a day-by-day plan, heaviest subject first." },
-          { from: "me", text: "Can you quiz me on Orgo?" },
-          { from: "bot", text: "15 questions from your Chapter 9–12 notes, hardest last. Ready when you are. 📚" },
-        ]}
-      />
-
-      {/* DUAL BUYER */}
-      <section style={{ background: "var(--cream2)", padding: "70px 0" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
-          <div className="dual-grid">
-            <div className="dual-card dual-card-student">
-              <div className="dual-icon"><Sparkles size={24} strokeWidth={1.9} /></div>
-              <span className="dual-tag dual-tag-student">For Students</span>
-              <h2>Your college life, handled.</h2>
-              <p>Your personal AI agent helps manage classes, deadlines, professor emails, study plans, internship prep, and goals, so you stay organized, prepared, and one step ahead.</p>
-              <a href="/for-students" style={{ display: "inline-block", marginTop: 16, fontSize: 13, fontWeight: 600, color: "var(--green)", textDecoration: "underline", textUnderlineOffset: 3 }}>See how it works for students &rarr;</a>
-            </div>
-            <div className="dual-card dual-card-parent">
-              <div className="dual-icon"><ShieldCheck size={24} strokeWidth={1.9} /></div>
-              <span className="dual-tag dual-tag-parent">For Parents</span>
-              <h2>A four-year advantage.</h2>
-              <p>More than tutoring. More than AI. Give your student a personalized support system that keeps them organized, accountable, and prepared, from the first day of college to the first job offer.</p>
-              <a href="/for-parents" style={{ display: "inline-block", marginTop: 16, fontSize: 13, fontWeight: 600, color: "var(--navy)", textDecoration: "underline", textUnderlineOffset: 3 }}>See how it works for parents &rarr;</a>
             </div>
           </div>
         </div>
