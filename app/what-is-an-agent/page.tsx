@@ -92,8 +92,8 @@ export default function WhatIsAnAgentPage() {
       <main style={{ paddingTop: 114, minHeight: "100vh", background: "var(--cream2)" }}>
         <PageHero
           label="What Is an Agent?"
-          title="More than a chatbot. A teammate that knows you."
-          sub="You've used ChatGPT. It's brilliant at answering questions. An AI agent is the next step: built on that same powerful AI, but it remembers you, knows your world, connects to your tools, and actually gets things done."
+          title="A chatbot answers. The College Agent acts."
+          sub="It learns how you work, adapts to your preferences, understands your priorities, and delivers increasingly personalized support. Our AI Virtual Agent sets students up for success by providing personalized support that improves organization, reduces academic stress, and helps students thrive."
           primary={{ label: "Build My Agent", href: "/build" }}
           secondary={{ label: "Try the Free Demo", href: "/demo" }}
         />
