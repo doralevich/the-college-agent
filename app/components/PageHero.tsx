@@ -16,6 +16,7 @@ export function PageHero({
   secondary,
   mascot,
   titleSize,
+  largeMascot,
 }: {
   label: string;
   title: string;
@@ -24,6 +25,9 @@ export function PageHero({
   secondary?: Cta;
   mascot?: string;
   titleSize?: string;
+  // The compact avatar Guys (e.g. crossed-arms guy-09) render smaller than the tall
+  // agent poses; set this to scale them up so the hero feels the same size.
+  largeMascot?: boolean;
 }) {
   const mascotSrc = mascot ?? pickMascot(label);
   return (
@@ -49,7 +53,7 @@ export function PageHero({
         </div>
         <div className="ph-mascot-wrap">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={mascotSrc} alt="The College Agent mascot" className="ph-mascot" />
+          <img src={mascotSrc} alt="The College Agent mascot" className={`ph-mascot${largeMascot ? " ph-mascot--lg" : ""}`} />
         </div>
       </div>
 
@@ -77,6 +81,8 @@ export function PageHero({
           width: 100%; max-width: 340px; height: auto;
           filter: drop-shadow(0 24px 48px rgba(0,0,0,.35));
         }
+        /* Compact avatar Guys scaled up to match the visual weight of the tall poses. */
+        .ph-mascot--lg { max-width: 460px; }
         .ph-btn {
           display: inline-flex; align-items: center; justify-content: center;
           background: var(--green); color: #fff; font-size: 13px; font-weight: 700;
@@ -96,12 +102,14 @@ export function PageHero({
         @media (max-width: 900px) {
           .ph-mascot-wrap { flex: 0 0 240px; }
           .ph-mascot { max-width: 240px; }
+          .ph-mascot--lg { max-width: 300px; }
         }
         @media (max-width: 640px) {
           .ph-row { flex-direction: column; gap: 26px; text-align: center; }
           .ph-cta { justify-content: center; }
           .ph-mascot-wrap { flex: 0 0 auto; order: -1; margin: 0 auto; }
           .ph-mascot { max-width: 170px; }
+          .ph-mascot--lg { max-width: 210px; }
         }
       `}</style>
     </section>

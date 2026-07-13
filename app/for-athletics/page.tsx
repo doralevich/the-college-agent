@@ -87,6 +87,7 @@ export default function ForAthleticsPage() {
           primary={{ label: "Build a Professional Agent", href: "/build?plan=pro" }}
           secondary={{ label: "Book a Consultation", href: "/consultation" }}
           mascot="/avatars/guy-09.webp"
+          largeMascot
         />
 
         {/* THE PROBLEM */}
