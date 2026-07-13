@@ -4,6 +4,7 @@ import { PageHero } from "../components/PageHero";
 import { Footer } from "../components/Footer";
 import { AgentChatDemo } from "../components/AgentChatDemo";
 import { ChatbotComparison } from "../components/ChatbotComparison";
+import { FourPillars } from "../components/FourPillars";
 
 export const metadata: Metadata = {
   title: "What Is an AI Agent? (And How It's Different from a Chatbot)",
@@ -28,29 +29,6 @@ const breadcrumbSchema = {
   ],
 };
 
-const PILLARS = [
-  {
-    guy: "/avatars/guy-04.webp",
-    title: "Memory",
-    desc: "Reminds you of your classes, projects, deadlines, relationships, preferences, and previous conversations.",
-  },
-  {
-    guy: "/avatars/guy-10.webp",
-    title: "Context",
-    desc: "Understands everything happening across your schedule, coursework, commitments, and connected applications.",
-  },
-  {
-    guy: "/avatars/guy-08.webp",
-    title: "Judgment",
-    desc: "Learns how you make decisions, communicate, prioritize, and solve problems—so its recommendations feel like your own.",
-  },
-  {
-    guy: "/avatars/guy-12.webp",
-    title: "Execution",
-    desc: "Organizes, plans, drafts, tracks, schedules, and completes tasks across your connected tools, rather than simply generating responses.",
-  },
-];
-
 export default function WhatIsAnAgentPage() {
   return (
     <>
@@ -68,27 +46,8 @@ export default function WhatIsAnAgentPage() {
           secondary={{ label: "Try the Free Demo", href: "/demo" }}
         />
 
-        {/* THE THREE PILLARS */}
-        <section style={{ background: "var(--cream2)", padding: "72px 0" }}>
-          <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
-            <div style={{ textAlign: "center", marginBottom: 46 }}>
-              <span className="mono-label-green">What Makes It an Agent</span>
-              <h2 style={{ fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 800, color: "var(--navy)", letterSpacing: "-.025em", margin: 0 }}>
-                The Four Pillars
-              </h2>
-            </div>
-            <div className="pillar-grid">
-              {PILLARS.map(({ guy, title, desc }) => (
-                <div key={title} className="pillar-card">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={guy} alt="" loading="lazy" />
-                  <h3>{title}</h3>
-                  <p>{desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* THE FOUR PILLARS (shared with the homepage) */}
+        <FourPillars background="var(--cream2)" />
 
         {/* THE COMPARISON TABLE (shared with the homepage) */}
         <ChatbotComparison background="#fff" />
@@ -134,16 +93,6 @@ export default function WhatIsAnAgentPage() {
           text-transform: uppercase; letter-spacing: .1em; color: var(--green);
           margin-bottom: 14px; display: block;
         }
-        .pillar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
-        @media (max-width: 1000px) { .pillar-grid { grid-template-columns: repeat(2, 1fr); } }
-        .pillar-card {
-          background: #fff; border: 1px solid rgba(11,23,41,.07); border-radius: 18px;
-          padding: 32px 28px; box-shadow: 0 8px 28px rgba(11,23,41,.04); text-align: center;
-        }
-        .pillar-card img { width: 92px; height: auto; margin: 0 auto 6px; display: block; filter: drop-shadow(0 10px 18px rgba(27,94,42,.2)); }
-        .pillar-card h3 { font-size: 19px; font-weight: 800; color: var(--navy); margin: 0 0 8px; letter-spacing: -.015em; }
-        .pillar-card p { font-size: 14.5px; line-height: 1.65; color: rgba(11,23,41,.66); margin: 0; }
-        @media (max-width: 800px) { .pillar-grid { grid-template-columns: 1fr; } }
 
         .cta-btn {
           display: inline-flex; align-items: center; justify-content: center;
