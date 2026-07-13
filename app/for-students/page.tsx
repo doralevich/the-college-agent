@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Nav from "../components/Nav";
 import { PageHero } from "../components/PageHero";
 import { Footer } from "../components/Footer";
+import { AcademicAssistant } from "../components/AcademicAssistant";
 import { AgentChatDemo } from "../components/AgentChatDemo";
 import { BriefcaseBusiness, CalendarDays, Mail, NotebookTabs, Sparkles, Target } from "lucide-react";
 
@@ -168,6 +169,9 @@ export default function ForStudentsPage() {
           primary={{ label: "Build My Agent", href: "/build" }}
           secondary={{ label: "See Everything It Does", href: "#everything" }}
         />
+
+        {/* 24/7 ACADEMIC ASSISTANT — at-a-glance capability list */}
+        <AcademicAssistant background="var(--cream2)" />
 
         {/* COLLEGE OPERATING SYSTEM: the "most effective uses" framing, as mascot cards
             matching the homepage's use-case grid. */}
