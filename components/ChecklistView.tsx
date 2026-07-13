@@ -133,16 +133,19 @@ export function ChecklistView({ userId, firstName, intake }: Props) {
           Everything you can feed your agent to make it perfect. Check things off as you go; most
           of them are one message in Chat. It all saves automatically.
         </p>
-        <div className="mt-4 flex items-center gap-3">
+        <div className="mt-4 flex items-baseline justify-between gap-3">
+          <span className="text-sm font-semibold tabular-nums text-foreground">
+            {done} of {CHECKLIST_TOTAL} complete
+          </span>
+          <span className="text-sm font-medium tabular-nums text-muted-foreground">{pct}%</span>
+        </div>
+        <div className="mt-2 flex items-center gap-3">
           <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-secondary">
             <div
               className="h-full rounded-full bg-primary transition-all duration-300"
               style={{ width: `${Math.max(pct, 2)}%` }}
             />
           </div>
-          <span className="shrink-0 text-sm font-medium tabular-nums text-muted-foreground">
-            {done} of {CHECKLIST_TOTAL}
-          </span>
         </div>
       </div>
 
