@@ -29,21 +29,8 @@ const LEGAL_LINKS = [
 export function Footer() {
   return (
     <footer style={{ background: "var(--navy, #0b1729)", padding: "48px 0" }}>
-      {/* Brand + menu (top) */}
-      <div className="footer-grid" style={{ maxWidth: 1160, margin: "0 auto 32px", padding: "0 24px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 24, borderBottom: "1px solid rgba(255,255,255,.06)" }}>
-        <div style={{ maxWidth: 300 }}>
-          <div style={{ fontFamily: "var(--font-inter, Inter, sans-serif)", fontSize: 18, fontWeight: 800, letterSpacing: "-.02em", color: "#fff" }}>
-            The College <span style={{ color: "var(--green)" }}>[Agent]</span>
-          </div>
-          <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 8, fontFamily: "var(--font-mono)", fontSize: 10, color: "rgba(255,255,255,.8)", letterSpacing: ".06em" }}>
-            Powered by
-            <a href="https://apolloclaw.ai" target="_blank" rel="noopener noreferrer" aria-label="Apollo Claw" style={{ display: "inline-flex", alignItems: "center" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/apollo-claw-white.svg" alt="Apollo Claw" style={{ height: 30, width: "auto" }} />
-            </a>
-          </div>
-        </div>
-
+      {/* Menu (top) */}
+      <div className="footer-grid" style={{ maxWidth: 1160, margin: "0 auto 32px", padding: "0 24px 32px", display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: 24, borderBottom: "1px solid rgba(255,255,255,.06)" }}>
         <nav className="footer-menu">
           {MENU_LINKS.map((link) => (
             <a

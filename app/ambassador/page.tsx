@@ -359,8 +359,9 @@ export default function AmbassadorPage() {
         }
         .affiliate-copy h1 {
           color: #fff;
-          font-size: clamp(38px, 6vw, 68px);
-          line-height: 1.02;
+          /* Sized to keep "Become a College Agent ambassador." on one line on desktop. */
+          font-size: clamp(30px, 3.6vw, 44px);
+          line-height: 1.05;
           letter-spacing: 0;
           margin-bottom: 22px;
           max-width: 100%;

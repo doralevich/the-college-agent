@@ -3,6 +3,7 @@ import SchoolMarquee from "./components/SchoolMarquee";
 import ChatBot from "./components/ChatBot";
 import Nav from "./components/Nav";
 import IntegrationGlobe from "./components/IntegrationGlobe";
+import { ChatbotComparison } from "./components/ChatbotComparison";
 import { Footer } from "./components/Footer";
 import { categoryLabel, getCollegeAgentPosts, postTitle } from "@/lib/sanity-blog";
 import { INTRO_PLAN_AMOUNT_CENTS, HOSTING_AMOUNT_CENTS } from "@/lib/pricing/intro-cutoff";
@@ -345,6 +346,9 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* CHATBOT VS AGENT COMPARISON (shared with /what-is-an-agent) */}
+      <ChatbotComparison background="var(--cream2)" />
 
       {/* INTEGRATIONS */}
       <IntegrationGlobe />

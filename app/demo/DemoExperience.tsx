@@ -104,7 +104,8 @@ export function DemoExperience({ refSlug }: { refSlug: string }) {
   const [school, setSchool] = useState("");
   const [gradYear, setGradYear] = useState<string>("");
   const [emailOptIn, setEmailOptIn] = useState(false);
-  const [smsOptIn, setSmsOptIn] = useState(false);
+  // SMS consent UI removed; keep the field false so the API payload shape is unchanged.
+  const smsOptIn = false;
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -257,13 +258,6 @@ export function DemoExperience({ refSlug }: { refSlug: string }) {
             <label className="demo-consent">
               <input type="checkbox" checked={emailOptIn} onChange={(e) => setEmailOptIn(e.target.checked)} />
               <span>Email me tips and updates from The College Agent.</span>
-            </label>
-            <label className="demo-consent">
-              <input type="checkbox" checked={smsOptIn} onChange={(e) => setSmsOptIn(e.target.checked)} />
-              <span>
-                I agree to receive text messages from The College Agent. Msg &amp; data rates may
-                apply. Reply STOP to opt out.
-              </span>
             </label>
 
             {error && <p className="demo-error">{error}</p>}

@@ -13,17 +13,7 @@ const NAV_LINKS: NavItem[] = [
   { label: "Students", href: "/for-students" },
   { label: "Parents", href: "/for-parents" },
   { label: "How It Works", href: "/how-it-works" },
-  {
-    label: "Resources",
-    children: [
-      { label: "Blog", href: "/blog" },
-      { label: "What Is an Agent?", href: "/what-is-an-agent" },
-      { label: "FAQ", href: "/faq" },
-      { label: "For Athletics", href: "/for-athletics" },
-      { label: "For Administration", href: "/for-administration" },
-      { label: "Become an Ambassador", href: "/ambassador" },
-    ],
-  },
+  { label: "What Is an Agent?", href: "/what-is-an-agent" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -78,9 +68,6 @@ export default function Nav() {
             below) — pages offset with paddingTop: 114 to clear the fixed header. */}
         <div className="nav-topbar" style={{ background: "var(--navy, #0b1729)", padding: "7px 0" }}>
           <div className="nav-topbar-inner">
-            <a href="mailto:hello@thecollegeagent.ai" className="nav-topbar-link" style={{ marginRight: "auto" }}>
-              hello@thecollegeagent.ai
-            </a>
             <div ref={acctRef} style={{ position: "relative" }}>
               <button
                 type="button"

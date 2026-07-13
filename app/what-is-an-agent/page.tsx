@@ -3,6 +3,7 @@ import Nav from "../components/Nav";
 import { PageHero } from "../components/PageHero";
 import { Footer } from "../components/Footer";
 import { AgentChatDemo } from "../components/AgentChatDemo";
+import { ChatbotComparison } from "../components/ChatbotComparison";
 
 export const metadata: Metadata = {
   title: "What Is an AI Agent? (And How It's Different from a Chatbot)",
@@ -27,34 +28,26 @@ const breadcrumbSchema = {
   ],
 };
 
-// The comparison (copy by Jill): chatbots answer questions; the College Agent accomplishes
-// goals. Two columns, paired line for line.
-const COMPARISON: { chatbot: string; agent: string }[] = [
-  { chatbot: "Responds to prompts", agent: "Works proactively on your behalf" },
-  { chatbot: "Starts with a blank conversation", agent: "Knows your classes, schedule, deadlines, and goals" },
-  { chatbot: "Answers one question at a time", agent: "Manages ongoing tasks across your semester" },
-  { chatbot: "Requires you to provide context repeatedly", agent: "Remembers and uses your personalized information" },
-  { chatbot: "Generates content", agent: "Organizes, plans, tracks, and takes action" },
-  { chatbot: "General-purpose AI", agent: "Built specifically for college students" },
-  { chatbot: "Waits for instructions", agent: "Anticipates needs and keeps you on track" },
-  { chatbot: "One conversation", agent: "A continuous academic workflow" },
-];
-
 const PILLARS = [
   {
     guy: "/avatars/guy-04.webp",
-    title: "It remembers",
-    desc: "Every conversation builds on the last. Your agent keeps a durable memory of who you are, so you never start from scratch.",
+    title: "Memory",
+    desc: "Reminds you of your classes, projects, deadlines, relationships, preferences, and previous conversations.",
   },
   {
-    guy: "/avatars/guy-12.webp",
-    title: "It acts",
-    desc: "An agent doesn't just tell you what to do, it does it: drafts, plans, schedules, tracks, and follows up.",
+    guy: "/avatars/guy-10.webp",
+    title: "Context",
+    desc: "Understands everything happening across your schedule, coursework, commitments, and connected applications.",
   },
   {
     guy: "/avatars/guy-08.webp",
-    title: "It connects",
-    desc: "Plugged into the apps you already live in, your agent works where your school and your life actually happen.",
+    title: "Judgment",
+    desc: "Learns how you make decisions, communicate, prioritize, and solve problems—so its recommendations feel like your own.",
+  },
+  {
+    guy: "/avatars/guy-12.webp",
+    title: "Execution",
+    desc: "Organizes, plans, drafts, tracks, schedules, and completes tasks across your connected tools, rather than simply generating responses.",
   },
 ];
 
@@ -81,7 +74,7 @@ export default function WhatIsAnAgentPage() {
             <div style={{ textAlign: "center", marginBottom: 46 }}>
               <span className="mono-label-green">What Makes It an Agent</span>
               <h2 style={{ fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 800, color: "var(--navy)", letterSpacing: "-.025em", margin: 0 }}>
-                Three things a chatbot can&apos;t do.
+                The Four Pillars
               </h2>
             </div>
             <div className="pillar-grid">
@@ -97,29 +90,8 @@ export default function WhatIsAnAgentPage() {
           </div>
         </section>
 
-        {/* THE COMPARISON TABLE */}
-        <section style={{ background: "#fff", padding: "72px 0" }}>
-          <div style={{ maxWidth: 940, margin: "0 auto", padding: "0 24px" }}>
-            <div style={{ textAlign: "center", marginBottom: 40 }}>
-              <span className="mono-label-green">Side by Side</span>
-              <h2 style={{ fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 800, color: "var(--navy)", letterSpacing: "-.025em", margin: 0 }}>
-                Chatbots answer questions. AI agents help you accomplish goals.
-              </h2>
-            </div>
-            <div className="cmp">
-              <div className="cmp-head">
-                <div className="cmp-col cmp-col--bot">ChatBots</div>
-                <div className="cmp-col cmp-col--agent">The College Agent</div>
-              </div>
-              {COMPARISON.map(({ chatbot, agent }) => (
-                <div key={chatbot} className="cmp-row">
-                  <div className="cmp-cell cmp-cell--bot">{chatbot}</div>
-                  <div className="cmp-cell cmp-cell--agent">{agent}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* THE COMPARISON TABLE (shared with the homepage) */}
+        <ChatbotComparison background="#fff" />
 
         {/* SEE IT: a chat that proves the point */}
         <AgentChatDemo
@@ -135,8 +107,8 @@ export default function WhatIsAnAgentPage() {
           ]}
         />
 
-        {/* CTA */}
-        <section className="dark-section" style={{ padding: "76px 0" }}>
+        {/* CTA — green band so it doesn't melt into the navy footer. */}
+        <section style={{ padding: "76px 0", background: "var(--green)" }}>
           <div style={{ maxWidth: 680, margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
             <h2 style={{ fontSize: "clamp(26px, 3vw, 38px)", fontWeight: 800, color: "#fff", letterSpacing: "-.03em", marginBottom: 16 }}>
               Ready for an agent of your own?
@@ -162,7 +134,8 @@ export default function WhatIsAnAgentPage() {
           text-transform: uppercase; letter-spacing: .1em; color: var(--green);
           margin-bottom: 14px; display: block;
         }
-        .pillar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .pillar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+        @media (max-width: 1000px) { .pillar-grid { grid-template-columns: repeat(2, 1fr); } }
         .pillar-card {
           background: #fff; border: 1px solid rgba(11,23,41,.07); border-radius: 18px;
           padding: 32px 28px; box-shadow: 0 8px 28px rgba(11,23,41,.04); text-align: center;
@@ -172,29 +145,9 @@ export default function WhatIsAnAgentPage() {
         .pillar-card p { font-size: 14.5px; line-height: 1.65; color: rgba(11,23,41,.66); margin: 0; }
         @media (max-width: 800px) { .pillar-grid { grid-template-columns: 1fr; } }
 
-        /* Comparison table: two columns (Chatbots vs The College Agent), agent column green. */
-        .cmp { border: 1px solid rgba(11,23,41,.1); border-radius: 16px; overflow: hidden; }
-        .cmp-head, .cmp-row { display: grid; grid-template-columns: 1fr 1fr; }
-        .cmp-head { background: var(--navy); }
-        .cmp-col { padding: 16px 18px; font-size: 13px; font-weight: 700; color: #fff; letter-spacing: -.01em; }
-        .cmp-col--agent { background: var(--green); }
-        .cmp-row { border-top: 1px solid rgba(11,23,41,.08); }
-        .cmp-row:nth-child(even) { background: rgba(11,23,41,.015); }
-        .cmp-dim { padding: 16px 18px; font-family: var(--font-mono); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--navy); display: flex; align-items: center; }
-        .cmp-cell { padding: 16px 18px; font-size: 13.5px; line-height: 1.55; }
-        .cmp-cell--bot { color: rgba(11,23,41,.6); border-left: 1px solid rgba(11,23,41,.06); }
-        .cmp-cell--agent { color: var(--navy); font-weight: 500; background: rgba(61,139,61,.06); border-left: 1px solid rgba(61,139,61,.15); }
-        @media (max-width: 720px) {
-          .cmp-head { display: none; }
-          .cmp-row { grid-template-columns: 1fr; }
-          .cmp-cell--bot::before { content: "ChatBots: "; font-weight: 700; color: rgba(11,23,41,.4); }
-          .cmp-cell--agent::before { content: "The College Agent: "; font-weight: 700; color: var(--green); }
-          .cmp-cell { border-left: none; }
-        }
-
         .cta-btn {
           display: inline-flex; align-items: center; justify-content: center;
-          background: var(--green); color: #fff; font-size: 13px; font-weight: 700;
+          background: #fff; color: var(--green); font-size: 13px; font-weight: 700;
           letter-spacing: .08em; text-transform: uppercase; padding: 14px 30px;
           border-radius: 4px; box-shadow: 0 8px 24px rgba(61,139,61,.3);
           transition: filter .15s; text-decoration: none;

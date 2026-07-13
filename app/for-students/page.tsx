@@ -150,58 +150,6 @@ const JOURNEY = [
   },
 ];
 
-// "Let's name them all" — every area, grouped so the list stays scannable.
-const EVERYTHING = [
-  {
-    title: "Academics",
-    items: [
-      "Class list, days, times, and professors",
-      "Syllabus uploads that become deadlines",
-      "Quiz and test schedules",
-      "Assignment and paper due dates",
-      "Study plans, guides, and practice questions",
-      "Class notes, organized and searchable",
-      "Grade goals per class",
-      "Office hours and advisor meetings",
-      "Add/drop, registration, and finals week",
-    ],
-  },
-  {
-    title: "Life & People",
-    items: [
-      "Social events, in detail",
-      "Friends and plans with them",
-      "Family birthdays and anniversaries",
-      "Roommates and shared logistics",
-      "Travel planning, visits, and flights",
-      "Gym and workout routines",
-      "Sleep and wake-up schedules",
-      "Stress resets and downtime",
-    ],
-  },
-  {
-    title: "Money & Work",
-    items: [
-      "Budgets and money goals",
-      "Part-time work shifts",
-      "Scholarship and aid deadlines",
-      "Textbook and supply hunting",
-      "Subscriptions and recurring bills",
-    ],
-  },
-  {
-    title: "Career & Beyond",
-    items: [
-      "Internship pipeline, end to end",
-      "Resume and cover letters",
-      "LinkedIn profile and networking",
-      "Interview prep and follow-ups",
-      "Grad school research and applications",
-      "Job search after graduation",
-    ],
-  },
-];
-
 export default function ForStudentsPage() {
   return (
     <>
@@ -327,39 +275,6 @@ export default function ForStudentsPage() {
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-        </section>
-
-        {/* NAME THEM ALL: the complete feature catalog */}
-        <section style={{ background: "var(--cream2)", padding: "72px 0 80px" }}>
-          <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px" }}>
-            <div style={{ textAlign: "center", marginBottom: 48 }}>
-              <span className="mono-label-green">The Complete List</span>
-              <h2 className="section-title">You name it. Your agent handles it.</h2>
-            </div>
-            <div className="everything-grid">
-              {EVERYTHING.map(({ title, items }) => (
-                <div key={title} className="feat-card everything-card">
-                  <h3 style={{ marginBottom: 14 }}>{title}</h3>
-                  <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 9 }}>
-                    {items.map((item) => (
-                      <li key={item} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 13.5, lineHeight: 1.5, color: "rgba(11,23,41,.72)" }}>
-                        <span aria-hidden style={{ color: "var(--green)", fontWeight: 700, flexShrink: 0, lineHeight: 1.5 }}>&#10003;</span>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-            <p style={{ textAlign: "center", marginTop: 36, fontSize: 14, lineHeight: 1.7, color: "rgba(11,23,41,.6)", maxWidth: 720, marginLeft: "auto", marginRight: "auto" }}>
-              And it plugs into the tools you already use: Canvas, Blackbaud, Google Classroom,
-              Gmail, Google Calendar, Outlook, Microsoft Teams, Google Drive, Dropbox, Notion,
-              Todoist, LinkedIn, Spotify, YouTube, and thousands more.
-            </p>
-            <div style={{ textAlign: "center", marginTop: 32 }}>
-              <a href="/build" className="btn-green">Build My Agent</a>
             </div>
           </div>
         </section>
