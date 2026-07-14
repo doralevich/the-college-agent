@@ -77,10 +77,11 @@ server-side with a service role; the public browser key has no table access.
 - [x] FERPA Data Processing Agreement — **drafted** (pending attorney review)
 
 **In progress / to procure ⬜** *(and who does it)*
-- [ ] Enable GitHub Dependabot alerts + secret scanning — *you (settings toggle)*
+- [x] MFA on administrative/infrastructure accounts (Supabase, Vercel, GitHub, Stripe, email) — **done**
+- [x] GitHub Dependabot alerts + secret scanning — **done**
 - [ ] FERPA DPA attorney review — *you (privacy attorney)*
 - [ ] **Cyber liability insurance** — *you (buy a policy; commonly required by procurement)*
-- [ ] Admin MFA / SSO enforcement — *can be implemented*
+- [ ] Enforced in-app admin MFA (TOTP on the /admin console) — *can be implemented (optional)*
 - [ ] Audit logging of admin & data-access events — *can be implemented*
 - [ ] Cookie/consent banner (GDPR/CCPA) — *can be implemented*
 - [ ] Accessibility conformance (WCAG 2.1 AA / VPAT) — *separate effort; some schools require it*
