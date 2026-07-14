@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { limit } from "@/lib/rate-limit";
 
 type AmbassadorRequest = {
   // Personal Information
@@ -72,6 +73,9 @@ function sectionHeading(label: string) {
 
 export async function POST(req: NextRequest) {
   try {
+    if (!(await limit(req, "ambassador-request", { max: 5, windowSeconds: 60 }))) {
+      return NextResponse.json({ error: "Too many requests. Please slow down." }, { status: 429 });
+    }
     const data = (await req.json()) as AmbassadorRequest;
 
     // Required fields per the application spec.

@@ -1,6 +1,7 @@
 import { requirePlatformAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ApiError, json, readJson, route } from "@/lib/http";
+import { encryptForStorage, decryptSecret } from "@/lib/crypto/byo";
 
 type Ctx = { params: Promise<{ id: string }> };
 type DB = ReturnType<typeof createAdminClient>;
@@ -55,7 +56,17 @@ export const GET = route(async (_req: Request, { params }: Ctx) => {
   if (onboardRes.error) throw new ApiError(500, "db_error", onboardRes.error.message);
   if (setupRes.error) throw new ApiError(500, "db_error", setupRes.error.message);
 
-  return json({ owner_id: ownerId, onboard: onboardRes.data ?? null, setup: setupRes.data ?? null });
+  // BYO keys are stored encrypted; decrypt back to the raw key so the admin edits the real
+  // value (legacy plaintext passes through unchanged). Platform-admin only, as above.
+  const setup = setupRes.data
+    ? {
+        ...setupRes.data,
+        anthropic_key: decryptSecret(setupRes.data.anthropic_key as string | null),
+        openai_key: decryptSecret(setupRes.data.openai_key as string | null),
+      }
+    : null;
+
+  return json({ owner_id: ownerId, onboard: onboardRes.data ?? null, setup });
 });
 
 // Upsert the owner's intake (one row per user). Each side is optional — the admin may save
@@ -109,8 +120,9 @@ export const PUT = route(async (req: Request, { params }: Ctx) => {
           telegram_token: orNull(s.telegram_token),
           telegram_user_id: orNull(s.telegram_user_id),
           telegram_username: orNull(s.telegram_username),
-          anthropic_key: orNull(s.anthropic_key),
-          openai_key: orNull(s.openai_key),
+          // Encrypt admin-entered keys at rest too (same path as the student's own form).
+          anthropic_key: encryptForStorage(orNull(s.anthropic_key)),
+          openai_key: encryptForStorage(orNull(s.openai_key)),
           submitted_at: now,
         },
       ],

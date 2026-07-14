@@ -3,6 +3,7 @@ import { ApiError, json, readJson, route } from "@/lib/http";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { syncToMailchimp } from "@/lib/newsletter";
 import { ambassadorBySlug } from "@/lib/ambassador";
+import { limit, tooManyRequests } from "@/lib/rate-limit";
 
 // Demo sandbox entry gate (PRD): collects email, cell, school, and grad year with TWO
 // separate, un-prechecked consents (email vs SMS — TCPA requires the SMS one to be its
@@ -26,6 +27,7 @@ type Body = {
 };
 
 export const POST = route(async (req) => {
+  if (!(await limit(req, "demo-start", { max: 6, windowSeconds: 60 }))) return tooManyRequests();
   const body = await readJson<Body>(req);
 
   const email = (body.email ?? "").trim().toLowerCase();

@@ -2,6 +2,7 @@ import { requireUser } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { switchModelProvider } from "@/lib/hermes";
 import { ApiError, json, readJson, route } from "@/lib/http";
+import { encryptForStorage } from "@/lib/crypto/byo";
 
 // Switch the student's agent between platform credits (metered gateway) and their own
 // Anthropic/OpenAI API key. Repoints the LIVE box first — if that fails, nothing is
@@ -52,9 +53,11 @@ export const POST = route(async (req) => {
   }
 
   // Persist on the latest setup row (or a fresh one) so re-provisioning keeps the choice.
+  // Encrypted at rest (AES-256-GCM); encryptForStorage no-ops to plaintext until BYO_ENC_KEY
+  // is set, so this switch keeps working before and after the env var lands.
   const patch = {
-    anthropic_key: provider === "anthropic" ? key : null,
-    openai_key: provider === "openai" ? key : null,
+    anthropic_key: provider === "anthropic" ? encryptForStorage(key) : null,
+    openai_key: provider === "openai" ? encryptForStorage(key) : null,
   };
   const { data: latest } = await db
     .from("setup_submissions")

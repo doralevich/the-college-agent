@@ -1,5 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { decryptSecret } from "@/lib/crypto/byo";
 import {
   buildSoul,
   buildUserProfile,
@@ -104,8 +105,10 @@ export async function configureAgentFromIntake(
     const r = await configureHermes(agent37Id, {
       telegramBotToken: setup?.telegram_token ?? undefined,
       telegramUserId: setup?.telegram_user_id ?? undefined,
-      anthropicKey: setup?.anthropic_key ?? undefined,
-      openaiKey: setup?.openai_key ?? undefined,
+      // Stored encrypted at rest; decrypt back to the raw sk-... before it reaches the box.
+      // decryptSecret passes legacy plaintext through unchanged during the migration window.
+      anthropicKey: decryptSecret(setup?.anthropic_key) ?? undefined,
+      openaiKey: decryptSecret(setup?.openai_key) ?? undefined,
       soul,
       userProfile,
       checkin,

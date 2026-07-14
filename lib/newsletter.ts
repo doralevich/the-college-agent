@@ -57,3 +57,35 @@ export async function syncToMailchimp(email: string, opts: MailchimpMemberOpts =
     return false;
   }
 }
+
+// Permanently erase an address from the Mailchimp audience — the marketing side of an
+// account-deletion request (see lib/account-deletion.ts). Uses delete-permanent (GDPR
+// erasure), not archive, so nothing personal is retained. Best-effort: returns true on
+// success OR when the member was never there (404), false on a real failure, so the caller
+// can record the outcome without the whole deletion hinging on Mailchimp.
+export async function removeFromMailchimp(email: string): Promise<boolean> {
+  const apiKey = process.env.MAILCHIMP_API_KEY;
+  const audienceId = process.env.MAILCHIMP_AUDIENCE_ID || "4c48dcc075";
+  if (!apiKey || !audienceId) return false;
+
+  const dc = apiKey.split("-").pop();
+  if (!dc) return false;
+  // Match syncToMailchimp's id derivation (md5 of the lowercased address).
+  const memberId = createHash("md5").update(email.trim().toLowerCase()).digest("hex");
+  const auth = `Basic ${Buffer.from(`anystring:${apiKey}`).toString("base64")}`;
+  const base = `https://${dc}.api.mailchimp.com/3.0/lists/${audienceId}/members/${memberId}`;
+
+  try {
+    const res = await fetch(`${base}/actions/delete-permanent`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: auth },
+    });
+    // 404 = the address was never synced; treat as already-removed.
+    if (res.ok || res.status === 404) return true;
+    console.error("[newsletter] mailchimp delete failed:", res.status, await res.text().catch(() => ""));
+    return false;
+  } catch (err) {
+    console.error("[newsletter] mailchimp delete error:", err);
+    return false;
+  }
+}

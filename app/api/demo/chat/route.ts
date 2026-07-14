@@ -1,6 +1,7 @@
 import { ApiError, json, readJson, route } from "@/lib/http";
 import { chatComplete, friendlyChatError } from "@/lib/anthropic-chat";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { limit, tooManyRequests } from "@/lib/rate-limit";
 
 // The demo chat brain. Shared read-only premise, per-session isolation: each visitor's
 // session row carries their school + grad year, which seed the persona so the demo
@@ -30,6 +31,10 @@ HOW TO BEHAVE
 type Body = { sessionId?: string; messages?: Array<{ role?: string; content?: string }> };
 
 export const POST = route(async (req) => {
+  // Per-session message cap (below) is the real cost control; this per-IP cap stops one
+  // client from spinning many sessions to keep burning the platform Anthropic key.
+  if (!(await limit(req, "demo-chat", { max: 15, windowSeconds: 60 }))) return tooManyRequests();
+
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new ApiError(503, "not_configured", "The demo is warming up. Try again in a minute.");
 

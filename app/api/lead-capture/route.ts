@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { syncToMailchimp } from "@/lib/newsletter";
+import { limit } from "@/lib/rate-limit";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,6 +10,9 @@ const supabase = createClient(
 
 export async function POST(req: NextRequest) {
   try {
+    if (!(await limit(req, "lead-capture", { max: 10, windowSeconds: 60 }))) {
+      return NextResponse.json({ error: "Too many requests. Please slow down." }, { status: 429 });
+    }
     const data = await req.json();
 
     // Every captured lead goes into Mailchimp too — both addresses, tagged so David
