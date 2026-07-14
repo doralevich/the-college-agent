@@ -318,11 +318,11 @@ function AgreeCheckbox({ checked, onChange, label }: {
   checked: boolean; onChange: (v: boolean) => void; label: string;
 }) {
   return (
-    <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", padding: "4px 0" }}>
+    <label style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 10, cursor: "pointer", padding: "6px 0" }}>
       <input
         type="checkbox" checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        style={{ width: 16, height: 16, accentColor: "var(--green)", flexShrink: 0, marginTop: 2, cursor: "pointer" }}
+        style={{ width: 16, height: 16, minWidth: 16, accentColor: "var(--green)", flexShrink: 0, margin: 0, cursor: "pointer" }}
       />
       <span style={{ fontSize: 14, color: "var(--navy)", lineHeight: 1.5, fontFamily: "inherit", fontWeight: 400, letterSpacing: 0, textTransform: "none" }}>{label}</span>
     </label>
