@@ -1,5 +1,6 @@
 import { ApiError, json, readJson, route } from "@/lib/http";
 import { chatComplete, friendlyChatError } from "@/lib/anthropic-chat";
+import { limit, tooManyRequests } from "@/lib/rate-limit";
 import {
   INTRO_PLAN_AMOUNT_CENTS,
   HOSTING_AMOUNT_CENTS,
@@ -52,6 +53,10 @@ HOW TO ANSWER
 type IncomingMessage = { role?: string; content?: string };
 
 export const POST = route(async (req) => {
+  // Public + unauthenticated + spends the platform Anthropic key on every call, so cap it
+  // per IP. A real visitor never sends 15 messages a minute; this blunts scripted key-burn.
+  if (!(await limit(req, "ask", { max: 15, windowSeconds: 60 }))) return tooManyRequests();
+
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     throw new ApiError(503, "not_configured", "Chat is warming up. Try again soon or book a call.");

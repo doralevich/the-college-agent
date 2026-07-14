@@ -3,6 +3,7 @@ import { getOptionalUserId } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { renameWorkspaceFromIntake } from "@/lib/workspaces";
 import { buildSummaryPdf, pdfAttachment, type PdfSection } from "@/lib/email/pdf";
+import { limit } from "@/lib/rate-limit";
 
 const supabase = createAdminClient();
 
@@ -27,6 +28,10 @@ function formatVal(v: unknown): string {
 
 export async function POST(req: NextRequest) {
   try {
+    // Uploads files to storage + writes the intake row; cap per IP against storage/DB spam.
+    if (!(await limit(req, "onboard-submit", { max: 6, windowSeconds: 60 }))) {
+      return NextResponse.json({ error: "Too many requests. Please slow down." }, { status: 429 });
+    }
     const formData = await req.formData();
     const raw = formData.get("data") as string;
     const data = JSON.parse(raw);

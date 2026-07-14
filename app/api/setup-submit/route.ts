@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getOptionalUserId } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { buildSummaryPdf, pdfAttachment } from "@/lib/email/pdf";
+import { encryptForStorage } from "@/lib/crypto/byo";
+import { limit } from "@/lib/rate-limit";
 
 const supabase = createAdminClient();
 
@@ -13,6 +15,10 @@ const orNull = (v: unknown) => {
 
 export async function POST(req: NextRequest) {
   try {
+    // Stores BYO model keys / Telegram creds; cap per IP against write spam.
+    if (!(await limit(req, "setup-submit", { max: 6, windowSeconds: 60 }))) {
+      return NextResponse.json({ error: "Too many requests. Please slow down." }, { status: 429 });
+    }
     const data = await req.json();
 
     // Tie the submission to the logged-in student (if any) so the dashboard checklist
@@ -27,8 +33,10 @@ export async function POST(req: NextRequest) {
       telegram_token: orNull(data.telegramToken),
       telegram_user_id: orNull(data.telegramUserId),
       telegram_username: orNull(data.telegramUsername),
-      anthropic_key: orNull(data.anthropicKey),
-      openai_key: orNull(data.openaiKey),
+      // BYO model keys are encrypted at rest (AES-256-GCM, key from BYO_ENC_KEY).
+      // encryptForStorage stays plaintext until the env var is set, so this ships safely.
+      anthropic_key: encryptForStorage(orNull(data.anthropicKey)),
+      openai_key: encryptForStorage(orNull(data.openaiKey)),
       user_id: userId,
       submitted_at: new Date().toISOString(),
     }], { onConflict: "user_id" });

@@ -7,6 +7,7 @@ import { currentPlanLookup, PRO_PLAN_LOOKUP, PRO_HOSTING_LOOKUP, HOSTING_LOOKUP,
 import { getOptionalUserId } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ensureReferralCoupon, resolveReferralCode } from "@/lib/referral";
+import { limit, tooManyRequests } from "@/lib/rate-limit";
 
 // Anonymous-friendly Stripe Checkout entrypoint.
 // - Logged-in students: we pass user_id metadata so the webhook flips their
@@ -42,6 +43,10 @@ type Body = {
 const EXTRA_CREDITS_ALLOWED_CENTS = [1000, 2500, 5000];
 
 export const POST = route(async (req) => {
+  // Each call mints a Stripe Checkout session; cap per IP so the endpoint can't be scripted
+  // to spam Stripe objects. A real buyer clicks Pay a handful of times at most.
+  if (!(await limit(req, "build-checkout", { max: 8, windowSeconds: 60 }))) return tooManyRequests();
+
   const body = await readJson<Body>(req);
 
   // Prefer the authenticated session if there is one — that's still the cleanest path
