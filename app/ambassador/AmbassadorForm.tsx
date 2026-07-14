@@ -313,7 +313,7 @@ function AgreeCheckbox({ checked, onChange, label }: {
         onChange={(e) => onChange(e.target.checked)}
         style={{ width: 16, height: 16, accentColor: "var(--green)", flexShrink: 0, marginTop: 2, cursor: "pointer" }}
       />
-      <span style={{ fontSize: 14, color: "var(--navy)", lineHeight: 1.5 }}>{label}</span>
+      <span style={{ fontSize: 14, color: "var(--navy)", lineHeight: 1.5, fontFamily: "inherit", fontWeight: 400, letterSpacing: 0, textTransform: "none" }}>{label}</span>
     </label>
   );
 }
