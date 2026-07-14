@@ -2,6 +2,7 @@
 import Script from "next/script";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, Suspense } from "react";
+import { useConsent } from "./CookieConsent";
 
 const GA_ID = "G-3KS91J2QK3";
 
@@ -26,6 +27,9 @@ function PageViewTracker() {
 }
 
 export default function GoogleAnalytics() {
+  // Load only after the visitor accepts cookies (GDPR/CCPA) — see CookieConsent.tsx.
+  const consent = useConsent();
+  if (consent !== "accepted") return null;
   return (
     <>
       <Script

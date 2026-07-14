@@ -3,6 +3,7 @@ import { IBM_Plex_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import MetaPixel from "./components/MetaPixel";
 import GoogleAnalytics from "./components/GoogleAnalytics";
+import CookieConsent from "./components/CookieConsent";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const ibmPlexMono = IBM_Plex_Mono({
@@ -100,6 +101,7 @@ export default function RootLayout({
         <GoogleAnalytics />
         <MetaPixel />
         {children}
+        <CookieConsent />
       </body>
     </html>
   );

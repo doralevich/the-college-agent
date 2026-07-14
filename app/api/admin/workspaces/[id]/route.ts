@@ -1,6 +1,7 @@
 import { requirePlatformAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ApiError, json, route } from "@/lib/http";
+import { logAudit } from "@/lib/audit";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -9,8 +10,8 @@ type Ctx = { params: Promise<{ id: string }> };
 // cascade would drop our `agents` records while leaving the live agent37 instances running
 // and billed. The admin must delete the instances first (which tears down agent37), then
 // the now-empty workspace can go. This matches the UI, which only enables Delete at 0 agents.
-export const DELETE = route(async (_request: Request, { params }: Ctx) => {
-  await requirePlatformAdmin();
+export const DELETE = route(async (request: Request, { params }: Ctx) => {
+  const { user: adminUser } = await requirePlatformAdmin();
   const { id } = await params;
   const admin = createAdminClient();
 
@@ -38,5 +39,6 @@ export const DELETE = route(async (_request: Request, { params }: Ctx) => {
   const { error: delErr } = await admin.from("workspaces").delete().eq("id", id);
   if (delErr) throw new ApiError(500, "db_error", delErr.message);
 
+  await logAudit({ actorEmail: adminUser.email, action: "workspace.delete", target: id, req: request });
   return json({ id, deleted: true });
 });
