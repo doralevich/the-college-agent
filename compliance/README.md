@@ -13,6 +13,8 @@ where noted, a lawyer's.
 | `HECVAT-responses.md` | Pre-filled answers to the higher-ed vendor security questionnaire | Draft, ~90% answerable today | Your review; drop into the official HECVAT workbook |
 | `data-processing-agreement-TEMPLATE.md` | FERPA-aware DPA to sign with a university | Template | **Attorney review before use** |
 | `vendor-security-packet.md` | The one doc to send a school — data flow, sub-processors, controls, readiness | Ready | Send on request |
+| `security-overview.md` | One-page plain-language security summary (shareable) | Ready | Share / link publicly |
+| `security-next-steps.md` | Living checklist — what's done, what's next, what's needed | Living | Revisit quarterly |
 | `information-security-policy.md` | Your baseline InfoSec + access-control policy | Draft | Fill placeholders; adopt |
 | `incident-response-plan.md` | What to do if there's a breach | Draft | Fill placeholders; adopt |
 | `data-retention-and-deletion-policy.md` | What you keep, for how long, and how you delete it | Draft | Fill placeholders; adopt |
