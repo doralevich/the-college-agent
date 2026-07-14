@@ -19,6 +19,13 @@ import { sendMetaPurchase } from "@/lib/meta-capi";
 type DB = ReturnType<typeof createAdminClient>;
 type EntStatus = "active" | "past_due" | "canceled";
 
+// checkout.session.completed fulfillment runs a chain of external calls (Supabase auth,
+// Stripe, Meta CAPI, Mailchimp, email) before we can ack Stripe. Without an explicit limit
+// this route used Vercel's short default timeout, so slow runs were killed mid-flight —
+// Stripe saw no 2xx, marked the delivery failed, and retried (deduped). Giving it room
+// removes those timeout-driven failures. Fulfillment stays idempotent regardless.
+export const maxDuration = 60;
+
 export async function POST(req: Request) {
   const sig = req.headers.get("stripe-signature");
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
