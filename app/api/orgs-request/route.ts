@@ -1,5 +1,6 @@
 import { ApiError, json, readJson, route } from "@/lib/http";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { limit, tooManyRequests } from "@/lib/rate-limit";
 
 // Org/charity partner applications (PRD): a club, team, Greek chapter, or charity that
 // wants ambassador sales to fund the group. Stored pending; David activates and sets
@@ -16,6 +17,7 @@ type Body = {
 const TYPES = ["club", "team", "greek", "charity"];
 
 export const POST = route(async (req) => {
+  if (!(await limit(req, "orgs-request", { max: 5, windowSeconds: 60 }))) return tooManyRequests();
   const body = await readJson<Body>(req);
   const name = (body.name ?? "").trim().slice(0, 160);
   if (!name) throw new ApiError(400, "invalid_request", "Tell us the organization's name.");

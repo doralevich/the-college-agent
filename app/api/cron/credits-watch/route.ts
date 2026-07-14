@@ -207,6 +207,13 @@ export async function GET(req: Request) {
     console.error("[credits-watch] demo session cleanup", e);
   }
 
+  // Rate-limit counters: prune windows older than a day so the table stays tiny.
+  try {
+    await db.from("rate_limits").delete().lt("window_start", new Date(Date.now() - 86_400_000).toISOString());
+  } catch (e) {
+    console.error("[credits-watch] rate_limits cleanup", e);
+  }
+
   return Response.json({ ...summary, newsletterSynced, leadsSynced, demoLeadsSynced, salesCleared, payoutsQueued });
 }
 

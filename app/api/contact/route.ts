@@ -1,5 +1,6 @@
 import { ApiError, json, readJson, route } from "@/lib/http";
 import { syncToMailchimp } from "@/lib/newsletter";
+import { limit, tooManyRequests } from "@/lib/rate-limit";
 
 // The /contact form: sends the message to David via Mandrill (reply-to the sender, so
 // answering is one click) and mirrors the address into Mailchimp tagged "contact".
@@ -15,6 +16,7 @@ type Body = {
 const WHO_OPTIONS = ["Student", "Parent", "Faculty / Administration", "Athletics", "Other"];
 
 export const POST = route(async (req) => {
+  if (!(await limit(req, "contact", { max: 5, windowSeconds: 60 }))) return tooManyRequests();
   const body = await readJson<Body>(req);
 
   const name = (body.name ?? "").trim().slice(0, 120);
