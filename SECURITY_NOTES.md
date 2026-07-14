@@ -51,10 +51,14 @@ The platform Agent37 key is server-only and never leaves the server.
 - **Never** prefixed `NEXT_PUBLIC_` (verified by search), so it cannot be inlined into client JS.
 - Not logged and not placed in error messages: a missing key throws the static string
   "AGENT37_API_KEY is not set on the server" — the value itself is never interpolated.
+- **Built client output checked:** grepping the compiled client chunks (`.next/static`) for
+  `AGENT37_API_KEY` and `AGENT37_API_BASE` returns zero matches — the key is not inlined into
+  any bundle that reaches the browser. (Structurally guaranteed too: it is read only in a
+  `server-only` module and is never `NEXT_PUBLIC_`, the only prefix Next.js inlines client-side.)
 - **Git history:** no literal Agent37/Anthropic/OpenAI key has ever been committed. The only
   `sk-ant-` matches in history are UI placeholder text ("Starts with sk-ant-…") on the setup form.
 
-No change required.
+The only file that references the key is `lib/agent37.ts`. No change required.
 
 ---
 
@@ -62,6 +66,15 @@ No change required.
 
 Students may bring their own Anthropic/OpenAI key. These were stored as plaintext in
 `setup_submissions.anthropic_key` / `.openai_key`. They are now encrypted at rest.
+
+> **Deviation from the ticket (flagged for David):** the ticket preferred Supabase Vault (or
+> pgcrypto) with a separate-encrypted-columns migration. This implementation instead uses
+> **application-side AES-256-GCM, in place** (a `v1:` envelope in the existing columns). Rationale:
+> the encryption key lives only in the Vercel env (`BYO_ENC_KEY`), never in Postgres — so a database
+> dump alone is useless — and in-place encryption avoids a schema migration and a plaintext-column
+> null-out step. If HECVAT reviewers specifically want to see "Supabase Vault," this can be switched;
+> say the word and I'll redo it against Vault. Either way, the end state is "BYO keys encrypted at
+> rest, key held outside the DB."
 
 - **Scheme:** AES-256-GCM, application-side (`lib/crypto/byo.ts`). The key is derived
   (SHA-256) from the `BYO_ENC_KEY` environment variable, which lives only in Vercel — never in
