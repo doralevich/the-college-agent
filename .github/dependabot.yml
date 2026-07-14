@@ -1,0 +1,27 @@
+# Automated dependency updates. Dependabot opens PRs when dependencies have updates or known
+# vulnerabilities. Minor/patch bumps are grouped into a single weekly PR to cut noise; majors
+# come as their own PRs so they can be reviewed carefully. (Dependabot *alerts* and secret
+# scanning are separate toggles in GitHub → Settings → Code security & analysis.)
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+    groups:
+      minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
