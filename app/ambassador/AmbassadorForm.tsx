@@ -2,6 +2,10 @@
 
 import { useState, type FormEvent } from "react";
 import { Send } from "lucide-react";
+import majorsData from "@/data/college-agent-majors.json";
+
+type MajorGroup = { label: string; majors: string[] };
+const MAJOR_GROUPS: MajorGroup[] = (majorsData as { groups: MajorGroup[] }).groups;
 
 const STUDENT_STATUS = ["Pre-Freshman", "Freshman", "Sophomore", "Junior", "Senior", "Post-Graduate"];
 
@@ -165,11 +169,16 @@ export default function AmbassadorForm() {
         </label>
         <label>
           <span>Major *</span>
-          <input
-            required type="text" value={form.major}
-            onChange={(e) => setField("major", e.target.value)}
-            placeholder="e.g. Marketing, Pre-Med, Computer Science"
-          />
+          <select required value={form.major} onChange={(e) => setField("major", e.target.value)}>
+            <option value="">Select your major...</option>
+            {MAJOR_GROUPS.map((group) => (
+              <optgroup key={group.label} label={group.label}>
+                {group.majors.map((m) => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
         </label>
       </div>
 
@@ -179,7 +188,7 @@ export default function AmbassadorForm() {
           <input
             required type="email" value={form.email}
             onChange={(e) => setField("email", e.target.value)}
-            placeholder="jane@school.edu"
+            placeholder="jane@gmail.com"
           />
         </label>
         <label>
