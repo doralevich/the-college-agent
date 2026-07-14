@@ -38,7 +38,15 @@ have been applied to production — they await David's authorization.** Apply in
 
 Env vars this app relies on for security (all server-side, none `NEXT_PUBLIC_`):
 `AGENT37_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`,
-`CRON_SECRET`, `MAILCHIMP_API_KEY`, `MANDRILL_API_KEY`, and (new) `BYO_ENC_KEY`.
+`CRON_SECRET`, `MAILCHIMP_API_KEY`, `MANDRILL_API_KEY`, `META_CAPI_ACCESS_TOKEN`, and (new)
+`BYO_ENC_KEY`.
+
+`META_CAPI_ACCESS_TOKEN` is the Meta Conversions API access token (from Meta Events Manager).
+It is a **secret** and must be set in Vercel only — never `NEXT_PUBLIC_`, never committed (verified
+absent from the repo and git history). The server-side Purchase event in `lib/meta-capi.ts` (fired
+from the Stripe webhook) stays **dormant until this var is set**, and the var name must match
+exactly or CAPI stays off. The public Meta **Pixel ID** (`NEXT_PUBLIC_META_PIXEL_ID`) is a public
+identifier, not a secret — do not confuse the two.
 
 ---
 
