@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Nav from "../../components/Nav";
+import ChatBot from "../../components/ChatBot";
 import AmbassadorForm from "../AmbassadorForm";
 
 export const metadata: Metadata = {
@@ -51,6 +52,10 @@ export default function AmbassadorApplyPage() {
           </div>
         </section>
       </main>
+
+      {/* Same floating "Help Me" agent as the rest of the site, so applicants can ask
+          questions about the ambassador program without leaving the form. */}
+      <ChatBot />
 
       <style>{`
         .affiliate-shell {
