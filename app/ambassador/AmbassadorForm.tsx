@@ -2,8 +2,12 @@
 
 import { useState, type FormEvent } from "react";
 import { Send } from "lucide-react";
+import majorsData from "@/data/college-agent-majors.json";
 
-const GRAD_YEARS = ["2026", "2027", "2028", "2029", "2030", "2031+"];
+type MajorGroup = { label: string; majors: string[] };
+const MAJOR_GROUPS: MajorGroup[] = (majorsData as { groups: MajorGroup[] }).groups;
+
+const STUDENT_STATUS = ["Pre-Freshman", "Freshman", "Sophomore", "Junior", "Senior", "Post-Graduate"];
 
 const INVOLVEMENTS = [
   "Student Organization Leader",
@@ -28,6 +32,7 @@ type AmbassadorFormState = {
   fullName: string;
   university: string;
   graduationYear: string;
+  otherInvolvement: string;
   major: string;
   email: string;
   mobile: string;
@@ -58,6 +63,7 @@ const EMPTY_FORM: AmbassadorFormState = {
   fullName: "", university: "", graduationYear: "", major: "", email: "", mobile: "",
   whyInterested: "", whyAI: "", whyGreat: "",
   involvements: [],
+  otherInvolvement: "",
   instagram: "", linkedin: "", facebook: "",
   anythingElse: "",
   agreeIndependent: false, agreeCommissions: false, agreeProfessional: false,
@@ -155,19 +161,24 @@ export default function AmbassadorForm() {
 
       <div className="form-grid two">
         <label>
-          <span>Graduation Year *</span>
+          <span>Current Student Status *</span>
           <select required value={form.graduationYear} onChange={(e) => setField("graduationYear", e.target.value)}>
-            <option value="">Select year...</option>
-            {GRAD_YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
+            <option value="">Select status...</option>
+            {STUDENT_STATUS.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </label>
         <label>
           <span>Major *</span>
-          <input
-            required type="text" value={form.major}
-            onChange={(e) => setField("major", e.target.value)}
-            placeholder="e.g. Marketing, Pre-Med, Computer Science"
-          />
+          <select required value={form.major} onChange={(e) => setField("major", e.target.value)}>
+            <option value="">Select your major...</option>
+            {MAJOR_GROUPS.map((group) => (
+              <optgroup key={group.label} label={group.label}>
+                {group.majors.map((m) => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
         </label>
       </div>
 
@@ -177,7 +188,7 @@ export default function AmbassadorForm() {
           <input
             required type="email" value={form.email}
             onChange={(e) => setField("email", e.target.value)}
-            placeholder="jane@school.edu"
+            placeholder="jane@gmail.com"
           />
         </label>
         <label>
@@ -232,6 +243,15 @@ export default function AmbassadorForm() {
             </label>
           ))}
         </div>
+        {form.involvements.includes("Other") && (
+          <input
+            type="text"
+            value={form.otherInvolvement}
+            onChange={(e) => setField("otherInvolvement", e.target.value)}
+            placeholder="Please describe your involvement"
+            style={{ marginTop: 10, width: "100%" }}
+          />
+        )}
       </fieldset>
 
       <fieldset>
@@ -307,13 +327,13 @@ function AgreeCheckbox({ checked, onChange, label }: {
   checked: boolean; onChange: (v: boolean) => void; label: string;
 }) {
   return (
-    <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", padding: "4px 0" }}>
+    <label style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 10, cursor: "pointer", padding: "6px 0" }}>
       <input
         type="checkbox" checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        style={{ width: 16, height: 16, accentColor: "var(--green)", flexShrink: 0, marginTop: 2, cursor: "pointer" }}
+        style={{ width: 16, height: 16, minWidth: 16, accentColor: "var(--green)", flexShrink: 0, margin: 0, cursor: "pointer" }}
       />
-      <span style={{ fontSize: 14, color: "var(--navy)", lineHeight: 1.5 }}>{label}</span>
+      <span style={{ fontSize: 14, color: "var(--navy)", lineHeight: 1.5, fontFamily: "inherit", fontWeight: 400, letterSpacing: 0, textTransform: "none" }}>{label}</span>
     </label>
   );
 }

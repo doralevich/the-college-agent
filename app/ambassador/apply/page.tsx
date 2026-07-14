@@ -139,12 +139,12 @@ export default function AmbassadorApplyPage() {
         .ambassador-success {
           background: #fff;
           border: 1px solid rgba(11,23,41,.08);
-          border-radius: 12px;
+          border-radius: 14px;
           box-shadow: 0 22px 70px rgba(11,23,41,.08);
-          padding: 36px;
+          padding: 44px;
           display: flex;
           flex-direction: column;
-          gap: 18px;
+          gap: 22px;
         }
         .form-grid {
           display: grid;
@@ -165,11 +165,11 @@ export default function AmbassadorApplyPage() {
         .ambassador-form label > span,
         .ambassador-form legend {
           font-family: var(--font-mono);
-          font-size: 10px;
+          font-size: 11px;
           font-weight: 700;
-          letter-spacing: .1em;
+          letter-spacing: .12em;
           text-transform: uppercase;
-          color: rgba(11,23,41,.5);
+          color: rgba(11,23,41,.65);
         }
         .ambassador-form input[type="text"],
         .ambassador-form input[type="email"],
@@ -177,15 +177,15 @@ export default function AmbassadorApplyPage() {
         .ambassador-form select,
         .ambassador-form textarea {
           width: 100%;
-          padding: 12px 14px;
-          border: 1.5px solid rgba(11,23,41,.12);
-          border-radius: 6px;
-          font-size: 14px;
+          padding: 13px 16px;
+          border: 1.5px solid rgba(11,23,41,.14);
+          border-radius: 8px;
+          font-size: 15px;
           font-family: inherit;
           color: var(--navy);
           background: #fff;
           outline: none;
-          transition: border-color .15s;
+          transition: border-color .15s, box-shadow .15s;
         }
         .ambassador-form select {
           appearance: none;
@@ -208,29 +208,42 @@ export default function AmbassadorApplyPage() {
         .channel-grid {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
-          gap: 8px 16px;
+          gap: 10px;
+          margin-top: 4px;
         }
         .channel-option {
           display: flex !important;
           flex-direction: row !important;
           align-items: center;
           gap: 10px;
-          padding: 4px 0;
+          padding: 11px 14px;
           cursor: pointer;
+          border: 1.5px solid rgba(11,23,41,.12);
+          border-radius: 8px;
+          background: #fafafa;
+          transition: border-color .15s, background .15s;
         }
-        .channel-option input {
+        .channel-option:hover {
+          border-color: var(--green);
+          background: rgba(34,197,94,.04);
+        }
+        .channel-option input[type="checkbox"] {
           width: 16px;
           height: 16px;
+          min-width: 16px;
           accent-color: var(--green);
           cursor: pointer;
+          margin: 0;
+          flex-shrink: 0;
         }
         .channel-option span {
           font-family: inherit !important;
           font-size: 14px !important;
-          font-weight: 400 !important;
+          font-weight: 500 !important;
           letter-spacing: 0 !important;
           text-transform: none !important;
           color: var(--navy) !important;
+          line-height: 1.4;
         }
         .form-error {
           color: #c83d3d;
