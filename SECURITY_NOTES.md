@@ -75,14 +75,15 @@ The only file that references the key is `lib/agent37.ts`. No change required.
 Students may bring their own Anthropic/OpenAI key. These were stored as plaintext in
 `setup_submissions.anthropic_key` / `.openai_key`. They are now encrypted at rest.
 
-> **Deviation from the ticket (flagged for David):** the ticket preferred Supabase Vault (or
-> pgcrypto) with a separate-encrypted-columns migration. This implementation instead uses
-> **application-side AES-256-GCM, in place** (a `v1:` envelope in the existing columns). Rationale:
-> the encryption key lives only in the Vercel env (`BYO_ENC_KEY`), never in Postgres — so a database
-> dump alone is useless — and in-place encryption avoids a schema migration and a plaintext-column
-> null-out step. If HECVAT reviewers specifically want to see "Supabase Vault," this can be switched;
-> say the word and I'll redo it against Vault. Either way, the end state is "BYO keys encrypted at
-> rest, key held outside the DB."
+> **Approach — decided 2026-07-14: keep application-side AES-256-GCM.** The ticket named Supabase
+> Vault (or pgcrypto) as preferred, with a separate-encrypted-columns migration. We deliberately use
+> **application-side AES-256-GCM, in place** (a `v1:` envelope in the existing columns) instead.
+> Rationale: the encryption key lives only in the Vercel env (`BYO_ENC_KEY`), never in Postgres — so a
+> database dump alone is useless — and in-place encryption avoids a schema migration and a
+> plaintext-column null-out step. HECVAT answer: *"student-supplied API keys are encrypted at rest
+> with AES-256-GCM; the encryption key is held outside the database in the platform's secret store."*
+> (If a reviewer specifically requires the literal "Supabase Vault" mechanism, it can be switched
+> later without changing the end state.)
 
 - **Scheme:** AES-256-GCM, application-side (`lib/crypto/byo.ts`). The key is derived
   (SHA-256) from the `BYO_ENC_KEY` environment variable, which lives only in Vercel — never in
@@ -268,15 +269,23 @@ after watching a preview deploy for violation reports, so a missed origin doesn'
 
 ---
 
-## Item 9 — GitHub repository security — ⚠️ NEEDS DAVID (see notes)
+## Item 9 — GitHub repository security — ⚠️ PARTLY DEFERRED (decision recorded)
 
-- **Dependabot / secret-scanning:** recommended (Settings → Code security). These are repo-admin
-  toggles, not code, and are best enabled in the GitHub UI. No blocker.
-- **Branch protection on `main`:** **requires David's decision.** The current workflow depends on
-  direct pushes to `main` — Donna (AI Chief of Staff) pushes SEO/content directly, and the
-  fast-forward-to-`main` step is used as a deploy fallback. Requiring PRs + review on `main` would
-  change both. Options: (a) leave `main` open, rely on the draft-PR convention; (b) protect `main`
-  and move Donna + deploys onto a PR/automation path. Not changed unilaterally.
+**Decision — 2026-07-14:**
+
+- **Dependabot alerts + security updates, and secret scanning with push protection:** **enable.**
+  These are repo-admin toggles (GitHub → Settings → Code security & analysis), not code, so they
+  must be switched on in the GitHub UI by a repo admin (they cannot be enabled from the app
+  codebase or the tooling available to this pass). No workflow impact. Note: third-party secret
+  scanning via **GitGuardian is already active** on PRs (it runs as a check on #187/#188), so the
+  repo already has push-time secret detection today; enabling GitHub-native secret scanning adds a
+  second layer.
+- **Branch protection on `main`: DEFERRED** (recorded here per the ticket). The current workflow
+  depends on direct pushes to `main` — Donna (AI Chief of Staff) pushes SEO/content directly, and
+  the fast-forward-to-`main` step is a deploy fallback for rate-limited deploys. Requiring PR review
+  on `main` would break both. Decision: **leave `main` open for now** and rely on the draft-PR
+  convention; revisit once Donna's pushes and the deploy fallback are moved onto a PR/automation
+  path. To be re-confirmed with David.
 
 ---
 
