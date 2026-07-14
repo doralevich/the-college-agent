@@ -28,6 +28,7 @@ type AmbassadorFormState = {
   fullName: string;
   university: string;
   graduationYear: string;
+  otherInvolvement: string;
   major: string;
   email: string;
   mobile: string;
@@ -58,6 +59,7 @@ const EMPTY_FORM: AmbassadorFormState = {
   fullName: "", university: "", graduationYear: "", major: "", email: "", mobile: "",
   whyInterested: "", whyAI: "", whyGreat: "",
   involvements: [],
+  otherInvolvement: "",
   instagram: "", linkedin: "", facebook: "",
   anythingElse: "",
   agreeIndependent: false, agreeCommissions: false, agreeProfessional: false,
@@ -232,6 +234,15 @@ export default function AmbassadorForm() {
             </label>
           ))}
         </div>
+        {form.involvements.includes("Other") && (
+          <input
+            type="text"
+            value={form.otherInvolvement}
+            onChange={(e) => setField("otherInvolvement", e.target.value)}
+            placeholder="Please describe your involvement"
+            style={{ marginTop: 10, width: "100%" }}
+          />
+        )}
       </fieldset>
 
       <fieldset>

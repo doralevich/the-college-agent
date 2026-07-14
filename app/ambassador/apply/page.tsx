@@ -215,14 +215,17 @@ export default function AmbassadorApplyPage() {
           flex-direction: row !important;
           align-items: center;
           gap: 10px;
-          padding: 4px 0;
+          padding: 6px 0;
           cursor: pointer;
         }
-        .channel-option input {
+        .channel-option input[type="checkbox"] {
           width: 16px;
           height: 16px;
+          min-width: 16px;
           accent-color: var(--green);
           cursor: pointer;
+          margin: 0;
+          flex-shrink: 0;
         }
         .channel-option span {
           font-family: inherit !important;
@@ -231,6 +234,7 @@ export default function AmbassadorApplyPage() {
           letter-spacing: 0 !important;
           text-transform: none !important;
           color: var(--navy) !important;
+          line-height: 1.4;
         }
         .form-error {
           color: #c83d3d;
