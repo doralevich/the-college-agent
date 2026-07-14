@@ -34,7 +34,8 @@ type AmbassadorRequest = {
 
 const RECIPIENTS = [
   { email: "david@apolloclaw.ai", name: "David", type: "to" },
-  { email: "jiloralevich@gmail.com", name: "Jill Oralevich", type: "to" },
+  { email: "jilloralevich@gmail.com", name: "Jill Oralevich", type: "to" },
+  { email: "avashaw777@gmail.com", name: "Ava Shaw", type: "to" },
 ];
 
 function clean(value: unknown) {
@@ -178,6 +179,44 @@ export async function POST(req: NextRequest) {
             <p style="margin-top:16px;font-family:sans-serif;font-size:13px;color:#888">
               Source: thecollegeagent.ai/ambassador
             </p>
+          `,
+        },
+      }),
+    });
+
+    // Thank-you email to the applicant
+    await fetch("https://mandrillapp.com/api/1.0/messages/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        key: mandrillKey,
+        message: {
+          from_email: "noreply@thecollegeagent.ai",
+          from_name: "The College Agent",
+          to: [{ email, name: fullName, type: "to" }],
+          subject: "We received your College Agent Ambassador application!",
+          html: `
+            <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+              <div style="background:#0B1729;padding:32px 36px;border-radius:8px 8px 0 0">
+                <p style="color:#22C55E;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin:0 0 8px">The College Agent</p>
+                <h1 style="color:#fff;font-size:26px;font-weight:800;margin:0;line-height:1.2">Thanks for applying, ${escapeHtml(fullName.split(" ")[0])}.</h1>
+              </div>
+              <div style="background:#fff;border:1px solid #e8e8e8;border-top:none;padding:32px 36px;border-radius:0 0 8px 8px">
+                <p style="color:#333;font-size:15px;line-height:1.6;margin:0 0 16px">
+                  We got your application for the College Agent Campus Ambassador Program at ${escapeHtml(university)}. We review every application personally and will be in touch within a few days if it's a match.
+                </p>
+                <p style="color:#333;font-size:15px;line-height:1.6;margin:0 0 16px">
+                  In the meantime, feel free to explore your own College Agent at <a href="https://thecollegeagent.ai/build" style="color:#22C55E;text-decoration:none">thecollegeagent.ai/build</a>.
+                </p>
+                <p style="color:#333;font-size:15px;line-height:1.6;margin:0">
+                  Talk soon,<br />
+                  <strong>The College Agent Team</strong>
+                </p>
+              </div>
+              <p style="color:#aaa;font-size:12px;text-align:center;margin-top:20px">
+                thecollegeagent.ai &nbsp;&middot;&nbsp; A Division of Apollo Claw
+              </p>
+            </div>
           `,
         },
       }),
