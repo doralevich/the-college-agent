@@ -2,6 +2,7 @@ import { requirePlatformAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ApiError, json, readJson, route } from "@/lib/http";
 import { encryptForStorage, decryptSecret } from "@/lib/crypto/byo";
+import { logAudit } from "@/lib/audit";
 
 type Ctx = { params: Promise<{ id: string }> };
 type DB = ReturnType<typeof createAdminClient>;
@@ -72,7 +73,7 @@ export const GET = route(async (_req: Request, { params }: Ctx) => {
 // Upsert the owner's intake (one row per user). Each side is optional — the admin may save
 // just onboarding, just setup, or both. Writes the SAME tables the student's own forms do.
 export const PUT = route(async (req: Request, { params }: Ctx) => {
-  await requirePlatformAdmin();
+  const { user: admin } = await requirePlatformAdmin();
   const { id } = await params;
   const db = createAdminClient();
   const ownerId = await resolveOwnerId(db, id);
@@ -131,5 +132,12 @@ export const PUT = route(async (req: Request, { params }: Ctx) => {
     if (error) throw new ApiError(500, "db_error", error.message);
   }
 
+  await logAudit({
+    actorEmail: admin.email,
+    action: "intake.update",
+    target: ownerId,
+    metadata: { workspaceId: id, onboard: !!body.onboard, setup: !!body.setup },
+    req,
+  });
   return json({ ok: true });
 });

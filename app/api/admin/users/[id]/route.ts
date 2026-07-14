@@ -1,6 +1,7 @@
 import { requirePlatformAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { purgeUserAccount } from "@/lib/account-deletion";
+import { logAudit } from "@/lib/audit";
 import { ApiError, json, readJson, route } from "@/lib/http";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -12,7 +13,7 @@ type Ctx = { params: Promise<{ id: string }> };
 // Guardrail: the caller must echo the exact account email in the body ({ "confirm": "<email>" }).
 // This is irreversible and cross-tenant, so a fat-fingered id can't wipe the wrong account.
 export const DELETE = route(async (req: Request, { params }: Ctx) => {
-  await requirePlatformAdmin();
+  const { user: admin } = await requirePlatformAdmin();
   const { id } = await params;
   const db = createAdminClient();
 
@@ -33,6 +34,13 @@ export const DELETE = route(async (req: Request, { params }: Ctx) => {
   }
 
   const report = await purgeUserAccount({ userId: id, email });
+  await logAudit({
+    actorEmail: admin.email,
+    action: "user.delete",
+    target: email,
+    metadata: { userId: id, authUserDeleted: report.authUserDeleted, errorCount: report.errors.length },
+    req,
+  });
   // 207-ish semantics folded into 200: the report.errors array carries any per-step failures
   // for the admin to review. A hard failure (bad id, auth error) already threw above.
   return json({ deleted: report.authUserDeleted, report });

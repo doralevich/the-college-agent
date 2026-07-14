@@ -2,6 +2,7 @@ import { ApiError, json, readJson, route } from "@/lib/http";
 import { requireUser } from "@/lib/auth";
 import { isAdminEmail } from "@/config/admins";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { logAudit } from "@/lib/audit";
 import { getStripe } from "@/lib/stripe/client";
 import { approveAmbassador } from "@/lib/ambassador";
 import { sendAmbassadorWelcomeEmail } from "@/lib/email/ambassador-welcome";
@@ -52,9 +53,12 @@ type Body = {
 };
 
 export const POST = route(async (req) => {
-  await requireAdmin();
+  const user = await requireAdmin();
   const body = await readJson<Body>(req);
   const db = createAdminClient();
+
+  // Audit the admin action (approve/suspend/payout/fraud-review) — money + status changes.
+  await logAudit({ actorEmail: user.email, action: `ambassador.${body.action}`, target: body.id, req });
 
   switch (body.action) {
     case "approve": {
