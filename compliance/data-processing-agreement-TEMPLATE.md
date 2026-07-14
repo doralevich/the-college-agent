@@ -5,7 +5,7 @@
 > their own DPA/addendum; when they do, use theirs and map it against this checklist rather than
 > insisting on yours.
 
-**Between:** [LEGAL ENTITY NAME] ("Provider") and the institution ("Institution").
+**Between:** Apollo Claw ("Provider") and the institution ("Institution").
 **Product:** The College Agent. **Effective:** on signature.
 
 ## 1. Roles

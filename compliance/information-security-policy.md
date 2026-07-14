@@ -1,6 +1,6 @@
 # Information Security Policy — The College Agent
 
-**Owner:** [SECURITY OWNER] · **Entity:** [LEGAL ENTITY NAME] · **Effective:** 2026-07-14 · **Review:** annually
+**Owner:** David · **Entity:** Apollo Claw · **Effective:** 2026-07-14 · **Review:** annually
 
 A right-sized policy for a small SaaS team. It states what we protect, who's responsible, and the
 controls we hold ourselves to. It is deliberately concrete and matched to how the product is
@@ -12,9 +12,9 @@ processed by The College Agent. Covers all production systems (Vercel, Supabase,
 Mailchimp/Mandrill), source code, and the people with access to them.
 
 ## 2. Roles & responsibility
-- **[SECURITY OWNER]** is accountable for security decisions, access grants, and incident response.
+- **David** is accountable for security decisions, access grants, and incident response.
 - All contributors are responsible for following this policy and reporting concerns to
-  [SECURITY CONTACT].
+  security@apolloclaw.ai.
 
 ## 3. Access control
 - Administrative access is restricted to a **named allowlist**, enforced **server-side** on every
@@ -59,4 +59,4 @@ Mailchimp/Mandrill), source code, and the people with access to them.
 
 ## 10. Policy governance
 - This policy is reviewed at least annually and after any material change or incident.
-- Exceptions must be approved by [SECURITY OWNER] and recorded.
+- Exceptions must be approved by David and recorded.

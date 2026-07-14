@@ -1,12 +1,12 @@
 # Incident Response Plan — The College Agent
 
-**Owner:** [SECURITY OWNER] · **Entity:** [LEGAL ENTITY NAME] · **Effective:** 2026-07-14 · **Review:** annually
+**Owner:** David · **Entity:** Apollo Claw · **Effective:** 2026-07-14 · **Review:** annually
 
 What to do when something goes wrong — a data exposure, account compromise, or suspected breach.
 Kept short so it's actually usable under pressure.
 
 ## Report a security issue
-Email **[SECURITY CONTACT]**. Anyone — staff, students, or outside researchers — can report. Every
+Email **security@apolloclaw.ai**. Anyone — staff, students, or outside researchers — can report. Every
 report is acknowledged and triaged.
 
 ## Severity levels
@@ -17,7 +17,7 @@ report is acknowledged and triaged.
 
 ## The six steps
 1. **Detect & report** — capture what was observed, when, and by whom. Open an incident record.
-2. **Triage** — [SECURITY OWNER] assigns a severity and an owner.
+2. **Triage** — David assigns a severity and an owner.
 3. **Contain** — stop the bleeding: rotate exposed secrets, disable affected access, take an endpoint
    offline, or push an emergency fix. (Example precedent: the July 2026 database-policy fix was
    applied and verified within minutes of confirmation.)
@@ -35,10 +35,10 @@ party:
 - **Affected individuals** and any **regulators** are notified as required by applicable law
   (state breach-notification statutes, GDPR/CCPA where applicable).
 - Notifications describe what happened, what data was involved, what we've done, and what the
-  recipient should do. [SECURITY OWNER] approves all external notifications; involve legal counsel.
+  recipient should do. David approves all external notifications; involve legal counsel.
 
 ## Key contacts & systems
-- Security owner: [SECURITY OWNER] — [SECURITY CONTACT]
+- Security owner: David — security@apolloclaw.ai
 - Providers to engage as needed: Vercel, Supabase, Stripe (each has a security/abuse channel).
 - Where to act fast: Supabase (database, RLS, backups), Vercel (env secrets, redeploy/rollback),
   GitHub (revoke tokens, secret scanning).

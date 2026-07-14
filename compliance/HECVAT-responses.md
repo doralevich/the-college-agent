@@ -1,7 +1,7 @@
 # HECVAT Response Set — The College Agent
 
-**Vendor:** [LEGAL ENTITY NAME] (product: The College Agent — thecollegeagent.ai)
-**Prepared:** 2026-07-14 · **Security contact:** [SECURITY CONTACT]
+**Vendor:** Apollo Claw (product: The College Agent — thecollegeagent.ai)
+**Prepared:** 2026-07-14 · **Security contact:** security@apolloclaw.ai
 
 Pre-filled answers to the Higher Education Community Vendor Assessment Toolkit (HECVAT). These map
 to the actual controls documented in `SECURITY_NOTES.md`. Paste into the official HECVAT workbook
@@ -16,7 +16,7 @@ Legend: **Yes** / **No** / **Planned** / **N/A**.
 
 | # | Question | Answer |
 |---|---|---|
-| CO-1 | Company/product name and description | [LEGAL ENTITY NAME] — The College Agent, a personal AI assistant for college students. |
+| CO-1 | Company/product name and description | Apollo Claw — The College Agent, a personal AI assistant for college students. |
 | CO-2 | Do you have a documented information security program? | **Yes** — see `information-security-policy.md`. Adopted 2026. |
 | DO-1 | Can you provide a data-flow diagram / description? | **Yes** — student data is entered via the web app, stored in Supabase (Postgres), processed server-side; payments via Stripe; email via Mailchimp/Mandrill; agent runtime via Agent37. |
 | DO-2 | Do you have a security whitepaper / notes? | **Yes** — `SECURITY_NOTES.md` and the Security Posture Briefing. |

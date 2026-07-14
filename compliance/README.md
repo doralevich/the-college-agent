@@ -16,16 +16,18 @@ where noted, a lawyer's.
 | `incident-response-plan.md` | What to do if there's a breach | Draft | Fill placeholders; adopt |
 | `data-retention-and-deletion-policy.md` | What you keep, for how long, and how you delete it | Draft | Fill placeholders; adopt |
 
-## Fill these in once (they appear across the documents)
+## Details — filled in
 
-Search-and-replace these placeholders in every file:
+These are already populated across every document from what's known about the project:
 
-- `[LEGAL ENTITY NAME]` — the company that signs contracts (e.g. the LLC behind Apollo Claw / The College Agent).
-- `[SECURITY CONTACT]` — the email that receives security reports (recommend `security@apolloclaw.ai`).
-- `[SECURITY OWNER]` — the named person accountable for security (likely David).
-- `[US STATE]` — the state whose law governs your contracts.
+- **Entity:** Apollo Claw · **Security owner:** David · **Security contact:** security@apolloclaw.ai
 
-> Tell me those four values and I'll fill them in across all five documents for you.
+Two things to confirm when convenient (neither blocks anything):
+- **Exact registered entity name** — I used "Apollo Claw." If the contracting entity is a formal
+  LLC/Inc (e.g. "Apollo Claw LLC"), swap it in — it's the one field you don't want wrong on a signed
+  contract. One word and I'll update it everywhere.
+- **Governing-law state** — deliberately left for your attorney to set in the DPA (§9), alongside
+  term and liability.
 
 ## The only things that must be done by a human
 

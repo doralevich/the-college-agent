@@ -1,6 +1,6 @@
 # Data Retention & Deletion Policy — The College Agent
 
-**Owner:** [SECURITY OWNER] · **Entity:** [LEGAL ENTITY NAME] · **Effective:** 2026-07-14 · **Review:** annually
+**Owner:** David · **Entity:** Apollo Claw · **Effective:** 2026-07-14 · **Review:** annually
 
 What we keep, for how long, and how we delete it. Backs the deletion capability described in
 `SECURITY_NOTES.md` (Item 10) and answers the retention questions in HECVAT, FERPA, and privacy law.
@@ -34,11 +34,11 @@ account. **Billing records in Stripe are retained** per the schedule above; they
 redacted on request.
 
 Self-service export is available today (students can download their data); a self-service delete
-button is on the roadmap. Until then, deletion is handled promptly on request via [SECURITY CONTACT].
+button is on the roadmap. Until then, deletion is handled promptly on request via security@apolloclaw.ai.
 
 ## Rights requests
 Access, export, correction, and deletion requests are handled within the timeframe required by
-applicable law (e.g. GDPR: 30 days; CCPA: 45 days). Requests go to [SECURITY CONTACT].
+applicable law (e.g. GDPR: 30 days; CCPA: 45 days). Requests go to security@apolloclaw.ai.
 
 ## Institutional data
 For data processed on behalf of a university, retention and deletion follow the terms of the
