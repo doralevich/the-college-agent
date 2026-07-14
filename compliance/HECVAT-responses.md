@@ -38,7 +38,7 @@ Legend: **Yes** / **No** / **Planned** / **N/A**.
 | # | Question | Answer |
 |---|---|---|
 | AC-1 | Is access to production restricted and role-based? | **Yes** — administrative access is a server-side email allowlist enforced on every admin route and API; students reach only their own data via Row-Level Security. |
-| AC-2 | Is multi-factor authentication used for administrative access? | **Planned** — student/admin sign-in is passwordless email magic-link today; enforced MFA/SSO for admins is on the near-term roadmap. |
+| AC-2 | Is multi-factor authentication used for administrative access? | **Yes** — all administrative/infrastructure accounts (Supabase, Vercel, GitHub, Stripe, email) require MFA. The in-app admin console uses passwordless email magic-link (a possession factor); enforced in-app TOTP MFA is on the roadmap. |
 | AC-3 | Are credentials/secrets kept out of source code? | **Yes** — all secrets are server-side environment variables; verified absent from the repository and git history; commit-time secret scanning is active. |
 | AC-4 | Is least privilege applied to service accounts? | **Yes** — the browser uses a public key with no table access (RLS denies it); privileged operations use a server-only service role. |
 
@@ -52,7 +52,7 @@ Legend: **Yes** / **No** / **Planned** / **N/A**.
 | AP-4 | Is card data handled in scope? | **No** — Stripe handles all card data; the application never receives card numbers (PCI DSS SAQ-A scope). |
 | AP-5 | Are scheduled/automation endpoints authenticated? | **Yes** — scheduled jobs require a shared secret. |
 | IN-1 | Who is your infrastructure provider? | Vercel (application hosting) and Supabase (database, auth, storage), both on US infrastructure; Stripe for payments. |
-| IN-2 | Are managed backups in place? | **Yes** — provider-managed database backups (confirm point-in-time-restore tier). |
+| IN-2 | Are managed backups in place? | **Yes** — provider-managed database backups with **point-in-time recovery (PITR) enabled**. |
 
 ## Vulnerability & change management
 
