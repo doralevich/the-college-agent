@@ -294,6 +294,24 @@ after watching a preview deploy for violation reports, so a missed origin doesn'
 
 ---
 
+## Accepted risks (documented, revisited on review)
+
+- **`postcss` moderate advisory (GHSA-qx2v-qp2m-jg93), via Next.js.** Flagged by Dependabot. It is a
+  transitive dependency **inside Next.js itself** (`node_modules/next/node_modules/postcss`); the only
+  available "fix" (`npm audit fix --force`) would downgrade Next.js to v9 — a breaking change that would
+  take the app down. The advisory concerns XSS in PostCSS's CSS-stringify output, a build-time code path
+  not reachable by untrusted input in this app, so real-world exploitability here is negligible.
+  **Decision:** accept and monitor; it resolves on a future Next.js upgrade. (2026-07-14)
+
+## Post-hardening additions (2026-07-14)
+
+- **Audit logging** (`lib/audit.ts` + `audit_log` table, migration `0022`, applied to prod): sensitive
+  admin actions are recorded — account deletion, admin intake edits, ambassador approve/suspend/payout,
+  workspace deletion — with actor email, target, metadata, and IP. Best-effort (never breaks the action).
+  Feeds FERPA / SOC 2 evidence. Server-only table (RLS on, no policy).
+- **Cookie/consent banner** (`app/components/CookieConsent.tsx`): the Meta Pixel and Google Analytics now
+  load **only after the visitor accepts** (opt-in model), for GDPR/CCPA. Switchable to opt-out if desired.
+
 ## Item 10 — Data deletion capability + runbook — ✅ IMPLEMENTED
 
 ### Capability
