@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { Send } from "lucide-react";
 
-const GRAD_YEARS = ["2026", "2027", "2028", "2029", "2030", "2031+"];
+const STUDENT_STATUS = ["Pre-Freshman", "Freshman", "Sophomore", "Junior", "Senior", "Post-Graduate"];
 
 const INVOLVEMENTS = [
   "Student Organization Leader",
@@ -157,10 +157,10 @@ export default function AmbassadorForm() {
 
       <div className="form-grid two">
         <label>
-          <span>Graduation Year *</span>
+          <span>Current Student Status *</span>
           <select required value={form.graduationYear} onChange={(e) => setField("graduationYear", e.target.value)}>
-            <option value="">Select year...</option>
-            {GRAD_YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
+            <option value="">Select status...</option>
+            {STUDENT_STATUS.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </label>
         <label>
