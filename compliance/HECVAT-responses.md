@@ -52,7 +52,7 @@ Legend: **Yes** / **No** / **Planned** / **N/A**.
 | AP-4 | Is card data handled in scope? | **No** — Stripe handles all card data; the application never receives card numbers (PCI DSS SAQ-A scope). |
 | AP-5 | Are scheduled/automation endpoints authenticated? | **Yes** — scheduled jobs require a shared secret. |
 | IN-1 | Who is your infrastructure provider? | Vercel (application hosting) and Supabase (database, auth, storage), both on US infrastructure; Stripe for payments. |
-| IN-2 | Are managed backups in place? | **Yes** — provider-managed database backups (confirm point-in-time-restore tier). |
+| IN-2 | Are managed backups in place? | **Yes** — provider-managed database backups with **point-in-time recovery (PITR) enabled**. |
 
 ## Vulnerability & change management
 
