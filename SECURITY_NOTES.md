@@ -18,14 +18,18 @@ LLM prompt-injection hardening, and Google OAuth app verification.
 
 ## Deployment / activation checklist
 
-Several changes ship as code but only take effect once deployed and configured. **None of these
-have been applied to production — they await David's authorization.** Apply in this order:
+Several changes ship as code but only take effect once deployed and configured. **The critical RLS
+fix (step 2) was applied to production on 2026-07-14 with the owner's authorization; the remaining
+steps await the normal deploy.** Apply in this order:
 
 1. **Set env var `BYO_ENC_KEY`** (Vercel, all environments) — a long random secret (e.g.
    `openssl rand -base64 48`). Enables encryption-at-rest for student-supplied model keys.
    Until it is set, the code stores those keys as plaintext exactly as before (no regression).
-2. **Apply migration `0021_fix_setup_onboard_rls.sql`** — **CRITICAL, apply first.** Closes a
-   live data exposure (see Item 3). Independent of the env var.
+2. **Apply migration `0021_fix_setup_onboard_rls.sql`** — ✅ **APPLIED to production 2026-07-14.**
+   Closed the live data exposure (see Item 3). Verified post-apply: both tables show RLS enabled
+   with zero policies. The migration file remains in the repo/PR for consistency; it is idempotent
+   (`enable row level security` + `drop policy if exists`), so re-running it on the normal deploy is
+   a safe no-op.
 3. **Apply migration `0020_rate_limits.sql`** — creates the `rate_limits` table + `rate_limit_hit`
    function. Until applied, rate limiting fails **open** (allows traffic), so nothing breaks, but
    no limit is enforced.
@@ -126,9 +130,10 @@ grant on public tables, **any holder of the anon key could read every row**:
 
 This was a live exposure. The fix drops both policies (leaving RLS-on-no-policy, matching the
 server-only access pattern these tables actually use) and re-asserts `enable row level security`
-idempotently. **This migration should be applied to production first, ahead of everything else.**
-Note: encrypting the BYO keys (Item 2) reduces the blast radius of the key columns, but the
-RLS fix is what actually closes the read; both are needed.
+idempotently. **This migration was applied to production on 2026-07-14 (owner-authorized), ahead of
+everything else; verified afterward — both tables show RLS enabled with zero policies, so the public
+key can no longer read them.** Note: encrypting the BYO keys (Item 2) reduces the blast radius of the
+key columns, but the RLS fix is what actually closes the read; both are needed.
 
 ### Secondary finding — repo ↔ database drift
 
@@ -336,6 +341,9 @@ half-deleted account):
 ## Change log
 
 - **2026-07-14** — Initial hardening pass. Items 2, 7, 8, 10 implemented; Item 3 CRITICAL RLS
-  exposure found (live) and fixed (`0021`); Items 1, 4, 5, 6 verified passing; Item 9 flagged for
-  David. See the deployment/activation checklist above — nothing is live in production until David
-  applies the migrations, sets `BYO_ENC_KEY`, and runs the backfill.
+  exposure found (live) and fixed (`0021`); Items 1, 4, 5, 6 verified passing; Item 9 deferred
+  (branch protection) with the decision recorded.
+- **2026-07-14** — Migration `0021` **applied to production** with owner authorization, closing the
+  critical exposure; verified (both tables RLS-enabled, zero policies). Remaining activation steps
+  (`BYO_ENC_KEY`, migration `0020`, the encryption backfill, CSP enforce) still run through the
+  normal deploy.
