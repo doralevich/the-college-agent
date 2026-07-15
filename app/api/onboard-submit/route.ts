@@ -1,9 +1,14 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { getOptionalUserId } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { renameWorkspaceFromIntake } from "@/lib/workspaces";
+import { reconfigureExistingAgentForUser } from "@/lib/provisioning";
 import { buildSummaryPdf, pdfAttachment, type PdfSection } from "@/lib/email/pdf";
 import { limit } from "@/lib/rate-limit";
+
+// Re-pushing an edited intake to a live agent (below) waits for the box + an exec, so give the
+// post-response `after()` work room to finish beyond the default function timeout.
+export const maxDuration = 120;
 
 const supabase = createAdminClient();
 
@@ -117,6 +122,21 @@ export async function POST(req: NextRequest) {
       } catch (err) {
         console.error("onboard-submit: workspace rename failed:", err);
       }
+
+      // If this student already has a provisioned agent, this was an EDIT — push the refreshed
+      // intake (new classes, updated goals, …) to the live agent's brain so the change actually
+      // takes effect, not just the DB row. Runs after the response (`after()`) because the box
+      // reconfigure waits for the instance + an exec; a no-op when no agent exists yet.
+      const uid = userId;
+      after(async () => {
+        try {
+          const r = await reconfigureExistingAgentForUser(supabase, uid);
+          if (r.reconfigured) console.log("[onboard-submit:reconfigure]", uid, r.detail);
+          else console.log("[onboard-submit:reconfigure:skip]", uid, r.detail);
+        } catch (err) {
+          console.error("[onboard-submit:reconfigure] failed:", err);
+        }
+      });
     }
 
     const mandrillKey = process.env.MANDRILL_API_KEY;

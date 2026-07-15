@@ -102,11 +102,46 @@ export function buildSoul(p: HermesPersonaInput): string {
   ].join("\n") + "\n";
 }
 
+// Render the student's course schedule into one compact line for USER.md. Prefers the
+// structured `classes` array (the class-list onboarding step: {name, days, time, location,
+// professor, sku}); falls back to the legacy `currentClasses` text blob. The `sku` is an
+// internal identifier and is intentionally omitted. Capped so a long schedule can't swallow
+// the whole profile budget. THIS is the field that was silently dropped before — a college
+// agent is close to useless without knowing what classes the student is actually taking.
+function renderClasses(qn: Record<string, unknown> | null | undefined, cap = 600): string {
+  if (!qn) return "";
+  let out = "";
+  const arr = qn.classes;
+  if (Array.isArray(arr)) {
+    out = arr
+      .map((c) => {
+        if (!c || typeof c !== "object") return "";
+        const e = c as Record<string, unknown>;
+        const name = String(e.name ?? "").trim();
+        if (!name) return "";
+        const meta = [e.days, e.time, e.location, e.professor]
+          .map((s) => String(s ?? "").trim())
+          .filter(Boolean)
+          .join(", ");
+        return meta ? `${name} (${meta})` : name;
+      })
+      .filter(Boolean)
+      .join("; ");
+  }
+  if (!out) {
+    const legacy = qn.currentClasses; // "NAME - days - time - location - professor - sku; ..."
+    out = typeof legacy === "string" ? legacy.trim() : "";
+  }
+  return out.length > cap ? out.slice(0, cap).trimEnd() + "…" : out;
+}
+
 // ~/.hermes/memories/USER.md — the durable profile of the STUDENT. This is Hermes' "user profile"
 // memory file, auto-injected into every session. Curated FACTS only, entries separated by the `§`
-// section sign Hermes' memory format uses, packed most-important-first and capped to the docs'
-// ~1,375-char (~500-token) budget (we stop well short so nothing gets truncated mid-fact).
-const USER_MD_BUDGET = 1300;
+// section sign Hermes' memory format uses, packed most-important-first and capped to Hermes'
+// ~500-token budget (~1,600 chars of English) so nothing gets truncated mid-fact. Ordering is
+// deliberate: the academics a college agent needs to actually be useful — classes, LMS, priorities,
+// goals — come FIRST, ahead of softer social/context fields, so they survive the budget.
+const USER_MD_BUDGET = 1600;
 export function buildUserProfile(p: HermesPersonaInput): string {
   const entries: string[] = [];
   const add = (label: string, val: string) => {
@@ -122,11 +157,32 @@ export function buildUserProfile(p: HermesPersonaInput): string {
   add("Wants handled", q(p, "staffFocus"));
   add("Coordinates with", q(p, "coordinateWith"));
   add("Crunch periods", q(p, "crunchTimes"));
+  // --- Academics: the heart of what a college agent needs to be useful (kept high so the
+  //     budget never drops them). Classes were previously collected but never rendered here. ---
   add("Year", (p.year || "").trim());
-  add("Major", (p.major || "").trim());
+  add("Major", [p.major?.trim(), q(p, "minor") && `minor in ${q(p, "minor")}`].filter(Boolean).join(", "));
+  add("Current classes", renderClasses(p.questionnaire));
+  add("Learning platform (LMS)", q(p, "lmsType"));
   add("Top priority this semester", q(p, "topPriority"));
   add("Wants the agent to handle first", q(p, "agentHandleFirst"));
+  add("GPA goal", q(p, "gpaGoal"));
   add("Academic goal", q(p, "academicGoal"));
+  add("Academic challenges", q(p, "academicChallenges"));
+  add(
+    "Study habits",
+    [q(p, "studyStyle"), q(p, "studyMethods"), q(p, "studyTime") && `best ${q(p, "studyTime")}`, q(p, "studyLocation")]
+      .filter(Boolean)
+      .join("; ")
+  );
+  add("Typical class days", q(p, "classDays"));
+  add(
+    "Daily rhythm",
+    [q(p, "wakeTime") && `up ${q(p, "wakeTime")}`, q(p, "sleepTime") && `sleep ${q(p, "sleepTime")}`, q(p, "productiveTime") && `most productive ${q(p, "productiveTime")}`]
+      .filter(Boolean)
+      .join(", ")
+  );
+  add("Work / job", [q(p, "workStatus"), q(p, "weeklyHours") && `${q(p, "weeklyHours")}/wk`].filter(Boolean).join(", "));
+  // --- Goals & the softer context (dropped first if the budget is tight) ---
   add("Career goal", q(p, "careerGoal"));
   add("Personal goal", q(p, "personalGoal"));
   add("Summer plans", q(p, "summerPlans"));

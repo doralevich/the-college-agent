@@ -1,8 +1,14 @@
+import { after } from "next/server";
 import { requirePlatformAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ApiError, json, readJson, route } from "@/lib/http";
 import { encryptForStorage, decryptSecret } from "@/lib/crypto/byo";
+import { reconfigureExistingAgentForUser } from "@/lib/provisioning";
 import { logAudit } from "@/lib/audit";
+
+// Re-pushing the edited intake to a live agent waits for the box + an exec, so give the
+// post-response `after()` work room beyond the default function timeout.
+export const maxDuration = 120;
 
 type Ctx = { params: Promise<{ id: string }> };
 type DB = ReturnType<typeof createAdminClient>;
@@ -139,5 +145,18 @@ export const PUT = route(async (req: Request, { params }: Ctx) => {
     metadata: { workspaceId: id, onboard: !!body.onboard, setup: !!body.setup },
     req,
   });
+
+  // If the student already has a provisioned agent, push the edited intake to its brain so an
+  // operator's fix actually reaches the live agent (not just the DB row). After the response,
+  // best-effort; a no-op when no agent exists yet.
+  after(async () => {
+    try {
+      const r = await reconfigureExistingAgentForUser(db, ownerId);
+      console.log(`[admin:intake:reconfigure${r.reconfigured ? "" : ":skip"}]`, ownerId, r.detail);
+    } catch (err) {
+      console.error("[admin:intake:reconfigure] failed:", err);
+    }
+  });
+
   return json({ ok: true });
 });

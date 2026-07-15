@@ -118,3 +118,39 @@ export async function configureAgentFromIntake(
     return { configured: false, detail: `configure failed: ${(e as Error).message}` };
   }
 }
+
+// Resolve the Agent37 instance id for a user's (single) agent: user -> workspace -> agents row.
+async function findAgent37IdForUser(db: DB, userId: string): Promise<string | null> {
+  const { data: ms } = await db.from("memberships").select("workspace_id").eq("user_id", userId).limit(1);
+  const workspaceId = ms?.[0]?.workspace_id as string | undefined;
+  if (!workspaceId) return null;
+  const { data: agentRows } = await db
+    .from("agents")
+    .select("agent37_id")
+    .eq("workspace_id", workspaceId)
+    .limit(1);
+  return (agentRows?.[0]?.agent37_id as string | undefined) ?? null;
+}
+
+// Push a student's LATEST intake to their ALREADY-provisioned agent. This is what makes an
+// intake edit actually reach the brain: initial provisioning early-returns once an agent
+// exists, so without this the live agent kept its first-provision SOUL.md/USER.md forever
+// (e.g. classes added after signup never showed up). No-op (skipped) when the student has no
+// agent yet — the normal /api/provision path does the first-time config. Best-effort; never
+// throws. Meant to be run AFTER the intake row is saved (ideally via `after()` so the form
+// response isn't blocked by the box's reconfigure, which waits for the instance + exec).
+export async function reconfigureExistingAgentForUser(
+  db: DB,
+  userId: string
+): Promise<{ reconfigured: boolean; detail: string }> {
+  try {
+    const agent37Id = await findAgent37IdForUser(db, userId);
+    if (!agent37Id) return { reconfigured: false, detail: "no agent yet — nothing to reconfigure" };
+    const { onboard, setup } = await readProvisioningIntake(db, userId);
+    if (!onboard) return { reconfigured: false, detail: "no onboard intake" };
+    const r = await configureAgentFromIntake(agent37Id, onboard, setup);
+    return { reconfigured: r.configured, detail: r.detail };
+  } catch (e) {
+    return { reconfigured: false, detail: `reconfigure failed: ${(e as Error).message}` };
+  }
+}

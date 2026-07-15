@@ -70,7 +70,7 @@ describe("buildUserProfile", () => {
     expect(profile).toContain("§");
   });
 
-  it("stays within the ~1300-char budget, dropping lowest-priority facts rather than truncating", () => {
+  it("stays within the ~1600-char budget, dropping lowest-priority facts rather than truncating", () => {
     const long = "x".repeat(280);
     const profile = buildUserProfile({
       firstName: "Sam",
@@ -84,9 +84,52 @@ describe("buildUserProfile", () => {
         anythingElse: long,
       },
     });
-    expect(profile.trimEnd().length).toBeLessThanOrEqual(1300);
+    expect(profile.trimEnd().length).toBeLessThanOrEqual(1600);
     // The highest-priority fact survives the packing.
     expect(profile).toContain("Name: Sam");
+  });
+
+  // The reported bug: classes were collected at intake but never reached the agent's brain.
+  it("renders the structured class schedule (the fix)", () => {
+    const profile = buildUserProfile({
+      firstName: "Sam",
+      school: "State U",
+      questionnaire: {
+        classes: [
+          { name: "MATH 221", days: "Mon/Wed", time: "10:00", location: "Rm 204", professor: "Dr. Chen", sku: "SECRETSKU" },
+          { name: "BIO 101", days: "Tue/Thu", time: "13:00", location: "", professor: "", sku: "" },
+        ],
+      },
+    });
+    expect(profile).toContain("Current classes:");
+    expect(profile).toContain("MATH 221 (Mon/Wed, 10:00, Rm 204, Dr. Chen)");
+    expect(profile).toContain("BIO 101 (Tue/Thu, 13:00)");
+    // The internal `sku` is never surfaced to the agent.
+    expect(profile).not.toContain("SECRETSKU");
+  });
+
+  it("falls back to the legacy currentClasses text blob when there's no structured array", () => {
+    const profile = buildUserProfile({
+      questionnaire: { currentClasses: "PSYC 100 - Mon - 9:00; ENGL 210 - Fri - 11:00" },
+    });
+    expect(profile).toContain("Current classes: PSYC 100 - Mon - 9:00; ENGL 210 - Fri - 11:00");
+  });
+
+  it("keeps classes even when lower-priority facts are dropped for budget", () => {
+    const long = "y".repeat(280);
+    const profile = buildUserProfile({
+      firstName: "Sam",
+      major: "CS",
+      questionnaire: {
+        classes: [{ name: "CS 340", days: "MWF", time: "9:00", location: "", professor: "", sku: "" }],
+        careerGoal: long,
+        personalGoal: long,
+        summerPlans: long,
+        clubs: long,
+        anythingElse: long,
+      },
+    });
+    expect(profile).toContain("CS 340");
   });
 });
 
