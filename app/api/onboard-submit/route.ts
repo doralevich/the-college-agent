@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { renameWorkspaceFromIntake } from "@/lib/workspaces";
 import { reconfigureExistingAgentForUser } from "@/lib/provisioning";
 import { INTAKE_GROUPS, formatIntakeValue } from "@/lib/intake-schema";
+import { extractResumeText } from "@/lib/resume";
 import { buildSummaryPdf, pdfAttachment, type PdfSection } from "@/lib/email/pdf";
 import { limit } from "@/lib/rate-limit";
 
@@ -30,6 +31,10 @@ export async function POST(req: NextRequest) {
 
     if (resumeFile && resumeFile.size > 0) {
       const buffer = Buffer.from(await resumeFile.arrayBuffer());
+      // Extract the résumé text so the agent gets the actual content (best-effort, PDF only) —
+      // it rides along in the questionnaire blob and lands in the agent's full-profile file.
+      const resumeText = await extractResumeText(buffer, resumeFile.name);
+      if (resumeText) data.resumeText = resumeText;
       const ext = resumeFile.name.split(".").pop() || "pdf";
       const fileName = `resumes/${Date.now()}-${data.firstName}-${data.lastName}.${ext}`.replace(/\s+/g, "-").toLowerCase();
       const { error: storageError } = await supabase.storage

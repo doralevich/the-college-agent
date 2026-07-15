@@ -92,6 +92,32 @@ describe("buildFullProfile", () => {
     // No wellbeing answers -> no wellbeing section.
     expect(doc).not.toContain("## Mental Health & Wellbeing");
   });
+
+  it("includes the LinkedIn URL and the extracted résumé text", () => {
+    const doc = buildFullProfile({
+      firstName: "Sam",
+      resumeUrl: "https://files.example.com/sam.pdf",
+      questionnaire: {
+        linkedin: "linkedin.com/in/samlee",
+        resumeText: "SAM LEE — Computer Science. Internship at Acme. Skills: Python, React.",
+      },
+    });
+    expect(doc).toContain("LinkedIn:** linkedin.com/in/samlee");
+    expect(doc).toContain("## Résumé");
+    expect(doc).toContain("Internship at Acme");
+  });
+});
+
+describe("buildUserProfile — career links", () => {
+  it("surfaces LinkedIn and flags the résumé as on file", () => {
+    const profile = buildUserProfile({
+      firstName: "Sam",
+      resumeUrl: "https://files.example.com/sam.pdf",
+      questionnaire: { linkedin: "linkedin.com/in/samlee" },
+    });
+    expect(profile).toContain("LinkedIn: linkedin.com/in/samlee");
+    expect(profile).toContain("Résumé on file:");
+  });
 });
 
 describe("buildUserProfile", () => {

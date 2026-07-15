@@ -37,7 +37,8 @@
     "streamdown": "^2.5.0",
     "stripe": "^22.2.3",
     "tailwind-merge": "^2.6.1",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "unpdf": "^1.6.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
