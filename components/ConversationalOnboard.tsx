@@ -44,6 +44,89 @@ const GUY_PRESETS = Array.from(
   (_, i) => `/avatars/guy-${String(i + 1).padStart(2, "0")}.webp`
 );
 
+// Optional résumé upload — a single document, kept in component state and submitted as its
+// own multipart part (mirrors the avatar). No preview; just the filename with a remove.
+function ResumeUpload({
+  resumeFile,
+  disabled,
+  accept,
+  setResumeFile,
+}: {
+  resumeFile: File | null;
+  disabled: boolean;
+  accept: string;
+  setResumeFile: (f: File | null) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const btn: React.CSSProperties = {
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+    fontSize: 14,
+    fontWeight: 600,
+    padding: "8px 14px",
+    borderRadius: 999,
+    border: `1.5px solid ${T.line}`,
+    background: T.card,
+    color: T.ink,
+    cursor: disabled ? "not-allowed" : "pointer",
+  };
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <input
+        ref={inputRef}
+        type="file"
+        accept={accept}
+        disabled={disabled}
+        style={{ display: "none" }}
+        onChange={(e: ChangeEvent<HTMLInputElement>) => setResumeFile(e.target.files?.[0] ?? null)}
+      />
+      {resumeFile ? (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "12px 14px",
+            border: `1.5px solid ${T.green}`,
+            borderRadius: 10,
+            background: T.greenSoft,
+          }}
+        >
+          <span aria-hidden style={{ fontSize: 18 }}>📄</span>
+          <span
+            style={{
+              flex: 1,
+              minWidth: 0,
+              fontFamily: "'DM Sans', system-ui, sans-serif",
+              fontSize: 15,
+              color: T.ink,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {resumeFile.name}
+          </span>
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => {
+              setResumeFile(null);
+              if (inputRef.current) inputRef.current.value = "";
+            }}
+            style={{ ...btn, padding: "6px 10px" }}
+          >
+            Remove
+          </button>
+        </div>
+      ) : (
+        <button type="button" disabled={disabled} onClick={() => inputRef.current?.click()} style={btn}>
+          Choose a file (PDF or Word)
+        </button>
+      )}
+    </div>
+  );
+}
+
 function AvatarPicker({
   avatarFile,
   avatarPreview,
@@ -305,6 +388,9 @@ type Step =
   // choices like "Not yet" / "None" at the top of the list.
   | { kind: "select"; key: TextKey; prompt: string; placeholder?: string; groups: MajorGroup[]; extraOptions?: string[]; required?: boolean; tier?: Tier }
   | { kind: "image"; key: "avatarFile"; prompt: string; required?: boolean }
+  // Optional document upload (the résumé). Held in component state, not FormState, and
+  // submitted as its own multipart part — same as the avatar image.
+  | { kind: "file"; key: "resumeFile"; prompt: string; note?: string; accept?: string; tier?: Tier; showIf?: (form: FormState) => boolean }
   | { kind: "intro"; key: "__intro"; prompt: string }
   // Read-only message bubble (no input, no answer). Used to set up a section.
   | { kind: "info"; key: string; prompt: string }
@@ -326,6 +412,7 @@ type TextKey =
   | "personalEmail"
   | "phone"
   | "school"
+  | "linkedin"
   | "major"
   | "minor"
   | "greekOrg"
@@ -458,6 +545,24 @@ const STEPS: Step[] = [
     showIf: isStudent,
   },
   {
+    kind: "file",
+    key: "resumeFile",
+    prompt: "Upload your résumé",
+    note: "Optional, but it makes me far more useful — I'll use it for job and internship help, applications, and interview prep. PDF or Word.",
+    accept: ".pdf,.doc,.docx",
+    tier: 3,
+    showIf: isStudent,
+  },
+  {
+    kind: "text",
+    key: "linkedin",
+    prompt: "What's your LinkedIn?",
+    note: "Optional — paste your profile URL so I can help with networking, your profile, and the internship/job search.",
+    placeholder: "linkedin.com/in/you",
+    tier: 3,
+    showIf: isStudent,
+  },
+  {
     kind: "textarea",
     key: "anythingElse",
     prompt: "Is there anything else you'd like me to know?",
@@ -483,6 +588,7 @@ type FormState = {
   personalEmail: string;
   phone: string;
   school: string;
+  linkedin: string;
   topPriority: string[];
   agentHandleFirst: string[];
   responseStyle: string[];
@@ -528,6 +634,7 @@ const EMPTY: FormState = {
   personalEmail: "",
   phone: "",
   school: "",
+  linkedin: "",
   topPriority: [],
   agentHandleFirst: [],
   responseStyle: [],
@@ -672,6 +779,9 @@ export function ConversationalOnboard({
   // only — students who refresh mid-flow keep their text answers but re-pick the image.
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  // Résumé document — same as the avatar, held in component state (not localStorage) and
+  // submitted as its own multipart part.
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
   // Draft class being filled out before it lands in form.classes.
   const [classDraft, setClassDraft] = useState<ClassEntry>(EMPTY_CLASS);
   // Which "what to do next" prompt is showing during the build wait.
@@ -789,6 +899,7 @@ export function ConversationalOnboard({
     if (step.kind === "intro") return "Ready, let's go!";
     if (step.kind === "info") return "Got it.";
     if (step.kind === "image") return avatarFile ? avatarFile.name : "(using the default bot)";
+    if (step.kind === "file") return resumeFile ? resumeFile.name : "(none uploaded)";
     if (step.kind === "branch") {
       const v = form[step.key];
       if (v === "yes") return step.yesLabel ?? "Yes";
@@ -811,7 +922,7 @@ export function ConversationalOnboard({
   }
 
   function isRequired(step: Step): boolean {
-    if (step.kind === "intro" || step.kind === "info" || step.kind === "image") return false;
+    if (step.kind === "intro" || step.kind === "info" || step.kind === "image" || step.kind === "file") return false;
     if (step.kind === "branch") return true;
     if (step.kind === "classList" || step.kind === "academics") return false;
     return !!step.required;
@@ -820,6 +931,7 @@ export function ConversationalOnboard({
   function isAnswered(step: Step): boolean {
     if (step.kind === "intro" || step.kind === "info") return true;
     if (step.kind === "image") return !!avatarFile;
+    if (step.kind === "file") return true; // optional — Continue is always enabled
     if (step.kind === "branch") {
       const v = form[step.key];
       return v === "yes" || v === "no";
@@ -833,7 +945,7 @@ export function ConversationalOnboard({
 
   function validateCurrent(): string | null {
     if (current.kind === "intro" || current.kind === "info") return null;
-    if (current.kind === "image") return null;
+    if (current.kind === "image" || current.kind === "file") return null;
     if (current.kind === "classList" || current.kind === "academics") return null;
     if (current.kind === "branch") {
       const v = form[current.key];
@@ -897,6 +1009,7 @@ export function ConversationalOnboard({
           personalEmail: form.personalEmail.trim(),
           phone: form.phone.trim(),
           school: form.school.trim(),
+          linkedin: form.linkedin.trim(),
           topPriority: form.topPriority,
           agentHandleFirst: form.agentHandleFirst,
           responseStyle: form.responseStyle,
@@ -930,6 +1043,7 @@ export function ConversationalOnboard({
         }),
       );
       if (avatarFile) body.append("avatar", avatarFile);
+      if (resumeFile) body.append("resume", resumeFile);
       const res = await fetch("/api/onboard-submit", { method: "POST", body });
       if (!res.ok) throw new Error("Couldn't save your answers. Try again?");
       try {
@@ -1184,6 +1298,8 @@ export function ConversationalOnboard({
                   return file ? URL.createObjectURL(file) : null;
                 });
               }}
+              resumeFile={resumeFile}
+              setResumeFile={setResumeFile}
               classDraft={classDraft}
               setClassDraft={setClassDraft}
               addClass={() => {
@@ -1444,6 +1560,8 @@ function Input({
   avatarFile,
   avatarPreview,
   setAvatar,
+  resumeFile,
+  setResumeFile,
   classDraft,
   setClassDraft,
   addClass,
@@ -1457,6 +1575,8 @@ function Input({
   avatarFile: File | null;
   avatarPreview: string | null;
   setAvatar: (file: File | null) => void;
+  resumeFile: File | null;
+  setResumeFile: (file: File | null) => void;
   classDraft: ClassEntry;
   setClassDraft: (c: ClassEntry) => void;
   addClass: () => void;
@@ -1528,6 +1648,16 @@ function Input({
         avatarPreview={avatarPreview}
         disabled={disabled}
         setAvatar={setAvatar}
+      />
+    );
+  }
+  if (step.kind === "file") {
+    return (
+      <ResumeUpload
+        resumeFile={resumeFile}
+        disabled={disabled}
+        accept={step.accept ?? ".pdf,.doc,.docx"}
+        setResumeFile={setResumeFile}
       />
     );
   }

@@ -22,6 +22,7 @@ export const INTAKE_GROUPS: IntakeGroup[] = [
       ["personalEmail", "Personal Email"],
       ["phone", "Phone"],
       ["school", "School"],
+      ["linkedin", "LinkedIn"],
       ["agentName", "Agent Name"],
       ["year", "Year"],
       ["major", "Major"],

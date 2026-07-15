@@ -214,6 +214,8 @@ export function buildUserProfile(p: HermesPersonaInput): string {
   add("Dream company", q(p, "dreamCompany"));
   add("Internship / job search", [q(p, "internshipStatus"), q(p, "jobSearchActivities")].filter(Boolean).join("; "));
   add("Graduation year", q(p, "graduationYear"));
+  add("LinkedIn", q(p, "linkedin"));
+  add("Résumé on file", p.resumeUrl ? "yes — full text in the profile file" : "");
   // --- Working style: the tools they live in + how they like to communicate ---
   add(
     "Tools they use",
@@ -272,7 +274,13 @@ export function buildFullProfile(p: HermesPersonaInput): string {
     if (lines.length) out.push(`## ${group.heading}`, ...lines, "");
   }
 
-  if (p.resumeUrl) out.push("## Résumé", `- Uploaded résumé (fetch to read): ${p.resumeUrl}`, "");
+  const resumeText = typeof qn.resumeText === "string" ? qn.resumeText.trim() : "";
+  if (p.resumeUrl || resumeText) {
+    out.push("## Résumé");
+    if (p.resumeUrl) out.push(`- File: ${p.resumeUrl}`);
+    if (resumeText) out.push("", "Extracted text:", "```", resumeText, "```");
+    out.push("");
+  }
 
   return out.join("\n").trimEnd() + "\n";
 }
