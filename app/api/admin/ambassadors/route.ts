@@ -1,5 +1,5 @@
 import { ApiError, json, readJson, route } from "@/lib/http";
-import { requireUser } from "@/lib/auth";
+import { requireUser, assertStepUp } from "@/lib/auth";
 import { isAdminEmail } from "@/config/admins";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logAudit } from "@/lib/audit";
@@ -13,8 +13,11 @@ import { sendAmbassadorWelcomeEmail } from "@/lib/email/ambassador-welcome";
 // Releasing funds is never automated (PRD automation boundary).
 
 async function requireAdmin() {
-  const { user } = await requireUser();
+  const { supabase, user } = await requireUser();
+  // 404 (not 403) here so this route never confirms its own existence to a non-admin.
   if (!isAdminEmail(user.email)) throw new ApiError(404, "not_found", "Not found");
+  // Same enforced second factor as every other admin surface.
+  await assertStepUp(supabase);
   return user;
 }
 

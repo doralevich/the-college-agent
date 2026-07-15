@@ -23,6 +23,22 @@ export async function requireUser() {
   return { supabase, user };
 }
 
+// Enforced admin second factor. Platform admins must have completed a TOTP challenge
+// *this session* — i.e. the access token's assurance level is `aal2` — before any admin
+// privilege is honored. `getAuthenticatorAssuranceLevel()` decodes the JWT locally (no
+// network round-trip), so this is cheap enough to call on every admin request. Throws a
+// distinct `mfa_required` 403 so the caller can tell "not an admin" from "step up first".
+// An admin with no factor yet is at `aal1`; the /admin console walks them through
+// enrollment (see AdminMfaGate), so this never deadlocks — the enroll/verify calls go
+// straight to Supabase Auth, not through our admin routes.
+export async function assertStepUp(db: DB): Promise<void> {
+  const { data, error } = await db.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (error) throw new ApiError(500, "mfa_error", error.message);
+  if (data?.currentLevel !== "aal2") {
+    throw new ApiError(403, "mfa_required", "Two-factor step-up required for admin access.");
+  }
+}
+
 // Resolve the logged-in user's id without throwing — for public routes that accept
 // both authenticated and anonymous submissions. Returns null when there's no session
 // or the auth client can't be constructed.
@@ -85,6 +101,9 @@ export async function requireAgentAccess(agent37Id: string, level: "member" | "a
   const { supabase, user } = await requireUser();
 
   if (isAdminEmail(user.email)) {
+    // The cross-tenant god-view bypass is an admin privilege, so it too requires the
+    // second factor — an admin operating at aal1 gets no more reach than a normal user.
+    await assertStepUp(supabase);
     const row = await getAgentRow(createAdminClient(), agent37Id);
     return { supabase, user, row, isPlatformAdmin: true as const };
   }
