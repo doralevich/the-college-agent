@@ -34,12 +34,17 @@ party:
   our agreement with them** (commonly 72 hours; FERPA agreements may specify shorter).
 - **Affected individuals** and any **regulators** are notified as required by applicable law
   (state breach-notification statutes, GDPR/CCPA where applicable).
+- **Runtime layer:** for an incident originating in the agent-runtime platform (Agent37), Agent37's
+  published breach-notification policy governs the timeline; bespoke contractual notification windows
+  require an Agent37 enterprise agreement. We relay runtime-layer notifications to affected
+  institutions under the same "without undue delay" standard above.
 - Notifications describe what happened, what data was involved, what we've done, and what the
   recipient should do. David approves all external notifications; involve legal counsel.
 
 ## Key contacts & systems
 - Security owner: David — security@apolloclaw.ai
-- Providers to engage as needed: Vercel, Supabase, Stripe (each has a security/abuse channel).
+- Providers to engage as needed: Vercel, Supabase, Stripe, and Agent37 for runtime-layer incidents
+  (each has a security/abuse channel; Agent37 posture and contacts at agent37.trust.site).
 - Where to act fast: Supabase (database, RLS, backups), Vercel (env secrets, redeploy/rollback),
   GitHub (revoke tokens, secret scanning).
 

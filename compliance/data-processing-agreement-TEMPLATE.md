@@ -41,9 +41,17 @@ Incident Response Plan, and cooperates with the Institution's obligations.
 
 ## 6. Sub-processors
 The Provider uses the following sub-processors, each bound to equivalent data-protection obligations:
-Vercel (hosting, US), Supabase (database/storage, US), Stripe (payments, US), Agent37 (agent
-runtime), Mailchimp/Mandrill (email). The Provider gives notice before adding a sub-processor that
+Vercel (hosting, US), Supabase (database/storage, US), Stripe (payments, US), Agent37 — Hermes agent
+runtime, Mailchimp/Mandrill (email). The Provider gives notice before adding a sub-processor that
 handles education records.
+
+> **Counsel note.** The agent-runtime sub-processor (Agent37) operates under its own standard terms;
+> its current sub-processor list, security posture, and policies are published in its Trust Center
+> (agent37.trust.site). Under the Provider's current Agent37 plan, the runtime sub-processor does
+> **not** execute custom DPAs or bespoke advance-change-notification commitments — those require a
+> separately negotiated Agent37 enterprise agreement. If an Institution requires contractual
+> flow-down at the runtime layer (custom notification windows, audit rights, or a signed
+> sub-processor DPA), budget for the Agent37 enterprise tier before committing to it here.
 
 ## 7. Return & deletion
 On termination or on the Institution's request, the Provider deletes or returns all Institution
@@ -51,8 +59,10 @@ education records within [30] days, using the process in the Data Retention & De
 confirms completion in writing. Billing/financial records may be retained as required by law.
 
 ## 8. Audit & assurance
-The Provider will respond to reasonable security questionnaires (e.g. HECVAT) and, when available,
-provide its SOC 2 report. [Optional: audit rights on reasonable notice.]
+The Provider will respond to reasonable security questionnaires (e.g. HECVAT). The agent-runtime
+platform (Agent37) is undergoing SOC 2; a Type 1 report is available on request through its Trust
+Center (agent37.trust.site). The Provider's own attestation is on the roadmap. [Optional: audit
+rights on reasonable notice.]
 
 ## 9. Term, governing law, liability
 [To be completed with counsel — term, governing law of [US STATE], liability, indemnification.]
