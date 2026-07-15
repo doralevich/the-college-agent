@@ -4,6 +4,7 @@ import { decryptSecret } from "@/lib/crypto/byo";
 import {
   buildSoul,
   buildUserProfile,
+  buildFullProfile,
   buildCheckinPrompt,
   mapCheckinToCron,
   configureHermes,
@@ -24,6 +25,7 @@ export type OnboardIntake = {
   major: string | null;
   agent_name: string | null;
   questionnaire: Record<string, unknown> | null;
+  resume_url: string | null;
 } | null;
 
 export type SetupIntake = {
@@ -42,7 +44,7 @@ export async function readProvisioningIntake(
   const [onboardRes, setupRes] = await Promise.all([
     db
       .from("onboard_submissions")
-      .select("first_name, last_name, school, year, major, agent_name, questionnaire")
+      .select("first_name, last_name, school, year, major, agent_name, questionnaire, resume_url")
       .eq("user_id", userId)
       .order("submitted_at", { ascending: false })
       .limit(1)
@@ -85,9 +87,11 @@ export async function configureAgentFromIntake(
     year: onboard?.year ?? null,
     major: onboard?.major ?? null,
     questionnaire: onboard?.questionnaire ?? null,
+    resumeUrl: onboard?.resume_url ?? null,
   };
   const soul = buildSoul(persona);
   const userProfile = buildUserProfile(persona);
+  const fullProfile = buildFullProfile(persona);
 
   // A scheduled check-in only makes sense when Telegram is connected (it's the delivery
   // channel) and the chosen cadence maps to a real cron schedule; otherwise we skip it and
@@ -111,6 +115,7 @@ export async function configureAgentFromIntake(
       openaiKey: decryptSecret(setup?.openai_key) ?? undefined,
       soul,
       userProfile,
+      fullProfile,
       checkin,
     });
     return { configured: r.ok, detail: r.detail };

@@ -3,6 +3,7 @@ import { getOptionalUserId } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { renameWorkspaceFromIntake } from "@/lib/workspaces";
 import { reconfigureExistingAgentForUser } from "@/lib/provisioning";
+import { INTAKE_GROUPS, formatIntakeValue } from "@/lib/intake-schema";
 import { buildSummaryPdf, pdfAttachment, type PdfSection } from "@/lib/email/pdf";
 import { limit } from "@/lib/rate-limit";
 
@@ -11,25 +12,6 @@ import { limit } from "@/lib/rate-limit";
 export const maxDuration = 120;
 
 const supabase = createAdminClient();
-
-// The onboarding questionnaire, grouped to mirror the 8 wizard steps, so the admin PDF reads
-// like the form. Each entry maps a stored field key to a human label; values are pulled from
-// the submitted `data` blob and empty answers are skipped.
-const ONBOARD_GROUPS: { heading: string; fields: Array<[string, string]> }[] = [
-  { heading: "About You", fields: [["role", "Role"], ["roleTitle", "Title"], ["department", "Team / Department"], ["sportsOversee", "Sports / Programs"], ["staffSize", "Staff Size"], ["staffFocus", "Wants Handled"], ["coordinateWith", "Coordinates With"], ["crunchTimes", "Crunch Periods"], ["schoolEmail", "School Email"], ["personalEmail", "Personal Email"], ["phone", "Phone"], ["school", "School"], ["agentName", "Agent Name"], ["year", "Year"], ["major", "Major"], ["minor", "Minor"], ["livingSituation", "Living Situation"]] },
-  { heading: "Academic Life", fields: [["currentClasses", "Current Classes"], ["lmsType", "LMS"], ["gpaGoal", "GPA Goal"], ["academicChallenges", "Academic Challenges"], ["studyStyle", "Study Style"], ["studyMethods", "Study Methods"], ["studyTime", "Best Study Time"], ["studyLocation", "Study Location"], ["studySessionLength", "Session Length"]] },
-  { heading: "Schedule & Routine", fields: [["wakeTime", "Wake Time"], ["sleepTime", "Sleep Time"], ["productiveTime", "Most Productive"], ["classDays", "Class Days"], ["workStatus", "Work Status"], ["weeklyHours", "Weekly Hours"]] },
-  { heading: "Social & Campus Life", fields: [["greekLife", "Greek Life"], ["greekOrg", "Fraternity / Sorority"], ["greekRole", "Chapter Role"], ["greekAmbassador", "Ambassador Interest"], ["sportsTeams", "Sports Teams"], ["clubs", "Clubs / Orgs"], ["clubsDetail", "Club Names & Details"], ["socialLife", "Social Life"], ["family", "Family"], ["socialFrequency", "Social Frequency"], ["socialActivities", "Social Activities"], ["clubTypes", "Clubs & Orgs"], ["specificClubs", "Specific Clubs"], ["leadershipRole", "Leadership Role"], ["clubTimeCommitment", "Club Time/Week"], ["volunteering", "Volunteering"], ["causeAreas", "Cause Areas"], ["volunteerOrgs", "Volunteer Orgs"]] },
-  { heading: "Mental Health & Wellbeing", fields: [["sleepQuality", "Sleep Quality"], ["stressLevel", "Stress Level"], ["burnoutSignals", "Burnout Signals"], ["stressBurnout", "Stress / Burnout (free text)"], ["agentWellbeingFlag", "Wellbeing Flagging"], ["wellbeingBoundaries", "Wellbeing Boundaries"]] },
-  { heading: "Tools & Communication", fields: [["integrationsWanted", "Integrations Wanted"], ["apps", "Apps"], ["devices", "Devices"], ["browser", "Browser"], ["noteTaking", "Note Taking"], ["calendarApp", "Calendar"], ["taskManager", "Task Manager"], ["commStyle", "Writing Style"], ["preferredChannels", "Channels"], ["responseStyle", "Response Style"], ["emailResponseTime", "Email Response Time"]] },
-  { heading: "Goals & Career", fields: [["topPriority", "Top Priorities"], ["topPriorityNotes", "Priority Notes"], ["academicGoal", "Academic Goal"], ["careerGoal", "Career Goal"], ["personalGoal", "Personal Goal"], ["stopDoing", "Wants to Stop"], ["startDoing", "Wants to Start"], ["industryInterest", "Industry"], ["graduationYear", "Graduation Year"], ["summerPlans", "Summer Plans"], ["afterCollege", "Plan After College"], ["afterCollegeDetail", "After-College Details"], ["internshipStatus", "Internship Status"], ["resumeReady", "Resume Ready"], ["jobSearchActivities", "Job Search"], ["dreamCompany", "Dream Company"], ["biggestStressors", "Biggest Stressors"], ["fallsThrough", "Falls Through Cracks"], ["agentHandleFirst", "Success Looks Like"], ["agentHandleFirstNotes", "Success Notes"]] },
-  { heading: "Your Agent", fields: [["agentTone", "Tone"], ["checkinFrequency", "Check-in Frequency"], ["agentTopics", "Surface Proactively"], ["agentOffLimits", "Off Limits"], ["wantDeepDive", "Deep-Dive Opt-In"], ["anythingElse", "Anything Else"]] },
-];
-
-function formatVal(v: unknown): string {
-  if (Array.isArray(v)) return v.map((x) => String(x).trim()).filter(Boolean).join(", ");
-  return typeof v === "string" ? v.trim() : v == null ? "" : String(v);
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -145,9 +127,9 @@ export async function POST(req: NextRequest) {
 
       // Full questionnaire, grouped like the wizard, attached as a PDF for the admin's records.
       const sections: PdfSection[] = [];
-      for (const group of ONBOARD_GROUPS) {
+      for (const group of INTAKE_GROUPS) {
         const rows = group.fields
-          .map(([key, label]) => [label, formatVal(data[key])] as [string, string])
+          .map(([key, label]) => [label, formatIntakeValue(data[key])] as [string, string])
           .filter(([, value]) => value !== "");
         if (rows.length) sections.push({ heading: group.heading, rows });
       }
@@ -178,7 +160,7 @@ export async function POST(req: NextRequest) {
                 <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">School</td><td>${data.school}</td></tr>
                 <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Agent Name</td><td>${data.agentName || "N/A"}</td></tr>
                 <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Industry</td><td>${data.industryInterest || "N/A"}</td></tr>
-                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Top Priorities</td><td>${formatVal(data.topPriority) || "N/A"}</td></tr>
+                <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Top Priorities</td><td>${formatIntakeValue(data.topPriority) || "N/A"}</td></tr>
                 <tr><td style="padding:6px 16px 6px 0;font-weight:700;color:#555">Resume</td><td>${resumeUrl ? `<a href="${resumeUrl}">Download</a>` : "Not uploaded"}</td></tr>
               </table>
               <p style="margin-top:16px;font-size:13px;color:#888">Full submission attached as a PDF and stored in Supabase → the-college-agent → onboard_submissions</p>
