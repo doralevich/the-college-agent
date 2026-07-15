@@ -18,8 +18,9 @@ these docs.)*
 ## Access & isolation
 - **Per-user isolation** — Postgres row-level security on every table; students reach only their own data.
 - **Admin allowlist** — enforced server-side on every admin action.
-- **MFA** on all administrative & infrastructure accounts (Supabase, Vercel, GitHub, Stripe, email);
-  least-privilege service access.
+- **MFA** on all administrative & infrastructure accounts (Supabase, Vercel, GitHub, Stripe, email),
+  plus an **enforced TOTP second factor** on the in-app admin console (AAL2 step-up); least-privilege
+  service access.
 
 ## Application security
 - **Security headers + Content-Security-Policy** on every response.

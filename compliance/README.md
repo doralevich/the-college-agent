@@ -32,18 +32,16 @@ Two things to confirm when convenient (neither blocks anything):
 - **Governing-law state** — deliberately left for your attorney to set in the DPA (§9), alongside
   term and liability.
 
-## The only things that must be done by a human
+## The only things left that must be done by a human
 
-1. **Redeploy** in Vercel so the encryption key takes effect (one click — you were already there).
-2. **Turn on** Dependabot alerts + secret scanning in GitHub → *Settings → Code security & analysis*
-   (the `.github/dependabot.yml` in this PR handles automated dependency updates; the alert toggles
-   are UI switches).
-3. **Send `data-processing-agreement-TEMPLATE.md` to a privacy attorney** before using it with a school.
+1. **Send `data-processing-agreement-TEMPLATE.md` to a privacy attorney** before using it with a school.
+2. **Buy cyber-liability insurance** — commonly required by university procurement.
+3. **Deploy the pending admin-MFA change** (Vercel) so the enforced in-app second factor goes live.
 
 Everything else in the roadmap I can build for you — just say go.
 
 ## Roadmap status (from the Compliance Briefing)
 
-- **Now:** ✅ hardening pass done & deployed · ⬜ redeploy for encryption · ⬜ Dependabot/secret-scanning toggle · ⬜ CSP enforce
-- **Next 90 days:** ⬜ FERPA DPA (this folder) · ⬜ HECVAT (this folder) · ⬜ admin MFA · ⬜ audit logging · ⬜ policies (this folder) · ⬜ consent banner
-- **3–12 months:** ⬜ SOC 2 readiness → Type I → Type II · ⬜ penetration test · ⬜ IR tabletop · ⬜ security training
+- **Now:** ✅ hardening pass done & deployed · ✅ encryption key deployed · ✅ Dependabot/secret-scanning on · ✅ CSP enforced
+- **Next 90 days:** ✅ HECVAT · ✅ admin MFA (enforced in-app TOTP) · ✅ audit logging · ✅ policies · ✅ consent banner · ✅ PITR backups · ◑ FERPA DPA (drafted — pending attorney review)
+- **3–12 months:** ◑ SOC 2 (agent-runtime platform in progress; Type 1 on request · Apollo Claw's own on roadmap) · ⬜ penetration test · ⬜ IR tabletop · ⬜ security training · ⬜ cyber-liability insurance
