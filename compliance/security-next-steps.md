@@ -15,6 +15,7 @@ A living checklist of where security stands and what remains. Updated 2026-07-14
 - Cookie/consent banner (GDPR/CCPA)
 - Data deletion capability + runbook
 - **MFA on all admin/infrastructure accounts** (Supabase, Vercel, GitHub, Stripe, email)
+- **Enforced in-app admin MFA** — TOTP second-factor step-up (AAL2) required on the `/admin` console
 - **Point-in-time recovery (PITR) backups enabled**
 - Dependabot alerts + secret scanning
 - Documentation: SECURITY_NOTES, HECVAT responses, Vendor Security Packet, FERPA DPA, policies
@@ -45,7 +46,6 @@ A living checklist of where security stands and what remains. Updated 2026-07-14
 > Claude Sonnet 5, controlled by us — not the Agent37 default.)*
 
 ## 🛠️ Optional builds (nice-to-have; ask anytime)
-- [ ] **Enforced in-app admin MFA** (TOTP on the `/admin` console) — test on preview before enforcing.
 - [ ] **Deeper Stripe webhook optimization** — ack Stripe instantly, run best-effort side-effects in the
       background (drives the endpoint error rate toward zero).
 - [ ] **Self-service account deletion** button for students (today deletion is admin-triggered on request).

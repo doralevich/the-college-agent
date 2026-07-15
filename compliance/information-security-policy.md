@@ -24,8 +24,9 @@ Mailchimp/Mandrill), source code, and the people with access to them.
 - The principle of **least privilege** applies: the public browser key has no database table access;
   privileged operations use a server-only service role.
 - **Multi-factor authentication is enabled on all administrative/infrastructure accounts**
-  (Supabase, Vercel, GitHub, Stripe, email). The in-app admin console uses passwordless magic-link;
-  enforced in-app MFA is on the roadmap.
+  (Supabase, Vercel, GitHub, Stripe, email), and the in-app admin console **enforces a TOTP second
+  factor** — an administrator must clear an authenticator-app challenge (step-up to AAL2) before any
+  admin page or action is served.
 - Access is reviewed at least **annually** and revoked promptly when someone leaves.
 
 ## 4. Data protection

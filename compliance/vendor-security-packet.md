@@ -86,7 +86,7 @@ server-side with a service role; the public browser key has no table access.
 - [ ] **Cyber liability insurance** — *you (buy a policy; commonly required by procurement)*
 - [x] Audit logging of admin & data-access events — **done**
 - [x] Cookie/consent banner (GDPR/CCPA) — **done** (consent-gated analytics)
-- [ ] Enforced in-app admin MFA (TOTP on the /admin console) — *can be implemented (optional; infra accounts already MFA-protected)*
+- [x] Enforced in-app admin MFA (TOTP on the /admin console) — **done** (AAL2 step-up)
 - [ ] Accessibility conformance (WCAG 2.1 AA / VPAT) — *separate effort; some schools require it*
 - [~] **SOC 2** — *agent-runtime platform (Agent37) in progress; Type 1 available on request via Trust Center. Apollo Claw's own attestation on the roadmap.*
 - [ ] Third-party penetration test — *procure, typically annual*
