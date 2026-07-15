@@ -10,9 +10,10 @@ these docs.)*
 
 ## Data protection
 - **Encrypted in transit** — TLS/HTTPS everywhere with HSTS.
-- **Encrypted at rest** — managed database encryption; student-supplied API keys additionally
-  encrypted with AES-256-GCM, key held outside the database.
-- **Backups** — point-in-time recovery (PITR) enabled.
+- **Encrypted at rest** — at both layers: managed database encryption (application) and full-volume
+  LUKS2 encryption on the agent-runtime (Agent37); student-supplied API keys additionally encrypted
+  with AES-256-GCM, key held outside the database.
+- **Backups** — point-in-time recovery (PITR) enabled; backups encrypted at rest.
 
 ## Access & isolation
 - **Per-user isolation** — Postgres row-level security on every table; students reach only their own data.
@@ -41,8 +42,12 @@ these docs.)*
 
 ## Compliance
 - **FERPA:** acts as a "school official" and will sign a data-processing agreement.
-- **HECVAT** responses available. **SOC 2** readiness on the roadmap.
+- **HECVAT** responses available. **SOC 2** — the agent-runtime platform (Agent37) is in progress
+  with a Type 1 report available on request via its Trust Center (agent37.trust.site); Apollo Claw's
+  own attestation is on the roadmap.
 
 ## Sub-processors
-Vercel (hosting), Supabase (database/storage), Stripe (payments), Agent37 (agent runtime),
-Mailchimp/Mandrill (email) — all under equivalent data-protection obligations. All US-based.
+Vercel (hosting), Supabase (database/storage), Stripe (payments), Agent37 (Hermes agent runtime),
+Mailchimp/Mandrill (email) — all under equivalent data-protection obligations, all US-based. The
+agent-runtime platform (Agent37) publishes its current sub-processors, policies, and posture in its
+Trust Center at **agent37.trust.site**.

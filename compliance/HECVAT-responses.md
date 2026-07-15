@@ -18,8 +18,8 @@ Legend: **Yes** / **No** / **Planned** / **N/A**.
 |---|---|---|
 | CO-1 | Company/product name and description | Apollo Claw — The College Agent, a personal AI assistant for college students. |
 | CO-2 | Do you have a documented information security program? | **Yes** — see `information-security-policy.md`. Adopted 2026. |
-| DO-1 | Can you provide a data-flow diagram / description? | **Yes** — student data is entered via the web app, stored in Supabase (Postgres), processed server-side; payments via Stripe; email via Mailchimp/Mandrill; agent runtime via Agent37. |
-| DO-2 | Do you have a security whitepaper / notes? | **Yes** — `SECURITY_NOTES.md` and the Security Posture Briefing. |
+| DO-1 | Can you provide a data-flow diagram / description? | **Yes** — student data is entered via the web app, stored in Supabase (Postgres), processed server-side; payments via Stripe; email via Mailchimp/Mandrill. The AI agent runs on **Hermes** (agent runtime) on the **Agent37** platform. |
+| DO-2 | Do you have a security whitepaper / notes? | **Yes** — `SECURITY_NOTES.md` and the Security Posture Briefing for the application layer; the agent-runtime platform (Agent37) maintains a **Trust Center** (agent37.trust.site) with its policies, subprocessors, and compliance status. |
 
 ## Data handling
 
@@ -27,9 +27,9 @@ Legend: **Yes** / **No** / **Planned** / **N/A**.
 |---|---|---|
 | DA-1 | What institutional/student data is collected? | Name, school & personal email, phone, school, major/year, academic questionnaire, uploaded résumé, and any content the student shares with their agent. |
 | DA-2 | Is data encrypted in transit? | **Yes** — TLS/HTTPS enforced site-wide with HSTS (`max-age` 2 years, preload). |
-| DA-3 | Is data encrypted at rest? | **Yes** — database storage is encrypted by the managed provider (Supabase); student-supplied third-party API keys are additionally encrypted at the application layer with AES-256-GCM, key held outside the database. |
-| DA-4 | Is data logically separated per customer/user? | **Yes** — Postgres Row-Level Security enforces per-user / per-workspace isolation; verified on all 24 tables. |
-| DA-5 | Where is data hosted/stored? | United States (Supabase `us-east-1`; Vercel US regions). |
+| DA-3 | Is data encrypted at rest? | **Yes**, at both layers — the application database (Supabase managed encryption) and the agent-runtime volumes (Agent37, **LUKS2** full-volume encryption). Student-supplied model API keys are additionally encrypted at the application layer with AES-256-GCM, key held outside the database. |
+| DA-4 | Is data logically separated per customer/user? | **Yes** — Postgres Row-Level Security enforces per-user / per-workspace isolation; verified on all 24 tables. Each agent runs as an isolated Hermes instance. |
+| DA-5 | Where is data hosted/stored? | United States (Supabase `us-east-1`; Vercel US regions; Agent37 runtime). The LLM is customer-configurable — this instance uses **Claude Sonnet 5** (Anthropic). |
 | DA-6 | Do you sell or share personal data? | **No.** Data is used only to operate the service. |
 | DA-7 | Can institutional data be exported and deleted on request? | **Yes** — students can download their data; a documented admin-triggered deletion path removes all records (see `data-retention-and-deletion-policy.md`). |
 
@@ -51,8 +51,9 @@ Legend: **Yes** / **No** / **Planned** / **N/A**.
 | AP-3 | Are payment webhooks verified? | **Yes** — Stripe webhook signatures are cryptographically verified; deliveries are idempotent. |
 | AP-4 | Is card data handled in scope? | **No** — Stripe handles all card data; the application never receives card numbers (PCI DSS SAQ-A scope). |
 | AP-5 | Are scheduled/automation endpoints authenticated? | **Yes** — scheduled jobs require a shared secret. |
-| IN-1 | Who is your infrastructure provider? | Vercel (application hosting) and Supabase (database, auth, storage), both on US infrastructure; Stripe for payments. |
-| IN-2 | Are managed backups in place? | **Yes** — provider-managed database backups with **point-in-time recovery (PITR) enabled**. |
+| IN-1 | Who is your infrastructure provider? | Application layer: Vercel (hosting) + Supabase (database/auth/storage), US; Stripe for payments. Agent-runtime layer: **Hermes on the Agent37 platform** (see agent37.trust.site/subprocessors for its infrastructure subprocessors). |
+| IN-2 | Are managed backups in place? | **Yes** — the application database has managed backups with **point-in-time recovery (PITR)**; agent-runtime backups are encrypted at rest. |
+| IN-3 | Do you offer a contractual uptime SLA / public status page? | **No** under the current plan. Operational metrics and infrastructure/service logs are monitored (Grafana) at the runtime layer. A contractual SLA is available via an Agent37 enterprise agreement. |
 
 ## Vulnerability & change management
 
@@ -68,9 +69,9 @@ Legend: **Yes** / **No** / **Planned** / **N/A**.
 |---|---|---|
 | PO-1 | Do you have written security policies? | **Yes** — Information Security, Access Control, Data Retention & Deletion, and Incident Response (this folder). |
 | PO-2 | Do you have a published privacy policy? | **Yes** — thecollegeagent.ai/privacy. |
-| PO-3 | FERPA: will you sign a data-processing agreement as a "school official"? | **Yes** — a FERPA-aware DPA template is prepared (`data-processing-agreement-TEMPLATE.md`); we will execute the institution's agreement. |
-| IR-1 | Do you have an incident-response plan with breach notification? | **Yes** — `incident-response-plan.md`, including notification commitments. |
-| IR-2 | Compliance certifications held (SOC 2, ISO 27001)? | **Planned** — SOC 2 readiness is on the roadmap; not yet attested. |
+| PO-3 | FERPA: will you sign a data-processing agreement as a "school official"? | **Yes** — Apollo Claw will execute a FERPA-aware DPA with the institution (`data-processing-agreement-TEMPLATE.md`). Note: the agent-runtime subprocessor (Agent37) operates under its standard terms + Trust Center; custom subprocessor DPA/notification terms require an Agent37 enterprise agreement. |
+| IR-1 | Do you have an incident-response plan with breach notification? | **Yes** — `incident-response-plan.md`, including notification commitments. At the runtime layer, Agent37's published breach-notification policy applies; bespoke contractual timelines require an enterprise agreement. |
+| IR-2 | Compliance certifications held (SOC 2, ISO 27001)? | **In progress** — the agent-runtime platform (Agent37) is undergoing SOC 2; a **Type 1 report is available on request** via its Trust Center. Apollo Claw's own attestation is on the roadmap. |
 
 ---
 

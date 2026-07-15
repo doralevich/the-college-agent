@@ -26,10 +26,23 @@ A living checklist of where security stands and what remains. Updated 2026-07-14
 
 ## 🏫 Needed when a school requires it (money/time, not code)
 - [ ] **Cyber liability insurance** — commonly required by university procurement. ~$1–3k/yr, a few days to obtain.
-- [ ] **SOC 2 Type II** — the enterprise trust report. ~6–12 months; a compliance-automation platform
-      (Vanta, Drata, Secureframe) cuts the effort for a small team.
+- [ ] **SOC 2** — the agent-runtime platform (Agent37) is already undergoing SOC 2, and a **Type 1
+      report is available on request** through its Trust Center (agent37.trust.site) — an external
+      Type 1 audit report can be requested (~$1,500). Apollo Claw's *own* Type II is the longer play:
+      ~6–12 months; a compliance-automation platform (Vanta, Drata, Secureframe) cuts the effort for a
+      small team.
 - [ ] **Third-party penetration test** — a common enterprise/HECVAT ask; hire a firm, typically annual.
 - [ ] **Accessibility conformance (VPAT / WCAG 2.1 AA)** — some schools request it; separate effort.
+
+> **Runtime-layer terms (know before you promise a school).** The app layer is ours (Vercel /
+> Supabase / Stripe) — Apollo Claw signs the FERPA DPA and controls those commitments directly. The
+> agent runtime is Agent37 (Hermes), on the **standard plan**, which means: no custom MSA/DPA at the
+> runtime layer, no bespoke breach-notification window, no contractual uptime SLA, and no public
+> status page. Agent37's own posture, subprocessors, and policies live in its Trust Center
+> (agent37.trust.site), and a SOC 2 Type 1 report is available on request. If a school demands
+> contractual flow-down at the runtime layer (custom notification, audit rights, SLA), that requires
+> an **Agent37 enterprise agreement** — price it in before committing. *(Our LLM on this instance is
+> Claude Sonnet 5, controlled by us — not the Agent37 default.)*
 
 ## 🛠️ Optional builds (nice-to-have; ask anytime)
 - [ ] **Enforced in-app admin MFA** (TOTP on the `/admin` console) — test on preview before enforcing.

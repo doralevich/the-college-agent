@@ -52,8 +52,9 @@ Mailchimp/Mandrill), source code, and the people with access to them.
 - Third-party penetration testing is performed on the roadmap cadence.
 
 ## 8. Vendor / sub-processor management
-- Core sub-processors: Vercel (hosting), Supabase (data), Stripe (payments), Agent37 (agent runtime),
-  Mailchimp/Mandrill (email). Each is a reputable provider with its own security program.
+- Core sub-processors: Vercel (hosting), Supabase (data), Stripe (payments), Agent37 (Hermes agent
+  runtime), Mailchimp/Mandrill (email). Each is a reputable provider with its own security program;
+  Agent37 publishes its posture, subprocessors, and policies in its Trust Center (agent37.trust.site).
 - New sub-processors handling personal data are reviewed before adoption.
 
 ## 9. Incident response
