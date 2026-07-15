@@ -1,5 +1,6 @@
 import "server-only";
 import { agent37 } from "@/lib/agent37";
+import { INTAKE_GROUPS, formatIntakeValue } from "@/lib/intake-schema";
 
 // Hermes (Nous Research) provisioning, run over the Agent37 `exec` endpoint.
 //
@@ -29,7 +30,18 @@ export type HermesPersonaInput = {
   year?: string | null;
   major?: string | null;
   questionnaire?: Record<string, unknown> | null;
+  // Public URL of the student's uploaded résumé, if any — surfaced in the full-profile
+  // reference file so the agent can fetch/reference it.
+  resumeUrl?: string | null;
 };
+
+// Where the agent's COMPLETE, un-budgeted background lives on the box. USER.md (below) is the
+// tight always-loaded summary; this file holds every intake answer + the résumé link, and the
+// agent is told (in SOUL.md) to read it whenever it needs detail beyond memory. Kept off the
+// per-session token cost because it's read on demand, not injected into the system prompt.
+export const PROFILE_REFERENCE_PATH = "$HOME/.hermes/context/STUDENT_PROFILE.md";
+// The human-readable path we show the agent (no shell var).
+const PROFILE_REFERENCE_DISPLAY = "~/.hermes/context/STUDENT_PROFILE.md";
 
 // Read a questionnaire answer as a clean string ("" when absent). Arrays are comma-joined and
 // long free-text answers are capped so one textarea can't dominate the file it lands in. The
@@ -99,14 +111,58 @@ export function buildSoul(p: HermesPersonaInput): string {
     "- Early in your first conversations, ask which tools they already use (Canvas, Gmail, " +
       "Google Calendar, Outlook, Google Drive, Notion, ...) and offer to connect them via the " +
       "dashboard's Integrations tab — one tool at a time, with the concrete next step.",
+    "",
+    "# Background file",
+    `- Your always-loaded memory holds the essentials. Their COMPLETE profile from onboarding — every ` +
+      `answer, plus their résumé link — is saved at \`${PROFILE_REFERENCE_DISPLAY}\`.`,
+    "- Read that file whenever you need detail you don't already have in memory (their exact schedule, " +
+      "clubs, wellbeing notes, job-search specifics, résumé, etc.). Prefer it over asking them to repeat " +
+      "things they already told us at signup.",
   ].join("\n") + "\n";
 }
 
-// ~/.hermes/memories/USER.md — the durable profile of the STUDENT. This is Hermes' "user profile"
-// memory file, auto-injected into every session. Curated FACTS only, entries separated by the `§`
-// section sign Hermes' memory format uses, packed most-important-first and capped to the docs'
-// ~1,375-char (~500-token) budget (we stop well short so nothing gets truncated mid-fact).
-const USER_MD_BUDGET = 1300;
+// Render the student's course schedule into one compact line for USER.md. Prefers the
+// structured `classes` array (the class-list onboarding step: {name, days, time, location,
+// professor, sku}); falls back to the legacy `currentClasses` text blob. The `sku` is an
+// internal identifier and is intentionally omitted. Capped so a long schedule can't swallow
+// the whole profile budget. THIS is the field that was silently dropped before — a college
+// agent is close to useless without knowing what classes the student is actually taking.
+function renderClasses(qn: Record<string, unknown> | null | undefined, cap = 600): string {
+  if (!qn) return "";
+  let out = "";
+  const arr = qn.classes;
+  if (Array.isArray(arr)) {
+    out = arr
+      .map((c) => {
+        if (!c || typeof c !== "object") return "";
+        const e = c as Record<string, unknown>;
+        const name = String(e.name ?? "").trim();
+        if (!name) return "";
+        const meta = [e.days, e.time, e.location, e.professor]
+          .map((s) => String(s ?? "").trim())
+          .filter(Boolean)
+          .join(", ");
+        return meta ? `${name} (${meta})` : name;
+      })
+      .filter(Boolean)
+      .join("; ");
+  }
+  if (!out) {
+    const legacy = qn.currentClasses; // "NAME - days - time - location - professor - sku; ..."
+    out = typeof legacy === "string" ? legacy.trim() : "";
+  }
+  return out.length > cap ? out.slice(0, cap).trimEnd() + "…" : out;
+}
+
+// ~/.hermes/memories/USER.md — the durable profile of the STUDENT, auto-injected into every
+// session as part of Hermes' always-loaded "Layer 1" (SOUL.md + MEMORY.md + USER.md, ~1.5–5k
+// tokens total). Curated FACTS only, entries separated by the `§` section sign Hermes' memory
+// format uses, packed most-important-first and capped so nothing truncates mid-fact. This is the
+// high-signal SUMMARY the agent always has on hand; the exhaustive profile (every answer +
+// résumé) lives in the on-demand reference file (see buildFullProfile / SOUL.md's Background
+// section), so we don't pay for rarely-needed detail on every turn. Ordering is deliberate:
+// academics + the proactive-care signals a college agent leans on come first.
+const USER_MD_BUDGET = 2600;
 export function buildUserProfile(p: HermesPersonaInput): string {
   const entries: string[] = [];
   const add = (label: string, val: string) => {
@@ -122,16 +178,57 @@ export function buildUserProfile(p: HermesPersonaInput): string {
   add("Wants handled", q(p, "staffFocus"));
   add("Coordinates with", q(p, "coordinateWith"));
   add("Crunch periods", q(p, "crunchTimes"));
+  // --- Academics: the heart of what a college agent needs to be useful (kept high so the
+  //     budget never drops them). Classes were previously collected but never rendered here. ---
   add("Year", (p.year || "").trim());
-  add("Major", (p.major || "").trim());
+  add("Major", [p.major?.trim(), q(p, "minor") && `minor in ${q(p, "minor")}`].filter(Boolean).join(", "));
+  add("Current classes", renderClasses(p.questionnaire));
+  add("Learning platform (LMS)", q(p, "lmsType"));
   add("Top priority this semester", q(p, "topPriority"));
   add("Wants the agent to handle first", q(p, "agentHandleFirst"));
+  // --- Proactive-care signals: what to watch for and chase down on the student's behalf ---
+  add("Biggest stressors", q(p, "biggestStressors"));
+  add("Tends to let slip / fall through", q(p, "fallsThrough"));
+  add("Stress level", q(p, "stressLevel"));
+  add("GPA goal", q(p, "gpaGoal"));
   add("Academic goal", q(p, "academicGoal"));
+  add("Academic challenges", q(p, "academicChallenges"));
+  add(
+    "Study habits",
+    [q(p, "studyStyle"), q(p, "studyMethods"), q(p, "studyTime") && `best ${q(p, "studyTime")}`, q(p, "studyLocation")]
+      .filter(Boolean)
+      .join("; ")
+  );
+  add("Typical class days", q(p, "classDays"));
+  add(
+    "Daily rhythm",
+    [q(p, "wakeTime") && `up ${q(p, "wakeTime")}`, q(p, "sleepTime") && `sleep ${q(p, "sleepTime")}`, q(p, "productiveTime") && `most productive ${q(p, "productiveTime")}`]
+      .filter(Boolean)
+      .join(", ")
+  );
+  add("Work / job", [q(p, "workStatus"), q(p, "weeklyHours") && `${q(p, "weeklyHours")}/wk`].filter(Boolean).join(", "));
+  add("Living situation", q(p, "livingSituation"));
+  // --- Career context ---
   add("Career goal", q(p, "careerGoal"));
+  add("Industry interest", q(p, "industryInterest"));
+  add("Dream company", q(p, "dreamCompany"));
+  add("Internship / job search", [q(p, "internshipStatus"), q(p, "jobSearchActivities")].filter(Boolean).join("; "));
+  add("Graduation year", q(p, "graduationYear"));
+  // --- Working style: the tools they live in + how they like to communicate ---
+  add(
+    "Tools they use",
+    [q(p, "calendarApp") && `calendar ${q(p, "calendarApp")}`, q(p, "taskManager") && `tasks ${q(p, "taskManager")}`, q(p, "noteTaking") && `notes ${q(p, "noteTaking")}`, q(p, "apps")]
+      .filter(Boolean)
+      .join(", ")
+  );
+  add("Writing / comm style", q(p, "commStyle"));
+  add("Wants to stop", q(p, "stopDoing"));
+  add("Wants to start", q(p, "startDoing"));
+  // --- Goals & the softer context (dropped first if the budget is tight) ---
   add("Personal goal", q(p, "personalGoal"));
   add("Summer plans", q(p, "summerPlans"));
   add("Plan after college", [q(p, "afterCollege"), q(p, "afterCollegeDetail")].filter(Boolean).join(" — "));
-  add("Clubs / orgs", [q(p, "clubs"), q(p, "clubsDetail")].filter(Boolean).join(" — "));
+  add("Clubs / orgs", [q(p, "clubs"), q(p, "clubsDetail"), q(p, "leadershipRole")].filter(Boolean).join(" — "));
   add("Fraternity / sorority", [q(p, "greekOrg"), q(p, "greekRole")].filter(Boolean).join(", "));
   add("Preferred contact channels", q(p, "preferredChannels"));
   add("Preferred check-in cadence", q(p, "checkinFrequency"));
@@ -139,7 +236,8 @@ export function buildUserProfile(p: HermesPersonaInput): string {
   add("Other context", q(p, "anythingElse"));
 
   // Pack entries (most important first) until the budget is hit; drop the rest rather than
-  // letting Hermes truncate the file mid-entry.
+  // letting Hermes truncate the file mid-entry. Anything dropped here still lives in the
+  // on-demand reference file, so no answer is ever lost — only deferred.
   const kept: string[] = [];
   let len = 0;
   for (const e of entries) {
@@ -149,6 +247,34 @@ export function buildUserProfile(p: HermesPersonaInput): string {
     len += cost;
   }
   return kept.join("§") + "\n";
+}
+
+// The COMPLETE onboarding profile, rendered as a readable markdown doc for the on-demand
+// reference file (PROFILE_REFERENCE_PATH). Unlike USER.md this is NOT budget-capped and NOT
+// injected each session — the agent reads it when it needs detail. Every answered field from
+// the shared intake schema is included (empty answers skipped), grouped like the wizard, with
+// the class schedule rendered nicely and the résumé link surfaced.
+export function buildFullProfile(p: HermesPersonaInput): string {
+  const qn = p.questionnaire ?? {};
+  const name = [p.firstName, p.lastName].filter(Boolean).join(" ").trim();
+  const out: string[] = ["# Student profile", ""];
+  if (name) out.push(`**Name:** ${name}`);
+  if (p.school) out.push(`**School:** ${p.school}`);
+  if (out.length > 2) out.push("");
+
+  for (const group of INTAKE_GROUPS) {
+    const lines: string[] = [];
+    for (const [key, label] of group.fields) {
+      // Render the structured schedule for the classes field; plain value otherwise.
+      const value = key === "currentClasses" ? renderClasses(qn, 4000) : formatIntakeValue(qn[key]);
+      if (value) lines.push(`- **${label}:** ${value}`);
+    }
+    if (lines.length) out.push(`## ${group.heading}`, ...lines, "");
+  }
+
+  if (p.resumeUrl) out.push("## Résumé", `- Uploaded résumé (fetch to read): ${p.resumeUrl}`, "");
+
+  return out.join("\n").trimEnd() + "\n";
 }
 
 // Map the student's chosen check-in cadence (the onboarding CHECKIN_FREQ options) to a Hermes
@@ -226,6 +352,9 @@ export async function configureHermes(
     openaiKey?: string;
     soul: string;
     userProfile: string;
+    // The complete, un-budgeted profile written to the on-demand reference file the agent
+    // reads for detail beyond USER.md (see buildFullProfile / SOUL.md Background section).
+    fullProfile: string;
     // Recurring check-in -> a `hermes cron` job delivered to Telegram. Only pass this when the
     // student connected Telegram (cron delivery needs a channel) AND the cadence mapped to a
     // real schedule; otherwise omit it and no job is created.
@@ -245,6 +374,7 @@ export async function configureHermes(
 
   const soulB64 = b64(opts.soul);
   const userB64 = b64(opts.userProfile);
+  const fullB64 = b64(opts.fullProfile);
   const checkin = opts.checkin ?? null;
   const cronSchedB64 = checkin ? b64(checkin.schedule) : "";
   const cronPromptB64 = checkin ? b64(checkin.prompt) : "";
@@ -279,7 +409,7 @@ export async function configureHermes(
     // install Hermes only if the template didn't ship it
     `command -v hermes >/dev/null 2>&1 || curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash -s -- --non-interactive --skip-setup --skip-browser`,
     `export PATH="$HOME/.local/bin:$PATH"`,
-    `mkdir -p "$HOME/.hermes" "$HOME/.hermes/logs" "$HOME/.hermes/memories"`,
+    `mkdir -p "$HOME/.hermes" "$HOME/.hermes/logs" "$HOME/.hermes/memories" "$HOME/.hermes/context"`,
     // merge provided creds (telegram + BYO model keys) into ~/.hermes/.env
     ...envBlock,
     // identity / voice -> SOUL.md (system-prompt slot #1)
@@ -290,6 +420,9 @@ export async function configureHermes(
     // looks. The agent may later edit USER.md via its own memory tool; this is the initial seed.
     `echo "${userB64}" | base64 -d > "$HOME/.hermes/memories/USER.md"`,
     `echo "${userB64}" | base64 -d > "$HOME/.hermes/USER.md"`,
+    // COMPLETE profile + résumé link -> on-demand reference file. Not injected each session;
+    // the agent reads it when it needs detail beyond USER.md (SOUL.md points it here).
+    `echo "${fullB64}" | base64 -d > "${PROFILE_REFERENCE_PATH}"`,
     // BYO model override -> config.yaml, before the gateway restart so it gets picked up.
     ...modelBlock,
     // The template boots a gateway already (default persona, no Telegram). Stop it so the

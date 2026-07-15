@@ -225,25 +225,18 @@ const COORDINATE_OPTIONS = [
   "Donors & boosters",
 ];
 
+// Collapsed from 18 overlapping choices into 9 clean buckets so the screen isn't a wall of
+// checkboxes. Each bucket still gives the agent a clear signal about what the student cares about.
 const PRIORITY_OPTIONS = [
-  "Academic performance",
-  "Skills & certifications",
-  "Grad school prep",
-  "Mental health",
-  "Fitness & sleep",
-  "Faith & values",
-  "Friends & social life",
-  "Family",
-  "Dating & relationships",
-  "Networking & mentorship",
+  "Academics & grades",
   "Career & internships",
+  "Skills & certifications",
+  "Health & wellbeing",
+  "Friends & relationships",
   "Leadership & clubs",
   "Money & earning",
-  "Travel or study abroad",
-  "Time management",
-  "Creative projects",
-  "Personal growth",
-  "Community service",
+  "Time management & habits",
+  "Purpose, growth & new experiences",
 ];
 
 // Tier-3 short option lists. Plain labels, no emoji, short enough not to wrap in the
@@ -255,23 +248,13 @@ const LIVING_OPTIONS = [
   "Other",
 ];
 const CLUBS_OPTIONS = [
-  "Academic clubs",
-  "Cultural groups",
-  "Community service",
+  "Academic or professional",
+  "Cultural or religious",
   "Arts & performance",
-  "Religious groups",
-  "Political & advocacy",
-  "Hobby clubs",
+  "Service or advocacy",
+  "Hobby & interest clubs",
   "Student government",
-  "None yet, want to join",
-  "None right now",
-];
-const SPORTS_OPTIONS = [
-  "Varsity athletics",
-  "Club sports",
-  "Intramurals",
-  "I work out on my own",
-  "Not right now",
+  "Not involved yet",
 ];
 const AFTER_COLLEGE_OPTIONS = [
   "Start my career",
@@ -412,7 +395,6 @@ const STEPS: Step[] = [
   { kind: "text", key: "lastName", prompt: "And your last name?", placeholder: "Your last name", required: true },
   { kind: "typeahead", key: "school", prompt: "What school are you with?", placeholder: "Start typing your school...", required: true },
   { kind: "text", key: "schoolEmail", prompt: "What's your school email?", note: "This is the email you'll use to log in to your account.", placeholder: "you@school.edu", inputType: "email", required: true },
-  { kind: "text", key: "personalEmail", prompt: "What's your personal email?", note: "Optional — just a second way to reach you. Your school email stays your login.", placeholder: "you@email.com", inputType: "email" },
   { kind: "text", key: "phone", prompt: "What's your mobile number?", placeholder: "(555) 555-5555", inputType: "tel", required: true },
   // ---- Staff flow (faculty / administration / athletics) ----
   { kind: "text", key: "roleTitle", prompt: "What's your role or title?", placeholder: "Head Coach, Athletic Director, Professor...", required: true, showIf: isStaff },
@@ -464,9 +446,6 @@ const STEPS: Step[] = [
     tier: 3,
     showIf: isStudent,
   },
-  { kind: "multi", key: "sportsTeams", prompt: "Are you involved in sports or athletics?", options: SPORTS_OPTIONS, tier: 3, showIf: isStudent },
-  { kind: "text", key: "whichSports", prompt: "Which sport?", placeholder: "Soccer, lacrosse, swimming...", tier: 3, showIf: (f) => isStudent(f) && f.sportsTeams.some((s) => s === "Varsity athletics" || s === "Club sports" || s === "Intramurals") },
-  { kind: "textarea", key: "summerPlans", prompt: "What's the plan for your summers?", placeholder: "Internships, summer classes, working, travel — whatever you're thinking.", tier: 3, showIf: isStudent },
   {
     kind: "single",
     key: "afterCollege",

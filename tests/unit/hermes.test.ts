@@ -3,6 +3,7 @@ import {
   buildCheckinPrompt,
   buildSoul,
   buildUserProfile,
+  buildFullProfile,
   mapCheckinToCron,
   type HermesPersonaInput,
 } from "../../lib/hermes";
@@ -53,6 +54,44 @@ describe("buildSoul", () => {
     const soul = buildSoul({ questionnaire: { agentOffLimits: "my GPA" } });
     expect(soul).toContain("Never bring up: my GPA");
   });
+
+  it("points the agent at the on-demand full-profile reference file", () => {
+    const soul = buildSoul({ agentName: "Athena" });
+    expect(soul).toContain("# Background file");
+    expect(soul).toContain("~/.hermes/context/STUDENT_PROFILE.md");
+  });
+});
+
+describe("buildFullProfile", () => {
+  it("renders every answered field grouped like the wizard, plus the résumé link", () => {
+    const doc = buildFullProfile({
+      firstName: "Sam",
+      lastName: "Lee",
+      school: "State U",
+      resumeUrl: "https://files.example.com/sam-resume.pdf",
+      questionnaire: {
+        currentClasses: "MATH 221 - Mon/Wed - 10:00",
+        volunteerOrgs: "Habitat for Humanity",
+        sleepQuality: "poor",
+        dreamCompany: "SpaceX",
+      },
+    });
+    expect(doc).toContain("**Name:** Sam Lee");
+    // Fields that never reached USER.md still land in the full reference file.
+    expect(doc).toContain("## Social & Campus Life");
+    expect(doc).toContain("Volunteer Orgs:** Habitat for Humanity");
+    expect(doc).toContain("Sleep Quality:** poor");
+    expect(doc).toContain("Dream Company:** SpaceX");
+    expect(doc).toContain("## Résumé");
+    expect(doc).toContain("https://files.example.com/sam-resume.pdf");
+  });
+
+  it("skips empty groups and answers", () => {
+    const doc = buildFullProfile({ firstName: "Sam", questionnaire: { major: "CS" } });
+    expect(doc).toContain("**Name:** Sam");
+    // No wellbeing answers -> no wellbeing section.
+    expect(doc).not.toContain("## Mental Health & Wellbeing");
+  });
 });
 
 describe("buildUserProfile", () => {
@@ -70,7 +109,7 @@ describe("buildUserProfile", () => {
     expect(profile).toContain("§");
   });
 
-  it("stays within the ~1300-char budget, dropping lowest-priority facts rather than truncating", () => {
+  it("stays within the ~2600-char budget, dropping lowest-priority facts rather than truncating", () => {
     const long = "x".repeat(280);
     const profile = buildUserProfile({
       firstName: "Sam",
@@ -84,9 +123,69 @@ describe("buildUserProfile", () => {
         anythingElse: long,
       },
     });
-    expect(profile.trimEnd().length).toBeLessThanOrEqual(1300);
+    expect(profile.trimEnd().length).toBeLessThanOrEqual(2600);
     // The highest-priority fact survives the packing.
     expect(profile).toContain("Name: Sam");
+  });
+
+  it("now surfaces the high-value proactive-care + working-style signals", () => {
+    const profile = buildUserProfile({
+      firstName: "Sam",
+      questionnaire: {
+        biggestStressors: "falling behind in orgo",
+        fallsThrough: "replying to professor emails",
+        calendarApp: "Google Calendar",
+        taskManager: "Todoist",
+        commStyle: "casual but concise",
+      },
+    });
+    expect(profile).toContain("Biggest stressors: falling behind in orgo");
+    expect(profile).toContain("Tends to let slip / fall through: replying to professor emails");
+    expect(profile).toContain("Google Calendar");
+    expect(profile).toContain("Writing / comm style: casual but concise");
+  });
+
+  // The reported bug: classes were collected at intake but never reached the agent's brain.
+  it("renders the structured class schedule (the fix)", () => {
+    const profile = buildUserProfile({
+      firstName: "Sam",
+      school: "State U",
+      questionnaire: {
+        classes: [
+          { name: "MATH 221", days: "Mon/Wed", time: "10:00", location: "Rm 204", professor: "Dr. Chen", sku: "SECRETSKU" },
+          { name: "BIO 101", days: "Tue/Thu", time: "13:00", location: "", professor: "", sku: "" },
+        ],
+      },
+    });
+    expect(profile).toContain("Current classes:");
+    expect(profile).toContain("MATH 221 (Mon/Wed, 10:00, Rm 204, Dr. Chen)");
+    expect(profile).toContain("BIO 101 (Tue/Thu, 13:00)");
+    // The internal `sku` is never surfaced to the agent.
+    expect(profile).not.toContain("SECRETSKU");
+  });
+
+  it("falls back to the legacy currentClasses text blob when there's no structured array", () => {
+    const profile = buildUserProfile({
+      questionnaire: { currentClasses: "PSYC 100 - Mon - 9:00; ENGL 210 - Fri - 11:00" },
+    });
+    expect(profile).toContain("Current classes: PSYC 100 - Mon - 9:00; ENGL 210 - Fri - 11:00");
+  });
+
+  it("keeps classes even when lower-priority facts are dropped for budget", () => {
+    const long = "y".repeat(280);
+    const profile = buildUserProfile({
+      firstName: "Sam",
+      major: "CS",
+      questionnaire: {
+        classes: [{ name: "CS 340", days: "MWF", time: "9:00", location: "", professor: "", sku: "" }],
+        careerGoal: long,
+        personalGoal: long,
+        summerPlans: long,
+        clubs: long,
+        anythingElse: long,
+      },
+    });
+    expect(profile).toContain("CS 340");
   });
 });
 
