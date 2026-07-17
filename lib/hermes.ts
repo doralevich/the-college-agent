@@ -1,5 +1,6 @@
 import "server-only";
 import { agent37 } from "@/lib/agent37";
+import { DEFAULT_CHAT_MODEL_ID } from "@/lib/chat-models";
 import { INTAKE_GROUPS, formatIntakeValue } from "@/lib/intake-schema";
 
 // Hermes (Nous Research) provisioning, run over the Agent37 `exec` endpoint.
@@ -340,10 +341,10 @@ async function waitForRunning(agent37Id: string, timeoutMs = 60_000): Promise<bo
 
 const b64 = (s: string) => Buffer.from(s, "utf8").toString("base64");
 
-// Model to pin when a student brings their own provider key. Must be UN-prefixed for a direct
-// provider — `hermes doctor` rejects vendor-prefixed slugs like `anthropic/...` (those are for
-// aggregators like openrouter). Adjust freely.
-export const MANAGED_DEFAULT_MODEL = "anthropic/claude-sonnet-5";
+// Models pinned for the managed gateway and direct BYO providers. The managed gateway uses a
+// vendor-prefixed OpenRouter-style slug; direct providers must be unprefixed because `hermes
+// doctor` rejects aggregator slugs such as `anthropic/...` for those providers.
+export const MANAGED_DEFAULT_MODEL = DEFAULT_CHAT_MODEL_ID;
 const MANAGED_PROVIDER = "custom:Agent37";
 const BYO_ANTHROPIC_MODEL = "claude-sonnet-5";
 const BYO_OPENAI_MODEL = "gpt-5.6-sol";

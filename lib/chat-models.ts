@@ -1,11 +1,12 @@
 import type { AgentModel, ModelsResponse } from "@/lib/types";
 
 // Product-level model catalog. Agent37's managed gateway exposes hundreds of models; The College
-// Agent intentionally offers only the current Anthropic and OpenAI families below.
-export const DEFAULT_CHAT_MODEL_ID = "anthropic/claude-sonnet-5";
+// Agent intentionally offers only the models selected for the product below.
+export const DEFAULT_CHAT_MODEL_ID = "z-ai/glm-5.2";
 
 const APPROVED_MODELS = [
-  { ids: [DEFAULT_CHAT_MODEL_ID, "claude-sonnet-5"], label: "Claude Sonnet 5", displayProvider: "anthropic" },
+  { ids: [DEFAULT_CHAT_MODEL_ID, "glm-5.2"], label: "GLM 5.2", displayProvider: "z-ai" },
+  { ids: ["anthropic/claude-sonnet-5", "claude-sonnet-5"], label: "Claude Sonnet 5", displayProvider: "anthropic" },
   { ids: ["anthropic/claude-opus-4.8", "claude-opus-4-8"], label: "Claude Opus 4.8", displayProvider: "anthropic" },
   { ids: ["anthropic/claude-haiku-4.5", "claude-haiku-4-5", "claude-haiku-4-5-20251001"], label: "Claude Haiku 4.5", displayProvider: "anthropic" },
   { ids: ["openai/gpt-5.6-sol", "gpt-5.6-sol"], label: "GPT-5.6 Sol", displayProvider: "openai" },
@@ -21,7 +22,7 @@ export function isApprovedChatModelId(id: string): boolean {
 
 // Keep only models the live instance actually reports, while applying stable product labels and
 // ordering. `owned_by` remains the transport provider sent back to Agent37; `display_provider`
-// controls the Anthropic/OpenAI grouping in our UI.
+// controls the vendor grouping in our UI.
 export function curateModelsResponse(response: ModelsResponse): ModelsResponse {
   const available = new Map((response.data ?? []).map((model) => [model.id, model]));
   const data: AgentModel[] = APPROVED_MODELS.flatMap((approved) => {

@@ -75,6 +75,7 @@ const PROVIDER_LABELS: Record<string, string> = {
   groq: "Groq",
   perplexity: "Perplexity",
   openrouter: "OpenRouter",
+  "z-ai": "Z.ai",
   azure: "Azure",
   bedrock: "Bedrock",
 };

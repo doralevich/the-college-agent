@@ -2,6 +2,7 @@ import { agent37, Agent37Error } from "@/lib/agent37";
 import { requireAgentAccess } from "@/lib/auth";
 import { clearStudentIntake } from "@/lib/intake";
 import { ApiError, json, readJson, requireTrimmed, route } from "@/lib/http";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -52,7 +53,12 @@ export const DELETE = route(async (request: Request, { params }: Ctx) => {
   // self-service "Your Agent" delete (reonboard=1), which always clears it.
   if (reonboard || !isPlatformAdmin) await clearStudentIntake(user.id, ["onboard"]);
 
-  await supabase.from("agents").delete().eq("agent37_id", id);
+  // Platform admins operate cross-tenant, so their session client cannot delete this row
+  // through workspace RLS. Use the already-authorized service client for that case; keep
+  // the RLS-scoped client for normal workspace admins.
+  const db = isPlatformAdmin ? createAdminClient() : supabase;
+  const { error } = await db.from("agents").delete().eq("agent37_id", id);
+  if (error) throw new ApiError(500, "db_error", error.message);
 
   return json({ id, deleted: true });
 });
