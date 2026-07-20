@@ -275,6 +275,33 @@ const VOICE_OPTIONS = [
 
 const YEAR_OPTIONS = ["Before College", "Freshman", "Sophomore", "Junior", "Senior", "Graduate Student", "Other"];
 
+// ---- Deep-dive (opt-in) option lists ----
+// Labels for check-in cadence align with mapCheckinToCron's keyword matching (daily / twice /
+// weekly) so a pick actually schedules a Hermes cron job.
+const CHECKIN_OPTIONS = [
+  "Daily morning briefing",
+  "Twice a week",
+  "Weekly digest",
+  "Only when something's urgent",
+  "Only when I ask",
+];
+const HANDLE_FIRST_OPTIONS = [
+  "Staying on top of deadlines",
+  "Planning my week",
+  "Email & messages",
+  "Study scheduling",
+  "The job / internship search",
+  "Just keeping me organized",
+];
+const AGENT_TOPICS_OPTIONS = [
+  "Upcoming deadlines",
+  "Important or unread emails",
+  "Schedule conflicts",
+  "Study & exam reminders",
+  "Internship & job deadlines",
+  "Wellbeing check-ins",
+];
+
 // Staff flow (faculty / administration / athletic department): what the agent should
 // handle. Geared to the work an office or program actually runs day to day.
 const STAFF_FOCUS_OPTIONS = [
@@ -396,13 +423,13 @@ type Step =
   | { kind: "info"; key: string; prompt: string }
   // Yes/No branch. wantTier2 gates whether tier-2/3 steps render at all (graceful early
   // exit); wantDeepDive then narrows tier-3 if they keep going.
-  | { kind: "branch"; key: BranchKey; prompt: string; yesLabel?: string; noLabel?: string; tier?: Tier }
+  | { kind: "branch"; key: BranchKey; prompt: string; yesLabel?: string; noLabel?: string; tier?: Tier; showIf?: (form: FormState) => boolean }
   // Repeating list of classes — name + days + time + location + professor + SKU.
   | { kind: "classList"; key: "classes"; prompt: string; tier?: Tier; showIf?: (form: FormState) => boolean };
 
 type MajorGroup = { label: string; majors: string[] };
 
-type BranchKey = "wantTier2" | "wantDeepDive";
+type BranchKey = "wantTier2" | "wantDeepDive" | "wantMore";
 
 type TextKey =
   | "firstName"
@@ -425,11 +452,15 @@ type TextKey =
   | "greekRole"
   | "summerPlans"
   | "afterCollegeDetail"
+  | "biggestStressors"
+  | "gpaGoal"
+  | "agentOffLimits"
   | "anythingElse";
 type MultiKey =
   | "checkinFrequency"
   | "topPriority"
   | "agentHandleFirst"
+  | "agentTopics"
   | "responseStyle"
   | "integrationsWanted"
   | "clubs"
@@ -562,6 +593,67 @@ const STEPS: Step[] = [
     tier: 3,
     showIf: isStudent,
   },
+  // ---- Optional deep dive: one opt-in gate, then a handful of higher-value questions. Each
+  // maps to a field the agent already uses (check-in cron, proactive topics, USER.md facts,
+  // SOUL.md voice/boundaries). Gated purely by `wantMore === "yes"` so the standard flow is
+  // untouched for anyone who taps "Not now". ----
+  {
+    kind: "branch",
+    key: "wantMore",
+    prompt: "Want to go a little deeper? A few more optional questions let me tailor everything to you — or skip straight to the finish.",
+    yesLabel: "Yes, let's go deeper",
+    noLabel: "Not now",
+    tier: 3,
+    showIf: isStudent,
+  },
+  {
+    kind: "multi",
+    key: "checkinFrequency",
+    prompt: "How often should I check in with you?",
+    options: CHECKIN_OPTIONS,
+    tier: 3,
+    showIf: (f) => isStudent(f) && f.wantMore === "yes",
+  },
+  {
+    kind: "multi",
+    key: "agentHandleFirst",
+    prompt: "What should I take care of first?",
+    options: HANDLE_FIRST_OPTIONS,
+    tier: 3,
+    showIf: (f) => isStudent(f) && f.wantMore === "yes",
+  },
+  {
+    kind: "multi",
+    key: "agentTopics",
+    prompt: "What should I proactively keep an eye on for you?",
+    options: AGENT_TOPICS_OPTIONS,
+    tier: 3,
+    showIf: (f) => isStudent(f) && f.wantMore === "yes",
+  },
+  {
+    kind: "text",
+    key: "gpaGoal",
+    prompt: "Do you have a GPA goal this year?",
+    placeholder: "e.g. 3.5 — or leave blank",
+    tier: 3,
+    showIf: (f) => isStudent(f) && f.wantMore === "yes",
+  },
+  {
+    kind: "textarea",
+    key: "biggestStressors",
+    prompt: "What stresses you out most, or tends to slip through the cracks?",
+    placeholder: "Deadlines sneaking up, replying to emails, prepping for exams early...",
+    tier: 3,
+    showIf: (f) => isStudent(f) && f.wantMore === "yes",
+  },
+  {
+    kind: "text",
+    key: "agentOffLimits",
+    prompt: "Anything you'd rather I never bring up?",
+    placeholder: "Optional — a topic to steer clear of",
+    tier: 3,
+    showIf: (f) => isStudent(f) && f.wantMore === "yes",
+  },
   {
     kind: "textarea",
     key: "anythingElse",
@@ -591,12 +683,17 @@ type FormState = {
   linkedin: string;
   topPriority: string[];
   agentHandleFirst: string[];
+  agentTopics: string[];
   responseStyle: string[];
   checkinFrequency: string[];
   integrationsWanted: string[];
   classes: ClassEntry[];
+  gpaGoal: string;
+  biggestStressors: string;
+  agentOffLimits: string;
   wantTier2: "" | "yes" | "no";
   wantDeepDive: "" | "yes" | "no";
+  wantMore: "" | "yes" | "no";
   year: string;
   major: string;
   minor: string;
@@ -637,12 +734,17 @@ const EMPTY: FormState = {
   linkedin: "",
   topPriority: [],
   agentHandleFirst: [],
+  agentTopics: [],
   responseStyle: [],
   checkinFrequency: [],
   integrationsWanted: [],
   classes: [],
+  gpaGoal: "",
+  biggestStressors: "",
+  agentOffLimits: "",
   wantTier2: "",
   wantDeepDive: "",
+  wantMore: "",
   year: "",
   major: "",
   minor: "",
@@ -1012,6 +1114,10 @@ export function ConversationalOnboard({
           linkedin: form.linkedin.trim(),
           topPriority: form.topPriority,
           agentHandleFirst: form.agentHandleFirst,
+          agentTopics: form.agentTopics,
+          gpaGoal: form.gpaGoal.trim(),
+          biggestStressors: form.biggestStressors.trim(),
+          agentOffLimits: form.agentOffLimits.trim(),
           responseStyle: form.responseStyle,
           checkinFrequency: form.checkinFrequency,
           integrationsWanted: form.integrationsWanted,
