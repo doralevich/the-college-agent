@@ -92,26 +92,45 @@ export async function getAgentRow(db: AnyDB, agent37Id: string): Promise<AgentRo
 // The auth preamble every per-agent route shares: authenticate, resolve the agent's
 // row, then enforce the workspace role. Returns the pieces handlers go on to use.
 //
-// Platform admins (operators) get a cross-tenant bypass: they run the /admin god-view
-// and need to open, inspect, and manage any student's agent — workspaces they don't
-// belong to. Their row is read with the service-role client (RLS would otherwise hide
-// other tenants' rows), and the membership check is skipped. `isPlatformAdmin` lets
-// downstream handlers relax user-scoped gates (e.g. the entitlement check) for operators.
+// Ownership is checked FIRST, via the caller's RLS-scoped client: it returns a row only
+// for a workspace the caller actually belongs to. This is the path a normal student takes
+// — AND the path a platform admin takes when they open THEIR OWN agent (they're also a
+// student here). Critically, that means an admin using their own agent is NEVER blocked
+// behind the admin second factor: MFA step-up gates the cross-tenant operator god-view,
+// not a person chatting with the agent they paid for.
+//
+// Only when the caller is NOT a member of the agent's workspace do platform admins fall
+// through to the cross-tenant bypass: the /admin god-view over any student's agent. That
+// IS an admin privilege, so it requires aal2 (step-up), and the row is read with the
+// service-role client (RLS would otherwise hide other tenants' rows). `isPlatformAdmin`
+// is therefore true only for genuine cross-tenant access, letting downstream handlers
+// relax user-scoped gates (e.g. the entitlement check) for operators.
 export async function requireAgentAccess(agent37Id: string, level: "member" | "admin") {
   const { supabase, user } = await requireUser();
 
+  // Member-first: does the caller belong to this agent's workspace? (RLS-scoped read.)
+  const { data: ownRow } = await supabase
+    .from("agents")
+    .select("*")
+    .eq("agent37_id", agent37Id)
+    .maybeSingle();
+  if (ownRow) {
+    const row = ownRow as AgentRow;
+    if (level === "admin") await requireAdmin(supabase, row.workspace_id, user.id);
+    else await requireMember(supabase, row.workspace_id, user.id);
+    return { supabase, user, row, isPlatformAdmin: false as const };
+  }
+
+  // Not a member. Platform admins get the cross-tenant god-view — an admin privilege, so
+  // it requires the second factor (aal2). Their row is read with the service-role client.
   if (isAdminEmail(user.email)) {
-    // The cross-tenant god-view bypass is an admin privilege, so it too requires the
-    // second factor — an admin operating at aal1 gets no more reach than a normal user.
     await assertStepUp(supabase);
     const row = await getAgentRow(createAdminClient(), agent37Id);
     return { supabase, user, row, isPlatformAdmin: true as const };
   }
 
-  const row = await getAgentRow(supabase, agent37Id);
-  if (level === "admin") await requireAdmin(supabase, row.workspace_id, user.id);
-  else await requireMember(supabase, row.workspace_id, user.id);
-  return { supabase, user, row, isPlatformAdmin: false as const };
+  // Non-admin, non-member: 404 (don't leak whether the agent exists).
+  throw new ApiError(404, "not_found", "Agent not found");
 }
 
 export async function getWorkspaceOwner(db: DB, workspaceId: string): Promise<string | null> {
