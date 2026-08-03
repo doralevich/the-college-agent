@@ -60,6 +60,9 @@ export const POST = route(async (req) => {
       },
     ],
     metadata: {
+      // Marks this session as ours. The Stripe account is shared with ApolloClaw and every
+      // endpoint on it sees every event, so our webhook fulfils only sessions carrying this.
+      product: "college-agent",
       type: "credits_topup",
       user_id: user.id,
       agent37_id: agentId,

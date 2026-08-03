@@ -91,7 +91,43 @@ export async function POST(req: Request) {
   return Response.json({ received: true });
 }
 
+// This Stripe account also serves ApolloClaw (apolloclaw.ai), and Stripe delivers every
+// event to EVERY endpoint registered on the account. So a checkout completed over there
+// arrives here, looking exactly like a paid session — and until this check existed we
+// fulfilled it: created a College Agent account for their customer, handed them an active
+// entitlement to a product they had not bought, and emailed them a magic link to a site they
+// had never heard of. It happened to every ApolloClaw license sale, 350ms after the real one.
+//
+// So fulfillment is now opt-in rather than opt-out. A session is ours only if it says so:
+//
+//   * `product: "college-agent"` — stamped on every session we create from now on. The
+//     durable answer, and the only one that stays correct as either product's metadata
+//     changes shape.
+//   * `plan_lookup` / `type: "credits_topup"` — the markers our two checkout routes have
+//     always set, honoured so sessions created before the stamp existed still fulfil.
+//   * `order_id` / `client_reference_id` — the older order flow, same reason.
+//
+// Anything else is somebody else's sale. Logged, then ignored: a foreign session is not an
+// error and must not 500, or Stripe would retry ApolloClaw's traffic at us forever.
+function isCollegeAgentSession(session: Stripe.Checkout.Session): boolean {
+  const meta = session.metadata ?? {};
+  if (meta.product === "college-agent") return true;
+  if (meta.plan_lookup || meta.type === "credits_topup") return true;
+  if (meta.order_id || session.client_reference_id) return true;
+  return false;
+}
+
 async function handleCheckoutCompleted(db: DB, session: Stripe.Checkout.Session) {
+  if (!isCollegeAgentSession(session)) {
+    console.log(
+      "[stripe webhook] ignoring a session that isn't ours:",
+      session.id,
+      "metadata:",
+      JSON.stringify(session.metadata ?? {})
+    );
+    return;
+  }
+
   // Only fulfill genuinely-paid sessions.
   if (session.payment_status !== "paid" && session.payment_status !== "no_payment_required") return;
 
