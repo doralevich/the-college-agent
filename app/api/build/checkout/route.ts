@@ -103,7 +103,13 @@ export const POST = route(async (req) => {
   // Metadata travels back on the webhook (subscription_data is what we read on
   // invoice.paid; metadata is what we read on checkout.session.completed). Carry
   // names so the webhook can stamp them on the freshly-created auth user.
-  const metadata: Record<string, string> = { plan_lookup: planLookup, plan_type: body.plan === "pro" ? "pro" : "student" };
+  const metadata: Record<string, string> = {
+    // Marks this session as ours. The Stripe account is shared with ApolloClaw and every
+    // endpoint on it sees every event, so our webhook fulfils only sessions carrying this.
+    product: "college-agent",
+    plan_lookup: planLookup,
+    plan_type: body.plan === "pro" ? "pro" : "student",
+  };
   const buyerRole = (body.buyerRole ?? "").trim().slice(0, 60);
   if (buyerRole) metadata.buyer_role = buyerRole;
   if (userId) metadata.user_id = userId;
