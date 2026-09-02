@@ -125,17 +125,28 @@ export default function SetupPage() {
               <input type="password" placeholder="123456789:ABCdef..." value={form.telegramToken} onChange={e => set("telegramToken", e.target.value)} autoComplete="off" />
             </CredField>
 
+            {/* The bot token is now the whole setup. Saving it registers a webhook with Telegram
+                (lib/channels/connect.ts), and the FIRST message the student sends binds their chat
+                id automatically - so the numeric user id below, which they used to have to go and
+                find via a third-party bot, is no longer needed. The field stays for students who
+                already filled it in and for the legacy in-box delivery path, but it is off the
+                critical path and no longer the second thing this page asks for. */}
+            <p style={{ fontSize: 14, color: "rgba(11,23,41,.65)", lineHeight: 1.65, marginTop: 16 }}>
+              That&apos;s it — paste the token and save. Then <strong>send your bot any message</strong>{" "}
+              (say &ldquo;hi&rdquo;) so it knows it&apos;s you, and it&apos;ll start replying.
+            </p>
+
             <Instructions
-              label="How to find your numeric Telegram user id"
+              label="Optional: add your numeric Telegram user id"
               isOpen={openSection === "userid"}
               onToggle={() => toggle("userid")}
             >
-              <Step>Open Telegram and search for <strong>@userinfobot</strong>.</Step>
+              <Step>You don&apos;t need this any more — messaging your bot once does the same job.</Step>
+              <Step>If you&apos;d rather set it by hand: search Telegram for <strong>@userinfobot</strong>.</Step>
               <Step>Start a chat and press <strong>Start</strong> (or send any message).</Step>
               <Step>It replies with your account info. Copy the numeric <strong>Id</strong> (e.g. <Code>123456789</Code>).</Step>
-              <Step>This is how your agent knows it&apos;s really you when you message your bot.</Step>
             </Instructions>
-            <CredField label="Your Telegram User ID" hint="Numbers only, e.g. 123456789" optional>
+            <CredField label="Your Telegram User ID" hint="No longer required — leave blank" optional>
               <input type="text" inputMode="numeric" placeholder="123456789" value={form.telegramUserId} onChange={e => set("telegramUserId", e.target.value.replace(/[^0-9]/g, ""))} autoComplete="off" />
             </CredField>
           </CredBlock>

@@ -1,15 +1,20 @@
 import { agent37 } from "@/lib/agent37";
 import { requireAgentAccess } from "@/lib/auth";
-import { PORTS } from "@/config/agents";
+import { allOpenablePorts } from "@/config/agents";
 import { ApiError, json, readJson, route } from "@/lib/http";
 
-const ALLOWED_PORTS = Object.values(PORTS) as number[];
+// Every port openable on ANY template. The fleet is mixed after the template switch - Hermes
+// boxes serve 9119, Apollo/OpenClaw ones 18789 - and this is a guard against a member opening an
+// arbitrary internal port, not a per-agent capability check. Asking Agent37 which template this
+// instance runs, on every signed-url mint, would be a network round trip to narrow an allowlist
+// that is already only the four surfaces we deliberately expose.
+const ALLOWED_PORTS = allOpenablePorts();
 
 type Ctx = { params: Promise<{ id: string }> };
 
-// Mints a short-lived edge signed URL to one of the agent's allow-listed ports — the
-// Hermes dashboard (9120), the terminal (7682), or the file browser (8081), all declared
-// by the `college-agent` custom template. The signed
+// Mints a short-lived edge signed URL to one of the agent's allow-listed ports — the dashboard
+// (9119 on Hermes, 18789 on the Apollo/OpenClaw build), the terminal (7681) or the file browser
+// (8080). The signed
 // URL is the auth boundary: it grants authenticated network access to that port, and
 // Hermes' gateway handles its own session behind it. Members of the workspace and
 // platform admins (operators, cross-tenant) may open these.

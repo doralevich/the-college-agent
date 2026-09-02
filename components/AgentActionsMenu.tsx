@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { isTransitional } from "@/lib/format";
 import { useAsyncAction } from "@/lib/useAsyncAction";
-import { PORTS } from "@/config/agents";
+import { portsForTemplate } from "@/config/agents";
 import type { MergedAgent, Role } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,8 +41,8 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 // seeing it. Admins get it from ADMIN_PORT_ACTIONS below, and "Copy dashboard URL" in the
 // overflow menu still hands out the same signed URL.
 const PORT_ACTIONS = [
-  { port: PORTS.files, Icon: FolderOpen, label: "Open file browser", aria: "Open file browser" },
-  { port: PORTS.terminal, Icon: Terminal, label: "Open terminal", aria: "Open terminal" },
+  { name: "files", Icon: FolderOpen, label: "Open file browser", aria: "Open file browser" },
+  { name: "terminal", Icon: Terminal, label: "Open terminal", aria: "Open terminal" },
 ] as const;
 
 // Admin-only. The dashboard stays out of the list above on purpose - it is Hermes-branded and
@@ -51,7 +51,7 @@ const PORT_ACTIONS = [
 // click, and only for platform admins, so the student-facing surface is unchanged.
 const ADMIN_PORT_ACTIONS = [
   {
-    port: PORTS.dashboard,
+    name: "dashboard",
     Icon: LayoutDashboard,
     label: "Open agent dashboard (admin)",
     aria: "Open agent dashboard",
@@ -82,8 +82,12 @@ export function AgentActionsMenu({
   reonboardOnDelete?: boolean;
 }) {
   const isAdmin = role === "admin";
-  // Operators additionally get the Hermes dashboard button; students keep the two surfaces above.
+  // Operators additionally get the dashboard button; students keep the two surfaces above.
   const portActions = isAdmin ? [...PORT_ACTIONS, ...ADMIN_PORT_ACTIONS] : PORT_ACTIONS;
+  // Port NUMBERS come from this agent's own template, because the fleet is mixed: the dashboard
+  // is 9119 on a Hermes box and 18789 on the Apollo build, and a hardcoded number would open a
+  // tab that silently never loads for half of them.
+  const ports = portsForTemplate(agent.template);
   const running = agent.live_status === "running";
   const transitional = isTransitional(agent.live_status);
 
@@ -130,7 +134,7 @@ export function AgentActionsMenu({
     const toastId = toast.loading("Preparing dashboard URL…");
     try {
       // Same signed URL the "Open the dashboard" action uses.
-      await navigator.clipboard.writeText(await signedUrl(PORTS.dashboard));
+      await navigator.clipboard.writeText(await signedUrl(ports.dashboard));
       toast.success("Dashboard URL copied to clipboard", { id: toastId });
     } catch (e) {
       toast.error((e as Error).message, { id: toastId });
@@ -170,15 +174,15 @@ export function AgentActionsMenu({
           </Tooltip>
         )}
 
-        {portActions.map(({ port, Icon, label, aria }) => (
-          <Tooltip key={port}>
+        {portActions.map(({ name, Icon, label, aria }) => (
+          <Tooltip key={name}>
             <TooltipTrigger asChild>
               <Button
                 variant="outline"
                 size="icon"
                 className="h-8 w-8 rounded-full"
-                disabled={!running || opening === port}
-                onClick={() => openPort(port)}
+                disabled={!running || opening === ports[name]}
+                onClick={() => openPort(ports[name])}
                 aria-label={aria}
               >
                 <Icon className="h-4 w-4" />

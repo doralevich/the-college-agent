@@ -4,6 +4,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { sendTelegramMessage } from "@/lib/telegram";
 import { isDue, localNow } from "@/lib/schedule-timing";
 import { buildCheckinPrompt, isValidTimezone, type HermesPersonaInput } from "@/lib/hermes";
+import { getChannelConfig } from "@/lib/channels/store";
+import { sendMessage as sendViaChannel } from "@/lib/channels/telegram";
 
 // The proactive check-in, driven from here instead of from inside the agent box.
 //
@@ -196,12 +198,29 @@ export async function runCheckin(row: CheckinScheduleRow): Promise<string> {
     if (!row.user_id) return finish("no_student");
 
     const { onboard, setup } = await readIntakeForCheckin(db, row.user_id);
-    const token = setup?.telegram_token ?? null;
-    const chatId = setup?.telegram_user_id ?? null;
-    // Telegram is the only delivery channel a check-in has. Rather than invent one (email we
-    // would have to build, a dashboard nobody opens at 8am), a student who hasn't connected it
-    // simply doesn't get one, and the row says so — which is what lets the dashboard tell them
-    // to connect Telegram instead of showing "something went wrong".
+
+    // Two places a student's Telegram can live, and both are real right now:
+    //
+    //   agent_channels    the webhook channel (lib/channels). The student pasted a bot token and
+    //                     the first message they sent bound their chat id. Works on any runtime.
+    //   setup_submissions the legacy /setup fields, where the token and their NUMERIC user id
+    //                     were collected to be written into the box's Hermes .env.
+    //
+    // The channel wins when present. The legacy fields stay as the fallback so students who
+    // connected the old way keep getting check-ins without having to reconnect on the day this
+    // ships — they only need to when their agent moves to a runtime with no Hermes gateway.
+    const channel = await getChannelConfig(row.agent37_id, "telegram").catch(() => null);
+    const token = channel?.token ?? setup?.telegram_token ?? null;
+    const chatId = channel?.ownerChatId ?? setup?.telegram_user_id ?? null;
+
+    // Telegram is the only delivery a check-in has. Rather than invent one (email we would have
+    // to build, a dashboard nobody opens at 8am), a student who hasn't connected simply doesn't
+    // get one, and the row says so — which is what lets the dashboard tell them to connect
+    // Telegram instead of showing "something went wrong".
+    //
+    // Note the channel case where a token exists but ownerChatId is still null: they connected
+    // the bot but have never messaged it, so we have no address to send to. Same outcome, and
+    // the same fix from the student's side: say something to the bot once.
     if (!token || !chatId) return finish("no_channel");
 
     const persona: HermesPersonaInput = {
@@ -222,6 +241,17 @@ export async function runCheckin(row: CheckinScheduleRow): Promise<string> {
     // whether it has anything to say is one a student mutes within a week.
     if (/^\[SILENT\]$/i.test(text.trim())) return finish("silent");
 
+    // Via the channel helper when we're on a channel: it splits messages over Telegram's 4096
+    // character cap, which a check-in listing a week of deadlines can genuinely exceed — the API
+    // rejects the whole message rather than truncating it, so an unsplit send is a lost check-in.
+    if (channel) {
+      try {
+        await sendViaChannel(token, chatId, text);
+        return finish("delivered");
+      } catch (e) {
+        return finish("telegram_failed", (e as Error).message.slice(0, 500));
+      }
+    }
     const sent = await sendTelegramMessage(token, chatId, text);
     return finish(sent ? "delivered" : "telegram_failed");
   } catch (err) {
