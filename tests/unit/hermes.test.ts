@@ -58,7 +58,18 @@ describe("buildSoul", () => {
   it("points the agent at the on-demand full-profile reference file", () => {
     const soul = buildSoul({ agentName: "Athena" });
     expect(soul).toContain("# Background file");
-    expect(soul).toContain("~/.hermes/context/STUDENT_PROFILE.md");
+    expect(soul).toContain("STUDENT_PROFILE.md");
+  });
+
+  // SOUL.md is written into whichever workspace the box's runtime reads, so the file itself
+  // can live in two places - but a PATH written inside it as prose cannot. Naming an absolute
+  // Hermes path here meant an OpenClaw box would carry a persona instructing the agent to go
+  // read a directory that does not exist on it. A bare filename is true on both runtimes.
+  it("names the background file WITHOUT a runtime-specific path", () => {
+    const soul = buildSoul({ agentName: "Athena" });
+    expect(soul).not.toContain("~/.hermes");
+    expect(soul).not.toContain("$HOME/.hermes");
+    expect(soul).not.toContain(".openclaw");
   });
 });
 
