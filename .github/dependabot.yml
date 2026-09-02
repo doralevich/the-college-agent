@@ -1,7 +1,19 @@
-# Automated dependency updates. Dependabot opens PRs when dependencies have updates or known
-# vulnerabilities. Minor/patch bumps are grouped into a single weekly PR to cut noise; majors
-# come as their own PRs so they can be reviewed carefully. (Dependabot *alerts* and secret
-# scanning are separate toggles in GitHub → Settings → Code security & analysis.)
+# Automated dependency updates. Dependabot opens PRs when dependencies have newer versions.
+# Minor/patch bumps are grouped into a single weekly PR to cut noise.
+#
+# MAJOR version bumps are NOT proposed automatically (see `ignore` below). A major release is
+# the library's authors saying "we deliberately broke compatibility", and two of them shipped
+# breakage here that nothing caught:
+#   - eslint 10 crashed the linter outright. Deploys don't gate on lint, so it stayed green
+#     and the breakage went unnoticed.
+#   - cobe 2 removed an option the homepage globe uses, which broke `next build` itself.
+# Majors are now a deliberate act: bump the version by hand, run typecheck + lint + tests, and
+# actually look at whatever the library renders before merging.
+#
+# IMPORTANT - this only stops the routine "a newer version exists" PRs. Dependabot SECURITY
+# ALERTS are a separate toggle (GitHub -> Settings -> Code security & analysis) and stay ON.
+# If a fix for a real vulnerability exists only in a new major, it won't arrive as an automatic
+# PR any more - it has to be taken deliberately. Watch the alerts, not the PR queue, for those.
 version: 2
 updates:
   - package-ecosystem: "npm"
@@ -12,22 +24,22 @@ updates:
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
-    # Hold back the two dev-tool MAJORS whose ecosystems don't yet support them, so a
-    # merged bump can't silently break `eslint` again (deploys don't gate on lint, so it
-    # goes unnoticed). Revisit when the Next lint stack catches up:
-    #   - typescript 7.x  → typescript-eslint has no TS>=7 support yet (issue #10940)
-    #   - eslint 10.x     → eslint-config-next's eslint-plugin-react calls the removed
-    #                       context.getFilename() API and crashes under ESLint 10
-    # Minor/patch for both still flow through the group below.
     ignore:
+      # No automatic major-version PRs, for any package. See the note at the top of this file.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+      # Listed individually as the record of WHY this policy exists, and so these three stay
+      # held even if the blanket rule above is ever relaxed:
+      #   typescript 7.x - typescript-eslint has no TS >= 7 support yet (typescript-eslint#10940)
+      #   eslint 10.x    - eslint-config-next's eslint-plugin-react calls the removed
+      #                    context.getFilename() API and crashes under ESLint 10
+      #   cobe 2.x       - dropped the `onRender` option the homepage globe animates with;
+      #                    needs an IntegrationGlobe migration (to globe.update() in a rAF
+      #                    loop) and a real visual check that the globe still spins
       - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
       - dependency-name: "eslint"
         update-types: ["version-update:semver-major"]
-      # cobe 2.x dropped the `onRender` option the homepage globe animates with
-      # (animation moved to globe.update() in your own rAF loop). The bump broke
-      # `next build`, which typechecks. Nothing here needs v2's arcs, so stay on 0.6.x
-      # until someone migrates IntegrationGlobe and checks the globe still spins.
       - dependency-name: "cobe"
         update-types: ["version-update:semver-major"]
     groups:
@@ -43,3 +55,8 @@ updates:
       day: "monday"
     labels:
       - "dependencies"
+    ignore:
+      # Same policy for workflow actions: a major (say actions/checkout v4 -> v5) can break CI
+      # the same way, so those are taken deliberately too.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
