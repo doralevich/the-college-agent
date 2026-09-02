@@ -10,6 +10,7 @@ import { ambassadorByPromoCode, ambassadorBySlug, AMBASSADOR_COUPON_OFF_CENTS, C
 import { currentPlanAmountCents } from "@/lib/pricing/intro-cutoff";
 import { syncToMailchimp } from "@/lib/newsletter";
 import { sendMetaPurchase } from "@/lib/meta-capi";
+import { sendTelegramMessage } from "@/lib/telegram";
 
 // Stripe webhook. This is the ONLY thing that flips entitlements to 'active' (never a
 // user-facing button). It MUST stay out of the proxy.ts auth matcher (no redirects) and
@@ -451,6 +452,62 @@ async function syncBySubscription(db: DB, subscriptionId: string | null, status:
     .from("entitlements")
     .update({ status, updated_at: new Date().toISOString() })
     .eq("stripe_subscription_id", subscriptionId);
+
+  if (status === "canceled") await alertIfInstanceStillRunning(db, subscriptionId);
+}
+
+/**
+ * A subscription ended, but the Agent37 box it paid for keeps running.
+ *
+ * Cancelling has never touched the instance — it flips statuses and stops there — so hosting
+ * carries on being billed to US indefinitely. One account sat that way for two weeks before
+ * anyone noticed, and only then because a fleet view finally listed it.
+ *
+ * This ALERTS rather than acts, deliberately. The obvious "fix" is to delete or stop the box on
+ * cancellation, and that would have been wrong on the very case that exposed the problem: a
+ * student whose Stripe subscription was cancelled but who is still using their agent with the
+ * owner's blessing. Destroying a customer's agent from a webhook, on a signal that turns out not
+ * to mean what it appears to, is a far worse failure than a hosting bill. So: say so loudly,
+ * and let a person decide.
+ *
+ * Best-effort throughout. A cancellation must be recorded even if the alert can't be sent.
+ */
+async function alertIfInstanceStillRunning(db: DB, subscriptionId: string) {
+  try {
+    const { data: ent } = await db
+      .from("entitlements")
+      .select("user_id, email")
+      .eq("stripe_subscription_id", subscriptionId)
+      .maybeSingle();
+    const userId = ent?.user_id as string | undefined;
+    if (!userId) return;
+
+    // user -> workspace -> agents. Any row here means a live box we are still paying for.
+    const { data: ms } = await db.from("memberships").select("workspace_id").eq("user_id", userId);
+    const workspaceIds = (ms ?? []).map((m) => m.workspace_id as string);
+    if (workspaceIds.length === 0) return;
+
+    const { data: agents } = await db
+      .from("agents")
+      .select("agent37_id, name")
+      .in("workspace_id", workspaceIds);
+    if (!agents || agents.length === 0) return;
+
+    const who = (ent?.email as string | undefined) ?? userId;
+    const list = agents.map((a) => `${a.name ?? "unnamed"} (${a.agent37_id})`).join(", ");
+    const message =
+      `College Agent: subscription cancelled for ${who}, but ${agents.length} agent instance(s) ` +
+      `are still running and still billing us: ${list}. ` +
+      `Decide whether to keep, stop or delete them — nothing was changed automatically.`;
+
+    console.warn("[stripe:canceled-with-live-instance]", who, list);
+
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
+    if (token && chatId) await sendTelegramMessage(token, chatId, message);
+  } catch (e) {
+    console.error("[stripe:canceled-with-live-instance] alert failed:", (e as Error).message);
+  }
 }
 
 function mapSubStatus(s: Stripe.Subscription.Status): EntStatus | null {
