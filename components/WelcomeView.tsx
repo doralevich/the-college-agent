@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { ConversationalOnboard, type OnboardPrefill } from "@/components/ConversationalOnboard";
+import { provisionAndWait } from "@/lib/provision-client";
 
 // First-run landing on the student dashboard. Greets as Frankenstein (the agent's
 // persona), lists the three things to do, and offers one big button into Chat.
@@ -268,7 +268,6 @@ export function WelcomeView({
 }
 
 function PostOnboardCta({ hasAgent, onOpenChat }: { hasAgent: boolean; onOpenChat: () => void }) {
-  const router = useRouter();
   const [provisioning, setProvisioning] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -276,19 +275,17 @@ function PostOnboardCta({ hasAgent, onOpenChat }: { hasAgent: boolean; onOpenCha
     if (provisioning) return;
     setProvisioning(true);
     setError(null);
-    try {
-      const res = await fetch("/api/provision", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: "{}",
-      });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(body?.error?.message || `Couldn't build your agent (${res.status})`);
-      router.refresh();
-    } catch (e) {
-      setError((e as Error).message);
-      setProvisioning(false);
+    // Waits on a readiness poll rather than the long provision request, which can time out
+    // while the server succeeds — that mismatch is what left this button spinning forever.
+    const result = await provisionAndWait();
+    if (result.ready) {
+      // Hard navigation, not router.refresh(): a soft refresh can serve a cached RSC
+      // payload where hasAgent is still false, which leaves the spinner up.
+      window.location.assign("/dashboard");
+      return;
     }
+    setError(result.error);
+    setProvisioning(false);
   }
 
   if (hasAgent) {

@@ -270,7 +270,7 @@ async function handleCheckoutCompleted(db: DB, session: Stripe.Checkout.Session)
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://thecollegeagent.ai";
       const tokenHash = linkData?.properties?.hashed_token;
       const magicLink = tokenHash
-        ? `${siteUrl}/auth/callback?token_hash=${encodeURIComponent(tokenHash)}&type=magiclink&next=${encodeURIComponent("/dashboard")}`
+        ? `${siteUrl}/auth/callback?token_hash=${encodeURIComponent(tokenHash)}&type=magiclink&next=${encodeURIComponent("/reset-password?welcome=1")}`
         : `${siteUrl}/auth/sign-in`;
       await sendAccountCreatedEmail({ email: entEmail, firstName, magicLink });
     } catch (err) {

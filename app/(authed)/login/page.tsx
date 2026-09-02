@@ -88,8 +88,14 @@ export default function LoginPage() {
         // Email confirmation is off, so signing up an existing email errors here
         // (rather than sending a useless link) — steer them to sign in instead.
         if (error.code === "user_already_exists") {
-          toast.error("That email already has an account. Sign in instead.");
-          switchMode("signin");
+          // Accounts minted by Stripe checkout are created password-less, so bouncing
+          // these users to "Sign in" was a dead end — they'd have nothing to type, and
+          // signUp can never adopt an existing email. The reset flow is the one that
+          // actually establishes a first password, so send them there.
+          toast.error(
+            "That email already has an account. If you haven't set a password yet, send yourself a link below."
+          );
+          switchMode("reset");
           return;
         }
         return toast.error(error.message);

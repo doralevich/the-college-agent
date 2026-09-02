@@ -12,6 +12,18 @@ updates:
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
+    # Hold back the two dev-tool MAJORS whose ecosystems don't yet support them, so a
+    # merged bump can't silently break `eslint` again (deploys don't gate on lint, so it
+    # goes unnoticed). Revisit when the Next lint stack catches up:
+    #   - typescript 7.x  → typescript-eslint has no TS>=7 support yet (issue #10940)
+    #   - eslint 10.x     → eslint-config-next's eslint-plugin-react calls the removed
+    #                       context.getFilename() API and crashes under ESLint 10
+    # Minor/patch for both still flow through the group below.
+    ignore:
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
     groups:
       minor-and-patch:
         update-types:

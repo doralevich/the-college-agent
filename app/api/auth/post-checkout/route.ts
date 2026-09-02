@@ -10,7 +10,15 @@ import { findOrCreateAuthUser } from "@/lib/auth/find-or-create-user";
 //   2. Find or create the auth.users row (idempotent with the webhook).
 //   3. Use the admin SDK to generate a magic-link, then verifyOtp() on the
 //      cookie-aware server client to actually set the Supabase session cookies.
-//   4. 302 to /dashboard — student lands already signed in, no email click.
+//   4. 302 to the set-password screen — the student lands already signed in (no email
+//      click) and picks a password there, so they can sign in normally next time.
+//
+// Why the set-password stop matters: findOrCreateAuthUser creates the account with NO
+// password (magic-link only). Before this, checkout dropped the student straight on
+// /dashboard, so the only way they could ever get back in was "Forgot password?" — the
+// one screen in the app that calls updateUser({password}). Routing them through it once,
+// while they already hold a real session, closes that gap. It's a stop, not a wall: the
+// screen has a "skip for now" path to the dashboard.
 //
 // Route Handler (not a Server Component) because we need WRITABLE cookies for
 // the verifyOtp call. Anything that fails along the way redirects to /dashboard;
@@ -23,6 +31,9 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const sessionId = url.searchParams.get("session_id");
   const dashboard = new URL("/dashboard", url);
+  // Success target: the same screen the recovery flow uses, in first-run wording.
+  // `welcome=1` switches the copy from "Reset password" to "Set your password".
+  const setPassword = new URL("/reset-password?welcome=1", url);
 
   if (!sessionId) return NextResponse.redirect(dashboard);
 
@@ -68,7 +79,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(dashboard);
     }
 
-    return NextResponse.redirect(dashboard);
+    // Signed in. Send them to pick a password rather than straight to the dashboard —
+    // this is the only moment they hold a session without yet having a credential.
+    return NextResponse.redirect(setPassword);
   } catch (err) {
     console.error("[post-checkout] error", err);
     return NextResponse.redirect(dashboard);

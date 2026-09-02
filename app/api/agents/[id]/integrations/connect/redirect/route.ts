@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { agent37, Agent37Error } from "@/lib/agent37";
 import { requireAgentAccess } from "@/lib/auth";
-import { ApiError, route } from "@/lib/http";
+import { route } from "@/lib/http";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -43,7 +43,13 @@ export const GET = route(async (request: Request, { params }: Ctx) => {
   const url = new URL(request.url);
   const toolkit = url.searchParams.get("toolkit")?.trim();
   if (!toolkit) {
-    throw new ApiError(400, "invalid_request", "toolkit is required");
+    return errorPage("No app was specified. You can close this tab.", 400);
+  }
+  // Composio slugs are lowercase alphanumerics plus underscores. Checking the shape here
+  // rejects junk before it ever reaches the API, AND guarantees the slug is safe to
+  // interpolate into the HTML below, since it can then contain no markup characters.
+  if (!/^[a-z0-9_]+$/.test(toolkit)) {
+    return errorPage("That app name isn't valid. You can close this tab.", 400);
   }
 
   try {
@@ -54,6 +60,20 @@ export const GET = route(async (request: Request, { params }: Ctx) => {
     if (e instanceof Agent37Error && e.status === 422) {
       return errorPage("This app can't be connected here yet. You can close this tab.", 422);
     }
-    throw e;
+    // A slug our catalog lists but the upstream catalog doesn't have - a typo, or an app
+    // that was renamed or withdrawn. This used to `throw`, and because this endpoint is
+    // opened DIRECTLY IN A BROWSER TAB the JSON error wrapper rendered as a blank/garbage
+    // page: the "clicked connect and it went to nothing" report. A browser-facing endpoint
+    // must always answer with a readable page, so every failure below renders one.
+    if (e instanceof Agent37Error && (e.status === 400 || e.status === 404)) {
+      return errorPage(
+        `We could not connect "${toolkit}". That app is not in our provider's catalog - it may have been renamed, or it is not supported yet. Please let us know so we can fix it. You can close this tab.`,
+        404
+      );
+    }
+    return errorPage(
+      "Something went wrong starting this connection. Please close this tab and try again.",
+      502
+    );
   }
 });

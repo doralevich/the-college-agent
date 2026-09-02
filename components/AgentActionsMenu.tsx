@@ -91,9 +91,18 @@ export function AgentActionsMenu({
 
   async function openPort(port: number) {
     setOpening(port);
+    // Open the tab SYNCHRONOUSLY inside the click. Awaiting the signed URL first means the
+    // browser no longer counts this as user-initiated, so it silently blocks the popup —
+    // window.open() returns null, throws nothing and shows no toast, and the button just
+    // appears dead. Same idiom BillingView already uses for the Stripe portal.
+    const tab = window.open("", "_blank");
+    if (tab) tab.opener = null; // preserve the noopener guarantee the direct call had
     try {
-      window.open(await signedUrl(port), "_blank", "noopener");
+      const url = await signedUrl(port);
+      if (tab) tab.location.href = url;
+      else window.location.assign(url); // popup blocked anyway → fall back to this tab
     } catch (e) {
+      tab?.close();
       toast.error((e as Error).message);
     } finally {
       setOpening(null);

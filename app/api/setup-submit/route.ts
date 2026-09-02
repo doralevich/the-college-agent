@@ -1,9 +1,14 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { getOptionalUserId } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { reconfigureExistingAgentForUser } from "@/lib/provisioning";
 import { buildSummaryPdf, pdfAttachment } from "@/lib/email/pdf";
 import { encryptForStorage } from "@/lib/crypto/byo";
 import { limit } from "@/lib/rate-limit";
+
+// Delivering the new Telegram creds to a live agent (below) waits for the box + an exec,
+// so give the post-response `after()` work room beyond the default function timeout.
+export const maxDuration = 120;
 
 const supabase = createAdminClient();
 
@@ -42,6 +47,31 @@ export async function POST(req: NextRequest) {
     }], { onConflict: "user_id" });
 
     if (dbError) throw dbError;
+
+    // Telegram only reaches the agent through configureAgentFromIntake, which runs at
+    // PROVISIONING time — and technical setup is a separate step the student usually does
+    // AFTER their agent is already up. So connecting Telegram here saved the credentials
+    // and then delivered them nowhere: the box kept the empty TELEGRAM_BOT_TOKEN it was
+    // built with, and the proactive check-in cron (which is only created when Telegram
+    // exists) never got made. That is the "connecting a Telegram ID did not work" report.
+    //
+    // Push the refreshed setup to the live agent, exactly as onboard-submit does for the
+    // questionnaire. configureHermes restarts the gateway, so the new .env is actually
+    // reloaded. Runs after the response (`after()`) because the reconfigure waits on the
+    // instance + an exec, and it's a no-op when the student has no agent yet — first-time
+    // provisioning reads these same rows and wires Telegram itself.
+    if (userId) {
+      const uid = userId;
+      after(async () => {
+        try {
+          const r = await reconfigureExistingAgentForUser(supabase, uid);
+          if (r.reconfigured) console.log("[setup-submit:reconfigure]", uid, r.detail);
+          else console.log("[setup-submit:reconfigure:skip]", uid, r.detail);
+        } catch (err) {
+          console.error("[setup-submit:reconfigure] failed:", err);
+        }
+      });
+    }
 
     const mandrillKey = process.env.MANDRILL_API_KEY;
     if (mandrillKey) {
