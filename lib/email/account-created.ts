@@ -1,8 +1,9 @@
 import "server-only";
 
 // Account-created email — sent ONCE when the Stripe webhook spins up an auth user
-// for an anonymous /build → Pay flow. The body carries a magic-link sign-in URL so
-// the student lands on the dashboard in one click without ever picking a password.
+// for an anonymous /build → Pay flow. The body carries a magic-link sign-in URL that
+// lands the student on the set-password screen: the account is created password-less,
+// so without this stop their only route back in would be "Forgot password?".
 // Best-effort: never throw out of the webhook. A delivery failure is logged here.
 
 export interface AccountCreatedRecipient {
@@ -41,13 +42,13 @@ export async function sendAccountCreatedEmail(r: AccountCreatedRecipient): Promi
                   Hi ${escapeHtml(first)}, your account is ready.
                 </h1>
                 <p style="font-size:15px;line-height:1.6;color:#1A2421;margin:0 0 24px;">
-                  One click signs you in. No password needed.
+                  One click signs you in — then choose a password so you can log in anytime.
                 </p>
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 26px;">
                   <tr>
                     <td style="background:#2D7A3A;border-radius:10px;">
                       <a href="${link}" style="display:inline-block;padding:13px 28px;font-family:inherit;font-size:15px;font-weight:600;color:#FFFFFF;text-decoration:none;">
-                        Sign in to my dashboard
+                        Sign in &amp; set my password
                       </a>
                     </td>
                   </tr>
