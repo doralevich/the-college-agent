@@ -40,7 +40,17 @@ export const INTEGRATION_CATEGORIES: IntegrationCategory[] = [
     toolkits: [
       toolkit("canvas", "Canvas", "Canvas is the LMS most universities use for classes and assignments."),
       toolkit("google_classroom", "Google Classroom", "Google Classroom for assignments, announcements, and grades."),
-      toolkit("blackbaud", "Blackbaud", "Blackbaud powers many private-school and higher-ed admin systems."),
+      // Blackbaud is school fundraising/admin software. It is NOT Blackboard, the course
+      // LMS - two different companies whose names differ by one letter. This tile sits in
+      // "School & classes" next to Canvas and is pinned in Favorites, which is exactly
+      // where a student hunting for their LMS will misread it, so the description has to
+      // say plainly which one it is. (Searching "Blackboard" queries the live provider
+      // catalog, so a real Blackboard connector will surface there if one exists.)
+      toolkit(
+        "blackbaud",
+        "Blackbaud",
+        "Blackbaud school and nonprofit admin software. Not Blackboard, the course LMS."
+      ),
     ],
   },
   {
