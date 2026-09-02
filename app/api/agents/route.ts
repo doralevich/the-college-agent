@@ -3,7 +3,7 @@ import { loadLiveAgentState, mergeAgent } from "@/lib/agents";
 import { requireMember, requireUser } from "@/lib/auth";
 import { requirePlatformAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { DEFAULT_AGENT, shapeForHosting } from "@/config/agents";
+import { APP_ID, DEFAULT_AGENT, shapeForHosting } from "@/config/agents";
 import { usdToMicros } from "@/lib/format";
 import { ApiError, json, readJson, route } from "@/lib/http";
 import { configureAgentFromIntake, readProvisioningIntake } from "@/lib/provisioning";
@@ -120,7 +120,7 @@ export const POST = route(async (request: Request) => {
       disk: shape.disk,
     },
     user: ownerId,
-    metadata: { app_workspace: workspaceId },
+    metadata: { app: APP_ID, app_workspace: workspaceId },
     budget: { monthly_cap_micros: usdToMicros(DEFAULT_AGENT.monthlyCapUsd) },
   });
 

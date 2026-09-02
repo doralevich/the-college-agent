@@ -36,6 +36,21 @@ export function shapeForHosting(hosting: string | null | undefined): AgentShape 
   return (hosting && HOSTING_SHAPES[hosting as HostingKey]) || HOSTING_SHAPES.basic;
 }
 
+// Which app provisioned an instance. The College Agent and Apollo share ONE Agent37
+// account, so `listAgents()` returns both apps' instances to whichever app asks. Without
+// this stamp an app cannot tell "an instance of mine whose database row went missing" from
+// "an instance that simply belongs to the other app", and Apollo's admin reported every
+// College Agent box as an orphan of its own.
+//
+// Stamped into instance metadata at create (the only two places that call createAgent).
+// Deliberately NOT the template name: Agent37 registers the Apollo image under
+// "college-agent" too while it is renamed to "apollo-agent", so the template cannot tell
+// the two apps apart. Instances created before this stamp existed carry no `app` key, and
+// Agent37 exposes no way to set metadata on an existing instance - each app still
+// recognises its own legacy boxes through its `agents` table, and anything neither app
+// claims is reported as unattributed rather than guessed at.
+export const APP_ID = "college-agent" as const;
+
 export const DEFAULT_AGENT = {
   template: "college-agent",
   // Basic shape — the default/floor when no plan is known (e.g. admin box with no order).
