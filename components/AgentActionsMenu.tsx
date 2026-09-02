@@ -5,6 +5,7 @@ import {
   ArrowDownToLine,
   Copy,
   FolderOpen,
+  LayoutDashboard,
   MessageSquare,
   MoreHorizontal,
   Play,
@@ -35,12 +36,26 @@ import {
 } from "@/components/ui/tooltip";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 
-// The "open a port in a new tab" surfaces — shown as icon buttons. The Hermes dashboard is
-// intentionally NOT exposed here: it's Hermes-branded and we don't want students seeing it.
-// Admins can still grab its URL via "Copy dashboard URL" below.
+// The "open a port in a new tab" surfaces students see — shown as icon buttons. The Hermes
+// dashboard is intentionally NOT in this list: it's Hermes-branded and we don't want students
+// seeing it. Admins get it from ADMIN_PORT_ACTIONS below, and "Copy dashboard URL" in the
+// overflow menu still hands out the same signed URL.
 const PORT_ACTIONS = [
   { port: PORTS.files, Icon: FolderOpen, label: "Open file browser", aria: "Open file browser" },
   { port: PORTS.terminal, Icon: Terminal, label: "Open terminal", aria: "Open terminal" },
+] as const;
+
+// Admin-only. The dashboard stays out of the list above on purpose - it is Hermes-branded and
+// students should not be sent to it - but an operator supporting a student had no way in at all
+// except copying the URL from the overflow menu and pasting it into a tab. Same signed URL, one
+// click, and only for platform admins, so the student-facing surface is unchanged.
+const ADMIN_PORT_ACTIONS = [
+  {
+    port: PORTS.dashboard,
+    Icon: LayoutDashboard,
+    label: "Open agent dashboard (admin)",
+    aria: "Open agent dashboard",
+  },
 ] as const;
 
 export function AgentActionsMenu({
@@ -67,6 +82,8 @@ export function AgentActionsMenu({
   reonboardOnDelete?: boolean;
 }) {
   const isAdmin = role === "admin";
+  // Operators additionally get the Hermes dashboard button; students keep the two surfaces above.
+  const portActions = isAdmin ? [...PORT_ACTIONS, ...ADMIN_PORT_ACTIONS] : PORT_ACTIONS;
   const running = agent.live_status === "running";
   const transitional = isTransitional(agent.live_status);
 
@@ -153,7 +170,7 @@ export function AgentActionsMenu({
           </Tooltip>
         )}
 
-        {PORT_ACTIONS.map(({ port, Icon, label, aria }) => (
+        {portActions.map(({ port, Icon, label, aria }) => (
           <Tooltip key={port}>
             <TooltipTrigger asChild>
               <Button
