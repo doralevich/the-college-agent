@@ -157,7 +157,10 @@ export const POST = route(async () => {
 
   // Best-effort: install/config Hermes + Telegram + persona, then start the gateway.
   // If this fails the agent still exists (operator fallback finishes it in /admin).
-  const { configured, detail: configDetail } = await configureAgentFromIntake(agent.id, onboard, setup);
+  const { configured, detail: configDetail } = await configureAgentFromIntake(agent.id, onboard, setup, {
+    db,
+    userId: user.id,
+  });
   if (!configured) console.error("[provision:configure]", agent.id, configDetail);
 
   // Fire the student-facing welcome email. Best-effort: a delivery failure is logged

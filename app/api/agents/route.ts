@@ -153,7 +153,7 @@ export const POST = route(async (request: Request) => {
     "workspace already has an agent, new box left bare to avoid a Telegram gateway conflict";
   if (!workspaceHadAgent) {
     const { onboard, setup } = await readProvisioningIntake(db, ownerId);
-    const r = await configureAgentFromIntake(agent.id, onboard, setup);
+    const r = await configureAgentFromIntake(agent.id, onboard, setup, { db, userId: ownerId });
     configured = r.configured;
     configDetail = r.detail;
     if (!configured) console.error("[agents:configure]", agent.id, configDetail);
