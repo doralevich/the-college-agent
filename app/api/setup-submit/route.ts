@@ -48,6 +48,38 @@ export async function POST(req: NextRequest) {
 
     if (dbError) throw dbError;
 
+    // Time zone + location, detected from the student's own machine (SetupForm reads
+    // Intl.DateTimeFormat().resolvedOptions().timeZone — never a dropdown they have to find
+    // themselves in). They are merged into the ONBOARDING questionnaire blob rather than
+    // given columns of their own, for two reasons: no migration, and every student already
+    // has exactly one onboard_submissions row (unique on user_id since 0007), including the
+    // ones who onboarded long before this existed. Visiting /setup is what backfills them.
+    //
+    // Best-effort: a student who somehow has no onboarding row still gets their Telegram and
+    // BYO keys saved above. The agent falls back to the box clock, which is what it did before.
+    const tz = orNull(data.timezone);
+    const loc = orNull(data.location);
+    if (userId && (tz || loc)) {
+      try {
+        const { data: row } = await supabase
+          .from("onboard_submissions")
+          .select("questionnaire")
+          .eq("user_id", userId)
+          .maybeSingle();
+        if (row) {
+          const q = (row.questionnaire ?? {}) as Record<string, unknown>;
+          await supabase
+            .from("onboard_submissions")
+            .update({
+              questionnaire: { ...q, ...(tz ? { timezone: tz } : {}), ...(loc ? { location: loc } : {}) },
+            })
+            .eq("user_id", userId);
+        }
+      } catch (err) {
+        console.error("[setup-submit:timezone] failed:", err);
+      }
+    }
+
     // Telegram only reaches the agent through configureAgentFromIntake, which runs at
     // PROVISIONING time — and technical setup is a separate step the student usually does
     // AFTER their agent is already up. So connecting Telegram here saved the credentials

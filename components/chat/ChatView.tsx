@@ -8,6 +8,7 @@ import { useWorkspace } from "@/components/WorkspaceProvider";
 import { DropOverlay } from "./Attachments";
 import { ChatComposer } from "./ChatComposer";
 import { ChatMessages } from "./ChatMessages";
+import { HeaderClock } from "./HeaderClock";
 import { NewChatTopBar } from "./NewChatTopBar";
 import { ChatWelcomeTips } from "./ChatWelcomeTips";
 import { useChatContext } from "./ChatProvider";
@@ -151,6 +152,8 @@ export function ChatView({
         <div className="min-w-0">
           <h1 className="truncate text-base font-semibold text-foreground">{headerTitle}</h1>
         </div>
+        <div className="flex items-center gap-4">
+          <HeaderClock />
         <button
           type="button"
           onClick={startNewChat}
@@ -160,6 +163,7 @@ export function ChatView({
         >
           <Plus className="h-4 w-4" />
         </button>
+        </div>
       </header>
       {/* Top: scrolling transcript when there are messages; the centered welcome panel when
           empty (justify-end seats it just above the composer). */}

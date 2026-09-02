@@ -7,6 +7,7 @@ import { Check, Loader2, Plus, Search, X } from "lucide-react";
 import majorsData from "@/data/college-agent-majors.json";
 import ChatBot from "@/app/components/ChatBot";
 import { provisionAndWait } from "@/lib/provision-client";
+import { detectLocation, detectTimezone } from "@/lib/client-locale";
 
 // Conversational replacement for /onboard. Frankenstein asks one question at a time;
 // the student answers with text or chip-picks. Each answer is persisted to
@@ -1147,6 +1148,11 @@ export function ConversationalOnboard({
           academicStruggles: form.academicStruggles,
           stressReset: form.stressReset,
           anythingElse: form.anythingElse.trim(),
+          // Read off the student's own machine rather than asked for — the browser knows its
+          // zone, and a dropdown is one more thing to get wrong. This is what sets the agent
+          // box's clock at provision, so a "daily morning" check-in fires at THEIR 8am.
+          timezone: detectTimezone(),
+          location: detectLocation(),
         }),
       );
       if (avatarFile) body.append("avatar", avatarFile);

@@ -34,7 +34,25 @@ export type HermesPersonaInput = {
   // Public URL of the student's uploaded résumé, if any — surfaced in the full-profile
   // reference file so the agent can fetch/reference it.
   resumeUrl?: string | null;
+  // IANA timezone read from the student's own browser (e.g. "America/New_York"), and the
+  // city their browser geolocation resolved to. Both come from the machine they use, which
+  // is the only place that actually knows — we never ask them to pick a zone from a list.
+  timezone?: string | null;
+  location?: string | null;
 };
+
+// Is this a timezone this runtime recognises? The value arrives from a browser, so it is
+// untrusted input that ends up in a shell command and a symlink path — a name that isn't a
+// real zone must be dropped rather than written to the box.
+export function isValidTimezone(tz: string | null | undefined): tz is string {
+  if (!tz || !/^[A-Za-z0-9_+\-\/]{1,64}$/.test(tz)) return false;
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: tz });
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 // Where the agent's COMPLETE, un-budgeted background lives on the box. USER.md (below) is the
 // tight always-loaded summary; this file holds every intake answer + the résumé link, and the
@@ -171,6 +189,11 @@ export function buildUserProfile(p: HermesPersonaInput): string {
   };
   add("Name", [p.firstName, p.lastName].filter(Boolean).join(" ").trim());
   add("School", (p.school || "").trim());
+  // Where and WHEN they are. Kept near the top on purpose: an agent that doesn't know the
+  // student's timezone gets every "tomorrow", "tonight" and "due at midnight" wrong, and it
+  // is one short line against the USER_MD_BUDGET.
+  add("Location", (p.location || "").trim());
+  add("Time zone", isValidTimezone(p.timezone) ? p.timezone : "");
   // Staff-flow facts (empty for students, so nothing is added).
   add("Role", q(p, "roleTitle") || (q(p, "role") !== "Student" ? q(p, "role") : ""));
   add("Team / department", q(p, "department"));
@@ -289,7 +312,13 @@ export function buildFullProfile(p: HermesPersonaInput): string {
 // Map the student's chosen check-in cadence (the onboarding CHECKIN_FREQ options) to a Hermes
 // cron schedule. Hermes accepts cron expressions / intervals but NOT natural language, so any
 // on-demand or unmappable cadence returns null — no job is scheduled and the preference simply
-// lives in USER.md. NOTE: the schedule fires in the agent box's local timezone, not the student's.
+// lives in USER.md.
+//
+// The hours below are the STUDENT's, not UTC and not the box's: configureHermes sets the box's
+// TZ from the student's browser before creating the job, so "0 8 * * *" is 8am where they are.
+// Without that step a student in California got their "daily morning" check-in at midnight —
+// the box defaults to UTC. A student whose timezone we never captured still falls back to the
+// box's clock, which is the old behaviour rather than a new failure.
 export function mapCheckinToCron(
   checkin: string | null | undefined
 ): { schedule: string; label: string } | null {
@@ -368,6 +397,9 @@ export async function configureHermes(
     // student connected Telegram (cron delivery needs a channel) AND the cadence mapped to a
     // real schedule; otherwise omit it and no job is created.
     checkin?: { schedule: string; prompt: string } | null;
+    // IANA zone from the student's browser. Sets the box clock so `hermes cron` fires at the
+    // student's local hour. Ignored when absent or not a zone this runtime knows.
+    timezone?: string | null;
   }
 ): Promise<ConfigureResult> {
   const running = await waitForRunning(agent37Id);
@@ -380,6 +412,12 @@ export async function configureHermes(
   if (opts.telegramUserId) envVars.push(["TELEGRAM_ALLOWED_USERS", opts.telegramUserId]);
   if (opts.anthropicKey) envVars.push(["ANTHROPIC_API_KEY", opts.anthropicKey]);
   if (opts.openaiKey) envVars.push(["OPENAI_API_KEY", opts.openaiKey]);
+  // TZ in the gateway's own environment. This is the half that reliably works: /etc/localtime
+  // below needs root, which these containers may not give us, but the gateway (and the cron
+  // jobs it spawns) always inherits its own .env. Written through envVars so the existing
+  // strip-and-rewrite makes it idempotent across re-provisions.
+  const tz = isValidTimezone(opts.timezone) ? opts.timezone : null;
+  if (tz) envVars.push(["TZ", tz]);
 
   const soulB64 = b64(opts.soul);
   const userB64 = b64(opts.userProfile);
@@ -419,6 +457,15 @@ export async function configureHermes(
     `command -v hermes >/dev/null 2>&1 || curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash -s -- --non-interactive --skip-setup --skip-browser`,
     `export PATH="$HOME/.local/bin:$PATH"`,
     `mkdir -p "$HOME/.hermes" "$HOME/.hermes/logs" "$HOME/.hermes/memories" "$HOME/.hermes/context"`,
+    // Box clock -> the student's zone, best-effort. Needs root, so it is written to fail
+    // quietly: TZ in the gateway env (above) is what actually carries the zone, and a box
+    // that refuses the symlink still schedules correctly. `tz` is validated against
+    // Intl before it ever reaches this string.
+    ...(tz
+      ? [
+          `if ln -sf "/usr/share/zoneinfo/${tz}" /etc/localtime 2>/dev/null; then echo "${tz}" > /etc/timezone 2>/dev/null || true; echo "TZ_SET"; else echo "TZ_SKIP"; fi`,
+        ]
+      : []),
     // merge provided creds (telegram + BYO model keys) into ~/.hermes/.env
     ...envBlock,
     // identity / voice -> SOUL.md (system-prompt slot #1)

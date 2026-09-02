@@ -23,6 +23,7 @@ import {
   Sun,
   type LucideIcon,
 } from "lucide-react";
+import { cacheDetectedLocation } from "@/lib/client-locale";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -198,6 +199,10 @@ function useWeather(demo?: WeatherData) {
             });
           }
 
+          // Share the resolved city with the rest of the app (the header clock, and the
+          // timezone/location we send to the agent). This lookup already asked the student
+          // for permission and already has the answer; nothing else should ask again.
+          cacheDetectedLocation(city);
           setWx({
             state: "ok",
             data: {

@@ -63,6 +63,13 @@ export async function readProvisioningIntake(
   };
 }
 
+// One trimmed string out of the questionnaire blob, or null. The blob is `Record<string,
+// unknown>` — anything can be in there, including a number or an array from an older form.
+function readStr(q: Record<string, unknown> | null | undefined, key: string): string | null {
+  const v = q?.[key];
+  return typeof v === "string" && v.trim() ? v.trim() : null;
+}
+
 export type ConfigureOutcome = { configured: boolean; detail: string };
 
 // Best-effort, never throws. Always builds the persona (SOUL.md / USER.md) from the
@@ -88,6 +95,11 @@ export async function configureAgentFromIntake(
     major: onboard?.major ?? null,
     questionnaire: onboard?.questionnaire ?? null,
     resumeUrl: onboard?.resume_url ?? null,
+    // Captured from the student's own browser and stored inside the questionnaire JSON, so
+    // this needed no schema change and works for students who onboarded before it existed —
+    // /setup writes it back into the same blob whenever they visit.
+    timezone: readStr(onboard?.questionnaire, "timezone"),
+    location: readStr(onboard?.questionnaire, "location"),
   };
   const soul = buildSoul(persona);
   const userProfile = buildUserProfile(persona);
@@ -117,6 +129,8 @@ export async function configureAgentFromIntake(
       userProfile,
       fullProfile,
       checkin,
+      // Sets the box clock, so the cron above fires at the student's 8am rather than UTC's.
+      timezone: persona.timezone,
     });
     return { configured: r.ok, detail: r.detail };
   } catch (e) {

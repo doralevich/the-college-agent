@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Nav from "../components/Nav";
+import { detectLocation, detectTimezone } from "@/lib/client-locale";
 
 interface CredForm {
   telegramToken: string;
@@ -42,7 +43,11 @@ export default function SetupPage() {
       const res = await fetch("/api/setup-submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        // Timezone and city ride along, read off this machine rather than asked for. This is
+        // the backfill path for every student who onboarded before we captured it: the route
+        // merges them into their onboarding answers and pushes the result to the live agent,
+        // which is what makes their scheduled check-in land at their 8am and not UTC's.
+        body: JSON.stringify({ ...form, timezone: detectTimezone(), location: detectLocation() }),
       });
       if (!res.ok) throw new Error("Submission failed");
       setSubmitted(true);
