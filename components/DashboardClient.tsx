@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Blocks, Bot, Check, Coins, Compass, Gift, ListChecks, Loader2, LogOut, Menu, MessageSquare, RotateCcw, Settings2, X } from "lucide-react";
+import { Blocks, Bot, Check, Coins, Compass, Gift, ListChecks, Loader2, LogOut, Menu, MessageSquare, RotateCcw, Settings2, Wrench, X } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "@/lib/supabase/client";
 import { usd } from "@/lib/format";
@@ -222,6 +222,15 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
               />
             );
           })}
+
+          {/* Technical setup (Telegram + optional BYO model keys) is a standalone page, not a
+              dashboard tab, so it gets a real navigation - the tab links above deliberately
+              preventDefault and only push history, which would swap the URL to /setup without
+              ever loading it. It needs to be here at all because its ONLY other link lived in
+              StepsView, which no paid student can ever render: their default tab is Start Here
+              and the render chain catches that first. So the page was effectively unreachable,
+              and not one student ever completed a Telegram connection. */}
+          {paid && <ExternalNavLink Icon={Wrench} label="Technical setup" href="/setup" />}
         </nav>
       )}
 
@@ -452,6 +461,24 @@ function ChatTabButton({
       href={href}
       onClick={startNewChat}
     />
+  );
+}
+
+// A sidebar link to a page OUTSIDE the dashboard shell. NavLink below preventDefaults and only
+// rewrites history - correct for dashboard tabs, since this same component re-renders the new
+// tab - but for an external route that would leave the address bar changed and the page never
+// loaded. This one is a plain link that actually navigates. No active state: the dashboard
+// sidebar isn't rendered on the destination.
+function ExternalNavLink({ Icon, label, href }: { Icon: typeof Bot; label: string; href: string }) {
+  return (
+    <Link
+      href={href}
+      prefetch={false}
+      className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
+    >
+      <Icon className="h-4 w-4" />
+      <span className="flex-1 text-left">{label}</span>
+    </Link>
   );
 }
 
