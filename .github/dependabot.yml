@@ -24,6 +24,12 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "eslint"
         update-types: ["version-update:semver-major"]
+      # cobe 2.x dropped the `onRender` option the homepage globe animates with
+      # (animation moved to globe.update() in your own rAF loop). The bump broke
+      # `next build`, which typechecks. Nothing here needs v2's arcs, so stay on 0.6.x
+      # until someone migrates IntegrationGlobe and checks the globe still spins.
+      - dependency-name: "cobe"
+        update-types: ["version-update:semver-major"]
     groups:
       minor-and-patch:
         update-types:
