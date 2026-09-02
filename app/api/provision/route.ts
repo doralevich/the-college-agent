@@ -2,7 +2,7 @@ import { agent37 } from "@/lib/agent37";
 import { fundCredits } from "@/lib/credits";
 import { requireUser, requireEntitled } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { DEFAULT_AGENT, shapeForHosting } from "@/config/agents";
+import { APP_ID, DEFAULT_AGENT, shapeForHosting } from "@/config/agents";
 import { usdToMicros } from "@/lib/format";
 import { ApiError, json, route } from "@/lib/http";
 import { configureAgentFromIntake, readProvisioningIntake } from "@/lib/provisioning";
@@ -61,7 +61,7 @@ export const POST = route(async () => {
     resources: { cpu: shape.cpu, memory: shape.memory, disk: shape.disk },
     user: user.id,
     name: onboard.agent_name || "Hermes",
-    metadata: { app_workspace: workspaceId, provisioned_for: user.id },
+    metadata: { app: APP_ID, app_workspace: workspaceId, provisioned_for: user.id },
     budget: { monthly_cap_micros: usdToMicros(DEFAULT_AGENT.monthlyCapUsd) },
   });
 
