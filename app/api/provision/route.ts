@@ -6,6 +6,7 @@ import { APP_ID, DEFAULT_AGENT, shapeForHosting } from "@/config/agents";
 import { usdToMicros } from "@/lib/format";
 import { ApiError, json, route } from "@/lib/http";
 import { configureAgentFromIntake, readProvisioningIntake } from "@/lib/provisioning";
+import { resolveTemplate } from "@/lib/agent-template";
 import { sendWelcomeEmail } from "@/lib/email/welcome";
 
 // Auto-provision the student's Hermes agent. Triggered by the dashboard once they've
@@ -55,12 +56,21 @@ export const POST = route(async () => {
     .limit(1);
   const shape = shapeForHosting(paidOrders?.[0]?.hosting as string | undefined);
 
-  // Create the Hermes instance, tagged to the student, at the default monthly cap.
+  // Create the instance, tagged to the student, at the default monthly cap.
+  //
+  // The template is RESOLVED against the Agent37 registry rather than sent blind. This path -
+  // the one a paying student goes through - previously trusted DEFAULT_AGENT.template outright,
+  // while the admin path validated it. Now that the default has moved to the Apollo build, a
+  // name the registry doesn't carry would hand a student a box with no openable ports, so it
+  // fails with an explanation instead.
+  const template = await resolveTemplate();
   const agent = await agent37.createAgent({
-    template: DEFAULT_AGENT.template,
+    template,
     resources: { cpu: shape.cpu, memory: shape.memory, disk: shape.disk },
     user: user.id,
-    name: onboard.agent_name || "Hermes",
+    // "Hermes" was the fallback name, which is the ENGINE and not the product - and on the
+    // Apollo build it isn't even the right engine. Students should never see it.
+    name: onboard.agent_name || "College Agent",
     metadata: { app: APP_ID, app_workspace: workspaceId, provisioned_for: user.id },
     budget: { monthly_cap_micros: usdToMicros(DEFAULT_AGENT.monthlyCapUsd) },
   });
@@ -68,7 +78,7 @@ export const POST = route(async () => {
   const { error: insErr } = await db.from("agents").insert({
     agent37_id: agent.id,
     workspace_id: workspaceId,
-    name: agent.name || onboard.agent_name || "Hermes",
+    name: agent.name || onboard.agent_name || "College Agent",
     status: agent.status,
     template: agent.template,
     cpu: agent.resources.cpu,

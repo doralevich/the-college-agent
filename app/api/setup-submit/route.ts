@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { getOptionalUserId } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { reconfigureExistingAgentForUser } from "@/lib/provisioning";
+import { findAgent37IdForUser, reconfigureExistingAgentForUser } from "@/lib/provisioning";
+import { connectTelegram } from "@/lib/channels/connect";
 import { buildSummaryPdf, pdfAttachment } from "@/lib/email/pdf";
 import { encryptForStorage } from "@/lib/crypto/byo";
 import { limit } from "@/lib/rate-limit";
@@ -92,6 +93,38 @@ export async function POST(req: NextRequest) {
     // reloaded. Runs after the response (`after()`) because the reconfigure waits on the
     // instance + an exec, and it's a no-op when the student has no agent yet — first-time
     // provisioning reads these same rows and wires Telegram itself.
+    // Register the WEBHOOK channel for the pasted bot token, alongside writing it to the box.
+    //
+    // This is the runtime-agnostic half: the in-box Hermes gateway only polls Telegram while the
+    // box runs Hermes, whereas a webhook works on any template. Doing it here means the existing
+    // setup form is the whole connect flow - the student pastes the same token they always did,
+    // and the numeric user id they used to have to hunt down is no longer needed, because the
+    // first message they send to the bot binds their chat id.
+    //
+    // Best-effort and reported, not fatal: a bad token or an unreachable Telegram must not lose
+    // the BYO model keys saved above. connectTelegram validates with getMe before it stores or
+    // registers anything, so a typo fails cleanly here rather than half-connecting.
+    let telegramChannel: string | null = null;
+    const botToken = orNull(data.telegramToken);
+    if (userId && botToken) {
+      try {
+        const agent37Id = await findAgent37IdForUser(supabase, userId);
+        if (agent37Id) {
+          await connectTelegram(agent37Id, { botToken });
+          telegramChannel = "connected";
+        } else {
+          // No agent yet - they are doing technical setup before their agent is built. The token
+          // is stored above and provisioning wires it; they can revisit /setup afterwards to get
+          // the webhook too.
+          telegramChannel = "no_agent_yet";
+        }
+      } catch (err) {
+        telegramChannel = "failed";
+        console.error("[setup-submit:telegram-channel] failed:", (err as Error).message);
+      }
+    }
+    if (telegramChannel) console.log("[setup-submit:telegram-channel]", userId, telegramChannel);
+
     if (userId) {
       const uid = userId;
       after(async () => {

@@ -52,7 +52,26 @@ export function shapeForHosting(hosting: string | null | undefined): AgentShape 
 export const APP_ID = "college-agent" as const;
 
 export const DEFAULT_AGENT = {
-  template: "college-agent",
+  // THE APOLLO BUILD. David's call: one template across every product he sells, rather than the
+  // College Agent being the last thing still on its own Hermes image.
+  //
+  // The switch was only possible once nothing about the product lived in the image any more:
+  //   * persona files are written to whichever workspace the box's runtime reads (lib/hermes.ts)
+  //   * check-ins are scheduled by this app, not by `hermes cron` (lib/checkin-schedules.ts)
+  //   * Telegram is a webhook we own, not a bot token polled from inside the box (lib/channels)
+  // Each of those was a silent failure waiting to happen on a non-Hermes box - a write that
+  // succeeds into a directory nothing reads, a cron that does not exist, a bot nobody answers.
+  // Reverting is this one line, and affects only agents built after it.
+  //
+  // EXISTING STUDENTS ARE NOT MIGRATED. Agent37 fixes an instance's template at create time, so
+  // everyone provisioned before this stays on `college-agent` (Hermes) until their box is
+  // rebuilt. The fleet is deliberately mixed, which is why ports are resolved per-template
+  // (portsForTemplate below) rather than read from one global map.
+  template: "agent37-openclaw",
+  // Former names for the same build, tried in order when the one above isn't in the Agent37
+  // registry. Renaming a template is two systems moving at different times - this repo and the
+  // Agent37 account - and a student who pays during that gap must still get an agent.
+  templateAliases: ["apollo-agent", "college-agent"],
   // Basic shape — the default/floor when no plan is known (e.g. admin box with no order).
   ...HOSTING_SHAPES.basic,
   // A small recurring allowance so an agent is never completely bricked between top-ups.
@@ -70,3 +89,40 @@ export const PORTS = {
   terminal: 7681,  // ttyd terminal — where students run `claude`
   files: 8080,     // file browser
 } as const;
+
+export type PortName = keyof typeof PORTS;
+
+// OpenClaw serves its Control UI on its own gateway port; the terminal and file browser sit on
+// the same numbers under both runtimes.
+const OPENCLAW_PORTS: Record<PortName, number> = { dashboard: 18789, terminal: 7681, files: 8080 };
+
+// Which ports each template actually serves.
+//
+// This has to be per-template rather than global because the fleet is MIXED: students
+// provisioned before the switch are on Hermes boxes serving 9119, and everyone after is on the
+// Apollo build serving 18789. Getting it wrong is silent — the signed URL mints fine and the tab
+// simply never loads — which is exactly the dead "Open dashboard" button ApolloClaw spent an
+// afternoon on before it mapped these properly.
+const TEMPLATE_PORTS: Record<string, Record<PortName, number>> = {
+  "college-agent": { ...PORTS },
+  // Both names of the Apollo build. `apollo-agent` is a Hermes image (per ApolloClaw's own
+  // TEMPLATE_RUNTIMES); `agent37-openclaw` is the stock OpenClaw one.
+  "apollo-agent": { ...PORTS },
+  "agent37-openclaw": OPENCLAW_PORTS,
+};
+
+/**
+ * The ports this agent's template serves.
+ *
+ * Falls back to the Hermes set for an unknown or missing template, which is what every instance
+ * this app provisioned before the switch runs — a wrong guess there fails the same way it always
+ * did rather than newly breaking an existing student.
+ */
+export function portsForTemplate(template: string | null | undefined): Record<PortName, number> {
+  return { ...((template ? TEMPLATE_PORTS[template] : undefined) ?? PORTS) };
+}
+
+/** Every port number openable on any template — the server-side allowlist. */
+export function allOpenablePorts(): number[] {
+  return [...new Set(Object.values(TEMPLATE_PORTS).flatMap((p) => Object.values(p)))];
+}

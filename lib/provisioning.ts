@@ -168,7 +168,7 @@ export async function configureAgentFromIntake(
 }
 
 // Resolve the Agent37 instance id for a user's (single) agent: user -> workspace -> agents row.
-async function findAgent37IdForUser(db: DB, userId: string): Promise<string | null> {
+export async function findAgent37IdForUser(db: DB, userId: string): Promise<string | null> {
   const { data: ms } = await db.from("memberships").select("workspace_id").eq("user_id", userId).limit(1);
   const workspaceId = ms?.[0]?.workspace_id as string | undefined;
   if (!workspaceId) return null;

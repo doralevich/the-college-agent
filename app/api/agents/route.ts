@@ -7,31 +7,13 @@ import { APP_ID, DEFAULT_AGENT, shapeForHosting } from "@/config/agents";
 import { usdToMicros } from "@/lib/format";
 import { ApiError, json, readJson, route } from "@/lib/http";
 import { configureAgentFromIntake, readProvisioningIntake } from "@/lib/provisioning";
+import { resolveTemplate } from "@/lib/agent-template";
 import type { AgentRow, MergedAgent } from "@/lib/types";
 
-// The app assumes the custom `college-agent` template (its remapped ports). Never fall back
-// to a stock template — that creates an unopenable box. Fail loudly if it isn't registered.
-async function resolveTemplate(): Promise<string> {
-  let data: Awaited<ReturnType<typeof agent37.listTemplates>>["data"];
-  try {
-    ({ data } = await agent37.listTemplates());
-  } catch (e) {
-    throw new ApiError(
-      502,
-      "upstream_error",
-      `Could not list Agent37 templates to verify "${DEFAULT_AGENT.template}" is registered: ${(e as Error).message}`
-    );
-  }
-  const preferred = data.find((t) => t.name === DEFAULT_AGENT.template);
-  if (!preferred) {
-    throw new ApiError(
-      409,
-      "template_not_registered",
-      `The "${DEFAULT_AGENT.template}" template is not registered in this Agent37 account, so a provisioned agent would have no openable ports. Publish it with \`npm run release:agent\`, then retry.`
-    );
-  }
-  return preferred.name;
-}
+// resolveTemplate moved to lib/agent-template.ts so the STUDENT path (/api/provision) gets the
+// same guarantee this admin path always had. It never falls back to a stock template - only to a
+// former NAME of the same build - because provisioning from the wrong image gives a paying
+// student a box with no openable ports.
 
 export const GET = route(async (request: Request) => {
   const { supabase, user } = await requireUser();
