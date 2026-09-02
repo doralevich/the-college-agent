@@ -1,4 +1,5 @@
 import "server-only";
+import { syncCheckinSchedule } from "@/lib/checkin-schedules";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { decryptSecret } from "@/lib/crypto/byo";
 import {
@@ -80,7 +81,13 @@ export type ConfigureOutcome = { configured: boolean; detail: string };
 export async function configureAgentFromIntake(
   agent37Id: string,
   onboard: OnboardIntake,
-  setup: SetupIntake
+  setup: SetupIntake,
+  // When supplied, ALSO (re)seed the app-side check-in schedule for this student.
+  //
+  // Optional only because two of the three call sites predate it; every caller that has a
+  // db handle should pass one. Without it the agent is configured but never checks in, which
+  // on a Hermes box is masked by the in-box cron and on an OpenClaw box is total silence.
+  seed?: { db: DB; userId: string | null }
 ): Promise<ConfigureOutcome> {
   const hasTelegram = !!(setup?.telegram_token && setup?.telegram_user_id);
 
@@ -132,7 +139,29 @@ export async function configureAgentFromIntake(
       // Sets the box clock, so the cron above fires at the student's 8am rather than UTC's.
       timezone: persona.timezone,
     });
-    return { configured: r.ok, detail: r.detail };
+    // App-side schedule, alongside the in-box cron rather than instead of it (for now). On a
+    // Hermes box both exist and the in-box one is still what fires; the row is what will keep
+    // check-ins working once the template moves to the Apollo build, where `hermes cron` does
+    // not exist. Best-effort: a scheduling failure must not fail an otherwise-good provision.
+    let scheduleNote = "";
+    if (seed) {
+      try {
+        const res = await syncCheckinSchedule(
+          seed.db,
+          agent37Id,
+          seed.userId,
+          cadence,
+          persona.timezone
+        );
+        scheduleNote = res.rows
+          ? `; ${res.rows} check-in schedule row(s)`
+          : `; no check-in schedule (${res.reason ?? "nothing to schedule"})`;
+      } catch (e) {
+        console.error("[provisioning:checkin-schedule] failed:", (e as Error).message);
+        scheduleNote = "; check-in schedule FAILED to save";
+      }
+    }
+    return { configured: r.ok, detail: `${r.detail}${scheduleNote}` };
   } catch (e) {
     return { configured: false, detail: `configure failed: ${(e as Error).message}` };
   }
@@ -167,7 +196,7 @@ export async function reconfigureExistingAgentForUser(
     if (!agent37Id) return { reconfigured: false, detail: "no agent yet — nothing to reconfigure" };
     const { onboard, setup } = await readProvisioningIntake(db, userId);
     if (!onboard) return { reconfigured: false, detail: "no onboard intake" };
-    const r = await configureAgentFromIntake(agent37Id, onboard, setup);
+    const r = await configureAgentFromIntake(agent37Id, onboard, setup, { db, userId });
     return { reconfigured: r.configured, detail: r.detail };
   } catch (e) {
     return { reconfigured: false, detail: `reconfigure failed: ${(e as Error).message}` };

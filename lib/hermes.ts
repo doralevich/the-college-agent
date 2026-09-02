@@ -59,8 +59,15 @@ export function isValidTimezone(tz: string | null | undefined): tz is string {
 // agent is told (in SOUL.md) to read it whenever it needs detail beyond memory. Kept off the
 // per-session token cost because it's read on demand, not injected into the system prompt.
 export const PROFILE_REFERENCE_PATH = "$HOME/.hermes/context/STUDENT_PROFILE.md";
-// The human-readable path we show the agent (no shell var).
-const PROFILE_REFERENCE_DISPLAY = "~/.hermes/context/STUDENT_PROFILE.md";
+// The filename we tell the AGENT to look for - deliberately NOT a path.
+//
+// This used to read "~/.hermes/context/STUDENT_PROFILE.md", baked into SOUL.md as prose. That
+// is fine while every box is Hermes and actively wrong the moment one isn't: SOUL.md can be
+// written into both runtimes' directories, but the SENTENCE INSIDE IT cannot be in two places
+// at once, so an OpenClaw box would carry a persona instructing the agent to read a Hermes path
+// that does not exist there. A bare filename is correct on both, because the file is written
+// into whichever workspace the runtime actually reads.
+const PROFILE_REFERENCE_DISPLAY = "STUDENT_PROFILE.md";
 
 // Read a questionnaire answer as a clean string ("" when absent). Arrays are comma-joined and
 // long free-text answers are capped so one textarea can't dominate the file it lands in. The
@@ -133,7 +140,8 @@ export function buildSoul(p: HermesPersonaInput): string {
     "",
     "# Background file",
     `- Your always-loaded memory holds the essentials. Their COMPLETE profile from onboarding — every ` +
-      `answer, plus their résumé link — is saved at \`${PROFILE_REFERENCE_DISPLAY}\`.`,
+      `answer, plus their résumé link — is in \`${PROFILE_REFERENCE_DISPLAY}\`, alongside your other ` +
+      `memory files.`,
     "- Read that file whenever you need detail you don't already have in memory (their exact schedule, " +
       "clubs, wellbeing notes, job-search specifics, résumé, etc.). Prefer it over asking them to repeat " +
       "things they already told us at signup.",
@@ -446,15 +454,22 @@ export async function configureHermes(
       ? { provider: "openai", model: BYO_OPENAI_MODEL }
       : { provider: MANAGED_PROVIDER, model: MANAGED_DEFAULT_MODEL };
   const modelBlock = [
-    `hermes config set model.provider ${byo.provider} >/dev/null 2>&1 || echo MODEL_SET_WARN`,
-    `hermes config set model.default ${byo.model} >/dev/null 2>&1 || echo MODEL_SET_WARN`,
+    `[ "$IS_HERMES" = "1" ] && { hermes config set model.provider ${byo.provider} >/dev/null 2>&1 || echo MODEL_SET_WARN; }; true`,
+    `[ "$IS_HERMES" = "1" ] && { hermes config set model.default ${byo.model} >/dev/null 2>&1 || echo MODEL_SET_WARN; }; true`,
   ];
 
   // Single shell script (Agent37 exec runs it in a shell). Best-effort + idempotent.
   const script = [
     `export PATH="$HOME/.local/bin:$PATH"`,
     // install Hermes only if the template didn't ship it
-    `command -v hermes >/dev/null 2>&1 || curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash -s -- --non-interactive --skip-setup --skip-browser`,
+    // Which runtime is on this box? Decided FIRST, because the very next line creates
+    // $HOME/.hermes and would otherwise make the answer "Hermes" on every box forever.
+    //
+    // An OpenClaw box has no `hermes` binary, so the install line below would have DOWNLOADED
+    // AND INSTALLED Hermes onto it - a second agent runtime on a machine that already has one.
+    // Unknown boxes default to Hermes, which is every instance this app has provisioned to date.
+    `if [ -d "\${OPENCLAW_STATE_DIR:-$HOME/.openclaw}/workspace" ] && [ ! -d "\${HERMES_STATE_DIR:-$HOME/.hermes}" ]; then IS_HERMES=0; else IS_HERMES=1; fi; echo "RUNTIME_HERMES:$IS_HERMES"`,
+    `[ "$IS_HERMES" = "1" ] && { command -v hermes >/dev/null 2>&1 || curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash -s -- --non-interactive --skip-setup --skip-browser; }; true`,
     `export PATH="$HOME/.local/bin:$PATH"`,
     `mkdir -p "$HOME/.hermes" "$HOME/.hermes/logs" "$HOME/.hermes/memories" "$HOME/.hermes/context"`,
     // Box clock -> the student's zone, best-effort. Needs root, so it is written to fail
@@ -479,17 +494,38 @@ export async function configureHermes(
     // COMPLETE profile + résumé link -> on-demand reference file. Not injected each session;
     // the agent reads it when it needs detail beyond USER.md (SOUL.md points it here).
     `echo "${fullB64}" | base64 -d > "${PROFILE_REFERENCE_PATH}"`,
+    // ...and alongside USER.md, so SOUL.md's "in STUDENT_PROFILE.md, alongside your other
+    // memory files" is literally true on a Hermes box rather than nearly true.
+    `echo "${fullB64}" | base64 -d > "$HOME/.hermes/memories/STUDENT_PROFILE.md"`,
+    // The same three files into the OPENCLAW workspace, when the box has one.
+    //
+    // The two runtimes keep their memory in different trees - Hermes under
+    // $HERMES_STATE_DIR/memories, OpenClaw under $OPENCLAW_STATE_DIR/workspace - and writing to
+    // the wrong one does not fail. It succeeds, into a directory nothing reads, so provisioning
+    // reports OK while the agent answers "I don't know who you are". ApolloClaw hit exactly that
+    // and fixed it by writing to every location the box actually has; this is the same idea.
+    //
+    // Guarded on the directory EXISTING, so on today's Hermes boxes this is a no-op and Ben's
+    // agent is untouched. It is what lets the template flip to the Apollo build without the
+    // persona pipeline changing at all.
+    `OCW="\${OPENCLAW_STATE_DIR:-$HOME/.openclaw}/workspace"; if [ -d "$OCW" ]; then ` +
+      `echo "${soulB64}" | base64 -d > "$OCW/SOUL.md"; ` +
+      `echo "${userB64}" | base64 -d > "$OCW/USER.md"; ` +
+      `echo "${fullB64}" | base64 -d > "$OCW/STUDENT_PROFILE.md"; ` +
+      `echo OPENCLAW_WORKSPACE_WRITTEN; fi`,
     // BYO model override -> config.yaml, before the gateway restart so it gets picked up.
     ...modelBlock,
     // The template boots a gateway already (default persona, no Telegram). Stop it so the
     // restarted gateway reloads our new .env (Telegram + model keys) + SOUL.md + USER.md
-    // + any BYO model override.
-    `hermes gateway stop >/dev/null 2>&1 || true`,
-    `pkill -f "hermes gateway" >/dev/null 2>&1 || true`,
+    // + any BYO model override. OpenClaw boots and manages its own gateway, so all of this
+    // is Hermes-only; switchModelProvider below builds a separate script and is Hermes-only
+    // by definition (it exists to set `hermes config` keys).
+    `[ "$IS_HERMES" = "1" ] && { hermes gateway stop >/dev/null 2>&1 || true; }; true`,
+    `[ "$IS_HERMES" = "1" ] && { pkill -f "hermes gateway" >/dev/null 2>&1 || true; }; true`,
     `sleep 1`,
     // start the gateway: prefer a managed service; fall back to a nohup run-loop for
     // containers without systemd (these Agent37 boxes run the gateway manually).
-    `(hermes gateway install && hermes gateway start) >/dev/null 2>&1 || (nohup sh -c 'while true; do hermes gateway run >> "$HOME/.hermes/logs/gateway.log" 2>&1; sleep 3; done' >/dev/null 2>&1 &)`,
+    `[ "$IS_HERMES" = "1" ] && { (hermes gateway install && hermes gateway start) >/dev/null 2>&1 || (nohup sh -c 'while true; do hermes gateway run >> "$HOME/.hermes/logs/gateway.log" 2>&1; sleep 3; done' >/dev/null 2>&1 &); }; true`,
     `sleep 3`,
     // proactive check-in -> a recurring cron job delivered to the student's Telegram. Idempotent
     // (drop any prior job of the same name first) and best-effort: a failure logs a marker but
@@ -497,8 +533,9 @@ export async function configureHermes(
     // text can't break the shell. Only emitted when a check-in was mapped (Telegram + cadence).
     ...(checkin
       ? [
-          `hermes cron remove "college-checkin" >/dev/null 2>&1 || true`,
-          `hermes cron create "$(echo "${cronSchedB64}" | base64 -d)" "$(echo "${cronPromptB64}" | base64 -d)" --name "college-checkin" --deliver telegram >/dev/null 2>&1 || echo CRON_CREATE_WARN`,
+          `[ "$IS_HERMES" = "1" ] || echo CRON_SKIPPED_NOT_HERMES`,
+          `[ "$IS_HERMES" = "1" ] && { hermes cron remove "college-checkin" >/dev/null 2>&1 || true; }; true`,
+          `[ "$IS_HERMES" = "1" ] && { hermes cron create "$(echo "${cronSchedB64}" | base64 -d)" "$(echo "${cronPromptB64}" | base64 -d)" --name "college-checkin" --deliver telegram >/dev/null 2>&1 || echo CRON_CREATE_WARN; }; true`,
         ]
       : []),
     `hermes gateway status 2>&1 | head -20 || true`,
@@ -511,6 +548,16 @@ export async function configureHermes(
     const warns: string[] = [];
     if (res.stdout.includes("MODEL_SET_WARN")) warns.push("BYO model override failed");
     if (res.stdout.includes("CRON_CREATE_WARN")) warns.push("check-in cron failed");
+    // Which runtime the box turned out to be, and where the persona actually landed. Reported
+    // rather than assumed: "the write succeeded" is exactly what a write into a directory
+    // nothing reads also says, and that is the failure this whole change exists to prevent.
+    if (res.stdout.includes("RUNTIME_HERMES:0")) warns.push("box is NOT Hermes - Hermes-only steps skipped");
+    if (res.stdout.includes("OPENCLAW_WORKSPACE_WRITTEN")) warns.push("persona also written to the OpenClaw workspace");
+    if (res.stdout.includes("CRON_SKIPPED_NOT_HERMES")) {
+      // Not a soft warning: the student picked a cadence and no job now exists anywhere. Until
+      // the app-side scheduler lands, a non-Hermes box has no proactive check-in at all.
+      warns.push("NO check-in scheduled - `hermes cron` does not exist on this runtime");
+    }
     return {
       ok,
       detail: ok
