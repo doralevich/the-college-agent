@@ -11,6 +11,7 @@ import { usd } from "@/lib/format";
 import { dashboardPath, parseDashboardRoute, type DashboardTabId } from "@/lib/dashboard-tabs";
 import { useWorkspace } from "@/components/WorkspaceProvider";
 import { apiFetch } from "@/lib/api";
+import { provisionAndWait } from "@/lib/provision-client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SettingsHub } from "@/components/SettingsHub";
@@ -58,7 +59,6 @@ export type ChatClassInfo = { name: string; days: string; time: string };
 export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstName, agentName, avatarUrl, userId, intake, onboardPrefill, classes, schoolAccent }: Props) {
   const hasAgent = !!agentId;
   const { userEmail } = useWorkspace();
-  const router = useRouter();
   const pathname = usePathname();
 
   // Provisioning fires only when the student clicks "Create my agent" (both steps done).
@@ -68,14 +68,19 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
   async function provision() {
     setProvisionFailed(false);
     setProvisioning(true);
-    try {
-      await apiFetch("/api/provision", { method: "POST", body: JSON.stringify({}) });
-      router.refresh(); // page re-renders → hasAgent flips → AgentsView
-    } catch (e) {
-      setProvisioning(false);
-      setProvisionFailed(true);
-      toast.error((e as Error).message || "Provisioning failed. You can retry.");
+    // Polls for the agent instead of awaiting the long provision request: that request can
+    // time out while the server finishes successfully, which used to strand this on the
+    // "Setting up your agent…" spinner until a manual refresh.
+    const result = await provisionAndWait();
+    if (result.ready) {
+      // Hard navigation so the server re-reads hasAgent; router.refresh() can return a
+      // cached payload that still says "no agent" and leaves the spinner up.
+      window.location.assign("/dashboard");
+      return;
     }
+    setProvisioning(false);
+    setProvisionFailed(true);
+    toast.error(result.error);
   }
 
   // Sidebar nav. Settings is always present — every account has a workspace (name/ID/delete

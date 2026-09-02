@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Check, Loader2, Plus, Search, X } from "lucide-react";
 import majorsData from "@/data/college-agent-majors.json";
 import ChatBot from "@/app/components/ChatBot";
+import { provisionAndWait } from "@/lib/provision-client";
 
 // Conversational replacement for /onboard. Frankenstein asks one question at a time;
 // the student answers with text or chip-picks. Each answer is persisted to
@@ -1161,23 +1162,15 @@ export function ConversationalOnboard({
       // student stranded on the Welcome card with no Chat tab. Best-effort: a
       // provision failure surfaces a message but the onboard answers are saved, so
       // the student can retry from the dashboard funnel.
-      try {
-        const provRes = await fetch("/api/provision", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({}),
-        });
-        if (!provRes.ok) {
-          const body = await provRes.json().catch(() => ({}));
-          // 400 onboard_incomplete shouldn't happen after a successful submit, but be
-          // defensive — surface anything Stripe / Agent37 says rather than silently failing.
-          const msg = body?.error?.message || `Couldn't build your agent (${provRes.status})`;
-          throw new Error(msg);
-        }
-      } catch (provErr) {
+      // Waits on a readiness poll rather than the provision request itself. Building the box
+      // can outlast the request timeout, and when the connection dropped the server still
+      // finished — so awaiting it left this screen spinning on a finished agent until the
+      // student manually refreshed. Any genuine rejection still surfaces below.
+      const provision = await provisionAndWait();
+      if (!provision.ready) {
         // Don't undo the onboarding submit on a provision failure; the StepsView fallback
         // can pick up from here. Surface the reason to the student.
-        setError(`Saved your answers, but ${(provErr as Error).message}. Refresh to try again.`);
+        setError(`Saved your answers, but ${provision.error}`);
         setSubmitting(false);
         router.refresh();
         return;
