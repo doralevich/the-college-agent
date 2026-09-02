@@ -19,6 +19,11 @@ export default function ResetPasswordPage() {
   // their FIRST password — accounts are created password-less — so the copy must not
   // talk about "resetting" something they never had.
   const [welcome, setWelcome] = useState(false);
+  // Set when Supabase refuses the password change because the account has MFA enrolled and
+  // this session is only aal1. Holds the TOTP factor to challenge; the form then asks for a
+  // code, elevates the session, and retries — see onSubmit.
+  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
+  const [code, setCode] = useState("");
 
   useEffect(() => {
     const isWelcome = new URLSearchParams(window.location.search).get("welcome") === "1";
@@ -42,10 +47,51 @@ export default function ResetPasswordPage() {
       return toast.error(`Password must be at least ${MIN_PASSWORD} characters.`);
     }
     setLoading(true);
-    const { error } = await createClient().auth.updateUser({ password });
+    const supabase = createClient();
+
+    // An account with TOTP enrolled cannot change its password from an aal1 session; Supabase
+    // answers "AAL2 session is required to update email or password when MFA is enabled."
+    //
+    // That is correct of it - a password reset link alone must not be enough to take over an
+    // account someone deliberately put a second factor on - but the page used to print that
+    // sentence as a toast and stop, which is a dead end: the one screen that can set a password
+    // refused to, and offered no way through. Every admin hits it, and so does any student who
+    // has enrolled a factor.
+    //
+    // So: ask for the code, elevate the session, and retry the same update.
+    if (mfaFactorId) {
+      const clean = code.replace(/\D/g, "");
+      if (clean.length !== 6) {
+        setLoading(false);
+        return toast.error("Enter the 6-digit code from your authenticator app.");
+      }
+      const { error: mfaErr } = await supabase.auth.mfa.challengeAndVerify({
+        factorId: mfaFactorId,
+        code: clean,
+      });
+      if (mfaErr) {
+        setLoading(false);
+        return toast.error(mfaErr.message);
+      }
+      // Session is aal2 now; fall through to the update below.
+    }
+
+    const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
-    if (error) return toast.error(error.message);
-    setDone(true);
+    if (!error) return setDone(true);
+
+    // First refusal: find the verified factor and switch the form into code mode rather than
+    // showing the raw message. Matched on the AAL2 wording because Supabase does not give this
+    // its own error code.
+    if (!mfaFactorId && /aal2|mfa/i.test(error.message)) {
+      const { data: factors } = await supabase.auth.mfa.listFactors();
+      const totp = factors?.totp?.find((f) => f.status === "verified");
+      if (totp) {
+        setMfaFactorId(totp.id);
+        return toast.info("Enter your authenticator code to confirm this change.");
+      }
+    }
+    toast.error(error.message);
   }
 
   return (
@@ -113,14 +159,39 @@ export default function ResetPasswordPage() {
                 required
               />
             </div>
+            {/* Only after Supabase has refused an aal1 password change. Rendered inline rather
+                than on a separate screen so the password they already typed is preserved -
+                sending them elsewhere to authenticate and back would lose it. */}
+            {mfaFactorId && (
+              <div className="space-y-2">
+                <Label htmlFor="mfa-code">Authenticator code</Label>
+                <Input
+                  id="mfa-code"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  placeholder="123456"
+                  maxLength={6}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                  autoFocus
+                  required
+                />
+                <p className="text-xs text-muted-foreground">
+                  This account has two-factor authentication on, so a code is needed to change
+                  the password.
+                </p>
+              </div>
+            )}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading
                 ? welcome
                   ? "Setting..."
                   : "Updating..."
-                : welcome
-                  ? "Set password"
-                  : "Update password"}
+                : mfaFactorId
+                  ? "Confirm and set password"
+                  : welcome
+                    ? "Set password"
+                    : "Update password"}
             </Button>
             {/* A stop, not a wall — a student who'd rather get to their agent first can
                 still set a password later from "Forgot password?". */}
