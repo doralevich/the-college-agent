@@ -3,7 +3,8 @@ import { instanceFetch } from "@/lib/agent37";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendTelegramMessage } from "@/lib/telegram";
 import { isDue, localNow } from "@/lib/schedule-timing";
-import { buildCheckinPrompt, isValidTimezone, type HermesPersonaInput } from "@/lib/hermes";
+import { isValidTimezone, type HermesPersonaInput } from "@/lib/hermes";
+import { SCHEDULED_RUNS, scheduledRun } from "@/config/scheduled-runs";
 import { getChannelConfig } from "@/lib/channels/store";
 import * as telegramChannel from "@/lib/channels/telegram";
 import * as slackChannel from "@/lib/channels/slack";
@@ -27,6 +28,8 @@ export interface CheckinScheduleRow {
   id: number;
   agent37_id: string;
   user_id: string | null;
+  /** Which scheduled run this row is — see config/scheduled-runs.ts. */
+  kind: string;
   hour: number;
   days: string;
   timezone: string;
@@ -44,21 +47,25 @@ export interface CheckinScheduleRow {
  * compare against a wall clock. Reactive cadences ("only when I ask", "real-time") produce no
  * rows at all — they are things the student initiates, not things that arrive.
  */
-export function planForCadence(cadence: string | null | undefined): { hour: number; days: string }[] {
+export function planForCadence(
+  cadence: string | null | undefined
+): { kind: string; hour: number; days: string }[] {
   const c = (cadence || "").toLowerCase();
   if (!c) return [];
+  const run = (id: string) => {
+    const def = SCHEDULED_RUNS.find((r) => r.id === id)!;
+    return { kind: def.id, hour: def.defaultHour, days: def.defaultDays };
+  };
   // Highest frequency wins when several are selected — the form allows multiple, and a student
   // who asked for both "daily morning" and "weekly digest" should get the daily one.
-  if (c.includes("multiple")) {
-    return [
-      { hour: 8, days: "daily" },
-      { hour: 12, days: "daily" },
-      { hour: 17, days: "daily" },
-    ];
-  }
-  if (c.includes("daily") || c.includes("morning briefing")) return [{ hour: 8, days: "daily" }];
-  if (c.includes("twice")) return [{ hour: 8, days: "monday,thursday" }];
-  if (c.includes("weekly")) return [{ hour: 8, days: "monday" }];
+  //
+  // "Multiple times a day" seeds the morning brief AND the end-of-day summary rather than three
+  // copies of one prompt at three hours: they asked to hear from it more than once, and two
+  // different questions answered well beats the same one repeated.
+  if (c.includes("multiple")) return [run("morning-brief"), run("end-of-day")];
+  if (c.includes("daily") || c.includes("morning briefing")) return [run("morning-brief")];
+  if (c.includes("twice")) return [{ ...run("morning-brief"), days: "monday,thursday" }];
+  if (c.includes("weekly")) return [run("weekly-planning")];
   return [];
 }
 
@@ -101,6 +108,7 @@ export async function syncCheckinSchedule(
     wanted.map((w) => ({
       agent37_id: agent37Id,
       user_id: userId,
+      kind: w.kind,
       hour: w.hour,
       days: w.days,
       timezone: timezone as string,
@@ -261,9 +269,30 @@ export async function runCheckin(row: CheckinScheduleRow): Promise<string> {
       major: onboard?.major ?? null,
       questionnaire: onboard?.questionnaire ?? null,
     };
-    const label = row.days === "daily" ? "daily" : row.days === "weekdays" ? "weekday" : "scheduled";
+    // A row whose kind is not in the registry is skipped rather than run with a guessed prompt:
+    // it means the registry moved on and this row is left over, and inventing a prompt for it
+    // would message a student something nobody wrote.
+    const def = scheduledRun(row.kind);
+    if (!def) return finish("unknown_kind", `no scheduled run named "${row.kind}"`);
 
-    const text = await runAgentTurn(row.agent37_id, buildCheckinPrompt(persona, label));
+    const q = (key: string) => {
+      const v = persona.questionnaire?.[key];
+      if (v == null) return "";
+      return (Array.isArray(v) ? v.filter(Boolean).join(", ") : String(v)).trim();
+    };
+    const who =
+      [persona.firstName, persona.school ? `at ${persona.school}` : null].filter(Boolean).join(" ") ||
+      "your student";
+    const text = await runAgentTurn(
+      row.agent37_id,
+      def.prompt({
+        who,
+        topics:
+          q("agentTopics") ||
+          "upcoming deadlines, unanswered emails, schedule conflicts, and study reminders",
+        priority: q("topPriority"),
+      })
+    );
 
     // The prompt tells the agent to reply with only [SILENT] when there is genuinely nothing
     // worth sending. Honour it: an agent that messages every single morning regardless of

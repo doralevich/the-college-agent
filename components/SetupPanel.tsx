@@ -31,7 +31,13 @@ type Channel = {
   verifyToken: string | null;
 };
 
-type Schedule = {
+// One per entry in config/scheduled-runs.ts. The API returns every registry entry whether or not
+// the student has ever turned it on, so this list is the registry — nothing here is hardcoded and
+// a fourth run appears the moment it is added there.
+type Run = {
+  kind: string;
+  name: string;
+  description: string;
   enabled: boolean;
   hour: number;
   days: string;
@@ -77,7 +83,7 @@ function CopyRow({ label, value }: { label: string; value: string }) {
 
 export function SetupPanel({ agentId }: { agentId: string }) {
   const [channels, setChannels] = useState<Channel[]>([]);
-  const [schedule, setSchedule] = useState<Schedule | null>(null);
+  const [runs, setRuns] = useState<Run[]>([]);
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<ChannelId | null>(null);
   const [fields, setFields] = useState<Record<string, string>>({});
@@ -89,12 +95,12 @@ export function SetupPanel({ agentId }: { agentId: string }) {
     let cancelled = false;
     Promise.all([
       apiFetch<{ channels: Channel[] }>(`/api/agents/${agentId}/channels/telegram`),
-      apiFetch<{ schedule: Schedule | null }>(`/api/agents/${agentId}/checkin-schedule`),
+      apiFetch<{ runs: Run[] }>(`/api/agents/${agentId}/checkin-schedule`),
     ])
       .then(([ch, sc]) => {
         if (cancelled) return;
         setChannels(ch.channels);
-        setSchedule(sc.schedule);
+        setRuns(sc.runs);
       })
       .catch((e: Error) => {
         if (!cancelled) toast.error(e.message);
@@ -140,24 +146,28 @@ export function SetupPanel({ agentId }: { agentId: string }) {
     }
   }
 
-  async function saveSchedule(patch: Partial<Schedule>) {
-    const next = {
-      enabled: patch.enabled ?? schedule?.enabled ?? true,
-      hour: patch.hour ?? schedule?.hour ?? 8,
-      days: patch.days ?? schedule?.days ?? "daily",
-    };
+  // Saves ONE run. The whole current row goes up, not just the field that changed, because the
+  // API stores a complete schedule per kind — sending only `enabled` would drop the hour.
+  async function saveRun(run: Run, patch: Partial<Run>) {
+    const next = { ...run, ...patch };
     setBusy(true);
     try {
-      const { schedule: saved } = await apiFetch<{ schedule: Schedule }>(
+      const { run: saved } = await apiFetch<{ run: Run }>(
         `/api/agents/${agentId}/checkin-schedule`,
         {
           method: "PUT",
           // The browser's zone rides along so a student who moved (or never had one captured)
           // gets it set from the machine they're sitting at, rather than being told no.
-          body: JSON.stringify({ ...next, timezone: detectTimezone() }),
+          body: JSON.stringify({
+            kind: next.kind,
+            enabled: next.enabled,
+            hour: next.hour,
+            days: next.days,
+            timezone: detectTimezone(),
+          }),
         }
       );
-      setSchedule(saved);
+      setRuns((prev) => prev.map((r) => (r.kind === saved.kind ? saved : r)));
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
@@ -324,68 +334,73 @@ export function SetupPanel({ agentId }: { agentId: string }) {
           </div>
         </div>
 
-        <div className="rounded-2xl border p-4">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="font-medium">Check-in</p>
-              <p className="text-sm text-muted-foreground">
-                What&apos;s due, what slipped, and what to focus on next.
-              </p>
+        {runs.map((run) => (
+          <div key={run.kind} className="rounded-2xl border p-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="font-medium">{run.name}</p>
+                <p className="text-sm text-muted-foreground">{run.description}</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={busy}
+                onClick={() => saveRun(run, { enabled: !run.enabled })}
+              >
+                {run.enabled ? "Turn off" : "Turn on"}
+              </Button>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={busy}
-              onClick={() => saveSchedule({ enabled: !(schedule?.enabled ?? false) })}
-            >
-              {schedule?.enabled ? "Turn off" : "Turn on"}
-            </Button>
-          </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-2 text-sm">
-            <span className="text-muted-foreground">Send at</span>
-            <select
-              className="rounded-md border bg-background px-2 py-1.5"
-              value={schedule?.hour ?? 8}
-              disabled={busy}
-              onChange={(e) => saveSchedule({ hour: Number(e.target.value) })}
-            >
-              {HOURS.map((h) => (
-                <option key={h} value={h}>
-                  {hourLabel(h)}
-                </option>
-              ))}
-            </select>
-            <select
-              className="rounded-md border bg-background px-2 py-1.5"
-              value={schedule?.days ?? "daily"}
-              disabled={busy}
-              onChange={(e) => saveSchedule({ days: e.target.value })}
-            >
-              <option value="daily">Every day</option>
-              <option value="weekdays">Weekdays</option>
-              <option value="monday">Mondays</option>
-              <option value="monday,thursday">Mon &amp; Thu</option>
-            </select>
-            {/* The zone is shown, never chosen: it comes from the machine they are on. A
-                dropdown of 400 zones is one more thing to get wrong. */}
-            <span className="text-muted-foreground">
-              {schedule?.timezone ?? detectTimezone() ?? ""}
-            </span>
-          </div>
+            {/* Time and days only once it's on. An off run showing pickers invites someone to
+                set a time and walk away thinking they turned it on. */}
+            {run.enabled && (
+              <div className="mt-4 flex flex-wrap items-center gap-2 text-sm">
+                <span className="text-muted-foreground">Send at</span>
+                <select
+                  className="rounded-md border bg-background px-2 py-1.5"
+                  value={run.hour}
+                  disabled={busy}
+                  onChange={(e) => saveRun(run, { hour: Number(e.target.value) })}
+                >
+                  {HOURS.map((h) => (
+                    <option key={h} value={h}>
+                      {hourLabel(h)}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  className="rounded-md border bg-background px-2 py-1.5"
+                  value={run.days}
+                  disabled={busy}
+                  onChange={(e) => saveRun(run, { days: e.target.value })}
+                >
+                  <option value="daily">Every day</option>
+                  <option value="weekdays">Weekdays</option>
+                  <option value="monday">Mondays</option>
+                  <option value="sunday">Sundays</option>
+                  <option value="monday,thursday">Mon &amp; Thu</option>
+                </select>
+                {/* The zone is shown, never chosen: it comes from the machine they are on. A
+                    dropdown of 400 zones is one more thing to get wrong. */}
+                <span className="text-muted-foreground">
+                  {run.timezone ?? detectTimezone() ?? ""}
+                </span>
+              </div>
+            )}
 
-          {schedule?.lastRunOn && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              Last sent {schedule.lastRunOn}
-              {schedule.lastStatus ? ` (${schedule.lastStatus})` : ""}.
-            </p>
-          )}
-          {schedule?.enabled && !anyLinked && (
-            <p className="mt-2 text-xs text-amber-700">
-              Connect a chat app above, or this has nowhere to arrive.
-            </p>
-          )}
-        </div>
+            {run.lastRunOn && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Last sent {run.lastRunOn}
+                {run.lastStatus ? ` (${run.lastStatus})` : ""}.
+              </p>
+            )}
+            {run.enabled && !anyLinked && (
+              <p className="mt-2 text-xs text-amber-700">
+                Connect a chat app above, or this has nowhere to arrive.
+              </p>
+            )}
+          </div>
+        ))}
       </div>
     </section>
   );

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { dayMatches, isDue, localNow, type ScheduleTiming } from "@/lib/schedule-timing";
 import { cadenceFrom, planForCadence } from "@/lib/checkin-schedules";
+import { SCHEDULED_RUNS, isScheduledRunId, scheduledRun } from "@/config/scheduled-runs";
 
 // The scheduler decides when a student is messaged unprompted. Every failure mode here is one
 // the student sees and we don't: a brief at 3am, two briefs in a morning, or silence.
@@ -83,20 +84,45 @@ describe("isDue", () => {
 });
 
 describe("planForCadence", () => {
-  it("mirrors the cron cadences the in-box job used", () => {
-    expect(planForCadence("Daily morning briefing")).toEqual([{ hour: 8, days: "daily" }]);
-    expect(planForCadence("Twice a week")).toEqual([{ hour: 8, days: "monday,thursday" }]);
-    expect(planForCadence("Weekly digest")).toEqual([{ hour: 8, days: "monday" }]);
+  it("maps each cadence onto a named run from the registry", () => {
+    expect(planForCadence("Daily morning briefing")).toEqual([
+      { kind: "morning-brief", hour: 8, days: "daily" },
+    ]);
+    expect(planForCadence("Weekly digest")).toEqual([
+      { kind: "weekly-planning", hour: 18, days: "sunday" },
+    ]);
   });
 
-  it("expands the thrice-daily cadence into one row per hour", () => {
-    // Stored as three rows rather than one row with a list, so "is this due?" stays a
-    // comparison instead of a parse.
-    expect(planForCadence("Multiple times a day")).toEqual([
-      { hour: 8, days: "daily" },
-      { hour: 12, days: "daily" },
-      { hour: 17, days: "daily" },
+  it("keeps twice-weekly as the morning brief on two days", () => {
+    // Not its own kind: it is the same question asked on Monday and Thursday rather than every
+    // morning, so it borrows the brief's prompt and overrides only the days.
+    expect(planForCadence("Twice a week")).toEqual([
+      { kind: "morning-brief", hour: 8, days: "monday,thursday" },
     ]);
+  });
+
+  it("seeds two DIFFERENT runs for the more-than-once cadence", () => {
+    // The thing this used to do was three copies of one prompt at 8, 12 and 17. A student who
+    // asked to hear from it more than once gets two different questions answered instead.
+    expect(planForCadence("Multiple times a day")).toEqual([
+      { kind: "morning-brief", hour: 8, days: "daily" },
+      { kind: "end-of-day", hour: 17, days: "weekdays" },
+    ]);
+  });
+
+  it("never plans the same kind twice, which the unique key would reject", () => {
+    for (const cadence of ["Multiple times a day", "Daily morning briefing", "Weekly digest"]) {
+      const kinds = planForCadence(cadence).map((p) => p.kind);
+      expect(new Set(kinds).size).toBe(kinds.length);
+    }
+  });
+
+  it("only plans runs that exist in the registry", () => {
+    // A plan naming a kind with no registry entry would be written and then skipped forever by
+    // the sweep — a schedule the student turned on that silently never fires.
+    for (const cadence of ["Multiple times a day", "Twice a week", "Weekly digest", "Daily"]) {
+      for (const p of planForCadence(cadence)) expect(isScheduledRunId(p.kind)).toBe(true);
+    }
   });
 
   it("schedules nothing for reactive or empty cadences", () => {
@@ -108,9 +134,9 @@ describe("planForCadence", () => {
   });
 
   it("takes the highest frequency when the student picked several", () => {
-    expect(planForCadence("Multiple times a day, Weekly digest")).toHaveLength(3);
+    expect(planForCadence("Multiple times a day, Weekly digest")).toHaveLength(2);
     expect(planForCadence("Daily morning briefing, Weekly digest")).toEqual([
-      { hour: 8, days: "daily" },
+      { kind: "morning-brief", hour: 8, days: "daily" },
     ]);
   });
 });
@@ -127,5 +153,56 @@ describe("cadenceFrom", () => {
     expect(cadenceFrom({})).toBeNull();
     expect(cadenceFrom(null)).toBeNull();
     expect(cadenceFrom({ checkinFrequency: [] })).toBeNull();
+  });
+});
+
+describe("SCHEDULED_RUNS", () => {
+  it("has no duplicate ids", () => {
+    // The id is the database key. Two entries sharing one means the second silently overwrites
+    // the first's row, and the student loses a run they turned on.
+    const ids = SCHEDULED_RUNS.map((r) => r.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("defaults to an hour and a day pattern the API would accept", () => {
+    for (const r of SCHEDULED_RUNS) {
+      expect(Number.isInteger(r.defaultHour)).toBe(true);
+      expect(r.defaultHour).toBeGreaterThanOrEqual(0);
+      expect(r.defaultHour).toBeLessThanOrEqual(23);
+      expect(r.defaultDays).toMatch(
+        /^(daily|weekdays|(monday|tuesday|wednesday|thursday|friday|saturday|sunday)(,(monday|tuesday|wednesday|thursday|friday|saturday|sunday))*)$/
+      );
+    }
+  });
+
+  it("builds a prompt that stands alone and permits silence", () => {
+    // A cron run opens a FRESH session, so nothing may refer back to a chat. And every prompt
+    // has to offer [SILENT]: an agent that messages whether or not it has anything to say is
+    // one a student mutes within a week.
+    for (const r of SCHEDULED_RUNS) {
+      const text = r.prompt({ who: "Ada at Rutgers", topics: "deadlines", priority: "thesis" });
+      expect(text).toContain("Ada at Rutgers");
+      expect(text).toContain("deadlines");
+      expect(text).toContain("[SILENT]");
+    }
+  });
+
+  it("drops the priority line when the student never gave one", () => {
+    // The empty string must not leak in as "Their top priority is ." — an agent told that its
+    // student's priority is nothing takes it literally.
+    for (const r of SCHEDULED_RUNS) {
+      const text = r.prompt({ who: "Ada", topics: "deadlines", priority: "" });
+      expect(text).not.toMatch(/priority[^.]*\.\s*$|priority is \./i);
+      expect(text).not.toContain("  ");
+    }
+  });
+
+  it("looks up by id and refuses anything else", () => {
+    expect(scheduledRun("morning-brief")?.name).toBe("Morning brief");
+    // The guard that stops a leftover row being run with a guessed prompt.
+    expect(scheduledRun("deadline-watch")).toBeUndefined();
+    expect(scheduledRun("")).toBeUndefined();
+    expect(isScheduledRunId("weekly-planning")).toBe(true);
+    expect(isScheduledRunId("nope")).toBe(false);
   });
 });
