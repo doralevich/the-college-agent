@@ -37,7 +37,7 @@ const steps = [
   {
     title: "Connect your tools",
     body:
-      "Head to the Integrations tab in the sidebar and link the apps you already live in: email, Google Docs, Outlook, Dropbox, Canvas, Blackbaud, and thousands more. Search, click a couple times, you're set.",
+      "Head to the Integrations tab in the sidebar and link the apps you already live in: email, Google Docs, Outlook, Dropbox, Canvas, and thousands more. Search, click a couple times, you're set.",
   },
   {
     title: "Ask me something",

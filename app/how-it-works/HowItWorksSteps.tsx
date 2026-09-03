@@ -61,7 +61,7 @@ function stepsFor(audience: Audience): Step[] {
       },
       {
         title: "Connect Your Office Tools",
-        body: `Your agent works with what your campus already runs on: Outlook, Microsoft Teams, Gmail, Google Calendar, Google Drive, Blackbaud, and hundreds more. The more you connect, the more it can carry.`,
+        body: `Your agent works with what your campus already runs on: Outlook, Microsoft Teams, Gmail, Google Calendar, Google Drive, Notion, and hundreds more. The more you connect, the more it can carry.`,
       },
     ];
   }
