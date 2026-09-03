@@ -5,13 +5,14 @@ import { cn } from "@/lib/utils";
 import { AgentsView } from "@/components/AgentsView";
 import { BillingView } from "@/components/BillingView";
 import { SettingsView } from "@/components/SettingsView";
+import { ChecklistView } from "@/components/ChecklistView";
 
 // Settings hosts the workspace settings (General), Your Agent, and Subscription
 // (plan + hosting + invoices). Usage Credits graduated to its own sidebar tab
 // (/dashboard/credits); deep links to /dashboard/billing and /dashboard/agent still
 // work because DashboardClient maps those routes to the matching initialSection here.
 
-export type SettingsSection = "general" | "agent" | "subscription";
+export type SettingsSection = "general" | "agent" | "subscription" | "intake";
 
 export function SettingsHub({
   initialSection = "general",
@@ -19,12 +20,17 @@ export function SettingsHub({
   paid,
   firstName,
   onOpenChat,
+  userId,
+  intake,
 }: {
   initialSection?: SettingsSection;
   hasAgent: boolean;
   paid: boolean;
   firstName: string | null;
   onOpenChat: () => void;
+  // Needed by the intake section, which moved here off the Checklist page.
+  userId: string;
+  intake: Record<string, unknown> | null;
 }) {
   const [section, setSection] = useState<SettingsSection>(initialSection);
 
@@ -32,6 +38,10 @@ export function SettingsHub({
     { id: "general", label: "General", show: true },
     { id: "agent", label: "Your Agent", show: hasAgent },
     { id: "subscription", label: "Subscription", show: paid },
+    // The intake answers used to be the body of the Checklist page. They are reference
+    // material - what the student told us at signup - not something they act on day to day,
+    // so they read better here than beside the setup they actually have to complete.
+    { id: "intake", label: "Your intake", show: hasAgent },
   ];
   const visible = sections.filter((s) => s.show);
   // If the requested section isn't available (e.g. billing before paying), fall back.
@@ -72,6 +82,8 @@ export function SettingsHub({
         <AgentsView firstName={firstName} onOpenChat={onOpenChat} />
       ) : active === "subscription" && paid ? (
         <BillingView />
+      ) : active === "intake" && hasAgent ? (
+        <ChecklistView userId={userId} firstName={firstName} intake={intake} />
       ) : (
         <SettingsView />
       )}

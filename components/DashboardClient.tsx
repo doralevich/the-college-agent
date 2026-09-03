@@ -15,7 +15,6 @@ import { provisionAndWait } from "@/lib/provision-client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SettingsHub } from "@/components/SettingsHub";
-import { ChecklistView } from "@/components/ChecklistView";
 import { SetupPanel } from "@/components/SetupPanel";
 import { CreditsView } from "@/components/CreditsView";
 import { ReferralCard } from "@/components/ReferralCard";
@@ -336,6 +335,8 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
                 // even when the hub is already mounted on another one.
                 <SettingsHub
                   key={active}
+                  userId={userId}
+                  intake={intake}
                   initialSection={
                     active === "billing"
                       ? "subscription"
@@ -351,14 +352,10 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
               ) : active === "integrations" && agentId ? (
                 <IntegrationsView agentId={agentId} />
               ) : active === "checklist" && hasAgent ? (
-                <div className="space-y-8">
-                  {/* Where the agent reaches them and when it messages first. This used to be
-                      /setup, a standalone page in the MARKETING layout - a student had to leave
-                      their dashboard, and had no way back but the browser button. Everything
-                      here is about this one agent, so it belongs next to it. */}
-                  {agentId && <SetupPanel agentId={agentId} />}
-                  <ChecklistView userId={userId} firstName={firstName} intake={intake} />
-                </div>
+                // Just the setup now. The intake answers that used to fill this page are
+                // reference material rather than something a student acts on, so they moved to
+                // Settings -> Your intake; what is left here is the work they actually do.
+                agentId ? <SetupPanel agentId={agentId} /> : null
               ) : (active === "start-here" || active === "welcome" || active === "now-what" || active === "shortcuts") && paid ? (
                 // Start Here: onboarding (pre-agent), then greeting + first moves + example
                 // prompts (post-agent). Old /welcome, /now-what, /shortcuts links land here.
@@ -384,6 +381,8 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
                   paid={paid}
                   firstName={firstName}
                   onOpenChat={() => openDashboardTab("chat")}
+                  userId={userId}
+                  intake={intake}
                 />
               )}
             </div>
