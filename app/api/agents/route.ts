@@ -82,15 +82,27 @@ export const POST = route(async (request: Request) => {
     .limit(1);
   const shape = shapeForHosting(ownerOrders?.[0]?.hosting as string | undefined);
 
-  // Only the FIRST agent in a workspace gets wired to Telegram: getUpdates long-polling is
-  // exclusive per bot token, so a second gateway on the owner's token would 409 against the
-  // first and split/drop the student's messages. Admins can still create extra boxes (that's
-  // intentional) — they just come up bare instead of fighting the live gateway.
-  const { count: priorAgentCount } = await db
+  // One agent per workspace. The same cap ApolloClaw enforces (lib/provision.ts), and for the
+  // same reason: a student has one agent, so a second one is a mistake every time.
+  //
+  // This used to allow the second box and merely SKIP configuring it — the reasoning was that
+  // Telegram's getUpdates long-polling is exclusive per bot token, so a second in-box gateway
+  // would fight the first. What that actually produced was a running, billable instance with no
+  // name, no persona and no channel, sitting in a paying student's workspace looking deleted.
+  // Refusing is the honest version of the same intent, and the gateway argument is gone anyway:
+  // chat apps are app-side webhooks now, not a poller on the box.
+  const { count: priorAgentCount, error: capError } = await db
     .from("agents")
     .select("agent37_id", { count: "exact", head: true })
     .eq("workspace_id", workspaceId);
-  const workspaceHadAgent = (priorAgentCount ?? 0) > 0;
+  if (capError) throw new ApiError(500, "db_error", capError.message);
+  if ((priorAgentCount ?? 0) > 0) {
+    throw new ApiError(
+      409,
+      "conflict",
+      "This workspace already has an agent. Delete it first if you need to rebuild."
+    );
+  }
 
   const template = await resolveTemplate();
 
@@ -127,19 +139,18 @@ export const POST = route(async (request: Request) => {
     throw new ApiError(500, "db_error", error.message);
   }
 
-  // Honor the owner's saved intake the same way the student path does — build the persona +
-  // wire up Telegram if on file — but ONLY for the workspace's first agent (a second gateway
-  // on the same bot token would conflict). Best-effort; the agent already exists either way.
-  let configured = false;
-  let configDetail =
-    "workspace already has an agent, new box left bare to avoid a Telegram gateway conflict";
-  if (!workspaceHadAgent) {
-    const { onboard, setup } = await readProvisioningIntake(db, ownerId);
-    const r = await configureAgentFromIntake(agent.id, onboard, setup, { db, userId: ownerId });
-    configured = r.configured;
-    configDetail = r.detail;
-    if (!configured) console.error("[agents:configure]", agent.id, configDetail);
-  }
+  // Honor the owner's saved intake the same way the student path does: build the persona and
+  // wire up whatever channel is on file. Unconditional now — the cap above means this is
+  // always the workspace's first agent, so there is nothing to come up bare behind.
+  // Best-effort; the agent already exists either way.
+  const { onboard, setup } = await readProvisioningIntake(db, ownerId);
+  const { configured, detail: configDetail } = await configureAgentFromIntake(
+    agent.id,
+    onboard,
+    setup,
+    { db, userId: ownerId }
+  );
+  if (!configured) console.error("[agents:configure]", agent.id, configDetail);
 
   return json({ ...agent, configured, config_detail: configDetail }, 201);
 });

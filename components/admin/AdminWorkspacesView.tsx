@@ -8,7 +8,6 @@ import { formatDate, statusVariant, usd } from "@/lib/format";
 import type { AdminAgentDetail, AdminWorkspaceSummary } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CreateAgentButton } from "@/components/CreateAgentButton";
 import { AgentActionsMenu } from "@/components/AgentActionsMenu";
 import { AgentNameCell } from "@/components/AgentNameCell";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -166,18 +165,16 @@ export function AdminWorkspacesView() {
 
                 {isOpen && (
                   <div className="border-t bg-muted/20 px-4 py-3">
-                    {/* Workspace-level actions live in the expanded panel to keep the list scannable */}
+                    {/* Workspace-level actions live in the expanded panel to keep the list scannable.
+                        No standalone "Create Agent" here: a bare create is what produced a second,
+                        unconfigured box in a workspace that already had one. Provisioning is
+                        "Edit intake" -> "Save & create agent", which reads the student's answers
+                        first, and the server now refuses a second agent outright. */}
                     <div className="mb-3 flex flex-wrap items-center gap-2">
                       <Button variant="outline" size="sm" onClick={() => setEditWs(w)}>
                         <Pencil className="h-4 w-4" />
                         Edit intake
                       </Button>
-                      <CreateAgentButton
-                        workspaceId={w.id}
-                        onCreated={() => onCreated(w.id)}
-                        label="Create Agent"
-                        size="sm"
-                      />
                       <Button
                         variant="outline"
                         size="sm"
