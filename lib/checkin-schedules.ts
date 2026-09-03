@@ -3,9 +3,13 @@ import { instanceFetch } from "@/lib/agent37";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendTelegramMessage } from "@/lib/telegram";
 import { isDue, localNow } from "@/lib/schedule-timing";
-import { buildCheckinPrompt, isValidTimezone, type HermesPersonaInput } from "@/lib/hermes";
+import { isValidTimezone, type HermesPersonaInput } from "@/lib/hermes";
+import { SCHEDULED_RUNS, scheduledRun } from "@/config/scheduled-runs";
 import { getChannelConfig } from "@/lib/channels/store";
-import { sendMessage as sendViaChannel } from "@/lib/channels/telegram";
+import * as telegramChannel from "@/lib/channels/telegram";
+import * as slackChannel from "@/lib/channels/slack";
+import * as whatsappChannel from "@/lib/channels/whatsapp";
+import type { ChannelId } from "@/config/channels";
 
 // The proactive check-in, driven from here instead of from inside the agent box.
 //
@@ -24,6 +28,8 @@ export interface CheckinScheduleRow {
   id: number;
   agent37_id: string;
   user_id: string | null;
+  /** Which scheduled run this row is — see config/scheduled-runs.ts. */
+  kind: string;
   hour: number;
   days: string;
   timezone: string;
@@ -41,21 +47,25 @@ export interface CheckinScheduleRow {
  * compare against a wall clock. Reactive cadences ("only when I ask", "real-time") produce no
  * rows at all — they are things the student initiates, not things that arrive.
  */
-export function planForCadence(cadence: string | null | undefined): { hour: number; days: string }[] {
+export function planForCadence(
+  cadence: string | null | undefined
+): { kind: string; hour: number; days: string }[] {
   const c = (cadence || "").toLowerCase();
   if (!c) return [];
+  const run = (id: string) => {
+    const def = SCHEDULED_RUNS.find((r) => r.id === id)!;
+    return { kind: def.id, hour: def.defaultHour, days: def.defaultDays };
+  };
   // Highest frequency wins when several are selected — the form allows multiple, and a student
   // who asked for both "daily morning" and "weekly digest" should get the daily one.
-  if (c.includes("multiple")) {
-    return [
-      { hour: 8, days: "daily" },
-      { hour: 12, days: "daily" },
-      { hour: 17, days: "daily" },
-    ];
-  }
-  if (c.includes("daily") || c.includes("morning briefing")) return [{ hour: 8, days: "daily" }];
-  if (c.includes("twice")) return [{ hour: 8, days: "monday,thursday" }];
-  if (c.includes("weekly")) return [{ hour: 8, days: "monday" }];
+  //
+  // "Multiple times a day" seeds the morning brief AND the end-of-day summary rather than three
+  // copies of one prompt at three hours: they asked to hear from it more than once, and two
+  // different questions answered well beats the same one repeated.
+  if (c.includes("multiple")) return [run("morning-brief"), run("end-of-day")];
+  if (c.includes("daily") || c.includes("morning briefing")) return [run("morning-brief")];
+  if (c.includes("twice")) return [{ ...run("morning-brief"), days: "monday,thursday" }];
+  if (c.includes("weekly")) return [run("weekly-planning")];
   return [];
 }
 
@@ -98,6 +108,7 @@ export async function syncCheckinSchedule(
     wanted.map((w) => ({
       agent37_id: agent37Id,
       user_id: userId,
+      kind: w.kind,
       hour: w.hour,
       days: w.days,
       timezone: timezone as string,
@@ -144,6 +155,36 @@ async function readIntakeForCheckin(db: DB, userId: string) {
     } | null,
     setup: setupRes.data as { telegram_token: string | null; telegram_user_id: string | null } | null,
   };
+}
+
+type Delivery = {
+  channel: ChannelId;
+  token: string;
+  to: string;
+  /** WhatsApp's Phone Number ID; unused by the others. */
+  externalId: string | null;
+};
+
+/** The first connected channel with somewhere to send. */
+async function pickChannel(agent37Id: string): Promise<Delivery | null> {
+  for (const channel of ["telegram", "slack", "whatsapp"] as const) {
+    const config = await getChannelConfig(agent37Id, channel).catch(() => null);
+    if (!config?.ownerChatId) continue;
+    if (channel === "whatsapp" && !config.externalId) continue;
+    return {
+      channel,
+      token: config.token,
+      to: config.ownerChatId,
+      externalId: config.externalId,
+    };
+  }
+  return null;
+}
+
+async function deliver(d: Delivery, text: string): Promise<void> {
+  if (d.channel === "telegram") return telegramChannel.sendMessage(d.token, d.to, text);
+  if (d.channel === "slack") return slackChannel.postMessage(d.token, d.to, text);
+  return whatsappChannel.sendMessage(d.externalId!, d.token, d.to, text);
 }
 
 /** One agent turn, without naming a model. */
@@ -199,29 +240,25 @@ export async function runCheckin(row: CheckinScheduleRow): Promise<string> {
 
     const { onboard, setup } = await readIntakeForCheckin(db, row.user_id);
 
-    // Two places a student's Telegram can live, and both are real right now:
+    // Where this check-in should arrive.
     //
-    //   agent_channels    the webhook channel (lib/channels). The student pasted a bot token and
-    //                     the first message they sent bound their chat id. Works on any runtime.
-    //   setup_submissions the legacy /setup fields, where the token and their NUMERIC user id
-    //                     were collected to be written into the box's Hermes .env.
-    //
-    // The channel wins when present. The legacy fields stay as the fallback so students who
-    // connected the old way keep getting check-ins without having to reconnect on the day this
-    // ships — they only need to when their agent moves to a runtime with no Hermes gateway.
-    const channel = await getChannelConfig(row.agent37_id, "telegram").catch(() => null);
-    const token = channel?.token ?? setup?.telegram_token ?? null;
-    const chatId = channel?.ownerChatId ?? setup?.telegram_user_id ?? null;
+    // Order is preference, not capability: a student who connected two gets it in the one they
+    // set up for conversation first. ownerChatId is the real test rather than "connected" -
+    // until somebody has messaged the bot we have no address to send to, so a connected channel
+    // nobody has spoken to cannot receive.
+    const delivery = await pickChannel(row.agent37_id);
 
-    // Telegram is the only delivery a check-in has. Rather than invent one (email we would have
-    // to build, a dashboard nobody opens at 8am), a student who hasn't connected simply doesn't
-    // get one, and the row says so — which is what lets the dashboard tell them to connect
-    // Telegram instead of showing "something went wrong".
-    //
-    // Note the channel case where a token exists but ownerChatId is still null: they connected
-    // the bot but have never messaged it, so we have no address to send to. Same outcome, and
-    // the same fix from the student's side: say something to the bot once.
-    if (!token || !chatId) return finish("no_channel");
+    // The legacy Telegram fields, from before channels existed: /setup wrote the token and the
+    // student's numeric id straight into setup_submissions for the in-box gateway. Kept as the
+    // fallback so students connected the old way keep getting check-ins without reconnecting.
+    const legacyToken = setup?.telegram_token ?? null;
+    const legacyChatId = setup?.telegram_user_id ?? null;
+
+    // Telegram is not the only channel any more, but it is still the only fallback: a student
+    // who never connected anything simply doesn't get one, and the row says so - which is what
+    // lets the dashboard tell them to connect a chat app rather than showing "something went
+    // wrong".
+    if (!delivery && !(legacyToken && legacyChatId)) return finish("no_channel");
 
     const persona: HermesPersonaInput = {
       agentName: onboard?.agent_name ?? null,
@@ -232,28 +269,49 @@ export async function runCheckin(row: CheckinScheduleRow): Promise<string> {
       major: onboard?.major ?? null,
       questionnaire: onboard?.questionnaire ?? null,
     };
-    const label = row.days === "daily" ? "daily" : row.days === "weekdays" ? "weekday" : "scheduled";
+    // A row whose kind is not in the registry is skipped rather than run with a guessed prompt:
+    // it means the registry moved on and this row is left over, and inventing a prompt for it
+    // would message a student something nobody wrote.
+    const def = scheduledRun(row.kind);
+    if (!def) return finish("unknown_kind", `no scheduled run named "${row.kind}"`);
 
-    const text = await runAgentTurn(row.agent37_id, buildCheckinPrompt(persona, label));
+    const q = (key: string) => {
+      const v = persona.questionnaire?.[key];
+      if (v == null) return "";
+      return (Array.isArray(v) ? v.filter(Boolean).join(", ") : String(v)).trim();
+    };
+    const who =
+      [persona.firstName, persona.school ? `at ${persona.school}` : null].filter(Boolean).join(" ") ||
+      "your student";
+    const text = await runAgentTurn(
+      row.agent37_id,
+      def.prompt({
+        who,
+        topics:
+          q("agentTopics") ||
+          "upcoming deadlines, unanswered emails, schedule conflicts, and study reminders",
+        priority: q("topPriority"),
+      })
+    );
 
     // The prompt tells the agent to reply with only [SILENT] when there is genuinely nothing
     // worth sending. Honour it: an agent that messages every single morning regardless of
     // whether it has anything to say is one a student mutes within a week.
     if (/^\[SILENT\]$/i.test(text.trim())) return finish("silent");
 
-    // Via the channel helper when we're on a channel: it splits messages over Telegram's 4096
-    // character cap, which a check-in listing a week of deadlines can genuinely exceed — the API
-    // rejects the whole message rather than truncating it, so an unsplit send is a lost check-in.
-    if (channel) {
+    // Each provider caps a message length and REJECTS anything longer rather than truncating,
+    // so a check-in listing a week of deadlines would be lost entirely. The channel helpers
+    // split; the legacy path below does not, which is one more reason it is only a fallback.
+    if (delivery) {
       try {
-        await sendViaChannel(token, chatId, text);
-        return finish("delivered");
+        await deliver(delivery, text);
+        return finish(`delivered:${delivery.channel}`);
       } catch (e) {
-        return finish("telegram_failed", (e as Error).message.slice(0, 500));
+        return finish("send_failed", (e as Error).message.slice(0, 500));
       }
     }
-    const sent = await sendTelegramMessage(token, chatId, text);
-    return finish(sent ? "delivered" : "telegram_failed");
+    const sent = await sendTelegramMessage(legacyToken!, legacyChatId!, text);
+    return finish(sent ? "delivered:telegram_legacy" : "send_failed");
   } catch (err) {
     const message = (err as Error).message;
     console.error("[checkins] run failed", row.agent37_id, message);

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse, after } from "next/server";
 import { getOptionalUserId } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { findAgent37IdForUser, reconfigureExistingAgentForUser } from "@/lib/provisioning";
-import { connectTelegram } from "@/lib/channels/connect";
+import { connectChannel } from "@/lib/channels/connect";
 import { buildSummaryPdf, pdfAttachment } from "@/lib/email/pdf";
 import { encryptForStorage } from "@/lib/crypto/byo";
 import { limit } from "@/lib/rate-limit";
@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
       try {
         const agent37Id = await findAgent37IdForUser(supabase, userId);
         if (agent37Id) {
-          await connectTelegram(agent37Id, { botToken });
+          await connectChannel(agent37Id, "telegram", { botToken });
           telegramChannel = "connected";
         } else {
           // No agent yet - they are doing technical setup before their agent is built. The token

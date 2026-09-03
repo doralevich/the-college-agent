@@ -2,6 +2,7 @@ import { requireAgentAccess } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ApiError, json, readJson, route } from "@/lib/http";
 import { isValidTimezone } from "@/lib/hermes";
+import { SCHEDULED_RUNS, isScheduledRunId } from "@/config/scheduled-runs";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -12,10 +13,18 @@ type Ctx = { params: Promise<{ id: string }> };
 // is the surface that lets them move it, turn it off, or turn it back on, which is the
 // difference between a check-in that arrives at a useful moment and one they mute.
 //
+// There is more than one scheduled run now (config/scheduled-runs.ts), so everything here is
+// keyed by KIND. GET returns one entry per registry entry whether or not a row exists, so the
+// panel can offer a run the student has never turned on; PUT touches exactly the one kind named
+// and leaves the others alone.
+//
 // Under /api/agents/*, so proxy.ts authenticates and requireAgentAccess enforces that this
 // student owns THIS agent.
 
-export interface CheckinScheduleView {
+export interface ScheduledRunView {
+  kind: string;
+  name: string;
+  description: string;
   enabled: boolean;
   hour: number;
   days: string;
@@ -46,44 +55,58 @@ export const GET = route(async (_request: Request, { params }: Ctx) => {
   await requireAgentAccess(id, "member");
   const db = createAdminClient();
 
-  // The lowest hour is the one a student thinks of as "their" check-in — the thrice-daily
-  // cadence writes three rows, and the morning one is the anchor the others hang off.
   const { data, error } = await db
     .from("checkin_schedules")
-    .select("enabled, hour, days, timezone, last_run_on, last_status")
-    .eq("agent37_id", id)
-    .order("hour", { ascending: true });
+    .select("kind, enabled, hour, days, timezone, last_run_on, last_status")
+    .eq("agent37_id", id);
   if (error) throw new ApiError(500, "db_error", error.message);
 
   const rows = data ?? [];
-  const first = rows[0];
-  const schedule: CheckinScheduleView | null = first
-    ? {
-        enabled: Boolean(first.enabled),
-        hour: first.hour as number,
-        days: first.days as string,
-        timezone: (first.timezone as string) ?? null,
-        lastRunOn: (first.last_run_on as string | null) ?? null,
-        lastStatus: (first.last_status as string | null) ?? null,
-      }
-    : null;
+  const byKind = new Map(rows.map((r) => [r.kind as string, r]));
 
-  return json({ schedule, count: rows.length });
+  // The registry drives the list, not the table. A run nobody has turned on has no row, and
+  // still needs to appear — off, at its default hour — or there is no way to turn it on.
+  const runs: ScheduledRunView[] = SCHEDULED_RUNS.map((def) => {
+    const row = byKind.get(def.id);
+    return {
+      kind: def.id,
+      name: def.name,
+      description: def.description,
+      enabled: row ? Boolean(row.enabled) : false,
+      hour: row ? (row.hour as number) : def.defaultHour,
+      days: row ? (row.days as string) : def.defaultDays,
+      timezone: (row?.timezone as string | undefined) ?? null,
+      lastRunOn: (row?.last_run_on as string | null | undefined) ?? null,
+      lastStatus: (row?.last_status as string | null | undefined) ?? null,
+    };
+  });
+
+  return json({ runs });
 });
 
 /**
- * Set the check-in time, days, or on/off.
+ * Set one run's time, days, or on/off.
  *
- * Writes a SINGLE row, replacing whatever was there. A student adjusting their time in the UI
- * is expressing one intent — "message me then" — so a cadence that had been three rows collapses
- * to the one they just chose rather than leaving two orphans firing at hours they never picked.
+ * Scoped to the `kind` in the body and nothing else. The old version of this deleted every row
+ * for the agent before writing, which was right while a "check-in" was one unnamed thing and
+ * would now silently wipe a student's other two runs the moment they nudged their morning brief
+ * by an hour.
  */
 export const PUT = route(async (request: Request, { params }: Ctx) => {
   const { id } = await params;
   const { user } = await requireAgentAccess(id, "member");
-  const body = await readJson<{ enabled?: boolean; hour?: number; days?: string; timezone?: string }>(
-    request
-  );
+  const body = await readJson<{
+    kind?: string;
+    enabled?: boolean;
+    hour?: number;
+    days?: string;
+    timezone?: string;
+  }>(request);
+
+  const kind = (body.kind ?? "").trim();
+  if (!isScheduledRunId(kind)) {
+    throw new ApiError(400, "invalid_request", "That isn't a scheduled run we know about.");
+  }
 
   const hour = Number(body.hour);
   if (!Number.isInteger(hour) || hour < 0 || hour > 23) {
@@ -96,10 +119,13 @@ export const PUT = route(async (request: Request, { params }: Ctx) => {
 
   const db = createAdminClient();
 
-  // Timezone: prefer what the browser just told us, fall back to whatever the existing row or
+  // Timezone: prefer what the browser just told us, fall back to whatever an existing row or
   // their onboarding answers carry. Refuse rather than default to UTC — a check-in with no
   // timezone lands in the middle of the night for most of the student base, and silently
   // picking one for them is how that happens.
+  //
+  // Any row will do for the fallback, not just this kind's: a student's zone is theirs, not
+  // their morning brief's, so a second run inherits it from the first.
   const { data: existing } = await db
     .from("checkin_schedules")
     .select("timezone")
@@ -124,25 +150,42 @@ export const PUT = route(async (request: Request, { params }: Ctx) => {
     );
   }
 
-  await db.from("checkin_schedules").delete().eq("agent37_id", id);
-  const { error } = await db.from("checkin_schedules").insert({
-    agent37_id: id,
-    user_id: user.id,
-    hour,
-    days,
-    timezone,
-    enabled: body.enabled !== false,
-  });
+  const enabled = body.enabled !== false;
+
+  // Upsert on (agent37_id, kind) — the unique key migration 0026 put there. Only the columns
+  // named here are written, so last_run_on and last_status survive an edit: turning a run off
+  // and back on keeps both the hour they picked and the record of when it last fired.
+  const { data: saved, error } = await db
+    .from("checkin_schedules")
+    .upsert(
+      {
+        agent37_id: id,
+        user_id: user.id,
+        kind,
+        hour,
+        days,
+        timezone,
+        enabled,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "agent37_id,kind" }
+    )
+    .select("last_run_on, last_status")
+    .maybeSingle();
   if (error) throw new ApiError(500, "db_error", error.message);
 
+  const def = SCHEDULED_RUNS.find((r) => r.id === kind)!;
   return json({
-    schedule: {
-      enabled: body.enabled !== false,
+    run: {
+      kind,
+      name: def.name,
+      description: def.description,
+      enabled,
       hour,
       days,
       timezone,
-      lastRunOn: null,
-      lastStatus: null,
-    } satisfies CheckinScheduleView,
+      lastRunOn: (saved?.last_run_on as string | null | undefined) ?? null,
+      lastStatus: (saved?.last_status as string | null | undefined) ?? null,
+    } satisfies ScheduledRunView,
   });
 });
