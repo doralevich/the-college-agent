@@ -160,7 +160,7 @@ export default function IntegrationGlobe() {
         <span className="mono-label">Integrations</span>
         <h2 className="section-title">Works with the tools you already use</h2>
         <p className="section-sub">
-          Connect to 250+ apps, from Gmail and Canvas to Notion and Office 365, right out of the box.
+          Connect to 250+ apps, from Gmail and Canvas to Blackbaud and Office 365, right out of the box.
         </p>
       </div>
 

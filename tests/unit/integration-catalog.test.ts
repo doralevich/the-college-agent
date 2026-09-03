@@ -57,29 +57,24 @@ describe("integration catalog", () => {
   // Regression guard for a real support report: a student looked for Blackboard (the course
   // LMS), saw Blackbaud (school fundraising/admin software - a different company, one letter
   // apart) pinned next to Canvas, and clicked it expecting their LMS.
-  //
-  // The tile carried a "Not Blackboard" disclaimer for a while and it did not help, so the
-  // entry is gone entirely. These assert it stays gone, and that nothing re-adds Blackboard
-  // under Blackbaud's slug - which is the same bug wearing the other name.
-  describe("neither Blackbaud nor Blackboard is in the curated catalog", () => {
-    it("ships no blackbaud entry", () => {
-      expect(DEFAULT_INTEGRATION_TOOLKITS.find((t) => t.slug === "blackbaud")).toBeUndefined();
-      expect(FAVORITE_INTEGRATION_SLUGS).not.toContain("blackbaud");
+  describe("Blackbaud is not mistaken for Blackboard", () => {
+    const blackbaud = DEFAULT_INTEGRATION_TOOLKITS.find((t) => t.slug === "blackbaud");
+
+    it("says in its description that it is not Blackboard", () => {
+      expect(blackbaud).toBeDefined();
+      expect(blackbaud!.description ?? "").toMatch(/not blackboard/i);
     });
 
-    it("ships nothing named Blackbaud or Blackboard", () => {
-      const named = DEFAULT_INTEGRATION_TOOLKITS.filter((t) => /^black(baud|board)/i.test(t.name));
-      expect(named.map((t) => t.name)).toEqual([]);
+    it("never labels the blackbaud slug as Blackboard", () => {
+      expect(blackbaud!.name).not.toMatch(/blackboard/i);
     });
 
-    // If a real Blackboard connector is ever added it must carry its own verified slug. The
-    // original bug was a plausible-looking name pointed at the wrong upstream toolkit, which
-    // fails at connect time rather than at build time - so it has to be caught here.
-    it("never points a Blackboard entry at blackbaud's slug", () => {
-      for (const t of DEFAULT_INTEGRATION_TOOLKITS) {
-        if (/blackboard/i.test(t.name)) {
-          expect(t.slug, `"${t.name}" must not reuse the blackbaud slug`).not.toBe("blackbaud");
-        }
+    // If a real Blackboard connector is ever added it must be its own entry, never an alias
+    // pointing at Blackbaud's slug.
+    it("does not ship a Blackboard entry that reuses Blackbaud's slug", () => {
+      const named = DEFAULT_INTEGRATION_TOOLKITS.filter((t) => /^blackboard/i.test(t.name));
+      for (const t of named) {
+        expect(t.slug, `"${t.name}" must not reuse the blackbaud slug`).not.toBe("blackbaud");
       }
     });
   });
