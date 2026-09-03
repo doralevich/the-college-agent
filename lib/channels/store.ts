@@ -12,7 +12,9 @@ import { decryptSecret, encryptForStorage } from "@/lib/crypto/byo";
 // `toChannel` is the only thing routes should return, and it has no field for either of them to
 // be forgotten in.
 
-export type ChannelId = "telegram";
+import type { ChannelId } from "@/config/channels";
+
+export type { ChannelId };
 export type ChannelState = "connected" | "error" | "disconnected";
 
 export interface ChannelRow {
@@ -27,6 +29,10 @@ export interface ChannelRow {
   session_started_at: string | null;
   /** Bound on the first message. Anyone else talking to the bot is ignored. */
   owner_chat_id: string | null;
+  /** Provider-side id a reply must be addressed through. WhatsApp's Phone Number ID. */
+  external_id: string | null;
+  /** Echoed back once, when Meta verifies our callback URL. WhatsApp only. */
+  verify_token: string | null;
   state: string;
   message: string | null;
   updated_at: string | null;
@@ -40,6 +46,12 @@ export interface Channel {
   message: string | null;
   /** Whether a student has actually messaged the bot yet — until then there is no address. */
   linked: boolean;
+  /**
+   * Deliberately exposed, and only this one: Meta's webhook form asks the student for it, so a
+   * verify token they cannot read is a setup they cannot finish. It proves a callback URL is
+   * ours during a one-time handshake and unlocks nothing else.
+   */
+  verifyToken: string | null;
   updatedAt: number | null;
 }
 
@@ -50,6 +62,7 @@ export function toChannel(row: ChannelRow): Channel {
     account: row.account,
     message: row.message,
     linked: Boolean(row.owner_chat_id),
+    verifyToken: decryptSecret(row.verify_token),
     updatedAt: row.updated_at ? Date.parse(row.updated_at) : null,
   };
 }
@@ -72,6 +85,9 @@ export async function getChannelRow(
 export interface ChannelConfig {
   token: string;
   secret: string | null;
+  /** WhatsApp's Phone Number ID; null for the others. */
+  externalId: string | null;
+  verifyToken: string | null;
   ownerChatId: string | null;
   sessionId: string | null;
   sessionStartedAt: number | null;
@@ -96,6 +112,8 @@ export async function getChannelConfig(
   return {
     token,
     secret: decryptSecret(row.secret),
+    externalId: row.external_id,
+    verifyToken: decryptSecret(row.verify_token),
     ownerChatId: row.owner_chat_id,
     sessionId: row.session_id,
     sessionStartedAt: row.session_started_at ? Date.parse(row.session_started_at) : null,
@@ -107,6 +125,8 @@ export interface ChannelPatch {
   botToken?: string | null;
   account?: string | null;
   secret?: string | null;
+  externalId?: string | null;
+  verifyToken?: string | null;
   sessionId?: string | null;
   sessionStartedAt?: string | null;
   ownerChatId?: string | null;
@@ -136,6 +156,11 @@ export async function upsertChannel(
   // BYO_ENC_KEY is set, so this is safe before that env var exists.
   if (patch.botToken !== undefined) row.bot_token = encryptForStorage(patch.botToken);
   if (patch.secret !== undefined) row.secret = encryptForStorage(patch.secret);
+  // Not a secret in the same sense - the student has to read it back to finish Meta's setup -
+  // but encrypted at rest anyway, because it still authenticates a callback.
+  if (patch.verifyToken !== undefined) row.verify_token = encryptForStorage(patch.verifyToken);
+  // NOT encrypted: it is an account identifier, and the send path needs it on every message.
+  if (patch.externalId !== undefined) row.external_id = patch.externalId;
   if (patch.account !== undefined) row.account = patch.account;
   if (patch.sessionId !== undefined) row.session_id = patch.sessionId;
   if (patch.sessionStartedAt !== undefined) row.session_started_at = patch.sessionStartedAt;
@@ -157,4 +182,12 @@ export async function deleteChannel(agentId: string, channel: ChannelId): Promis
     .eq("agent37_id", agentId)
     .eq("channel", channel);
   if (error) throw new Error(error.message);
+}
+
+/** Every channel row this agent has, for the setup panel. */
+export async function listChannels(agentId: string): Promise<Channel[]> {
+  const db = createAdminClient();
+  const { data, error } = await db.from("agent_channels").select("*").eq("agent37_id", agentId);
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as ChannelRow[]).map(toChannel);
 }

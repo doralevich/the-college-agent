@@ -1,31 +1,34 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, ChevronDown, Clock, Loader2, Send, TriangleAlert } from "lucide-react";
+import { Check, ChevronDown, Clock, Loader2, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { detectTimezone } from "@/lib/client-locale";
+import { CHANNELS, type ChannelId } from "@/config/channels";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 // "Getting set up", in the dashboard rather than on a separate page.
 //
-// This replaces /setup, a standalone page in the marketing layout. Sending a student out of
-// their dashboard to a differently-shaped page to connect a chat app - and giving them no way
-// back except the browser button - is the part David objected to, and he's right: everything
-// here is about THIS agent, so it belongs beside it.
+// This replaced /setup, a standalone page in the marketing layout: a student had to leave their
+// dashboard to configure the agent they were looking at, and had no way back but the browser
+// button. Everything here is about one agent, so it belongs beside it.
 //
 // Two things live here, matching how ApolloClaw does it: where the agent reaches you, and when
-// it messages you first.
+// it messages you first. The channel cards are driven entirely by config/channels.ts - adding a
+// fourth chat app is a config entry, a lib and a receiver, with nothing to change in here.
 
 type Channel = {
-  channel: "telegram";
+  channel: ChannelId;
   state: "connected" | "error" | "disconnected";
   account: string | null;
   message: string | null;
-  /** False until they have actually messaged the bot — until then we have no address. */
+  /** False until they have actually messaged it — until then we have no address. */
   linked: boolean;
+  /** WhatsApp only, and deliberately readable: Meta's console asks the student for it. */
+  verifyToken: string | null;
 };
 
 type Schedule = {
@@ -45,26 +48,52 @@ function hourLabel(h: number): string {
   return `${twelve}:00 ${suffix}`;
 }
 
+/** A value the student has to paste into someone else's console. Shown, not hidden. */
+function CopyRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="space-y-1">
+      <Label>{label}</Label>
+      <div className="flex items-center gap-2">
+        <code className="min-w-0 flex-1 truncate rounded-md border bg-muted/50 px-2 py-1.5 text-xs">
+          {value}
+        </code>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() =>
+            void navigator.clipboard.writeText(value).then(
+              () => toast.success(`${label} copied`),
+              () => toast.error("Couldn't copy — select it and copy by hand.")
+            )
+          }
+        >
+          Copy
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export function SetupPanel({ agentId }: { agentId: string }) {
-  const [channel, setChannel] = useState<Channel | null>(null);
+  const [channels, setChannels] = useState<Channel[]>([]);
   const [schedule, setSchedule] = useState<Schedule | null>(null);
   const [loading, setLoading] = useState(true);
-  const [open, setOpen] = useState(false);
-  const [token, setToken] = useState("");
+  const [openId, setOpenId] = useState<ChannelId | null>(null);
+  const [fields, setFields] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
 
-  // Promise chain rather than an async body, and a cancelled flag rather than an abort: the
-  // same shape ChecklistView uses, and the one react-hooks/set-state-in-effect accepts, since
-  // nothing here sets state before the first tick.
+  // Promise chain rather than an async body, and a cancelled flag rather than an abort: the same
+  // shape ChecklistView uses, and the one react-hooks/set-state-in-effect accepts.
   useEffect(() => {
     let cancelled = false;
     Promise.all([
-      apiFetch<{ channel: Channel | null }>(`/api/agents/${agentId}/channels/telegram`),
+      apiFetch<{ channels: Channel[] }>(`/api/agents/${agentId}/channels/telegram`),
       apiFetch<{ schedule: Schedule | null }>(`/api/agents/${agentId}/checkin-schedule`),
     ])
       .then(([ch, sc]) => {
         if (cancelled) return;
-        setChannel(ch.channel);
+        setChannels(ch.channels);
         setSchedule(sc.schedule);
       })
       .catch((e: Error) => {
@@ -78,17 +107,19 @@ export function SetupPanel({ agentId }: { agentId: string }) {
     };
   }, [agentId]);
 
-  async function connect() {
-    if (!token.trim()) return toast.error("Paste your bot token first.");
+  const byId = new Map(channels.map((c) => [c.channel, c]));
+  const anyLinked = channels.some((c) => c.linked);
+
+  async function connect(id: ChannelId) {
     setBusy(true);
     try {
-      const { channel: next } = await apiFetch<{ channel: Channel }>(
-        `/api/agents/${agentId}/channels/telegram`,
-        { method: "POST", body: JSON.stringify({ botToken: token.trim() }) }
+      const { channel } = await apiFetch<{ channel: Channel }>(
+        `/api/agents/${agentId}/channels/${id}`,
+        { method: "POST", body: JSON.stringify(fields) }
       );
-      setChannel(next);
-      setToken("");
-      toast.success("Telegram connected — now send your bot a message so it knows it's you.");
+      setChannels((prev) => [...prev.filter((c) => c.channel !== id), channel]);
+      setFields({});
+      toast.success("Connected — now send it a message so it knows it's you.");
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
@@ -96,12 +127,12 @@ export function SetupPanel({ agentId }: { agentId: string }) {
     }
   }
 
-  async function disconnect() {
+  async function disconnect(id: ChannelId) {
     setBusy(true);
     try {
-      await apiFetch(`/api/agents/${agentId}/channels/telegram`, { method: "DELETE" });
-      setChannel(null);
-      toast.success("Telegram disconnected");
+      await apiFetch(`/api/agents/${agentId}/channels/${id}`, { method: "DELETE" });
+      setChannels((prev) => prev.filter((c) => c.channel !== id));
+      toast.success("Disconnected");
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
@@ -143,10 +174,6 @@ export function SetupPanel({ agentId }: { agentId: string }) {
     );
   }
 
-  // Connected but never messaged: the bot exists and has nowhere to send. Worth its own state,
-  // because "connected" with no check-ins arriving is otherwise indistinguishable from broken.
-  const needsFirstMessage = channel?.state === "connected" && !channel.linked;
-
   return (
     <section className="space-y-6">
       <div className="rounded-2xl border p-5">
@@ -160,93 +187,128 @@ export function SetupPanel({ agentId }: { agentId: string }) {
         <h3 className="px-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           Where your agent answers you
         </h3>
+        <p className="px-1 text-sm text-muted-foreground">
+          Pick a chat app and your agent messages you there. Each takes a few steps in that
+          app&apos;s own settings — open a card for the walkthrough.
+        </p>
 
-        <div className="rounded-2xl border">
-          <button
-            type="button"
-            onClick={() => setOpen((o) => !o)}
-            className="flex w-full items-center gap-3 p-4 text-left"
-            aria-expanded={open}
-          >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-600">
-              <Send className="h-4 w-4" />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="flex flex-wrap items-center gap-2">
-                <span className="font-medium">Telegram</span>
-                {channel?.state === "connected" && !needsFirstMessage && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
-                    <Check className="h-3 w-3" /> Connected
-                  </span>
-                )}
-                {needsFirstMessage && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700">
-                    <TriangleAlert className="h-3 w-3" /> Needs attention
-                  </span>
-                )}
-                {channel?.state === "error" && (
-                  <span className="rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-medium text-red-700">
-                    Error
-                  </span>
-                )}
-                {!channel && (
-                  <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-                    Not connected
-                  </span>
-                )}
-              </span>
-              <span className="mt-0.5 block truncate text-sm text-muted-foreground">
-                {needsFirstMessage
-                  ? "Send your bot any message so it knows it's you"
-                  : (channel?.account ?? "Your own private bot")}
-              </span>
-            </span>
-            <ChevronDown
-              className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
-            />
-          </button>
+        {CHANNELS.map((def) => {
+          const ch = byId.get(def.id);
+          const open = openId === def.id;
+          // Connected but never messaged: it exists and has nowhere to send. Its own state,
+          // because "connected" with nothing arriving is otherwise indistinguishable from broken.
+          const needsFirstMessage = ch?.state === "connected" && !ch.linked;
+          const origin = typeof window === "undefined" ? "" : window.location.origin;
+          const webhookUrl = `${origin}/api/channels/${def.id}/${agentId}`;
 
-          {open && (
-            <div className="space-y-3 border-t p-4">
-              {channel ? (
-                <>
-                  {channel.message && (
-                    <p className="text-sm text-red-600">{channel.message}</p>
-                  )}
-                  <p className="text-sm text-muted-foreground">
+          return (
+            <div key={def.id} className="rounded-2xl border">
+              <button
+                type="button"
+                onClick={() => setOpenId(open ? null : def.id)}
+                className="flex w-full items-center gap-3 p-4 text-left"
+                aria-expanded={open}
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="flex flex-wrap items-center gap-2">
+                    <span className="font-medium">{def.name}</span>
+                    {ch?.state === "connected" && !needsFirstMessage && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+                        <Check className="h-3 w-3" /> Connected
+                      </span>
+                    )}
+                    {needsFirstMessage && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700">
+                        <TriangleAlert className="h-3 w-3" /> Needs attention
+                      </span>
+                    )}
+                    {ch?.state === "error" && (
+                      <span className="rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-medium text-red-700">
+                        Error
+                      </span>
+                    )}
+                    {!ch && (
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                        Not connected
+                      </span>
+                    )}
+                    {def.recommended && !ch && (
+                      <span className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium">
+                        Easiest
+                      </span>
+                    )}
+                  </span>
+                  <span className="mt-0.5 block truncate text-sm text-muted-foreground">
                     {needsFirstMessage
-                      ? "Open Telegram, find your bot, and send it anything — that's how it learns which chat is yours."
-                      : "Your agent is answering you in Telegram."}
-                  </p>
-                  <Button variant="outline" size="sm" onClick={disconnect} disabled={busy}>
-                    Disconnect
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <p className="text-sm text-muted-foreground">
-                    In Telegram, message <strong>@BotFather</strong>, send <strong>/newbot</strong>,
-                    and paste the token it gives you. Then send your new bot a message.
-                  </p>
-                  <div className="space-y-2">
-                    <Label htmlFor="tg-token">Bot token</Label>
-                    <Input
-                      id="tg-token"
-                      type="password"
-                      autoComplete="off"
-                      placeholder="123456789:ABCdef..."
-                      value={token}
-                      onChange={(e) => setToken(e.target.value)}
-                    />
-                  </div>
-                  <Button size="sm" onClick={connect} disabled={busy}>
-                    {busy ? "Connecting…" : "Connect Telegram"}
-                  </Button>
-                </>
+                      ? "Send it any message so it knows it's you"
+                      : (ch?.account ?? def.tagline)}
+                  </span>
+                </span>
+                <ChevronDown
+                  className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
+                />
+              </button>
+
+              {open && (
+                <div className="space-y-3 border-t p-4">
+                  {ch ? (
+                    <>
+                      {ch.message && <p className="text-sm text-red-600">{ch.message}</p>}
+                      <p className="text-sm text-muted-foreground">
+                        {needsFirstMessage
+                          ? `Open ${def.name}, find it, and send anything — that's how it learns which chat is yours.`
+                          : def.connectedNote}
+                      </p>
+                      {/* Shown AFTER connecting, because both are per-agent values that don't
+                          exist until then — and the setup can't be finished without them. */}
+                      {def.showWebhookUrl && (
+                        <CopyRow
+                          label={def.id === "whatsapp" ? "Callback URL" : "Request URL"}
+                          value={webhookUrl}
+                        />
+                      )}
+                      {ch.verifyToken && <CopyRow label="Verify token" value={ch.verifyToken} />}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => disconnect(def.id)}
+                        disabled={busy}
+                      >
+                        Disconnect
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <ol className="list-decimal space-y-1.5 pl-5 text-sm text-muted-foreground">
+                        {def.steps.map((step, i) => (
+                          <li key={i}>{step}</li>
+                        ))}
+                      </ol>
+                      {def.fields.map((f) => (
+                        <div key={f.key} className="space-y-2">
+                          <Label htmlFor={`${def.id}-${f.key}`}>{f.label}</Label>
+                          <Input
+                            id={`${def.id}-${f.key}`}
+                            type="password"
+                            autoComplete="off"
+                            placeholder={f.placeholder}
+                            value={fields[f.key] ?? ""}
+                            onChange={(e) =>
+                              setFields((prev) => ({ ...prev, [f.key]: e.target.value }))
+                            }
+                          />
+                        </div>
+                      ))}
+                      <Button size="sm" onClick={() => connect(def.id)} disabled={busy}>
+                        {busy ? "Connecting…" : `Connect ${def.name}`}
+                      </Button>
+                    </>
+                  )}
+                </div>
               )}
             </div>
-          )}
-        </div>
+          );
+        })}
       </div>
 
       <div className="space-y-3">
@@ -257,7 +319,7 @@ export function SetupPanel({ agentId }: { agentId: string }) {
           <div>
             <h3 className="font-semibold leading-tight">On a schedule</h3>
             <p className="text-sm text-muted-foreground">
-              Have your agent message you first. Arrives in Telegram once it&apos;s connected.
+              Have your agent message you first. Arrives in whichever chat app you connected above.
             </p>
           </div>
         </div>
@@ -318,9 +380,9 @@ export function SetupPanel({ agentId }: { agentId: string }) {
               {schedule.lastStatus ? ` (${schedule.lastStatus})` : ""}.
             </p>
           )}
-          {schedule?.enabled && !channel?.linked && (
+          {schedule?.enabled && !anyLinked && (
             <p className="mt-2 text-xs text-amber-700">
-              Connect Telegram above, or this has nowhere to arrive.
+              Connect a chat app above, or this has nowhere to arrive.
             </p>
           )}
         </div>

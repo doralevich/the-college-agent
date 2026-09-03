@@ -15,6 +15,8 @@ const row = (over: Partial<ChannelRow> = {}): ChannelRow => ({
   session_id: "sess_1",
   session_started_at: "2026-09-02T10:00:00Z",
   owner_chat_id: "555",
+  external_id: null,
+  verify_token: null,
   state: "connected",
   message: null,
   updated_at: "2026-09-02T11:00:00Z",
@@ -30,6 +32,11 @@ describe("toChannel", () => {
     const serialised = JSON.stringify(out);
     expect(serialised).not.toContain("super-secret-bot-token");
     expect(serialised).not.toContain("deadbeef");
+    // Slack's signing secret and WhatsApp's app secret both live in `secret`, so the same
+    // assertion covers all three channels.
+    expect(
+      JSON.stringify(toChannel(row({ secret: "slack-signing-secret" })))
+    ).not.toContain("slack-signing-secret");
     expect(Object.keys(out)).toEqual(
       expect.not.arrayContaining(["bot_token", "botToken", "secret"])
     );
