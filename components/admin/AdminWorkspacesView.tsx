@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useCallback, useEffect, useState } from "react";
-import { ChevronDown, ChevronRight, Pencil, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Pencil, RotateCcw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { formatDate, statusVariant, usd } from "@/lib/format";
@@ -21,6 +21,7 @@ export function AdminWorkspacesView() {
   const [details, setDetails] = useState<Record<string, Detail>>({});
   const [editWs, setEditWs] = useState<AdminWorkspaceSummary | null>(null);
   const [deleteWs, setDeleteWs] = useState<AdminWorkspaceSummary | null>(null);
+  const [resetWs, setResetWs] = useState<AdminWorkspaceSummary | null>(null);
 
   const loadWorkspaces = useCallback(async () => {
     try {
@@ -175,6 +176,23 @@ export function AdminWorkspacesView() {
                         <Pencil className="h-4 w-4" />
                         Edit intake
                       </Button>
+                      {/* Run the student journey again on this same email, instead of signing
+                          up as somebody new. Disabled with no owner: the reset is keyed to the
+                          owner's user id, and a workspace without one has no funnel to clear. */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={!w.owner_id}
+                        title={
+                          w.owner_id
+                            ? "Clear this account's intake and agent so the flow can be tested again"
+                            : "This workspace has no owner to reset"
+                        }
+                        onClick={() => setResetWs(w)}
+                      >
+                        <RotateCcw className="h-4 w-4" />
+                        Reset for testing
+                      </Button>
                       <Button
                         variant="outline"
                         size="sm"
@@ -203,6 +221,37 @@ export function AdminWorkspacesView() {
         workspaceId={editWs?.id ?? null}
         ownerEmail={editWs?.owner_email ?? null}
         onSaved={() => { if (editWs) onCreated(editWs.id); }}
+      />
+
+      <ConfirmDialog
+        open={!!resetWs}
+        onOpenChange={(o) => { if (!o) setResetWs(null); }}
+        title="Reset this account for testing?"
+        description={
+          resetWs
+            ? `Clears the intake answers, agent, connected chat apps, scheduled runs and setup checklist for ${resetWs.owner_email ?? "this owner"}, so the student flow can be run again on the same email. The account, workspace and their paid entitlement are kept. The running agent is deleted — this cannot be undone.`
+            : undefined
+        }
+        confirmText="Reset account"
+        destructive
+        onConfirm={async () => {
+          if (!resetWs) return;
+          const { report } = await apiFetch<{
+            report: { agentsDeleted: string[]; errors: string[] };
+          }>(`/api/admin/users/${resetWs.owner_id}/reset`, { method: "POST" });
+          // Surface partial failure rather than a flat "done": a torn-down box whose row
+          // survived is exactly the state an operator needs to know about.
+          if (report.errors.length) {
+            toast.error(`Reset finished with problems: ${report.errors.join("; ")}`);
+          } else {
+            toast.success(
+              report.agentsDeleted.length
+                ? `Reset — ${report.agentsDeleted.length} agent deleted. Sign in as them to run the flow.`
+                : "Reset — sign in as them to run the flow."
+            );
+          }
+          onCreated(resetWs.id);
+        }}
       />
 
       <ConfirmDialog
