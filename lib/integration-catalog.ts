@@ -40,17 +40,14 @@ export const INTEGRATION_CATEGORIES: IntegrationCategory[] = [
     toolkits: [
       toolkit("canvas", "Canvas", "Canvas is the LMS most universities use for classes and assignments."),
       toolkit("google_classroom", "Google Classroom", "Google Classroom for assignments, announcements, and grades."),
-      // Blackbaud is school fundraising/admin software. It is NOT Blackboard, the course
-      // LMS - two different companies whose names differ by one letter. This tile sits in
-      // "School & classes" next to Canvas and is pinned in Favorites, which is exactly
-      // where a student hunting for their LMS will misread it, so the description has to
-      // say plainly which one it is. (Searching "Blackboard" queries the live provider
-      // catalog, so a real Blackboard connector will surface there if one exists.)
-      toolkit(
-        "blackbaud",
-        "Blackbaud",
-        "Blackbaud school and nonprofit admin software. Not Blackboard, the course LMS."
-      ),
+      // No Blackbaud tile here, and no Blackboard one either. Blackbaud is school
+      // fundraising/admin software; Blackboard is the course LMS - different companies whose
+      // names differ by one letter. Pinned next to Canvas under "School & classes", Blackbaud
+      // was read as the LMS by every student who went looking for one, and a disclaimer in the
+      // description did not stop it: nobody reads the second line of a tile they already
+      // believe they recognise. A wrong tile a student clicks is worse than an absent one they
+      // search for, and typing "Blackboard" still queries the live provider catalog, so a real
+      // connector will surface there if one ever exists.
     ],
   },
   {
@@ -141,7 +138,6 @@ export const FAVORITE_INTEGRATION_SLUGS: string[] = [
   "googlecalendar",
   "canvas",
   "google_classroom",
-  "blackbaud",
   "googledrive",
   "one_drive",
   "dropbox",

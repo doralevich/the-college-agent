@@ -25,7 +25,7 @@ const FAQS = [
   },
   {
     q: "What tools does it connect to?",
-    a: "Canvas, Blackbaud, Google Classroom, Gmail, Google Calendar, Outlook, Microsoft Teams, Google Drive, Dropbox, Notion, Todoist, LinkedIn, and thousands more through the Integrations tab in your dashboard.",
+    a: "Canvas, Google Classroom, Gmail, Google Calendar, Outlook, Microsoft Teams, Google Drive, Dropbox, Notion, Todoist, LinkedIn, and thousands more through the Integrations tab in your dashboard.",
   },
   {
     q: "Do I need my own AI account?",
