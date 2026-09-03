@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Blocks, Bot, Check, Coins, Compass, Gift, ListChecks, Loader2, LogOut, Menu, MessageSquare, RotateCcw, Settings2, Wrench, X } from "lucide-react";
+import { Blocks, Bot, Check, Coins, Compass, Gift, ListChecks, Loader2, LogOut, Menu, MessageSquare, RotateCcw, Settings2, X } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "@/lib/supabase/client";
 import { usd } from "@/lib/format";
@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SettingsHub } from "@/components/SettingsHub";
 import { ChecklistView } from "@/components/ChecklistView";
+import { SetupPanel } from "@/components/SetupPanel";
 import { CreditsView } from "@/components/CreditsView";
 import { ReferralCard } from "@/components/ReferralCard";
 import { ChatProvider, useChatContext } from "@/components/chat/ChatProvider";
@@ -223,14 +224,11 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
             );
           })}
 
-          {/* Technical setup (Telegram + optional BYO model keys) is a standalone page, not a
-              dashboard tab, so it gets a real navigation - the tab links above deliberately
-              preventDefault and only push history, which would swap the URL to /setup without
-              ever loading it. It needs to be here at all because its ONLY other link lived in
-              StepsView, which no paid student can ever render: their default tab is Start Here
-              and the render chain catches that first. So the page was effectively unreachable,
-              and not one student ever completed a Telegram connection. */}
-          {paid && <ExternalNavLink Icon={Wrench} label="Technical setup" href="/setup" />}
+          {/* No "Technical setup" link any more. It pointed at /setup, a standalone page in the
+              marketing layout, which meant leaving the dashboard to configure the agent you were
+              looking at. That work now lives in the Checklist tab (SetupPanel), so there is
+              nowhere to navigate to. /setup still exists and still works - students who bookmarked
+              it, and the BYO model keys, are unaffected. */}
         </nav>
       )}
 
@@ -353,7 +351,14 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
               ) : active === "integrations" && agentId ? (
                 <IntegrationsView agentId={agentId} />
               ) : active === "checklist" && hasAgent ? (
-                <ChecklistView userId={userId} firstName={firstName} intake={intake} />
+                <div className="space-y-8">
+                  {/* Where the agent reaches them and when it messages first. This used to be
+                      /setup, a standalone page in the MARKETING layout - a student had to leave
+                      their dashboard, and had no way back but the browser button. Everything
+                      here is about this one agent, so it belongs next to it. */}
+                  {agentId && <SetupPanel agentId={agentId} />}
+                  <ChecklistView userId={userId} firstName={firstName} intake={intake} />
+                </div>
               ) : (active === "start-here" || active === "welcome" || active === "now-what" || active === "shortcuts") && paid ? (
                 // Start Here: onboarding (pre-agent), then greeting + first moves + example
                 // prompts (post-agent). Old /welcome, /now-what, /shortcuts links land here.
@@ -469,18 +474,6 @@ function ChatTabButton({
 // tab - but for an external route that would leave the address bar changed and the page never
 // loaded. This one is a plain link that actually navigates. No active state: the dashboard
 // sidebar isn't rendered on the destination.
-function ExternalNavLink({ Icon, label, href }: { Icon: typeof Bot; label: string; href: string }) {
-  return (
-    <Link
-      href={href}
-      prefetch={false}
-      className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
-    >
-      <Icon className="h-4 w-4" />
-      <span className="flex-1 text-left">{label}</span>
-    </Link>
-  );
-}
 
 function NavLink({
   Icon,
