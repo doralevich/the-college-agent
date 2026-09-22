@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Blocks, Bot, Check, Coins, Compass, Gift, ListChecks, Loader2, LogOut, Menu, MessageSquare, RotateCcw, Settings2, X } from "lucide-react";
+import { Blocks, Bot, Check, Coins, ListChecks, Loader2, LogOut, Menu, MessageSquare, RotateCcw, Settings2, X } from "lucide-react";
 import { toast } from "sonner";
 import { signOut } from "@/lib/supabase/client";
 import { usd } from "@/lib/format";
@@ -16,14 +16,11 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SettingsHub } from "@/components/SettingsHub";
 import { SetupPanel } from "@/components/SetupPanel";
-import { CreditsView } from "@/components/CreditsView";
-import { ReferralCard } from "@/components/ReferralCard";
 import { ChatProvider, useChatContext } from "@/components/chat/ChatProvider";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { ChatView } from "@/components/chat/ChatView";
 import { FilesView } from "@/components/files/FilesView";
 import { IntegrationsView } from "@/components/IntegrationsView";
-import { WelcomeView } from "@/components/WelcomeView";
 import { StartHereView } from "@/components/StartHereView";
 import type { OnboardPrefill } from "@/components/ConversationalOnboard";
 
@@ -94,16 +91,20 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
     // and the persistent greeting + Open Chat CTA post-agent. The rest of the agent-bound
     // surfaces (Chat, Your Agent) only appear after the agent is provisioned. Files has
     // been hidden from the sidebar (still routable directly if needed).
-    // "Start Here" combines the old Welcome, Now what?, and Shortcuts into one
-    // orientation surface (onboarding pre-agent; greeting + first moves + examples after).
-    ...(paid ? [{ id: "start-here" as DashboardTabId, label: "Start Here", icon: Compass }] : []),
+    // Chat leads. It is the product - everything else is setup or account business - and
+    // burying it under an orientation tab put a click between a student and the thing they
+    // pay for.
+    //
+    // "Start Here" is gone from the sidebar. Before the agent exists it was the ONLY item, so
+    // it was a tab of one; after, it was a greeting to click past. Onboarding still renders
+    // (see the route guard below) - it just is not somewhere you navigate to.
+    //
+    // Refer & Earn and API Credits moved into Settings. Neither is daily work with the agent.
     ...(hasAgent
       ? [
-          { id: "checklist" as DashboardTabId, label: "Checklist", icon: ListChecks },
           { id: "chat" as DashboardTabId, label: "Chat", icon: MessageSquare },
+          { id: "checklist" as DashboardTabId, label: "Checklist", icon: ListChecks },
           { id: "integrations" as DashboardTabId, label: "Integrations", icon: Blocks },
-          { id: "refer" as DashboardTabId, label: "Refer & Earn", icon: Gift },
-          { id: "credits" as DashboardTabId, label: "API Credits", icon: Coins },
         ]
       : paid
         ? []
@@ -303,33 +304,25 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
         {!isChat && !isFiles && (
           <div className="h-full overflow-y-auto">
             <div className="mx-auto w-full max-w-6xl p-6 md:px-10 md:py-8">
-              {hasAgent && active === "credits" ? (
-                // Credits is its own tab: balance, top-ups, auto-recharge, alerts, usage,
-                // and the referral program in one place.
-                <div className="mx-auto max-w-xl space-y-8">
-                  <div>
-                    <h1 className="text-2xl font-semibold tracking-tight">Credits</h1>
-                    <p className="text-sm text-muted-foreground">
-                      Fund your agent&apos;s AI usage: balance, top-ups, and auto-recharge.
-                    </p>
-                  </div>
-                  <CreditsView />
-                </div>
-              ) : hasAgent && active === "refer" ? (
-                // Refer & Earn — its own tab so the referral link isn't buried at the
-                // bottom of another page.
-                <div className="mx-auto max-w-xl space-y-6">
-                  <div>
-                    <h1 className="text-2xl font-semibold tracking-tight">Refer &amp; Earn</h1>
-                    <p className="text-sm text-muted-foreground">
-                      Share your link. Give a friend their first month free, and earn a free month
-                      yourself, no limit.
-                    </p>
-                  </div>
-                  <ReferralCard />
-                </div>
+              {/* Intake first, whatever tab the URL asked for.
+                  Onboarding used to live under "Start Here", which was also the default
+                  landing, so finishing it was the only thing a new student could do. With that
+                  tab gone the URL could drop them on Settings with no agent and no prompt to
+                  build one — so the intake takes precedence until it is done. */}
+              {paid && !onboardDone ? (
+                <StartHereView
+                  firstName={firstName}
+                  agentName={agentName}
+                  avatarUrl={avatarUrl}
+                  onOpenChat={() => openDashboardTab("chat")}
+                  onboardDone={onboardDone}
+                  hasAgent={hasAgent}
+                  userId={userId}
+                  onboardPrefill={onboardPrefill}
+                />
               ) : active === "settings" ||
-                (paid && (active === "billing" || active === "agent" || active === "agents")) ? (
+              (hasAgent && (active === "credits" || active === "refer")) ||
+              (paid && (active === "billing" || active === "agent" || active === "agents")) ? (
                 // One hub for Settings + Your Agent + Subscription. Keyed by route so deep
                 // links (/dashboard/billing, /dashboard/agent) open on the right section
                 // even when the hub is already mounted on another one.
@@ -342,7 +335,9 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
                       ? "subscription"
                       : active === "agent" || active === "agents"
                         ? "agent"
-                        : "general"
+                        : active === "credits" || active === "refer"
+                          ? active
+                          : "general"
                   }
                   hasAgent={hasAgent}
                   paid={paid}
@@ -356,19 +351,6 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
                 // reference material rather than something a student acts on, so they moved to
                 // Settings -> Your intake; what is left here is the work they actually do.
                 agentId ? <SetupPanel agentId={agentId} /> : null
-              ) : (active === "start-here" || active === "welcome" || active === "now-what" || active === "shortcuts") && paid ? (
-                // Start Here: onboarding (pre-agent), then greeting + first moves + example
-                // prompts (post-agent). Old /welcome, /now-what, /shortcuts links land here.
-                <StartHereView
-                  firstName={firstName}
-                  agentName={agentName}
-                  avatarUrl={avatarUrl}
-                  onOpenChat={() => openDashboardTab("chat")}
-                  onboardDone={onboardDone}
-                  hasAgent={hasAgent}
-                  userId={userId}
-                  onboardPrefill={onboardPrefill}
-                />
               ) : !paid ? (
                 <BuildCta />
               ) : provisioning || provisionFailed ? (
@@ -584,17 +566,20 @@ function normalizeDashboardTab(
   // Files was removed from the sidebar but stays reachable by URL so students can
   // browse and download everything their agent keeps for them.
   if (requestedTab === "files" && hasAgent) return "files";
-  // Usage Credits lives inside Settings; the sidebar pill and chat top-up links
-  // deep-link here.
-  if (requestedTab === "credits" && hasAgent) return "credits";
-  // Old orientation routes now live under "Start Here".
-  if (requestedTab === "welcome" || requestedTab === "now-what" || requestedTab === "shortcuts") {
-    if (tabs.some((t) => t.id === "start-here")) return "start-here";
+  // Credits and Refer & Earn render inside Settings now. Their routes stay live - the chat
+  // top-up link, old bookmarks and emails all point at them - and deep-link to the section.
+  if ((requestedTab === "credits" || requestedTab === "refer") && hasAgent) return requestedTab;
+  // The orientation routes, including /start-here itself. They no longer have a home of their
+  // own; a student who lands on one gets the thing they came to the dashboard for.
+  if (
+    requestedTab === "start-here" ||
+    requestedTab === "welcome" ||
+    requestedTab === "now-what" ||
+    requestedTab === "shortcuts"
+  ) {
+    return hasAgent ? "chat" : "agents";
   }
   if (requestedTab && tabs.some((t) => t.id === requestedTab)) return requestedTab;
-  // Start Here is the default whenever it's available (every paid student) — it covers
-  // both the conversational onboarding (pre-agent) and the greeting (post-agent).
-  if (tabs.some((t) => t.id === "start-here")) return "start-here";
   return hasAgent ? "chat" : "agents";
 }
 
