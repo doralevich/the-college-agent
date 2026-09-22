@@ -3,11 +3,18 @@ import type Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 // Ambassador program domain logic (July 2026 PRD). Business numbers are locked here:
-// the coupon takes $50 off the one-time platform fee, the bounty is $75 for each of an
-// ambassador's first 10 cleared sales and $100 after, tiers lock at clear time, and a
-// sale clears after the same 7-day window as the product's refund policy.
-
-export const AMBASSADOR_COUPON_OFF_CENTS = Number(process.env.STRIPE_AMBASSADOR_COUPON_AMOUNT ?? 5000);
+// the coupon is worth $50 to the friend, the bounty is $75 for each of an ambassador's
+// first 10 cleared sales and $100 after, tiers lock at clear time, and a sale clears after
+// the same 7-day window as the product's refund policy.
+//
+// HOW THE $50 IS DELIVERED CHANGED when the $599 platform fee was retired. It used to be a
+// single $50 off the first invoice, which was the invoice carrying that fee. Against a
+// $25/month subscription a one-shot $50 coupon is worth only $25: Stripe caps the discount
+// at the invoice total and does NOT carry the remainder forward, so half the ambassador's
+// promise silently evaporated. It is now $25 off for two months - the same $50 to the
+// friend, and every "$50 off" line in the flyer, dashboard and playbook stays true.
+export const AMBASSADOR_COUPON_OFF_CENTS = Number(process.env.STRIPE_AMBASSADOR_COUPON_AMOUNT ?? 2500);
+export const AMBASSADOR_COUPON_MONTHS = 2;
 export const BOUNTY_TIER1_CENTS = 7500;
 export const BOUNTY_TIER2_CENTS = 10000;
 export const BOUNTY_TIER_THRESHOLD = 10; // lifetime cleared sales before the $100 tier
@@ -93,7 +100,7 @@ function codeCandidate(fullName: string, attempt: number): string {
   return `${first}${digits}`;
 }
 
-// Approval: mint the ambassador's $50-off coupon + named promotion code (one object,
+// Approval: mint the ambassador's coupon + named promotion code (one object,
 // both jobs: discount AND attribution), assign the /r/{slug} link, flip to approved.
 // Idempotent: an already-approved ambassador with a code is returned as-is.
 export async function approveAmbassador(stripe: Stripe, ambassadorId: string): Promise<AmbassadorRow> {
@@ -111,7 +118,11 @@ export async function approveAmbassador(stripe: Stripe, ambassadorId: string): P
     const coupon = await stripe.coupons.create({
       amount_off: AMBASSADOR_COUPON_OFF_CENTS,
       currency: "usd",
-      duration: "once", // first invoice only — the one carrying the one-time platform fee
+      // Two months rather than one shot: see AMBASSADOR_COUPON_OFF_CENTS above. Coupons
+      // already minted for approved ambassadors keep their original shape - Stripe stores
+      // them as created - so only ambassadors approved from here on get the split.
+      duration: "repeating",
+      duration_in_months: AMBASSADOR_COUPON_MONTHS,
       name: `Ambassador ${amb.full_name}`.slice(0, 40),
       metadata: { ambassador_id: amb.id },
     });

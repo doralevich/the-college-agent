@@ -7,7 +7,7 @@ import { ChatbotComparison } from "./components/ChatbotComparison";
 import { FourPillars } from "./components/FourPillars";
 import { Footer } from "./components/Footer";
 import { categoryLabel, getCollegeAgentPosts, postTitle } from "@/lib/sanity-blog";
-import { INTRO_PLAN_AMOUNT_CENTS, HOSTING_AMOUNT_CENTS } from "@/lib/pricing/intro-cutoff";
+import { HOSTING_AMOUNT_CENTS, HOSTING_ANNUAL_AMOUNT_CENTS } from "@/lib/pricing/intro-cutoff";
 
 // Re-render every 5 minutes so the "most recent posts" section rotates on its own as
 // new posts publish (and pricing flips automatically when the intro window closes).
@@ -97,27 +97,11 @@ const ASK_CATEGORIES = [
       "Remind me about intramural games and practices.",
     ],
   },
-  {
-    label: "Athletics",
-    asks: [
-      "Run our season travel and keep the whole staff in sync.",
-      "Keep recruiting organized from first contact to signing day.",
-      "Track every compliance deadline across the program.",
-    ],
-  },
-  {
-    label: "Administration",
-    asks: [
-      "Run orientation from planning through day-of execution.",
-      "Keep our office's reports and deadlines on schedule.",
-      "Draft communications to students, families, and campus partners.",
-    ],
-  },
 ];
 
 function buildJsonLd() {
-  const planPrice = (INTRO_PLAN_AMOUNT_CENTS / 100).toFixed(2);
   const hostingPrice = (HOSTING_AMOUNT_CENTS / 100).toFixed(0);
+  const hostingAnnualPrice = (HOSTING_ANNUAL_AMOUNT_CENTS / 100).toFixed(0);
   return {
   "@context": "https://schema.org",
   "@graph": [
@@ -162,8 +146,8 @@ function buildJsonLd() {
         "AI companion for college students, AI study companion, AI study partner, AI for college students, AI class schedule planner, AI college planner, AI internship prep, college AI companion",
       areaServed: "United States",
       offers: [
-        { "@type": "Offer", name: "The College Agent (one-time build)", price: planPrice, priceCurrency: "USD" },
-        { "@type": "Offer", name: "Cloud hosting (monthly)", price: hostingPrice, priceCurrency: "USD" },
+        { "@type": "Offer", name: "The College Agent (monthly)", price: hostingPrice, priceCurrency: "USD" },
+        { "@type": "Offer", name: "The College Agent (annual)", price: hostingAnnualPrice, priceCurrency: "USD" },
       ],
     },
     {
