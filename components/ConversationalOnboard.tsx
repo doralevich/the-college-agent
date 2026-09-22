@@ -304,39 +304,6 @@ const AGENT_TOPICS_OPTIONS = [
   "Wellbeing check-ins",
 ];
 
-// Staff flow (faculty / administration / athletic department): what the agent should
-// handle. Geared to the work an office or program actually runs day to day.
-const STAFF_FOCUS_OPTIONS = [
-  "Calendar & scheduling",
-  "Team or department travel",
-  "Recruiting coordination",
-  "Compliance & deadlines",
-  "Email & communications",
-  "Event & game-day planning",
-  "Practice & staff schedules",
-  "Budget & expense tracking",
-  "Meeting notes & follow-ups",
-  "Document organization",
-];
-
-const STAFF_SIZE_OPTIONS = [
-  "Just me",
-  "2 to 10 people",
-  "11 to 25 people",
-  "26 to 50 people",
-  "More than 50",
-];
-const COORDINATE_OPTIONS = [
-  "Coaches",
-  "Athletes / students",
-  "Parents & families",
-  "Campus administration",
-  "Compliance office",
-  "Vendors & venues",
-  "Media & communications",
-  "Donors & boosters",
-];
-
 // Collapsed from 18 overlapping choices into 9 clean buckets so the screen isn't a wall of
 // checkboxes. Each bucket still gives the agent a clear signal about what the student cares about.
 const PRIORITY_OPTIONS = [
@@ -399,7 +366,7 @@ const MAJOR_GROUPS: MajorGroup[] = (majorsData as { groups: MajorGroup[] }).grou
 // `tier: "tail"` -> shown unless the student exited early at wantTier2.
 type Tier = 2 | 3 | "tail";
 type Step =
-  // `showIf` gates conditional steps — role-branch questions (student vs staff) and
+  // `showIf` gates conditional steps — follow-ups that only apply to some answers, and
   // follow-ups (e.g. "Which sport?" only after picking a team).
   // `note` renders as a small clarifying line under the prompt (e.g. which email is the login).
   | { kind: "text"; key: TextKey; prompt: string; note?: string; placeholder?: string; inputType?: "text" | "email" | "tel"; required?: boolean; tier?: Tier; showIf?: (form: FormState) => boolean }
@@ -446,10 +413,6 @@ type TextKey =
   | "minor"
   | "greekOrg"
   | "whichSports"
-  | "roleTitle"
-  | "department"
-  | "sportsOversee"
-  | "crunchTimes"
   | "clubsDetail"
   | "greekRole"
   | "summerPlans"
@@ -467,18 +430,14 @@ type MultiKey =
   | "integrationsWanted"
   | "clubs"
   | "sportsTeams"
-  | "staffFocus"
-  | "coordinateWith"
   | "academicStruggles"
   | "stressReset";
-type SingleKey = "role" | "staffSize" | "year" | "livingSituation" | "greekLife" | "greekAmbassador" | "workStatus" | "afterCollege";
+type SingleKey = "year" | "livingSituation" | "greekLife" | "greekAmbassador" | "workStatus" | "afterCollege";
 
-// Role branch: students get the college-life flow; faculty/administration/athletics get a
-// short professional flow (title, team/office, what to take off their plate). Until the role
-// is answered the form counts the student flow (the default audience).
-const ROLE_OPTIONS = ["Student", "Faculty", "Administration / Staff", "Athletic Department"];
-const isStaff = (f: FormState) => !!f.role && f.role !== "Student";
-const isStudent = (f: FormState) => !isStaff(f);
+// There is one flow now. This used to branch on role - students got the college-life
+// questions, faculty/administration/athletics got a short professional one (title,
+// team/office, what to take off their plate). Those segments are ApolloClaw's, so the
+// branch, the role question that drove it and its seven staff-only questions are gone.
 
 export type ClassEntry = {
   name: string;
@@ -508,7 +467,6 @@ const STEPS: Step[] = [
     prompt:
       "Hi {firstName}!\nI'm your College Agent, and excited to get to know you. This intake form takes a few minutes to personalize me, and everything you share helps me become a better partner throughout college.\nThe more I learn about you now, the smarter I'll be when you need me later.",
   },
-  { kind: "single", key: "role", prompt: "Which best describes you?", options: ROLE_OPTIONS, required: true },
   { kind: "text", key: "agentName", prompt: "What would you like to call me?", placeholder: "Type a name..." },
   { kind: "image", key: "avatarFile", prompt: "Want to give me a face? Pick an avatar or upload your own." },
   { kind: "text", key: "firstName", prompt: "And what should I call you?", placeholder: "Your first name", required: true },
@@ -516,21 +474,6 @@ const STEPS: Step[] = [
   { kind: "typeahead", key: "school", prompt: "What school are you with?", placeholder: "Start typing your school...", required: true },
   { kind: "text", key: "schoolEmail", prompt: "What's your school email?", note: "This is the email you'll use to log in to your account.", placeholder: "you@school.edu", inputType: "email", required: true },
   { kind: "text", key: "phone", prompt: "What's your mobile number?", placeholder: "(555) 555-5555", inputType: "tel", required: true },
-  // ---- Staff flow (faculty / administration / athletics) ----
-  { kind: "text", key: "roleTitle", prompt: "What's your role or title?", placeholder: "Head Coach, Athletic Director, Professor...", required: true, showIf: isStaff },
-  { kind: "text", key: "department", prompt: "What team, department, or office are you with?", placeholder: "Men's Basketball, Admissions, Athletics...", showIf: isStaff },
-  { kind: "text", key: "sportsOversee", prompt: "Which sports or programs do you oversee?", placeholder: "All varsity sports, men's basketball, club programs...", showIf: (f) => f.role === "Athletic Department" },
-  { kind: "single", key: "staffSize", prompt: "How big is the staff you work with?", options: STAFF_SIZE_OPTIONS, showIf: isStaff },
-  {
-    kind: "multi",
-    key: "staffFocus",
-    prompt: "What should I take off your plate?",
-    options: STAFF_FOCUS_OPTIONS,
-    required: true,
-    showIf: isStaff,
-  },
-  { kind: "multi", key: "coordinateWith", prompt: "Who do you coordinate with most?", options: COORDINATE_OPTIONS, showIf: isStaff },
-  { kind: "text", key: "crunchTimes", prompt: "When are your crunch periods?", placeholder: "August preseason, signing day, March tournaments...", showIf: isStaff },
   // ---- Student flow ----
   {
     kind: "multi",
@@ -539,7 +482,6 @@ const STEPS: Step[] = [
     options: PRIORITY_OPTIONS,
     required: true,
     tier: 2,
-    showIf: isStudent,
   },
   { kind: "multi", key: "responseStyle", prompt: "How should I communicate with you?", options: VOICE_OPTIONS, required: true, tier: 2 },
   {
@@ -547,14 +489,13 @@ const STEPS: Step[] = [
     key: "classes",
     prompt: "Add your classes one at a time.",
     tier: 2,
-    showIf: isStudent,
   },
-  { kind: "academics", key: "academics", prompt: "Where are you in your college journey?", tier: 3, showIf: isStudent },
-  { kind: "single", key: "livingSituation", prompt: "Where are you living this year?", options: LIVING_OPTIONS, allowOther: true, tier: 3, showIf: isStudent },
+  { kind: "academics", key: "academics", prompt: "Where are you in your college journey?", tier: 3 },
+  { kind: "single", key: "livingSituation", prompt: "Where are you living this year?", options: LIVING_OPTIONS, allowOther: true, tier: 3 },
   // Greek-life follow-ups, only when they live in a fraternity/sorority house.
-  { kind: "text", key: "greekOrg", prompt: "What fraternity or sorority are you in?", placeholder: "Sigma Chi, Alpha Phi...", tier: 3, showIf: (f) => isStudent(f) && f.livingSituation === "Fraternity/Sorority House" },
-  { kind: "text", key: "greekRole", prompt: "Do you have a role in your chapter?", placeholder: "Social chair, treasurer, rush captain... or just 'member'", tier: 3, showIf: (f) => isStudent(f) && f.livingSituation === "Fraternity/Sorority House" },
-  { kind: "single", key: "greekAmbassador", prompt: "Would you be interested in being a College Agent Ambassador for your chapter?", options: ["Yes, tell me more", "Maybe later", "No thanks"], tier: 3, showIf: (f) => isStudent(f) && f.livingSituation === "Fraternity/Sorority House" },
+  { kind: "text", key: "greekOrg", prompt: "What fraternity or sorority are you in?", placeholder: "Sigma Chi, Alpha Phi...", tier: 3, showIf: (f) => f.livingSituation === "Fraternity/Sorority House" },
+  { kind: "text", key: "greekRole", prompt: "Do you have a role in your chapter?", placeholder: "Social chair, treasurer, rush captain... or just 'member'", tier: 3, showIf: (f) => f.livingSituation === "Fraternity/Sorority House" },
+  { kind: "single", key: "greekAmbassador", prompt: "Would you be interested in being a College Agent Ambassador for your chapter?", options: ["Yes, tell me more", "Maybe later", "No thanks"], tier: 3, showIf: (f) => f.livingSituation === "Fraternity/Sorority House" },
   {
     kind: "multi",
     key: "clubs",
@@ -564,7 +505,6 @@ const STEPS: Step[] = [
     detailLabel: "Share the names, and anything else you want me to know.",
     detailPlaceholder: "Club names, your role, meeting nights, events you're planning...",
     tier: 3,
-    showIf: isStudent,
   },
   {
     kind: "single",
@@ -575,7 +515,6 @@ const STEPS: Step[] = [
     detailLabel: "Tell me more about that.",
     detailPlaceholder: "Grad schools you're eyeing, dream companies, cities, timelines...",
     tier: 3,
-    showIf: isStudent,
   },
   {
     kind: "file",
@@ -584,7 +523,6 @@ const STEPS: Step[] = [
     note: "Optional, but it makes me far more useful — I'll use it for job and internship help, applications, and interview prep. PDF or Word.",
     accept: ".pdf,.doc,.docx",
     tier: 3,
-    showIf: isStudent,
   },
   {
     kind: "text",
@@ -593,7 +531,6 @@ const STEPS: Step[] = [
     note: "Optional — paste your profile URL so I can help with networking, your profile, and the internship/job search.",
     placeholder: "linkedin.com/in/you",
     tier: 3,
-    showIf: isStudent,
   },
   // ---- Optional deep dive: one opt-in gate, then a handful of higher-value questions. Each
   // maps to a field the agent already uses (check-in cron, proactive topics, USER.md facts,
@@ -606,7 +543,6 @@ const STEPS: Step[] = [
     yesLabel: "Yes, let's go deeper",
     noLabel: "Not now",
     tier: 3,
-    showIf: isStudent,
   },
   {
     kind: "multi",
@@ -614,7 +550,7 @@ const STEPS: Step[] = [
     prompt: "How often should I check in with you?",
     options: CHECKIN_OPTIONS,
     tier: 3,
-    showIf: (f) => isStudent(f) && f.wantMore === "yes",
+    showIf: (f) => f.wantMore === "yes",
   },
   {
     kind: "multi",
@@ -622,7 +558,7 @@ const STEPS: Step[] = [
     prompt: "What should I take care of first?",
     options: HANDLE_FIRST_OPTIONS,
     tier: 3,
-    showIf: (f) => isStudent(f) && f.wantMore === "yes",
+    showIf: (f) => f.wantMore === "yes",
   },
   {
     kind: "multi",
@@ -630,7 +566,7 @@ const STEPS: Step[] = [
     prompt: "What should I proactively keep an eye on for you?",
     options: AGENT_TOPICS_OPTIONS,
     tier: 3,
-    showIf: (f) => isStudent(f) && f.wantMore === "yes",
+    showIf: (f) => f.wantMore === "yes",
   },
   {
     kind: "text",
@@ -638,7 +574,7 @@ const STEPS: Step[] = [
     prompt: "Do you have a GPA goal this year?",
     placeholder: "e.g. 3.5 — or leave blank",
     tier: 3,
-    showIf: (f) => isStudent(f) && f.wantMore === "yes",
+    showIf: (f) => f.wantMore === "yes",
   },
   {
     kind: "textarea",
@@ -646,7 +582,7 @@ const STEPS: Step[] = [
     prompt: "What stresses you out most, or tends to slip through the cracks?",
     placeholder: "Deadlines sneaking up, replying to emails, prepping for exams early...",
     tier: 3,
-    showIf: (f) => isStudent(f) && f.wantMore === "yes",
+    showIf: (f) => f.wantMore === "yes",
   },
   {
     kind: "text",
@@ -654,7 +590,7 @@ const STEPS: Step[] = [
     prompt: "Anything you'd rather I never bring up?",
     placeholder: "Optional — a topic to steer clear of",
     tier: 3,
-    showIf: (f) => isStudent(f) && f.wantMore === "yes",
+    showIf: (f) => f.wantMore === "yes",
   },
   {
     kind: "textarea",
@@ -667,14 +603,6 @@ const STEPS: Step[] = [
 ];
 
 type FormState = {
-  role: string;
-  roleTitle: string;
-  department: string;
-  sportsOversee: string;
-  staffSize: string;
-  staffFocus: string[];
-  coordinateWith: string[];
-  crunchTimes: string;
   firstName: string;
   lastName: string;
   agentName: string;
@@ -718,14 +646,6 @@ type FormState = {
 };
 
 const EMPTY: FormState = {
-  role: "",
-  roleTitle: "",
-  department: "",
-  sportsOversee: "",
-  staffSize: "",
-  staffFocus: [],
-  coordinateWith: [],
-  crunchTimes: "",
   firstName: "",
   lastName: "",
   agentName: "",
@@ -1098,14 +1018,6 @@ export function ConversationalOnboard({
       body.append(
         "data",
         JSON.stringify({
-          role: form.role,
-          roleTitle: form.roleTitle.trim(),
-          department: form.department.trim(),
-          sportsOversee: form.sportsOversee.trim(),
-          staffSize: form.staffSize,
-          staffFocus: form.staffFocus,
-          coordinateWith: form.coordinateWith,
-          crunchTimes: form.crunchTimes.trim(),
           firstName: form.firstName.trim(),
           lastName: form.lastName.trim(),
           agentName: form.agentName.trim(),

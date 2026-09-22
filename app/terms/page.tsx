@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Nav from "../components/Nav";
 import { Footer } from "../components/Footer";
 import {
-  PLAN_AMOUNT_CENTS,
   HOSTING_AMOUNT_CENTS,
+  FAIR_USE_NOTE,
   HOSTING_ANNUAL_AMOUNT_CENTS,
 } from "@/lib/pricing/intro-cutoff";
 
@@ -26,7 +26,6 @@ function price(cents: number): string {
 }
 
 export default function TermsPage() {
-  const plan = price(PLAN_AMOUNT_CENTS);
   const hosting = price(HOSTING_AMOUNT_CENTS);
   const hostingAnnual = price(HOSTING_ANNUAL_AMOUNT_CENTS);
 
@@ -54,8 +53,9 @@ export default function TermsPage() {
           <Section title="3. The Services">
             <p>The College Agent builds, configures, deploys, and hosts a personal AI agent for you, personalized from the intake you complete after purchase. The Services include:</p>
             <ul>
-              <li>A one-time agent build: your own named agent, configured from your intake, typically live within 30 minutes of a completed intake</li>
-              <li>Monthly cloud hosting that keeps your agent running 24/7, reachable from your dashboard and on Telegram</li>
+              <li>Your own named agent, built and configured from your intake, typically live within 30 minutes of a completed intake</li>
+              <li>A private, dedicated agent instance, hosted and kept running 24/7, reachable from your dashboard and on Telegram</li>
+              <li>Monitoring and updates for the life of your subscription</li>
               <li>$20 of included AI usage credits to start, with the option to add more</li>
               <li>Access to integrations with third-party tools you choose to connect</li>
             </ul>
@@ -63,27 +63,27 @@ export default function TermsPage() {
           </Section>
 
           <Section title="4. Pricing &amp; Payment">
-            <p>Current pricing, in USD:</p>
+            <p>Current pricing, in USD. There is no setup or build fee:</p>
             <ul>
-              <li><strong>Platform fee (one-time):</strong> {plan}. The price shown at checkout is the price you pay; any discount or promotion code applied at checkout is reflected there.</li>
-              <li><strong>Cloud hosting:</strong> your choice of {hosting} per month or {hostingAnnual} per year (the annual price equals ten monthly payments), billed in advance on a recurring subscription that starts at purchase.</li>
+              <li><strong>Subscription:</strong> your choice of {hosting} per month or {hostingAnnual} per year (the annual price equals ten monthly payments), billed in advance on a recurring subscription that starts at purchase. The price shown at checkout is the price you pay; any discount or promotion code applied at checkout is reflected there.</li>
+              <li><strong>What it covers:</strong> {FAIR_USE_NOTE} Where we review an account, we will contact you first and work out a fair arrangement before making any change; we will not bill you retroactively for past usage.</li>
               <li><strong>AI usage credits:</strong> $20 included with your purchase; optional top-ups available from your dashboard.</li>
             </ul>
-            <p>Payments are processed by Stripe. We never see or store your card number. By purchasing, you authorize us (through Stripe) to charge the one-time platform fee and the recurring hosting fee on the billing interval you chose until you cancel. Prices do not include any applicable taxes, which are your responsibility where required by law.</p>
-            <p>We may change hosting pricing with at least 30 days&apos; advance notice to you by email; changes apply from your next billing cycle after the notice period. Promotional pricing, referral rewards, and credits have no cash value and are not transferable.</p>
+            <p>Payments are processed by Stripe. We never see or store your card number. By purchasing, you authorize us (through Stripe) to charge the recurring subscription fee on the billing interval you chose until you cancel. Prices do not include any applicable taxes, which are your responsibility where required by law.</p>
+            <p>We may change pricing with at least 30 days&apos; advance notice to you by email; changes apply from your next billing cycle after the notice period. Promotional pricing, referral rewards, and credits have no cash value and are not transferable.</p>
           </Section>
 
           <Section title="5. 7-Day Refund Guarantee">
             <p><strong>If The College Agent is not for you, tell us within 7 days and we will refund you.</strong> Here is exactly how it works:</p>
             <ul>
-              <li><strong>Window:</strong> You may request a full refund of your one-time platform fee and your first hosting payment (monthly or annual) within 7 calendar days of your purchase (the date of your Stripe payment). A request made at any time up to 11:59 PM Eastern Time on the 7th day is within the window.</li>
+              <li><strong>Window:</strong> You may request a full refund of your first payment (monthly or annual) within 7 calendar days of your purchase (the date of your Stripe payment). A request made at any time up to 11:59 PM Eastern Time on the 7th day is within the window.</li>
               <li><strong>How to request:</strong> Email <a href="mailto:hello@thecollegeagent.ai" style={{ color: "var(--green)" }}>hello@thecollegeagent.ai</a> from the email address on your account with the subject &ldquo;Refund request.&rdquo; No forms, no phone calls, no questions required.</li>
-              <li><strong>What you get back:</strong> 100% of the platform fee and your first hosting payment, returned to your original payment method through Stripe, normally within 5 to 10 business days of our confirmation.</li>
+              <li><strong>What you get back:</strong> 100% of your first payment, returned to your original payment method through Stripe, normally within 5 to 10 business days of our confirmation.</li>
               <li><strong>What happens next:</strong> On refund, your agent is decommissioned and your account is closed. Download anything you want to keep from your dashboard before or promptly after requesting the refund; we will honor download requests for at least 14 days after the refund is issued.</li>
               <li><strong>Credits:</strong> The $20 of included AI usage credits are part of the refunded purchase and are forfeited. Separately purchased credit top-ups are refunded to the extent unused.</li>
             </ul>
-            <p><strong>After the 7-day window closes, the one-time agent build fee is final and non-refundable.</strong> Your agent is custom-built and provisioned specifically for you, which is why the window exists and why it ends.</p>
-            <p>Hosting after the first month: you may cancel at any time (Section 6), which stops future charges. Hosting fees already billed for the current period are non-refundable, and your agent stays live through the end of the period you paid for.</p>
+            <p><strong>After the 7-day window closes, payments already made are final and non-refundable.</strong> Your agent is custom-built and provisioned specifically for you, which is why the window exists and why it ends.</p>
+            <p>After the first period: you may cancel at any time (Section 6), which stops future charges. Fees already billed for the current period are non-refundable, and your agent stays live through the end of the period you paid for.</p>
             <p>This guarantee applies once per person. We may decline refunds where we detect abuse, such as repeat purchase-and-refund cycles or fraudulent payment activity. Nothing in this section limits any non-waivable rights you have under applicable consumer protection law.</p>
           </Section>
 

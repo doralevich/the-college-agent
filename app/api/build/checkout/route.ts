@@ -3,7 +3,7 @@ import { ApiError, json, readJson, route } from "@/lib/http";
 import { ambassadorBySlug } from "@/lib/ambassador";
 import { getStripe } from "@/lib/stripe/client";
 import { priceIdFor } from "@/lib/stripe/prices";
-import { currentPlanLookup, PRO_PLAN_LOOKUP, PRO_HOSTING_LOOKUP, HOSTING_LOOKUP, HOSTING_ANNUAL_LOOKUP } from "@/lib/pricing/intro-cutoff";
+import { HOSTING_LOOKUP, HOSTING_ANNUAL_LOOKUP } from "@/lib/pricing/intro-cutoff";
 import { getOptionalUserId } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ensureReferralCoupon, resolveReferralCode } from "@/lib/referral";
@@ -32,10 +32,9 @@ type Body = {
   extraCreditsCents?: number;
   // Hosting billing choice from the plan card: $25/month (default) or $250/year.
   hostingInterval?: "monthly" | "annual";
-  // Which build: the student plan (default) or the professional build for
-  // faculty / administration / athletic departments ($4,500).
-  plan?: "student" | "pro";
-  // Audience picked on /build's "who is this for" step (Student, Faculty, ...).
+  // Audience picked on /build. Only "Student" now - faculty, administration and athletics
+  // moved to ApolloClaw - but it is still carried so the webhook keeps stamping a role and
+  // older in-flight checkouts do not 400 on an unexpected field.
   buyerRole?: string;
 };
 
@@ -73,23 +72,14 @@ export const POST = route(async (req) => {
   const firstName = (body.firstName ?? "").trim();
   const lastName = (body.lastName ?? "").trim();
 
-  const pro = body.plan === "pro";
-  const planLookup = pro ? PRO_PLAN_LOOKUP : currentPlanLookup();
-  // Staff & education hosting is its own monthly price ($159); students choose $25/mo or $250/yr.
-  const hostingInterval = !pro && body.hostingInterval === "annual" ? "annual" : "monthly";
-  const hostingLookup = pro
-    ? PRO_HOSTING_LOOKUP
-    : hostingInterval === "annual"
-    ? HOSTING_ANNUAL_LOOKUP
-    : HOSTING_LOOKUP;
+  // One line item now: the subscription. The $599 one-time platform fee is gone, so there is
+  // no "due today" beyond the first period, and nothing to prorate against.
+  const hostingInterval = body.hostingInterval === "annual" ? "annual" : "monthly";
+  const hostingLookup = hostingInterval === "annual" ? HOSTING_ANNUAL_LOOKUP : HOSTING_LOOKUP;
 
-  let planPriceId: string;
   let hostingPriceId: string;
   try {
-    [planPriceId, hostingPriceId] = await Promise.all([
-      priceIdFor(planLookup),
-      priceIdFor(hostingLookup),
-    ]);
+    hostingPriceId = await priceIdFor(hostingLookup);
   } catch (e) {
     throw new ApiError(
       503,
@@ -107,8 +97,8 @@ export const POST = route(async (req) => {
     // Marks this session as ours. The Stripe account is shared with ApolloClaw and every
     // endpoint on it sees every event, so our webhook fulfils only sessions carrying this.
     product: "college-agent",
-    plan_lookup: planLookup,
-    plan_type: body.plan === "pro" ? "pro" : "student",
+    plan_lookup: hostingLookup,
+    plan_type: "student",
   };
   const buyerRole = (body.buyerRole ?? "").trim().slice(0, 60);
   if (buyerRole) metadata.buyer_role = buyerRole;
@@ -162,8 +152,7 @@ export const POST = route(async (req) => {
     payment_method_collection: "if_required",
     line_items: [
       { price: hostingPriceId, quantity: 1 },
-      { price: planPriceId, quantity: 1 },
-      // One-time add-on billed on the first invoice alongside the plan fee.
+      // One-time add-on billed on the first invoice alongside the subscription.
       ...(extraCreditsCents > 0
         ? [
             {

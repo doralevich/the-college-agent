@@ -6,7 +6,9 @@ import { useState } from "react";
 // The contact form card: name, email, who they are, message. Posts to /api/contact;
 // success swaps the form for a thank-you with a Guy so the moment lands warm.
 
-const WHO_OPTIONS = ["Student", "Parent", "Faculty / Administration", "Athletics", "Other"];
+// Faculty, administration and athletics are ApolloClaw's segments, so they are not
+// offered here; anyone from those lands on "Other" and we route them.
+const WHO_OPTIONS = ["Student", "Parent", "Other"];
 
 export default function ContactForm() {
   const [name, setName] = useState("");

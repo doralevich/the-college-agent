@@ -15,12 +15,8 @@ type CatalogItem = {
 };
 
 const CATALOG: CatalogItem[] = [
-  // The College Agent — flat pricing: $599 one-time platform fee, hosting $25/month
-  // or $250/year (annual = 10 x monthly, "2 months free").
-  { key: "ca_plan", name: "The College Agent (Platform Fee)", amount: 59900, recurring: false },
-  // Professional build for faculty / administration / athletic departments.
-  { key: "ca_plan_pro", name: "The College Agent — Professional (Staff & Athletics)", amount: 450000, recurring: false },
-  { key: "ca_hosting_pro", name: "The College Agent — Professional Hosting", amount: 15900, recurring: "month" },
+  // The College Agent — a subscription and nothing else: $25/month or $250/year
+  // (annual = 10 x monthly, "2 months free"). No one-time fee.
   { key: "ca_hosting", name: "The College Agent — Hosting", amount: 2500, recurring: "month" },
   { key: "ca_hosting_annual", name: "The College Agent — Hosting (Annual)", amount: 25000, recurring: "year" },
   // Legacy configurator catalog (multi-tier /build configurator) — keep seeded for
@@ -37,10 +33,32 @@ const CATALOG: CatalogItem[] = [
   { key: "hosting_max", name: "Hosting - Max", amount: 9900, recurring: "month" },
 ];
 
-// Old recurring College Agent prices ($29.99/mo, $299.99/yr) plus the retired
-// intro/regular one-time pair ($499/$599, replaced by flat ca_plan). Existing
-// subscribers keep paying their original price until they cancel/migrate.
-const ARCHIVED_KEYS = ["plan_basic", "support_6mo", "ca_monthly", "ca_annual", "ca_plan_intro", "ca_plan_regular"];
+// Prices we no longer sell. The sync deactivates these products in Stripe so nobody can
+// check out against them again.
+//
+// EXISTING SUBSCRIBERS ARE UNAFFECTED: a Stripe subscription holds its own price object,
+// so deactivating a product stops new purchases without repricing or cancelling anyone
+// already on it. Students who paid the $599 platform fee keep their agent; students on the
+// old monthly prices keep paying those until they cancel or are migrated by hand.
+//
+//   ca_monthly/ca_annual  - the original $29.99/mo, $299.99/yr
+//   ca_plan_intro/regular - the intro/regular one-time pair ($499/$599)
+//   ca_plan               - the flat $599 platform fee, retired when the product became
+//                           subscription-only
+//   ca_plan_pro           - the $4,500 Professional build, and
+//   ca_hosting_pro        - its $159/mo hosting. Faculty, administration and athletic
+//                           departments are ApolloClaw's segments now, not ours.
+const ARCHIVED_KEYS = [
+  "plan_basic",
+  "support_6mo",
+  "ca_monthly",
+  "ca_annual",
+  "ca_plan_intro",
+  "ca_plan_regular",
+  "ca_plan",
+  "ca_plan_pro",
+  "ca_hosting_pro",
+];
 
 export type SeedRow = {
   key: string;

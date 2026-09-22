@@ -7,7 +7,6 @@ import { sendOrderSummaryEmail, type OrderForEmail } from "@/lib/email/order-sum
 import { sendAccountCreatedEmail } from "@/lib/email/account-created";
 import { findOrCreateAuthUser } from "@/lib/auth/find-or-create-user";
 import { ambassadorByPromoCode, ambassadorBySlug, AMBASSADOR_COUPON_OFF_CENTS, CLEARING_DAYS } from "@/lib/ambassador";
-import { currentPlanAmountCents } from "@/lib/pricing/intro-cutoff";
 import { syncToMailchimp } from "@/lib/newsletter";
 import { sendMetaPurchase } from "@/lib/meta-capi";
 import { sendTelegramMessage } from "@/lib/telegram";
@@ -615,7 +614,14 @@ async function recordAmbassadorSale(db: DB, session: Stripe.Checkout.Session) {
     stripe_session_id: session.id,
     coupon_code_used: couponCode,
     card_fingerprint: fingerprint,
-    gross_cents: currentPlanAmountCents() - (viaCode ? AMBASSADOR_COUPON_OFF_CENTS : 0),
+    // What Stripe actually charged, not a number derived from the catalog.
+    //
+    // This used to be `currentPlanAmountCents() - coupon`, which worked only while every
+    // sale carried the same $599 one-time fee. With the fee gone and hosting sold monthly
+    // OR annually, a constant cannot describe the sale - it would book a $250 annual
+    // subscriber and a $25 monthly one identically, and both wrongly. amount_total is the
+    // post-discount total of this checkout, so the coupon is already subtracted.
+    gross_cents: expanded.amount_total ?? session.amount_total ?? 0,
     status,
     review_reason: reviewReason,
     clears_at: new Date(Date.now() + CLEARING_DAYS * 86_400_000).toISOString(),

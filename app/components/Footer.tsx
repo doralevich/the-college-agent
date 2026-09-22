@@ -11,8 +11,6 @@ import { NewsletterSignup } from "./NewsletterSignup";
 const MENU_LINKS = [
   { label: "Students", href: "/for-students" },
   { label: "Parents", href: "/for-parents" },
-  { label: "Athletics", href: "/for-athletics" },
-  { label: "Administration", href: "/for-administration" },
   { label: "Contact", href: "/contact" },
   { label: "FAQ", href: "/faq" },
   { label: "Ambassador Program", href: "/ambassador" },

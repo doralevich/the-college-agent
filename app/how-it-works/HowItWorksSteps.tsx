@@ -3,23 +3,22 @@
 /* eslint-disable @next/next/no-img-element */
 import { useState } from "react";
 import {
-  PLAN_AMOUNT_CENTS,
   HOSTING_AMOUNT_CENTS,
-  PRO_PLAN_AMOUNT_CENTS,
-  PRO_HOSTING_AMOUNT_CENTS,
+  HOSTING_ANNUAL_AMOUNT_CENTS,
 } from "@/lib/pricing/intro-cutoff";
 
-// The interactive walkthrough: pick who you are (student vs. faculty/administration/
-// athletics) and the six steps rewrite themselves — pricing included — then click
-// through the steps accordion-style. "Choose Your Plan" only makes sense once we know
-// which buyer is reading, so the audience toggle comes first.
+// The six-step walkthrough, clicked through accordion-style.
+//
+// This used to branch on audience (student vs. faculty/administration/athletics) and
+// rewrite every step, pricing included. Those segments are ApolloClaw's now, and the
+// toggle had already stopped being rendered - stepsFor was pinned to "student" - so the
+// staff branch was dead copy quoting a $4,500 build nobody could buy.
 
 function price(cents: number): string {
   const dollars = cents / 100;
   return "$" + dollars.toLocaleString("en-US", { minimumFractionDigits: cents % 100 ? 2 : 0, maximumFractionDigits: 2 });
 }
 
-type Audience = "student" | "staff";
 type Step = { title: string; body: string };
 
 const STEP_GUYS = [
@@ -31,40 +30,9 @@ const STEP_GUYS = [
   "/avatars/guy-07.webp",
 ];
 
-function stepsFor(audience: Audience): Step[] {
-  const plan = price(PLAN_AMOUNT_CENTS);
+function stepsFor(): Step[] {
   const hosting = price(HOSTING_AMOUNT_CENTS);
-  const proPlan = price(PRO_PLAN_AMOUNT_CENTS);
-  const proHosting = price(PRO_HOSTING_AMOUNT_CENTS);
-
-  if (audience === "staff") {
-    return [
-      {
-        title: "Start Your Build",
-        body: `Head to thecollegeagent.ai/build and choose "Faculty, Administration, or Athletic Department." Enter your name, work email, and phone — your account is created automatically during checkout.`,
-      },
-      {
-        title: "The Professional Build",
-        body: `${proPlan} one-time to build and personalize your professional agent, plus ${proHosting}/month education-rate hosting. Secure checkout with Stripe and a 7-day money-back guarantee. Rolling out to a whole staff or department? Book a consultation and we'll structure it for your program.`,
-      },
-      {
-        title: "A Role-Geared Intake",
-        body: `In about five minutes, tell your agent who you are: your title, your office or team, what seasons crunch your calendar, and what you want off your plate — travel, scheduling, recruiting coordination, compliance deadlines, communications.`,
-      },
-      {
-        title: "We Build Your Agent",
-        body: `Once your intake is complete, we configure your agent behind the scenes. Within about 30 minutes it's live in your dashboard and on your phone — before your next staff meeting.`,
-      },
-      {
-        title: "Put It to Work",
-        body: `Hand it the itinerary that needs rebuilding, the week's schedule changes, the recruiting follow-ups, the emails waiting on you. It drafts in your voice, tracks the deadlines, and checks in proactively.`,
-      },
-      {
-        title: "Connect Your Office Tools",
-        body: `Your agent works with what your campus already runs on: Outlook, Microsoft Teams, Gmail, Google Calendar, Google Drive, Blackbaud, and hundreds more. The more you connect, the more it can carry.`,
-      },
-    ];
-  }
+  const hostingAnnual = price(HOSTING_ANNUAL_AMOUNT_CENTS);
 
   return [
     {
@@ -73,7 +41,7 @@ function stepsFor(audience: Audience): Step[] {
     },
     {
       title: "Choose Your Plan",
-      body: `${plan} one-time to build and personalize your College Agent, plus secure cloud hosting: your choice of ${hosting}/month or $250/year (two months free). Includes $20 in AI credits to get started. Secure checkout with Stripe, and a 7-day money-back guarantee.`,
+      body: `${hosting}/month, or ${hostingAnnual}/year (two months free). No setup fee. That covers your own private agent, hosting, monitoring, updates, and normal daily use, plus $20 in AI credits to get started. Secure checkout with Stripe, and a 7-day money-back guarantee.`,
     },
     {
       title: "Personalize Your Agent",
@@ -97,7 +65,7 @@ function stepsFor(audience: Audience): Step[] {
 export default function HowItWorksSteps() {
   const [open, setOpen] = useState(0);
 
-  const steps = stepsFor("student");
+  const steps = stepsFor();
 
   return (
     <div className="hiw">

@@ -87,18 +87,10 @@ export function buildSoul(p: HermesPersonaInput): string {
   // Student's chosen name wins; otherwise the agent identifies as the brand, never the
   // underlying "Hermes" engine (students shouldn't see that name).
   const name = (p.agentName || "College Agent").toString().trim() || "College Agent";
-  // Role branch: faculty/administration/athletics agents identify as a professional
-  // assistant for that person's job, not a student companion.
-  const role = q(p, "role");
-  const staff = !!role && role !== "Student";
-  const roleTitle = q(p, "roleTitle");
-  const department = q(p, "department");
-  const school = (p.school || "").trim();
-  const staffIdentity =
-    `You are ${name}, a personal AI agent for ${roleTitle || `a member of ${role || "the staff"}`}` +
-    `${department ? ` with ${department}` : ""}${school ? ` at ${school}` : ""}. You keep their work ` +
-    "moving: calendar and scheduling, travel, communications and email drafting, deadlines and " +
-    "compliance dates, meeting prep and follow-ups, and proactive check-ins. Be proactive and concrete.";
+  // One identity. There used to be a role branch here: an intake answer of Faculty,
+  // Administration or Athletic Department produced a professional-assistant persona instead
+  // of a student companion. Those segments are ApolloClaw's now, and no College Agent
+  // instance was ever provisioned from a staff intake, so nothing in the field regresses.
   const tone = q(p, "agentTone") || "warm, focused, and direct";
   const responseStyle = q(p, "responseStyle");
   const verbosity = /short|direct|bullet/i.test(responseStyle)
@@ -118,11 +110,9 @@ export function buildSoul(p: HermesPersonaInput): string {
 
   return [
     "# Identity",
-    staff
-      ? staffIdentity
-      : `You are ${name}, a personal AI agent for a college student. You help them stay on top of ` +
-        "school and life: deadlines, planning, study scheduling, email drafting, the internship " +
-        "and job search, and proactive check-ins. Be proactive and concrete.",
+    `You are ${name}, a personal AI agent for a college student. You help them stay on top of ` +
+      "school and life: deadlines, planning, study scheduling, email drafting, the internship " +
+      "and job search, and proactive check-ins. Be proactive and concrete.",
     "",
     "# Style",
     `- Tone: ${tone}.`,

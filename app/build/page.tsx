@@ -4,18 +4,22 @@ import { useEffect, useState } from "react";
 import BuildNav from "../components/BuildNav";
 import { trackMeta } from "../components/MetaPixel";
 import {
-  PLAN_AMOUNT_CENTS,
-  PRO_PLAN_AMOUNT_CENTS,
-  PRO_HOSTING_AMOUNT_CENTS,
   HOSTING_AMOUNT_CENTS,
   HOSTING_ANNUAL_AMOUNT_CENTS,
+  FAIR_USE_NOTE,
 } from "@/lib/pricing/intro-cutoff";
 
-// Single price model: one-time platform fee ($599) PLUS recurring hosting, the
-// student's choice of $25/month or $250/year (annual = 10 x monthly, 2 months free).
-// The Stripe Checkout Session bundles both line items (see app/api/build/checkout);
-// we POST to that endpoint and redirect to the returned session.url so students land
-// on a session WE created (with user_id metadata), not a static Payment Link — the
+// One price: $25/month, or $250/year (annual = 10 x monthly, 2 months free). Nothing is
+// charged up front — the $599 platform fee is retired, so checkout is a single recurring
+// line item.
+//
+// There is also no longer a "who is this for" step. It existed to route faculty,
+// administration and athletic-department buyers to a $4,500 professional build; those
+// segments belong to ApolloClaw now, so the only answer left was "a student" and a
+// one-option question is just a click.
+//
+// We POST to app/api/build/checkout and redirect to the returned session.url so students
+// land on a session WE created (with user_id metadata), not a static Payment Link — the
 // metadata is what lets the webhook activate the right account on payment.
 
 const FONTS_HREF =
@@ -37,7 +41,7 @@ function formatPrice(cents: number): string {
 }
 
 export default function BuildPage() {
-  const [step, setStep] = useState<"welcome" | "who" | "plan" | "info">("welcome");
+  const [step, setStep] = useState<"welcome" | "plan" | "info">("welcome");
   const [info, setInfo] = useState<InfoForm>({
     firstName: "",
     lastName: "",
@@ -54,23 +58,15 @@ export default function BuildPage() {
   const [extraCents, setExtraCents] = useState(0);
   // Hosting billing choice: $25/month or $250/year (2 months free on annual).
   const [hostingInterval, setHostingInterval] = useState<"monthly" | "annual">("monthly");
-  // Which build is being bought: the student plan (default) or the professional build
-  // for faculty / administration / athletic departments. Deep-linkable via ?plan=pro.
-  const [plan, setPlan] = useState<"student" | "pro">("student");
-  // Which audience they picked on the "who" step; rides checkout metadata so the
-  // post-payment intake and our records agree with what they were charged.
-  const [buyerRole, setBuyerRole] = useState<string>("");
+  // Rides checkout metadata so the post-payment intake and our records agree on who this
+  // was sold to. Constant now that students are the only segment, and kept rather than
+  // dropped so the webhook and the ambassador records keep the field they already read.
+  const buyerRole = "Student";
   // Referral code from ?ref=... — kept in localStorage so it survives the multi-step
   // flow and a canceled-checkout round trip. Applied server-side at checkout.
   const [ref, setRef] = useState<string>("");
 
   useEffect(() => {
-    // Deep link from the athletics/administration pages: they already told us who they
-    // are, so land straight on the professional plan card.
-    if (new URLSearchParams(window.location.search).get("plan") === "pro") {
-      setPlan("pro");
-      setStep("plan");
-    }
     const fromUrl = new URLSearchParams(window.location.search).get("ref")?.trim() ?? "";
     if (fromUrl) {
       localStorage.setItem("ca-ref", fromUrl);
@@ -99,21 +95,10 @@ export default function BuildPage() {
     };
   }, []);
 
-  const planPrice = formatPrice(PLAN_AMOUNT_CENTS);
-  const proPrice = formatPrice(PRO_PLAN_AMOUNT_CENTS);
-  const proHostingPrice = formatPrice(PRO_HOSTING_AMOUNT_CENTS);
   const hostingPrice = formatPrice(HOSTING_AMOUNT_CENTS);
   const hostingAnnualPrice = formatPrice(HOSTING_ANNUAL_AMOUNT_CENTS);
 
-  function continueToWho() {
-    setError(null);
-    setStep("who");
-    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  function chooseWho(role: string, planFor: "student" | "pro") {
-    setBuyerRole(role);
-    setPlan(planFor);
+  function continueToPlan() {
     setError(null);
     setStep("plan");
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
@@ -173,8 +158,7 @@ export default function BuildPage() {
           lastName: info.lastName.trim(),
           termsAccepted: agreeTerms,
           hostingInterval,
-          plan,
-          ...(buyerRole ? { buyerRole } : {}),
+          buyerRole,
           ...(extraCents > 0 ? { extraCreditsCents: extraCents } : {}),
           ...(ref ? { ref } : {}),
         }),
@@ -233,7 +217,7 @@ export default function BuildPage() {
                 </ul>
 
                 <div className="ca-welcome-cta-wrap">
-                  <button type="button" className="ca-cta" onClick={continueToWho}>
+                  <button type="button" className="ca-cta" onClick={continueToPlan}>
                     Let&apos;s get started
                   </button>
                   <p className="ca-trust">One plan. Everything included.</p>
@@ -241,33 +225,12 @@ export default function BuildPage() {
               </>
             )}
 
-            {step === "who" && (
-              <>
-                <p className="ca-eyebrow">Get started</p>
-                <h2 className="ca-h2">Who is this agent for?</h2>
-                <p className="ca-sub">Pick the one that fits, and we&apos;ll set up the right build.</p>
-                <div className="ca-who-grid">
-                  {[
-                    { role: "Student", label: "A student", desc: "Classes, deadlines, studying, and campus life.", plan: "student" as const },
-                    { role: "Faculty", label: "Faculty / Professor", desc: "Teaching, office hours, research, and communications.", plan: "pro" as const },
-                    { role: "Administration / Staff", label: "Administration / Staff", desc: "Admissions, advising, the registrar, and campus offices.", plan: "pro" as const },
-                    { role: "Athletic Department", label: "Athletic Department", desc: "Coaches, operations, recruiting, and game day.", plan: "pro" as const },
-                  ].map((o) => (
-                    <button key={o.role} type="button" className="ca-who-opt" onClick={() => chooseWho(o.role, o.plan)}>
-                      <span className="ca-who-label">{o.label}</span>
-                      <span className="ca-who-desc">{o.desc}</span>
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-
-            {step === "plan" && plan === "student" && (
+            {step === "plan" && (
               <>
                 <p className="ca-eyebrow">Get started</p>
                 <h2 className="ca-h2">One plan. Everything included.</h2>
                 <p className="ca-sub">
-                  Your own AI agent, set up for you and ready to go. No build fees, no add-ons, no
+                  Your own AI agent, set up for you and ready to go. No setup fee, no add-ons, no
                   hosting tiers to figure out.
                 </p>
 
@@ -278,14 +241,16 @@ export default function BuildPage() {
                   </p>
 
                   <div className="ca-price-row">
-                    <span className="ca-price">{planPrice}</span>
-                    <span className="ca-period">one-time</span>
+                    <span className="ca-price">
+                      {hostingInterval === "annual" ? hostingAnnualPrice : hostingPrice}
+                    </span>
+                    <span className="ca-period">{hostingInterval === "annual" ? "/year" : "/month"}</span>
                   </div>
                   <div className="ca-extra" style={{ marginTop: 0 }}>
                     <p className="ca-extra-label">
-                      Cloud hosting <span>(keeps your agent running 24/7)</span>
+                      Billing <span>(cancel any time)</span>
                     </p>
-                    <div className="ca-extra-chips" role="group" aria-label="Hosting billing">
+                    <div className="ca-extra-chips" role="group" aria-label="Billing interval">
                       <button
                         type="button"
                         className={hostingInterval === "monthly" ? "is-active" : ""}
@@ -304,17 +269,18 @@ export default function BuildPage() {
                   </div>
                   <p className="ca-savenote">
                     {hostingInterval === "annual"
-                      ? `Annual hosting is 10 months' price: 2 months free. Cancel any time.`
-                      : `Cancel hosting any time, pause over summer.`}
+                      ? `Annual is 10 months' price: 2 months free. Cancel any time.`
+                      : `Cancel any time, pause over summer. Nothing charged up front.`}
                   </p>
                   {ref && (
                     <p className="ca-savenote" style={{ color: "var(--ca-green)", fontWeight: 600 }}>
-                      Referral applied: your first month of hosting is free.
+                      Referral applied: your first month is free.
                     </p>
                   )}
 
                   <ul className="ca-features">
-                    <li><span className="ca-check"><CheckIcon /></span>Your own AI Agent, built and set up for you</li>
+                    <li><span className="ca-check"><CheckIcon /></span>Your own private agent, built and set up for you</li>
+                    <li><span className="ca-check"><CheckIcon /></span>Hosting, monitoring, and updates included</li>
                     <li><span className="ca-check"><CheckIcon /></span>$20 in AI credits included to get you started</li>
                     <li><span className="ca-check"><CheckIcon /></span>Works on the web and Telegram, any device</li>
                     <li><span className="ca-check"><CheckIcon /></span>Connect your calendar, email, Canvas, and more</li>
@@ -347,61 +313,15 @@ export default function BuildPage() {
                   <p className="ca-trust">Secure checkout by Stripe &middot; 7-day money-back guarantee</p>
                 </div>
 
-                <p className="ca-next">
-                  After checkout you&apos;ll fill out a <b>2-minute onboarding form</b>, and your agent
-                  goes live within 30 minutes.
-                </p>
-
-                <p className="ca-custom">
-                  Not a student?{" "}
-                  <button type="button" className="ca-switch-link" onClick={() => setStep("who")}>Change who this is for</button>
-                </p>
-              </>
-            )}
-
-            {step === "plan" && plan === "pro" && (
-              <>
-                <p className="ca-eyebrow">Get started</p>
-                <h2 className="ca-h2">The professional build.</h2>
-                <p className="ca-sub">
-                  For faculty, administration, and athletic departments. White-glove setup, a
-                  role-geared intake, and an agent that runs your busywork.
-                </p>
-
-                <div className="ca-card ca-card-pro">
-                  <h3 className="ca-plan-name">The College Agent — Professional</h3>
-                  <p className="ca-plan-desc">
-                    Built for your office, program, or team. Scheduling, travel, recruiting
-                    coordination, compliance deadlines, communications, and game-day operations,
-                    run by an agent that knows your department.
-                  </p>
-                  <div className="ca-price-row">
-                    <span className="ca-price">{proPrice}</span>
-                    <span className="ca-period">one-time</span>
-                  </div>
-                  <p className="ca-savenote">Plus {proHostingPrice}/month hosting. White-glove setup included.</p>
-                  <ul className="ca-features">
-                    <li><span className="ca-check"><CheckIcon /></span>Your own professional AI agent, built and set up for you</li>
-                    <li><span className="ca-check"><CheckIcon /></span>Geared to your role, team, and season in a 5-minute intake</li>
-                    <li><span className="ca-check"><CheckIcon /></span>Connect your calendar, email, and the tools you already use</li>
-                    <li><span className="ca-check"><CheckIcon /></span>Works on the web and Telegram, any device</li>
-                    <li><span className="ca-check"><CheckIcon /></span>7-day money-back guarantee</li>
-                  </ul>
-                  <button type="button" className="ca-cta" onClick={continueToInfo}>
-                    Build my professional agent
-                  </button>
-                  <p className="ca-trust">Piloting with athletic departments now &middot; Questions? <a href="/consultation" style={{ color: "var(--ca-green)", textDecoration: "underline" }}>Book a consultation</a></p>
-                </div>
+                {/* The fair-use promise sits with the price, not buried in Terms: it is part
+                    of what they are agreeing to and reads as reassurance here, not fine print. */}
+                <p className="ca-fairuse">{FAIR_USE_NOTE}</p>
 
                 <p className="ca-next">
                   After checkout you&apos;ll fill out a <b>2-minute onboarding form</b>, and your agent
                   goes live within 30 minutes.
                 </p>
 
-                <p className="ca-custom">
-                  Buying for a student?{" "}
-                  <button type="button" className="ca-switch-link" onClick={() => setStep("who")}>Change who this is for</button>
-                </p>
               </>
             )}
 
@@ -413,12 +333,6 @@ export default function BuildPage() {
                     <h2 className="ca-h2" style={{ textAlign: "left" }}>Tell us about yourself.</h2>
                     <p className="ca-sub" style={{ textAlign: "left", margin: "10px 0 0", maxWidth: "none", fontSize: 14 }}>
                       Quick details so we know who&apos;s building this agent. Next step is secure payment.
-                      {plan === "pro" && (
-                        <>
-                          {" "}
-                          <b>Professional build, {proPrice} one-time plus {proHostingPrice}/month hosting.</b>
-                        </>
-                      )}
                     </p>
                   </div>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -631,48 +545,13 @@ export default function BuildPage() {
           color: #fff;
         }
 
-        .ca-who-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 12px;
-          max-width: 560px;
-          margin: 0 auto;
-        }
-        @media (max-width: 560px) { .ca-who-grid { grid-template-columns: 1fr; } }
-        .ca-who-opt {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-          text-align: left;
-          background: var(--ca-white);
-          border: 1.5px solid var(--ca-line);
-          border-radius: 14px;
-          padding: 20px 18px;
-          cursor: pointer;
-          transition: border-color .15s, box-shadow .15s, transform .06s;
-          font-family: var(--ca-sans);
-        }
-        .ca-who-opt:hover {
-          border-color: var(--ca-green);
-          box-shadow: 0 8px 24px rgba(45,122,58,.12);
-        }
-        .ca-who-opt:active { transform: scale(.99); }
-        .ca-who-label { font-size: 16px; font-weight: 700; color: var(--ca-ink); }
-        .ca-who-desc { font-size: 13px; line-height: 1.5; color: var(--ca-body); }
-        .ca-switch-link {
-          border: none;
-          background: transparent;
-          color: var(--ca-green);
-          font-family: inherit;
-          font-size: inherit;
-          cursor: pointer;
-          text-decoration: underline;
-          padding: 0;
-        }
-        .ca-card-pro {
-          border-color: var(--ca-ink);
-          background: #fff;
-          margin-top: 18px;
+        .ca-fairuse {
+          max-width: 460px;
+          margin: 14px auto 0;
+          font-size: 12.5px;
+          line-height: 1.6;
+          color: var(--ca-body);
+          text-align: center;
         }
         .ca-card {
           border: 2px solid var(--ca-green);
