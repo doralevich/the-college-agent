@@ -6,13 +6,15 @@ import { AgentsView } from "@/components/AgentsView";
 import { BillingView } from "@/components/BillingView";
 import { SettingsView } from "@/components/SettingsView";
 import { ChecklistView } from "@/components/ChecklistView";
+import { CreditsView } from "@/components/CreditsView";
+import { ReferralCard } from "@/components/ReferralCard";
 
 // Settings hosts the workspace settings (General), Your Agent, and Subscription
 // (plan + hosting + invoices). Usage Credits graduated to its own sidebar tab
 // (/dashboard/credits); deep links to /dashboard/billing and /dashboard/agent still
 // work because DashboardClient maps those routes to the matching initialSection here.
 
-export type SettingsSection = "general" | "agent" | "subscription" | "intake";
+export type SettingsSection = "general" | "agent" | "subscription" | "credits" | "refer" | "intake";
 
 export function SettingsHub({
   initialSection = "general",
@@ -38,6 +40,10 @@ export function SettingsHub({
     { id: "general", label: "General", show: true },
     { id: "agent", label: "Your Agent", show: hasAgent },
     { id: "subscription", label: "Subscription", show: paid },
+    // Credits and Refer & Earn came off the sidebar: neither is somewhere a student goes
+    // daily, and both are account business rather than work with the agent.
+    { id: "credits", label: "API Credits", show: hasAgent },
+    { id: "refer", label: "Refer & Earn", show: hasAgent },
     // The intake answers used to be the body of the Checklist page. They are reference
     // material - what the student told us at signup - not something they act on day to day,
     // so they read better here than beside the setup they actually have to complete.
@@ -82,6 +88,27 @@ export function SettingsHub({
         <AgentsView firstName={firstName} onOpenChat={onOpenChat} />
       ) : active === "subscription" && paid ? (
         <BillingView />
+      ) : active === "credits" && hasAgent ? (
+        <div className="max-w-xl space-y-8">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">API Credits</h1>
+            <p className="text-sm text-muted-foreground">
+              Fund your agent&apos;s AI usage: balance, top-ups, and auto-recharge.
+            </p>
+          </div>
+          <CreditsView />
+        </div>
+      ) : active === "refer" && hasAgent ? (
+        <div className="max-w-xl space-y-6">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Refer &amp; Earn</h1>
+            <p className="text-sm text-muted-foreground">
+              Share your link. Give a friend their first month free, and earn a free month
+              yourself, no limit.
+            </p>
+          </div>
+          <ReferralCard />
+        </div>
       ) : active === "intake" && hasAgent ? (
         <ChecklistView userId={userId} firstName={firstName} intake={intake} />
       ) : (
