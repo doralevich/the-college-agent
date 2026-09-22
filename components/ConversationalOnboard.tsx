@@ -485,20 +485,17 @@ const STEPS: Step[] = [
   },
   { kind: "text", key: "agentName", prompt: "What would you like to call me?", placeholder: "Type a name..." },
   { kind: "image", key: "avatarFile", prompt: "Want to give me a face? Pick an avatar or upload your own." },
-  { kind: "text", key: "firstName", prompt: "And what should I call you?", placeholder: "Your first name", required: true },
-  { kind: "text", key: "lastName", prompt: "And your last name?", placeholder: "Your last name", required: true },
+  // Name and school email are NOT asked here: /build collects them before payment and the
+  // Stripe webhook stamps them on the account, so asking again is asking a student to retype
+  // what they just typed. api/onboard-submit fills them from the lead row or the account when
+  // the payload leaves them blank.
+  //
+  // School stays. It is the one identity field /build never collects, and the agent needs it
+  // - SOUL.md says "a personal AI agent for Ada at Rutgers".
+  //
+  // Mobile is gone entirely rather than moved: nothing reads it.
   { kind: "typeahead", key: "school", prompt: "What school are you with?", placeholder: "Start typing your school...", required: true },
-  { kind: "text", key: "schoolEmail", prompt: "What's your school email?", note: "This is the email you'll use to log in to your account.", placeholder: "you@school.edu", inputType: "email", required: true },
-  { kind: "text", key: "phone", prompt: "What's your mobile number?", placeholder: "(555) 555-5555", inputType: "tel", required: true },
   // ---- Student flow ----
-  {
-    kind: "multi",
-    key: "topPriority",
-    prompt: "What do you want to get out of college?",
-    options: PRIORITY_OPTIONS,
-    required: true,
-    tier: 2,
-  },
   { kind: "multi", key: "responseStyle", prompt: "How should I communicate with you?", options: VOICE_OPTIONS, required: true, tier: 2 },
   {
     kind: "classList",
@@ -597,14 +594,6 @@ const STEPS: Step[] = [
     key: "biggestStressors",
     prompt: "What stresses you out most, or tends to slip through the cracks?",
     placeholder: "Deadlines sneaking up, replying to emails, prepping for exams early...",
-    tier: 3,
-    showIf: (f) => f.wantMore === "yes",
-  },
-  {
-    kind: "text",
-    key: "agentOffLimits",
-    prompt: "Anything you'd rather I never bring up?",
-    placeholder: "Optional — a topic to steer clear of",
     tier: 3,
     showIf: (f) => f.wantMore === "yes",
   },
@@ -1530,9 +1519,6 @@ function CopyableExamples({ examples }: { examples: string[] }) {
   const [copied, setCopied] = useState<number | null>(null);
   return (
     <div style={{ marginTop: 14 }}>
-      <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: T.inkSoft, marginBottom: 8 }}>
-        Need a nudge? Tap one to copy
-      </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         {examples.map((ex, i) => (
           <button

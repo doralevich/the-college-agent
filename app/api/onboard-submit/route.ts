@@ -62,6 +62,40 @@ export async function POST(req: NextRequest) {
     // Tie to the logged-in student (if any) so the dashboard checklist sees completion.
     const userId = await getOptionalUserId();
 
+    // Name and school email are collected on /build before payment, so the intake no longer
+    // asks for them. Fill them here from what we already hold, newest source first:
+    //
+    //   1. whatever the payload carries (an admin edit, or a student who typed them anyway)
+    //   2. the pre-payment lead row
+    //   3. the account itself - the Stripe webhook stamps first/last name from checkout
+    //      metadata, and the email IS the login
+    //
+    // Without this the columns would silently go blank for every new student, and SOUL.md
+    // would introduce the agent as working for nobody.
+    if (userId) {
+      const { data: authUser } = await supabase.auth.admin.getUserById(userId);
+      // Look the lead up by the ACCOUNT's email, not the payload's - the intake no longer
+      // asks for an email, so the payload has none to match on.
+      const accountEmail = (authUser?.user?.email ?? "").toLowerCase();
+      const { data: leadRow } = accountEmail
+        ? await supabase
+            .from("leads")
+            .select("first_name, last_name, school_email, school")
+            .or(`school_email.eq.${accountEmail},personal_email.eq.${accountEmail}`)
+            .order("captured_at", { ascending: false })
+            .limit(1)
+            .maybeSingle()
+        : { data: null };
+      const meta = (authUser?.user?.user_metadata ?? {}) as Record<string, unknown>;
+      const pick = (...vals: unknown[]) =>
+        vals.map((v) => (typeof v === "string" ? v.trim() : "")).find(Boolean) ?? "";
+
+      data.firstName = pick(data.firstName, leadRow?.first_name, meta.first_name, meta.firstName);
+      data.lastName = pick(data.lastName, leadRow?.last_name, meta.last_name, meta.lastName);
+      data.schoolEmail = pick(data.schoolEmail, leadRow?.school_email, authUser?.user?.email);
+      data.school = pick(data.school, leadRow?.school);
+    }
+
     // Re-submits (the "edit intake" flow) usually don't carry a new avatar or resume —
     // keep the stored files rather than nulling them out.
     if (userId && (!resumeUrl || !avatarUrl)) {
