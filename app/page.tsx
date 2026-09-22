@@ -22,42 +22,42 @@ export const metadata: Metadata = {
 
 const AGENT_WAYS = [
   {
-    guy: "/avatars/guy-12.webp",
+    guy: "/avatars/mascot.webp",
     title: "Own Your Schedule",
     desc: "Your classes, calendar, deadlines, and commitments, all in one place. Your College Agent keeps everything organized, so you always know what's next.",
   },
   {
-    guy: "/avatars/guy-04.webp",
+    guy: "/avatars/mascot.webp",
     title: "Never Miss a Deadline",
     desc: "Upload a syllabus once, and every assignment, quiz, exam, and due date is tracked automatically, with reminders sent well before each due date.",
   },
   {
-    guy: "/avatars/guy-02.webp",
+    guy: "/avatars/mascot.webp",
     title: "Study Smarter",
     desc: "Personalized study plans, practice questions, quizzes, and review schedules that adapt to your workload, exams, and changing priorities.",
   },
   {
-    guy: "/avatars/guy-11.webp",
+    guy: "/avatars/mascot.webp",
     title: "Write with Confidence",
     desc: "Draft professional emails to professors, advisors, recruiters, and classmates in your own voice, ready to review and send.",
   },
   {
-    guy: "/avatars/guy-03.webp",
+    guy: "/avatars/mascot.webp",
     title: "Manage Your Entire College Life",
     desc: "From classes and campus events to travel, budgets, clubs, and personal goals, your College Agent keeps everything organized in one place.",
   },
   {
-    guy: "/avatars/guy-09.webp",
+    guy: "/avatars/mascot.webp",
     title: "Build Your Career Early",
     desc: "Create a stronger resume, optimize your LinkedIn profile, find internships, prepare for interviews, and build your professional network, starting freshman year.",
   },
   {
-    guy: "/avatars/guy-08.webp",
+    guy: "/avatars/mascot.webp",
     title: "Connected to Your Tools",
     desc: "Works with the apps students already rely on, including calendars, email, cloud storage, notes, and learning platforms, bringing everything together in one place.",
   },
   {
-    guy: "/avatars/guy-05.webp",
+    guy: "/avatars/mascot.webp",
     title: "Always Available",
     desc: "Your College Agent is available 24/7 to answer questions, organize tasks, plan your schedule, and help you stay ahead whenever you need it.",
   },

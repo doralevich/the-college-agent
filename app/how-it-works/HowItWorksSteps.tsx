@@ -21,14 +21,10 @@ function price(cents: number): string {
 
 type Step = { title: string; body: string };
 
-const STEP_GUYS = [
-  "/avatars/guy-01.webp",
-  "/avatars/guy-05.webp",
-  "/avatars/guy-12.webp",
-  "/avatars/guy-08.webp",
-  "/avatars/guy-02.webp",
-  "/avatars/guy-07.webp",
-];
+// One mascot, one pose. This was six different poses, one per step; the array stays so a
+// future set of poses is a one-line change rather than a hunt through the JSX.
+const MASCOT = "/avatars/mascot.webp";
+const STEP_GUYS = Array.from({ length: 6 }, () => MASCOT);
 
 function stepsFor(): Step[] {
   const hosting = price(HOSTING_AMOUNT_CENTS);

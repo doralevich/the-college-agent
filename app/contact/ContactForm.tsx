@@ -40,7 +40,7 @@ export default function ContactForm() {
   if (state === "sent") {
     return (
       <div className="cf-card cf-sent">
-        <img src="/avatars/guy-07.webp" alt="" style={{ width: 110, height: "auto" }} />
+        <img src="/avatars/mascot.webp" alt="" style={{ width: 110, height: "auto" }} />
         <h3>Message sent!</h3>
         <p>
           Thanks, {name.split(" ")[0] || "friend"}. We read everything and reply fast, usually the

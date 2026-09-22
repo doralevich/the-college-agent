@@ -198,7 +198,7 @@ export default function BuildPage() {
                     </p>
                   </div>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/avatars/guy-01.webp" alt="The College Agent waving" className="ca-head-guy" />
+                  <img src="/avatars/mascot.webp" alt="The College Agent waving" className="ca-head-guy" />
                 </div>
 
                 <ul className="ca-welcome-points">
@@ -336,7 +336,7 @@ export default function BuildPage() {
                     </p>
                   </div>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/avatars/guy-04.webp" alt="The College Agent" className="ca-head-guy" />
+                  <img src="/avatars/mascot.webp" alt="The College Agent" className="ca-head-guy" />
                 </div>
 
                 <form className="ca-form" onSubmit={handleContinueToPayment} noValidate>
