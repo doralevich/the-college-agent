@@ -2,11 +2,13 @@ import { ApiError, json, readJson, route } from "@/lib/http";
 import { requireUser } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ambassadorByEmail } from "@/lib/ambassador";
+import { AMBASSADOR_PROGRAM_ENABLED } from "@/lib/ambassador";
 
 // Self-service for a signed-in ambassador: read their own record + stats, and set
 // their payout rail (PayPal or Venmo — Zelle intentionally unsupported, no records).
 
 export const GET = route(async () => {
+  if (!AMBASSADOR_PROGRAM_ENABLED) throw new ApiError(404, "not_found", "Not found");
   const { user } = await requireUser();
   const amb = await ambassadorByEmail(user.email ?? "");
   if (!amb) throw new ApiError(404, "not_found", "No ambassador record for this account.");
@@ -82,6 +84,7 @@ export const GET = route(async () => {
 });
 
 export const POST = route(async (req) => {
+  if (!AMBASSADOR_PROGRAM_ENABLED) throw new ApiError(404, "not_found", "Not found");
   const { user } = await requireUser();
   const amb = await ambassadorByEmail(user.email ?? "");
   if (!amb) throw new ApiError(404, "not_found", "No ambassador record for this account.");

@@ -6,7 +6,7 @@ import { getStripe } from "@/lib/stripe/client";
 import { sendOrderSummaryEmail, type OrderForEmail } from "@/lib/email/order-summary";
 import { sendAccountCreatedEmail } from "@/lib/email/account-created";
 import { findOrCreateAuthUser } from "@/lib/auth/find-or-create-user";
-import { ambassadorByPromoCode, ambassadorBySlug, AMBASSADOR_COUPON_OFF_CENTS, CLEARING_DAYS } from "@/lib/ambassador";
+import { AMBASSADOR_PROGRAM_ENABLED, ambassadorByPromoCode, ambassadorBySlug, AMBASSADOR_COUPON_OFF_CENTS, CLEARING_DAYS } from "@/lib/ambassador";
 import { syncToMailchimp } from "@/lib/newsletter";
 import { sendMetaPurchase } from "@/lib/meta-capi";
 import { sendTelegramMessage } from "@/lib/telegram";
@@ -535,6 +535,11 @@ function subIdFromInvoice(invoice: Stripe.Invoice): string | null {
 // was entered. Self-referrals are rejected. Cluster signals (same card fingerprint,
 // rapid bursts) hold the sale in `review` for admin instead of auto-paying.
 async function recordAmbassadorSale(db: DB, session: Stripe.Checkout.Session) {
+  // Program off (lib/ambassador.ts): record nothing. Attribution is already switched off at
+  // /r and at checkout, but an approved ambassador's promotion code still exists in Stripe
+  // and can be typed into the payment page - which would otherwise book a bounty against a
+  // program that is not running.
+  if (!AMBASSADOR_PROGRAM_ENABLED) return;
   const stripe = getStripe();
   const { data: existing } = await db
     .from("ambassador_sales")

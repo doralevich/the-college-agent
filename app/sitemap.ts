@@ -14,8 +14,6 @@ const publicRoutes: { route: string; priority: number; changeFrequency: "weekly"
   { route: "/study", priority: 0.9, changeFrequency: "monthly" },
   { route: "/internships", priority: 0.9, changeFrequency: "monthly" },
   { route: "/faq", priority: 0.8, changeFrequency: "monthly" },
-  { route: "/ambassador", priority: 0.7, changeFrequency: "monthly" },
-  { route: "/ambassador/apply", priority: 0.7, changeFrequency: "monthly" },
   { route: "/blog", priority: 0.8, changeFrequency: "weekly" },
   { route: "/build", priority: 0.8, changeFrequency: "monthly" },
   { route: "/how-it-works", priority: 0.8, changeFrequency: "monthly" },

@@ -3,6 +3,8 @@ import Image from "next/image";
 import { Award, Bot, CalendarCheck2, Check, FileText, LifeBuoy, ListChecks, Rocket, TrendingUp, BookOpen } from "lucide-react";
 import Nav from "../components/Nav";
 import { Footer } from "../components/Footer";
+import { notFound } from "next/navigation";
+import { AMBASSADOR_PROGRAM_ENABLED } from "@/lib/ambassador";
 
 export const metadata: Metadata = {
   title: "Become a College Agent Ambassador | The College Agent",
@@ -78,6 +80,10 @@ const PROGRAM_PERKS = [
 ];
 
 export default function AmbassadorPage() {
+  // The ambassador program is switched off (lib/ambassador.ts). 404 rather than
+  // redirect: these URLs are shared publicly and a redirect loop would be worse
+  // than an honest "not here right now".
+  if (!AMBASSADOR_PROGRAM_ENABLED) notFound();
   return (
     <>
       <Nav />

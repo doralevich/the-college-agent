@@ -4,6 +4,8 @@ import { Footer } from "../../components/Footer";
 import { getSession } from "@/lib/auth";
 import { ambassadorByEmail } from "@/lib/ambassador";
 import { AmbassadorDashboard } from "./AmbassadorDashboard";
+import { notFound } from "next/navigation";
+import { AMBASSADOR_PROGRAM_ENABLED } from "@/lib/ambassador";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +13,10 @@ export const dynamic = "force-dynamic";
 // and the toolkit. Sign-in is the same magic-link flow as students; access is simply
 // "this email has an ambassador record."
 export default async function AmbassadorDashboardPage() {
+  // The ambassador program is switched off (lib/ambassador.ts). 404 rather than
+  // redirect: these URLs are shared publicly and a redirect loop would be worse
+  // than an honest "not here right now".
+  if (!AMBASSADOR_PROGRAM_ENABLED) notFound();
   const { user } = await getSession();
   if (!user) redirect("/login?next=/ambassador/dashboard");
 

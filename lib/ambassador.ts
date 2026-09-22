@@ -2,6 +2,21 @@ import "server-only";
 import type Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+/**
+ * The whole program, on one switch. Currently OFF.
+ *
+ * Turned off while the economics are re-fitted: the bounty is $75 for the first 10 cleared
+ * sales and $100 after, which was sized against a $599 one-time sale. The product is now
+ * $25/month with the first two months discounted to zero by the ambassador's own coupon, so
+ * a bounty pays out several times the revenue it brings in.
+ *
+ * Off means: the public pages 404, applications are refused, /r/{slug} links still resolve
+ * but set no attribution cookie, and checkout stops reading one. NOTHING IS DELETED - the
+ * tables, the approved ambassadors, their Stripe coupons and promotion codes and the admin
+ * view all stay exactly as they are. Flipping this back to true restores the program whole.
+ */
+export const AMBASSADOR_PROGRAM_ENABLED = false;
+
 // Ambassador program domain logic (July 2026 PRD). Business numbers are locked here:
 // the coupon is worth $50 to the friend, the bounty is $75 for each of an ambassador's
 // first 10 cleared sales and $100 after, tiers lock at clear time, and a sale clears after

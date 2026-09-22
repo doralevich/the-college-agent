@@ -3,6 +3,8 @@ import Link from "next/link";
 import Nav from "../../components/Nav";
 import ChatBot from "../../components/ChatBot";
 import AmbassadorForm from "../AmbassadorForm";
+import { notFound } from "next/navigation";
+import { AMBASSADOR_PROGRAM_ENABLED } from "@/lib/ambassador";
 
 export const metadata: Metadata = {
   title: "Apply | College Agent Ambassador Program",
@@ -24,6 +26,10 @@ export const metadata: Metadata = {
 };
 
 export default function AmbassadorApplyPage() {
+  // The ambassador program is switched off (lib/ambassador.ts). 404 rather than
+  // redirect: these URLs are shared publicly and a redirect loop would be worse
+  // than an honest "not here right now".
+  if (!AMBASSADOR_PROGRAM_ENABLED) notFound();
   return (
     <>
       <Nav />

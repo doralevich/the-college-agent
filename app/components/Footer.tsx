@@ -13,7 +13,6 @@ const MENU_LINKS = [
   { label: "Parents", href: "/for-parents" },
   { label: "Contact", href: "/contact" },
   { label: "FAQ", href: "/faq" },
-  { label: "Ambassador Program", href: "/ambassador" },
   { label: "Demo", href: "/demo" },
   { label: "Schedule a Consultation", href: "/consultation" },
 ];

@@ -40,8 +40,6 @@ export function OrgApplyForm() {
         <h2 style={{ fontSize: 20, fontWeight: 800, color: "var(--navy)", marginBottom: 8 }}>Application received!</h2>
         <p style={{ fontSize: 14.5, lineHeight: 1.7, color: "rgba(11,23,41,.65)", margin: 0 }}>
           We&apos;ll review it and reach out at the contact email with your org code and next steps.
-          Meanwhile, have your members apply at{" "}
-          <a href="/ambassador/apply" style={{ color: "var(--green)", textDecoration: "underline" }}>thecollegeagent.ai/ambassador/apply</a>.
         </p>
       </div>
     );

@@ -3,12 +3,18 @@ import Nav from "../../components/Nav";
 import { Footer } from "../../components/Footer";
 import { getSession } from "@/lib/auth";
 import { ambassadorByEmail } from "@/lib/ambassador";
+import { notFound } from "next/navigation";
+import { AMBASSADOR_PROGRAM_ENABLED } from "@/lib/ambassador";
 
 export const dynamic = "force-dynamic";
 
 // The gated ambassador playbook (PRD asset library): pitch, objections, tabling,
 // posting without being cringe, first-week checklist, and the FTC disclosure rule.
 export default async function PlaybookPage() {
+  // The ambassador program is switched off (lib/ambassador.ts). 404 rather than
+  // redirect: these URLs are shared publicly and a redirect loop would be worse
+  // than an honest "not here right now".
+  if (!AMBASSADOR_PROGRAM_ENABLED) notFound();
   const { user } = await getSession();
   if (!user) redirect("/login?next=/ambassador/playbook");
   const amb = await ambassadorByEmail(user.email ?? "");

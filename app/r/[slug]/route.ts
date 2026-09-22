@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ambassadorBySlug } from "@/lib/ambassador";
+import { AMBASSADOR_PROGRAM_ENABLED, ambassadorBySlug } from "@/lib/ambassador";
 
 // Ambassador share link: thecollegeagent.ai/r/{slug}. Sets the attribution cookie and
 // forwards to the site. The cookie only attributes when no promotion code is entered
@@ -10,11 +10,17 @@ export async function GET(req: Request, ctx: { params: Promise<{ slug: string }>
   const url = new URL(req.url);
   // Unknown/suspended slugs (or a database hiccup) still land somewhere useful,
   // just with no attribution cookie set.
+  // While the program is off (lib/ambassador.ts) a share link still WORKS - it just carries
+  // no attribution. Links are printed on flyers and pasted into group chats; breaking them
+  // would strand people on a 404 for a decision they had no part in, and the existing
+  // unknown-slug path already lands them somewhere useful.
   let amb = null;
-  try {
-    amb = await ambassadorBySlug(slug);
-  } catch (err) {
-    console.error("[/r] slug lookup failed", slug, err);
+  if (AMBASSADOR_PROGRAM_ENABLED) {
+    try {
+      amb = await ambassadorBySlug(slug);
+    } catch (err) {
+      console.error("[/r] slug lookup failed", slug, err);
+    }
   }
 
   // Known ambassadors route into the personalized demo (PRD); unknown slugs go home.
