@@ -55,7 +55,7 @@ export default function ContactPage() {
           label="Contact"
           title="Talk to a human."
           sub="Questions about your agent, plans for a whole campus, or just curious? Send us a note and we'll get right back to you, usually the same day."
-          mascot="/avatars/guy-11.webp"
+          mascot="/avatars/mascot.webp"
         />
 
         {/* FORM + DIRECT CHANNELS */}

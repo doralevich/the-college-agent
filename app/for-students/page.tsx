@@ -77,37 +77,37 @@ const FEATURES = [
 // Each gets its own College Agent Guy so the section matches the homepage's mascot cards.
 const EFFECTIVE_USES = [
   {
-    guy: "/avatars/guy-01.webp",
+    guy: "/avatars/mascot.webp",
     title: "Start Strong",
     desc: "Begin college with a plan. Add your class schedule, syllabi, professors, deadlines, clubs, and campus commitments. Your agent organizes everything before the semester gets busy.",
   },
   {
-    guy: "/avatars/guy-04.webp",
+    guy: "/avatars/mascot.webp",
     title: "Never Miss a Deadline",
     desc: "Every syllabus becomes a personalized action plan with assignments, quizzes, exams, reminders, and study blocks, so you always know what's due and what's coming next.",
   },
   {
-    guy: "/avatars/guy-02.webp",
+    guy: "/avatars/mascot.webp",
     title: "Study Smarter",
     desc: "Transform notes, lectures, readings, and textbooks into personalized study guides, review schedules, practice quizzes, and exam prep tailored to your workload.",
   },
   {
-    guy: "/avatars/guy-11.webp",
+    guy: "/avatars/mascot.webp",
     title: "Communicate with Confidence",
     desc: "Draft polished emails to professors, teaching assistants, advisors, recruiters, and classmates in your own voice, professional, clear, and ready to send.",
   },
   {
-    guy: "/avatars/guy-06.webp",
+    guy: "/avatars/mascot.webp",
     title: "Balance Your College Life",
     desc: "Keep classes, clubs, events, work, travel, friendships, and personal commitments organized in one place, making it easier to stay involved without becoming overwhelmed.",
   },
   {
-    guy: "/avatars/guy-09.webp",
+    guy: "/avatars/mascot.webp",
     title: "Build Your Career Early",
     desc: "Create your resume, strengthen your LinkedIn profile, track internships, grow your professional network, and prepare for interviews, starting freshman year instead of scrambling as a senior.",
   },
   {
-    guy: "/avatars/guy-07.webp",
+    guy: "/avatars/mascot.webp",
     title: "Stay Independent. Give Everyone Peace of Mind.",
     desc: "Your College Agent helps you stay organized, accountable, and prepared while giving your parents confidence that you have a system in place to support you every step of the way.",
   },
@@ -247,7 +247,7 @@ export default function ForStudentsPage() {
           body="By the time finals hit, your agent already knows your classes, your deadlines, and how you study. Instead of cramming, you walk in with a plan it built weeks ago, one exam at a time."
           reverse
           background="var(--cream2)"
-          guy="/avatars/guy-02.webp"
+          guy="/avatars/mascot.webp"
           messages={[
             { from: "me", text: "Finals week is going to bury me 😩" },
             { from: "bot", text: "Not this year. Four exams over six days — I built a day-by-day plan, heaviest subject first." },

@@ -5,22 +5,22 @@
 
 const PILLARS = [
   {
-    guy: "/avatars/guy-04.webp",
+    guy: "/avatars/mascot.webp",
     title: "Memory",
     desc: "Reminds you of your classes, projects, deadlines, relationships, preferences, and previous conversations.",
   },
   {
-    guy: "/avatars/guy-10.webp",
+    guy: "/avatars/mascot.webp",
     title: "Context",
     desc: "Understands everything happening across your schedule, coursework, commitments, and connected applications.",
   },
   {
-    guy: "/avatars/guy-08.webp",
+    guy: "/avatars/mascot.webp",
     title: "Judgment",
     desc: "Learns how you make decisions, communicate, prioritize, and solve problems—so its recommendations feel like your own.",
   },
   {
-    guy: "/avatars/guy-12.webp",
+    guy: "/avatars/mascot.webp",
     title: "Execution",
     desc: "Organizes, plans, drafts, tracks, schedules, and completes tasks across your connected tools, rather than simply generating responses.",
   },

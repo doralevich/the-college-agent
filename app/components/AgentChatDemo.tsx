@@ -14,7 +14,7 @@ export function AgentChatDemo({
   body,
   tools,
   messages,
-  guy = "/avatars/guy-03.webp",
+  guy = "/avatars/mascot.webp",
   agentName = "Your College Agent",
   reverse = false,
   background = "#fff",

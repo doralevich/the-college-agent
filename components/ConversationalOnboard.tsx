@@ -39,12 +39,19 @@ const SURPRISE_NAMES = [
   "Scout", "Sunny", "Theo", "Turbo", "Ziggy", "Zoe",
 ];
 
-// The "College Agent Guys" mascot avatars (public/avatars/guy-*, transparent). Picking one is
+/** The house mascot, and what the site itself is fronted by. */
+const MASCOT = "/avatars/mascot.webp";
+
+// Faces a student can give THEIR agent (public/avatars/*, transparent). Picking one is
 // converted to a File and rides the exact same upload path as a custom image.
-const GUY_PRESETS = Array.from(
-  { length: 12 },
-  (_, i) => `/avatars/guy-${String(i + 1).padStart(2, "0")}.webp`
-);
+//
+// The current mascot leads, then the twelve older poses. They are kept deliberately: this is
+// a CHOICE, not branding, and cutting twelve options down to one to match the new art would
+// take something away from the student to tidy up after ourselves.
+const GUY_PRESETS = [
+  MASCOT,
+  ...Array.from({ length: 12 }, (_, i) => `/avatars/guy-${String(i + 1).padStart(2, "0")}.webp`),
+];
 
 // Optional résumé upload — a single document, kept in component state and submitted as its
 // own multipart part (mirrors the avatar). No preview; just the filename with a remove.
@@ -452,12 +459,21 @@ const EMPTY_CLASS: ClassEntry = { name: "", days: "", time: "", location: "", pr
 
 // `{firstName}` is interpolated from the prop at render time so the intro can greet
 // the student by name (pulled from /build lead-capture). Missing → falls back to "there".
-// A different College Agent Guy fronts each question (stable per question key), so the
-// form feels alive as students move through it. The student's uploaded avatar still wins.
+// The mascot fronts each question. The student's uploaded avatar still wins.
+//
+// This used to hash the question key and deal out a different pose per question, so the form
+// felt alive. There is one pose of the current mascot, so every draw returned the same image
+// anyway - and dealing from GUY_PRESETS now would mix the new character with the twelve older
+// poses mid-form, which reads as three different robots rather than one.
+//
+// The seed and the hash stay: drop more poses into MASCOT_POSES and the variety comes back
+// with no other change.
+const MASCOT_POSES = [MASCOT];
+
 function guyFor(seed: string): string {
   let h = 0;
   for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
-  return GUY_PRESETS[h % GUY_PRESETS.length];
+  return MASCOT_POSES[h % MASCOT_POSES.length];
 }
 
 const STEPS: Step[] = [
