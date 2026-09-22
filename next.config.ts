@@ -13,7 +13,8 @@ import type { NextConfig } from "next";
 //   images:   self, data/blob, and https: broadly (Sanity, Composio, Supabase avatars,
 //             school-logo accents, the FB pixel) — pragmatic; narrow later if desired
 //   fonts:    self, Google Fonts, data:
-//   connect:  self, Supabase (https+wss), Meta, Composio logos, Vercel insights
+//   connect:  self, Supabase (https+wss), Meta, Composio logos, Vercel insights,
+//             Open-Meteo + BigDataCloud (the New Chat forecast card)
 //   frames:   self + Calendly (the /consultation embed)
 const cspReportOnly = [
   "default-src 'self'",
@@ -25,16 +26,20 @@ const cspReportOnly = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://assets.calendly.com",
   "img-src 'self' data: blob: https:",
   "font-src 'self' https://fonts.gstatic.com data:",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://connect.facebook.net https://www.facebook.com https://logos.composio.dev https://*.vercel-insights.com",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://connect.facebook.net https://www.facebook.com https://logos.composio.dev https://*.vercel-insights.com https://api.open-meteo.com https://api.bigdatacloud.net",
   "frame-src 'self' https://calendly.com https://assets.calendly.com",
 ].join("; ");
 
+// geolocation is (self) rather than (): the New Chat forecast card asks for a position, and
+// () switches the API off site-wide, so every student saw "Weather unavailable" no matter what
+// they clicked. (self) still means no third-party frame can ask, and the browser still prompts
+// the student, who can still refuse - it is "we ask first", not "we can't ask".
 const securityHeaders = [
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), browsing-topics=()" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self), browsing-topics=()" },
   { key: "Content-Security-Policy-Report-Only", value: cspReportOnly },
 ];
 

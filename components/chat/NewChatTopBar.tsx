@@ -296,8 +296,27 @@ function WeatherCard({ accent, demo }: { accent?: string; demo?: WeatherData }) 
             >
               Turn on your local forecast
             </button>
+          ) : wx.state === "denied" ? (
+            // Once a student has said no, the browser will not prompt again from a click -
+            // only the site settings can undo it. Saying "unavailable" here reads as broken
+            // when the truth is "you said no", so say that, and where to change it.
+            <div className="text-sm text-muted-foreground">
+              Location is off for this site. Turn it on in your browser&apos;s site settings to see
+              your forecast.
+            </div>
           ) : (
-            <div className="text-sm text-muted-foreground">Weather unavailable</div>
+            // A real failure: no geolocation API, or the forecast lookup fell over. A retry is
+            // worth offering - the usual cause is a network blip.
+            <div className="space-y-1">
+              <div className="text-sm text-muted-foreground">Weather unavailable</div>
+              <button
+                type="button"
+                onClick={load}
+                className="text-sm font-semibold text-primary hover:underline"
+              >
+                Try again
+              </button>
+            </div>
           )}
         </div>
       </div>
