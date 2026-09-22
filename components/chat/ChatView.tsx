@@ -10,7 +10,6 @@ import { ChatComposer } from "./ChatComposer";
 import { ChatMessages } from "./ChatMessages";
 import { HeaderClock } from "./HeaderClock";
 import { NewChatTopBar } from "./NewChatTopBar";
-import { ChatWelcomeTips } from "./ChatWelcomeTips";
 import { useChatContext } from "./ChatProvider";
 import { useChat } from "./useChat";
 import { useChatAttachments } from "./useChatAttachments";
@@ -54,8 +53,6 @@ export function ChatView({
   classes = [],
   accent,
   avatarUrl,
-  agentName,
-  intake,
 }: {
   // Student's first name from the intake — greets them on the empty state.
   firstName?: string | null;
@@ -68,9 +65,6 @@ export function ChatView({
   // Intake avatar shown beside the agent's messages (default mascot when null).
   avatarUrl?: string | null;
   // Agent's chosen name — used in the empty-state onboarding recap.
-  agentName?: string | null;
-  // The stored intake blob — powers the "here's what I already know about you" recap.
-  intake?: Record<string, unknown> | null;
 }) {
   const { userEmail } = useWorkspace();
   const {
@@ -209,9 +203,12 @@ export function ChatView({
 
             <NewChatTopBar classes={classes} accent={accent} onSeed={seedComposer} />
 
-            {/* First-run onboarding: what the agent already knows + a few tips. Only on
-                an empty chat, so active conversations stay clean. */}
-            <ChatWelcomeTips agentName={agentName} intake={intake} classesCount={classes.length} />
+            {/* The "here's what I already know about you" recap and the three quick tips used
+                to sit here. Both are gone: this is the page a student lands on every single
+                day, and a permanent first-run explainer under the greeting is clutter by the
+                second visit. The tips had also gone stale - they still named Start Here, Refer
+                & Earn and API Credits as sidebar items, none of which exist any more, which is
+                what a hardcoded description of the navigation does the moment it moves. */}
           </>
         )}
       </div>
