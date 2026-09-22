@@ -10,6 +10,7 @@ import { ChatComposer } from "./ChatComposer";
 import { ChatMessages } from "./ChatMessages";
 import { HeaderClock } from "./HeaderClock";
 import { NewChatTopBar } from "./NewChatTopBar";
+import { ChatGreetingCard } from "./ChatGreetingCard";
 import { useChatContext } from "./ChatProvider";
 import { useChat } from "./useChat";
 import { useChatAttachments } from "./useChatAttachments";
@@ -50,12 +51,14 @@ function isOutOfCreditsError(message: string): boolean {
 
 export function ChatView({
   firstName,
+  agentName,
   classes = [],
   accent,
   avatarUrl,
 }: {
   // Student's first name from the intake — greets them on the empty state.
   firstName?: string | null;
+  agentName?: string | null;
   // Structured class list from the intake; classes matching today's weekday show
   // as a "Today: ..." line under the greeting.
   classes?: ClassInfo[];
@@ -122,15 +125,10 @@ export function ChatView({
   );
   const headerTitle = activeTitle || (activeSessionId ? "Chat" : "New chat");
 
-  // Greeting bits for the empty state. Computed client-side so the time of day and
-  // "today" follow the student's local clock. Memoized per mount — a chat session
-  // won't straddle a greeting boundary in any way worth re-rendering for.
-  const timeOfDay = useMemo(() => {
-    const h = new Date().getHours();
-    return h < 12 ? "good morning" : h < 17 ? "good afternoon" : "good evening";
-  }, []);
+  // "Today" is computed client-side so it follows the student's local clock rather than
+  // the server's. Memoized per mount — a chat session won't straddle midnight in any way
+  // worth re-rendering for.
   const todaysClasses = useMemo(() => classes.filter((c) => c.days && classIsToday(c.days)), [classes]);
-  const greetName = firstName?.trim() || "there";
   const userInitial = (firstName?.trim()?.[0] || userEmail?.[0] || "").toUpperCase();
 
   return (
@@ -184,22 +182,15 @@ export function ChatView({
           />
         ) : (
           <>
-            {/* Greeting leads; the weather banner + quick actions sit beneath it, and the
+            {/* The agent introduces itself, then today's classes, then quick actions - the
                 whole group seats just above the composer (justify-end on the wrapper). */}
-            <div className="flex flex-col items-center gap-2 text-center">
-              <h1 className="text-[26px] font-semibold tracking-tight text-foreground sm:text-[30px]">
-                Hi {greetName}, {timeOfDay}.
-              </h1>
-              {todaysClasses.length > 0 && (
-                <p className="max-w-xl text-sm text-muted-foreground">
-                  Today:{" "}
-                  {todaysClasses
-                    .map((c) => (c.time ? `${c.name} at ${c.time}` : c.name))
-                    .join(" · ")}
-                </p>
-              )}
-              <p className="text-lg text-foreground/75">How can I help you today?</p>
-            </div>
+            <ChatGreetingCard firstName={firstName} agentName={agentName} avatarUrl={avatarUrl} />
+            {todaysClasses.length > 0 && (
+              <p className="mx-auto max-w-xl text-center text-sm text-muted-foreground">
+                Today:{" "}
+                {todaysClasses.map((c) => (c.time ? `${c.name} at ${c.time}` : c.name)).join(" · ")}
+              </p>
+            )}
 
             <NewChatTopBar classes={classes} accent={accent} onSeed={seedComposer} />
 

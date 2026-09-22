@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Inter } from "next/font/google";
+import { Fraunces, IBM_Plex_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import MetaPixel from "./components/MetaPixel";
 import GoogleAnalytics from "./components/GoogleAnalytics";
@@ -10,6 +10,14 @@ const ibmPlexMono = IBM_Plex_Mono({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-mono",
+});
+// The brand serif. The welcome card and the intake each inject this from Google Fonts at
+// runtime; self-hosting it here means anything inside the app can reach for it without a
+// network round trip or the flash of Georgia that comes with one.
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-serif",
 });
 
 export const metadata: Metadata = {
@@ -96,7 +104,11 @@ export default function RootLayout({
   return (
     // suppressHydrationWarning: next-themes sets the theme class on <html> before
     // hydration (authed surface only), which React would otherwise flag as a mismatch.
-    <html lang="en" className={`${inter.variable} ${ibmPlexMono.variable}`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${inter.variable} ${ibmPlexMono.variable} ${fraunces.variable}`}
+      suppressHydrationWarning
+    >
       <body>
         <GoogleAnalytics />
         <MetaPixel />
