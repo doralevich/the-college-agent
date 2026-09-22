@@ -333,6 +333,7 @@ const LIVING_OPTIONS = [
   "Fraternity/Sorority House",
   "Other",
 ];
+const GREEK_OPTIONS = ["Yes", "No", "Thinking about rushing"];
 const CLUBS_OPTIONS = [
   "Academic or professional",
   "Cultural or religious",
@@ -505,10 +506,23 @@ const STEPS: Step[] = [
   },
   { kind: "academics", key: "academics", prompt: "Where are you in your college journey?", tier: 3 },
   { kind: "single", key: "livingSituation", prompt: "Where are you living this year?", options: LIVING_OPTIONS, allowOther: true, tier: 3 },
-  // Greek-life follow-ups, only when they live in a fraternity/sorority house.
-  { kind: "text", key: "greekOrg", prompt: "What fraternity or sorority are you in?", placeholder: "Sigma Chi, Alpha Phi...", tier: 3, showIf: (f) => f.livingSituation === "Fraternity/Sorority House" },
-  { kind: "text", key: "greekRole", prompt: "Do you have a role in your chapter?", placeholder: "Social chair, treasurer, rush captain... or just 'member'", tier: 3, showIf: (f) => f.livingSituation === "Fraternity/Sorority House" },
-  { kind: "single", key: "greekAmbassador", prompt: "Would you be interested in being a College Agent Ambassador for your chapter?", options: ["Yes, tell me more", "Maybe later", "No thanks"], tier: 3, showIf: (f) => f.livingSituation === "Fraternity/Sorority House" },
+  // Greek life, asked of everyone.
+  //
+  // These used to hang off livingSituation === "Fraternity/Sorority House", which is a much
+  // narrower question than it looks: most members of a chapter do not live in the house, so
+  // the agent never learned about the chapter meetings, rush weeks and philanthropy dates
+  // filling their calendar. The yes/no leads so a student who is not in one answers once and
+  // moves on rather than being asked to name a chapter they do not have.
+  //
+  // "Thinking about rushing" earns its place: rush has hard dates and the agent can only help
+  // with them if it knows to look.
+  { kind: "single", key: "greekLife", prompt: "Are you in a fraternity or sorority?", options: GREEK_OPTIONS, tier: 3 },
+  { kind: "text", key: "greekOrg", prompt: "Which one?", placeholder: "Sigma Chi, Alpha Phi...", tier: 3, showIf: (f) => f.greekLife === "Yes" },
+  { kind: "text", key: "greekRole", prompt: "Do you have a role in your chapter?", placeholder: "Social chair, treasurer, rush captain... or just 'member'", tier: 3, showIf: (f) => f.greekLife === "Yes" },
+  // The "would you be a College Agent Ambassador for your chapter?" question was here. The
+  // ambassador program is switched off (lib/ambassador.ts), so it recruited into something
+  // that does not run. The greekAmbassador field stays in the payload - turn the program back
+  // on and the question comes back with it.
   {
     kind: "multi",
     key: "clubs",
