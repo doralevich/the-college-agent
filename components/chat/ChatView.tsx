@@ -111,7 +111,13 @@ export function ChatView({
   };
 
   // Follow the stream only when the user is already near the bottom.
+  //
+  // Not on the welcome panel: there is no stream to follow there, and stickRef starts true, so
+  // this would jump an empty chat straight to the bottom - scrolling the greeting off the top
+  // on any window too short to hold the whole panel. (Checked inline rather than via
+  // showWelcome, which is declared below this effect.)
   useEffect(() => {
+    if (loadingHistory || messages.length === 0) return;
     if (!stickRef.current) return;
     const el = scrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
@@ -157,15 +163,20 @@ export function ChatView({
         </button>
         </div>
       </header>
-      {/* Top: scrolling transcript when there are messages; the centered welcome panel when
-          empty (justify-end seats it just above the composer). */}
+      {/* Top: scrolling transcript when there are messages; the welcome panel when empty.
+          The empty state seats its group just above the composer with mt-auto on the group
+          rather than justify-end on this container. They look identical until the content is
+          taller than the viewport, at which point justify-end overflows past the TOP edge -
+          scrollTop 0 is already below the start of the content, so the greeting is cut off
+          and cannot be scrolled back to. An auto top margin collapses to 0 in that case and
+          the panel scrolls from the top like anything else. */}
       <div
         ref={scrollRef}
         onScroll={onScroll}
         className={cn(
           "min-h-0",
           showWelcome
-            ? "flex flex-1 flex-col items-center justify-end gap-6 overflow-y-auto px-4 pb-6 pt-5"
+            ? "flex flex-1 flex-col items-center overflow-y-auto px-4 pb-6 pt-5"
             : "flex-1 overflow-y-auto overflow-x-hidden"
         )}
       >
@@ -181,9 +192,9 @@ export function ChatView({
             userInitial={userInitial}
           />
         ) : (
-          <>
-            {/* The agent introduces itself, then today's classes, then quick actions - the
-                whole group seats just above the composer (justify-end on the wrapper). */}
+          // mt-auto, not justify-end on the parent: see the note on the scroll container.
+          <div className="mt-auto flex w-full flex-col items-center gap-6">
+            {/* The agent introduces itself, then today's classes, then quick actions. */}
             <ChatGreetingCard firstName={firstName} agentName={agentName} avatarUrl={avatarUrl} />
             {todaysClasses.length > 0 && (
               <p className="mx-auto max-w-xl text-center text-sm text-muted-foreground">
@@ -200,7 +211,7 @@ export function ChatView({
                 second visit. The tips had also gone stale - they still named Start Here, Refer
                 & Earn and API Credits as sidebar items, none of which exist any more, which is
                 what a hardcoded description of the navigation does the moment it moves. */}
-          </>
+          </div>
         )}
       </div>
 
