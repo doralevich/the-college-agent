@@ -23,6 +23,7 @@ import { FilesView } from "@/components/files/FilesView";
 import { IntegrationsView } from "@/components/IntegrationsView";
 import { StartHereView } from "@/components/StartHereView";
 import type { OnboardPrefill } from "@/components/ConversationalOnboard";
+import { ConnectSteps } from "@/components/ConnectSteps";
 
 type Props = {
   paid: boolean;
@@ -117,6 +118,44 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
   // One parse of the URL into { tab, chatSessionId }. The open chat thread rides the URL as a third
   // segment (/dashboard/chat/<sessionId>); null means a new chat. `dashboardPath` keeps that thread
   // id on the canonical path so the normalizer below doesn't strip it back to /dashboard/chat.
+  // The post-intake connect walkthrough: email, then calendar. Dismissal is remembered per
+  // user in localStorage - the same place the onboarding draft lives. This is a nudge, not
+  // state anything depends on, so a cleared browser showing it once more costs nothing and a
+  // missing row costs nobody their agent.
+  const connectKey = `ca-connect-steps-done:${userId}`;
+  const [connectDone, setConnectDone] = useState(true);
+  // Read after paint, not during the effect body. Starting at `true` matches what the server
+  // rendered, so there is no hydration mismatch, and deferring the setState is the shape
+  // react-hooks/set-state-in-effect accepts (SetupPanel does the same with its fetch).
+  useEffect(() => {
+    let cancelled = false;
+    Promise.resolve()
+      .then(() => {
+        try {
+          return localStorage.getItem(connectKey) === "1";
+        } catch {
+          // Private browsing, blocked storage: treat as done rather than showing the
+          // walkthrough on every single load.
+          return true;
+        }
+      })
+      .then((done) => {
+        if (!cancelled) setConnectDone(done);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [connectKey]);
+
+  function finishConnectSteps() {
+    try {
+      localStorage.setItem(connectKey, "1");
+    } catch {
+      /* the panel still closes for this session */
+    }
+    setConnectDone(true);
+  }
+
   const segments = pathname.split("/").filter(Boolean);
   const route = segments[0] === "dashboard" ? parseDashboardRoute(segments.slice(1)) : null;
   const active = normalizeDashboardTab(route?.tab ?? null, tabs, hasAgent);
@@ -320,6 +359,11 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
                   userId={userId}
                   onboardPrefill={onboardPrefill}
                 />
+              ) : hasAgent && agentId && !connectDone ? (
+                // Straight after the intake: connect email, then calendar, then land on chat.
+                // Skippable at every step - chat works the moment the agent is running, and
+                // integrations are a capability upgrade layered on afterwards, in any order.
+                <ConnectSteps agentId={agentId} onDone={finishConnectSteps} />
               ) : active === "settings" ||
               (hasAgent && (active === "credits" || active === "refer")) ||
               (paid && (active === "billing" || active === "agent" || active === "agents")) ? (
