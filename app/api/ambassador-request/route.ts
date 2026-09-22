@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { limit } from "@/lib/rate-limit";
+import { AMBASSADOR_PROGRAM_ENABLED } from "@/lib/ambassador";
 
 type AmbassadorRequest = {
   // Personal Information
@@ -72,6 +73,11 @@ function sectionHeading(label: string) {
 }
 
 export async function POST(req: NextRequest) {
+  // Applications are closed while the program is off (lib/ambassador.ts). 404 rather than a
+  // 403: there is nothing to appeal and nothing to retry, and the apply page is gone too.
+  if (!AMBASSADOR_PROGRAM_ENABLED) {
+    return NextResponse.json({ error: { code: "not_found", message: "Not found" } }, { status: 404 });
+  }
   try {
     if (!(await limit(req, "ambassador-request", { max: 5, windowSeconds: 60 }))) {
       return NextResponse.json({ error: "Too many requests. Please slow down." }, { status: 429 });

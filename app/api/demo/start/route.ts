@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { ApiError, json, readJson, route } from "@/lib/http";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { syncToMailchimp } from "@/lib/newsletter";
-import { ambassadorBySlug } from "@/lib/ambassador";
+import { AMBASSADOR_PROGRAM_ENABLED, ambassadorBySlug } from "@/lib/ambassador";
 import { limit, tooManyRequests } from "@/lib/rate-limit";
 
 // Demo sandbox entry gate (PRD): collects email, cell, school, and grad year with TWO
@@ -58,7 +58,9 @@ export const POST = route(async (req) => {
   // Attribution: explicit ?ref param, else the /r/{slug} cookie. No code = house lead.
   let ambassadorId: string | null = null;
   try {
-    const slug = (body.ref ?? "").trim() || (await cookies()).get("ca_amb")?.value || "";
+    const slug = AMBASSADOR_PROGRAM_ENABLED
+      ? (body.ref ?? "").trim() || (await cookies()).get("ca_amb")?.value || ""
+      : "";
     if (slug) ambassadorId = (await ambassadorBySlug(slug))?.id ?? null;
   } catch {
     /* attribution is best-effort */
