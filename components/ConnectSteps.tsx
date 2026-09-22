@@ -13,8 +13,7 @@ import type { IntegrationConnection, IntegrationConnectionsResult } from "@/lib/
 // app. Every stage is skippable.
 //
 //   1. Outlook or Google?
-//   2a. Outlook  -> one grant, mail AND calendar together. Done.
-//   2b. Google   -> Gmail, then Google Calendar. Two separate grants; Google splits them.
+//   2. Mail, then calendar - both vendors, so the student is told about both either way.
 //   3. Telegram / Slack / WhatsApp.
 //
 // Asking the vendor FIRST is the whole point. Offering "Gmail | Outlook" and then "Google
@@ -39,13 +38,25 @@ const POLL_MAX_ATTEMPTS = 22; // ~45s, matching the Integrations tab
 type Vendor = "google" | "microsoft";
 type Stage = "vendor" | "mail" | "calendar" | "channels";
 
-/** What each vendor needs connected, in order. Outlook's single grant is the whole list. */
+// What each vendor needs connected, in order.
+//
+// Microsoft lists Outlook TWICE on purpose. It is one OAuth grant covering mail and calendar
+// together, so the calendar step opens already satisfied - but a student who was only ever
+// asked about email has no reason to believe their calendar is handled, and silence is a
+// worse answer than a ticked box that says so. The step says it outright.
+//
+// We do not point that second step at a separate Microsoft-calendar toolkit, because our
+// catalogue has exactly one Microsoft entry and guessing a slug is how the Blackboard tile
+// ended up connecting to nothing.
 const VENDOR_STEPS: Record<Vendor, { slug: string; label: string; stage: Stage }[]> = {
   google: [
     { slug: "gmail", label: "Gmail", stage: "mail" },
     { slug: "googlecalendar", label: "Google Calendar", stage: "calendar" },
   ],
-  microsoft: [{ slug: "outlook", label: "Outlook", stage: "mail" }],
+  microsoft: [
+    { slug: "outlook", label: "Outlook", stage: "mail" },
+    { slug: "outlook", label: "Outlook Calendar", stage: "calendar" },
+  ],
 };
 
 function isActive(c: IntegrationConnection): boolean {
@@ -76,8 +87,10 @@ export function ConnectSteps({ agentId, onDone }: { agentId: string; onDone: () 
         // Already connected something from the Integrations tab? Infer the vendor and pick up
         // where that leaves them, rather than asking a question they have answered in deed.
         if (slugs.has("outlook")) {
+          // Outlook already covers both, so the calendar step is a confirmation rather than
+          // work. Land there so they see it ticked instead of wondering.
           setVendor("microsoft");
-          setStage("channels");
+          setStage("calendar");
         } else if (slugs.has("googlecalendar")) {
           setVendor("google");
           setStage("channels");
@@ -296,7 +309,9 @@ function ConnectStage({
         {step.stage === "calendar"
           ? "So I know where you have to be, what's due, and when you actually have time to work on it."
           : "So I can flag what needs a reply and draft responses in your voice."}
-        {step.slug === "outlook" && " This one grant covers your calendar too."}
+        {step.slug === "outlook" &&
+          step.stage === "calendar" &&
+          " Outlook covers this with the same sign-in you just did — nothing more to approve."}
       </p>
       <div className="mt-8">
         <button
