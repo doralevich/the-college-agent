@@ -67,7 +67,15 @@ function connectedSlugs(conns: IntegrationConnection[]): Set<string> {
   return new Set(conns.filter(isActive).map((c) => (c.toolkitSlug || "").toLowerCase()));
 }
 
-export function ConnectSteps({ agentId, onDone }: { agentId: string; onDone: () => void }) {
+export function ConnectSteps({
+  agentId,
+  agentName,
+  onDone,
+}: {
+  agentId: string;
+  agentName?: string | null;
+  onDone: () => void;
+}) {
   const [vendor, setVendor] = useState<Vendor | null>(null);
   const [stage, setStage] = useState<Stage>("vendor");
   const [connected, setConnected] = useState<Set<string>>(new Set());
@@ -227,7 +235,7 @@ export function ConnectSteps({ agentId, onDone }: { agentId: string; onDone: () 
             check-ins arrive.
           </p>
           <div className="mt-8">
-            <ChannelCards agentId={agentId} />
+            <ChannelCards agentId={agentId} agentName={agentName} />
           </div>
         </>
       )}
