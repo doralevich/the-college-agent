@@ -83,36 +83,34 @@ function TelegramHelp({ agentName, seed }: { agentName?: string | null; seed: st
     return `${base}_${tail}_bot`;
   }, [agentName, seed]);
 
+  // Controls only, in the order the steps above use them - no paragraph restating the steps.
+  // Same layout as ApolloClaw's BotFatherHelp.
   return (
     <div className="space-y-3 rounded-xl border bg-muted/30 p-3">
-      {/* First, because everything below assumes it is installed. telegram.org/dl is Telegram's
-          own download link and picks the right store for the device it is opened on. */}
-      <p className="text-xs text-muted-foreground">
-        Don&apos;t have Telegram yet?{" "}
-        <a
-          href="https://telegram.org/dl"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-medium text-primary underline-offset-2 hover:underline"
-        >
-          Get it for your phone or computer
-        </a>
-        .
-      </p>
-      <p className="text-xs text-muted-foreground">
-        BotFather asks for a display name (anything you like), then a username that has to be
-        unique and end in <span className="font-mono">bot</span>. That second one is where people
-        get stuck, so here is one that should be free.
-      </p>
-      <CopyRow label="Suggested username" value={suggestion} />
-      <CopyRow label="Send BotFather this" value="/newbot" />
-      {/* ?start= is not decoration: a bare t.me/BotFather often opens a landing page or a chat
-          list on desktop. The payload makes it open the BotFather chat with a START button. */}
-      <Button asChild size="sm" variant="outline">
-        <a href="https://t.me/BotFather?start=newbot" target="_blank" rel="noopener noreferrer">
-          Open BotFather in Telegram
-        </a>
-      </Button>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        {/* ?start= is not decoration: a bare t.me/BotFather often opens a landing page or a chat
+            list on desktop. The payload makes it open the BotFather chat with a START button. */}
+        <Button asChild size="sm">
+          <a href="https://t.me/BotFather?start=newbot" target="_blank" rel="noopener noreferrer">
+            Open BotFather in Telegram
+          </a>
+        </Button>
+        {/* For someone without Telegram, the button above lands on a "get the app" page.
+            telegram.org/dl picks the right store for the device it is opened on. */}
+        <span className="text-xs text-muted-foreground">
+          No Telegram yet?{" "}
+          <a
+            href="https://telegram.org/dl"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-foreground underline underline-offset-2"
+          >
+            Get it here
+          </a>
+        </span>
+      </div>
+      <CopyRow label="Send it this" value="/newbot" />
+      <CopyRow label="Then this username" value={suggestion} />
     </div>
   );
 }
