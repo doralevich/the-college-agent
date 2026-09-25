@@ -62,10 +62,14 @@ export const CHANNELS: ChannelDef[] = [
     name: "Telegram",
     recommended: true,
     tagline: "Your own private bot",
+    // Three short lines, same wording as ApolloClaw. They can be this short because the controls
+    // beside them (TelegramHelp in ChannelCards) do the explaining: a button that opens the real
+    // BotFather, /newbot and a free username to copy, and after connecting, a button to open the
+    // bot itself.
     steps: [
-      "In Telegram, open @BotFather and send /newbot to create a bot.",
-      "Copy the bot token it gives you and paste it below.",
-      "Press Connect, then send your new bot any message so it knows it's you.",
+      "Open BotFather and send it /newbot.",
+      "Name your bot anything, then send it the username below.",
+      "Paste the token it sends back.",
     ],
     fields: [
       { key: "botToken", label: "Bot token", placeholder: "123456789:ABCdef..." },
