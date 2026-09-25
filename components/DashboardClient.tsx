@@ -363,7 +363,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
                 // Straight after the intake: connect email, then calendar, then land on chat.
                 // Skippable at every step - chat works the moment the agent is running, and
                 // integrations are a capability upgrade layered on afterwards, in any order.
-                <ConnectSteps agentId={agentId} onDone={finishConnectSteps} />
+                <ConnectSteps agentId={agentId} agentName={agentName} onDone={finishConnectSteps} />
               ) : active === "settings" ||
               (hasAgent && (active === "credits" || active === "refer")) ||
               (paid && (active === "billing" || active === "agent" || active === "agents")) ? (
@@ -394,7 +394,7 @@ export function DashboardClient({ paid, onboardDone, setupDone, agentId, firstNa
                 // Just the setup now. The intake answers that used to fill this page are
                 // reference material rather than something a student acts on, so they moved to
                 // Settings -> Your intake; what is left here is the work they actually do.
-                agentId ? <SetupPanel agentId={agentId} /> : null
+                agentId ? <SetupPanel agentId={agentId} agentName={agentName} /> : null
               ) : !paid ? (
                 <BuildCta />
               ) : provisioning || provisionFailed ? (

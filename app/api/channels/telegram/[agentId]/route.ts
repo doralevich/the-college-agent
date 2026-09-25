@@ -82,6 +82,37 @@ export async function POST(request: Request, { params }: Ctx) {
     return ok();
   }
 
+  // "/start" is Telegram's own handshake, not a question.
+  //
+  // The dashboard's "Open your bot" button is a t.me/<bot>?start link, and tapping it sends
+  // exactly this - so for most students "/start" is the FIRST thing their agent ever receives.
+  // Running it as a turn would make the agent's opening move an attempt to answer a slash
+  // command, which is a poor first impression and a wasted turn on the student's credits.
+  //
+  // Binding still happens - that is the whole point of the tap - so this is a greeting instead
+  // of a turn, and the next thing they type is answered normally. Same handshake as ApolloClaw.
+  if (/^\/start(\s|$)/.test(update.text)) {
+    after(async () => {
+      try {
+        if (!config.ownerChatId) {
+          await upsertChannel(agentId, "telegram", {
+            ownerChatId: update.chatId,
+            state: "connected",
+            message: null,
+          });
+        }
+        await telegram.sendMessage(
+          config.token,
+          update.chatId,
+          "You're connected. This chat is yours now, and nobody else who finds this bot gets an answer.\n\nAsk me anything - a deadline, your schedule, an essay you're stuck on."
+        );
+      } catch (e) {
+        console.error("[channels:telegram] start handshake failed", { agentId, error: String(e) });
+      }
+    });
+    return ok();
+  }
+
   after(async () => {
     try {
       if (!config.ownerChatId) {

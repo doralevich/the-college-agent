@@ -41,7 +41,7 @@ function hourLabel(h: number): string {
   return `${twelve}:00 ${suffix}`;
 }
 
-export function SetupPanel({ agentId }: { agentId: string }) {
+export function SetupPanel({ agentId, agentName }: { agentId: string; agentName?: string | null }) {
   const [runs, setRuns] = useState<Run[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -115,7 +115,7 @@ export function SetupPanel({ agentId }: { agentId: string }) {
         </p>
       </div>
 
-      <ChannelCards agentId={agentId} onLinkedChange={setAnyLinked} />
+      <ChannelCards agentId={agentId} agentName={agentName} onLinkedChange={setAnyLinked} />
 
       <div className="space-y-3">
         <div className="flex items-start gap-3 px-1">

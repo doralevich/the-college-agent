@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Check, ChevronDown, Loader2, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
@@ -61,11 +61,79 @@ function CopyRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+// Getting from "no Telegram" to "a bot token on the clipboard", with as little to get wrong as we
+// can manage. Ported from ApolloClaw's BotFatherHelp so the two products walk students through
+// the same thing.
+//
+// Telegram has no API for creating a bot and no way to pre-fill a message to BotFather, so the
+// student really does have to have that conversation. What this removes is the three places they
+// get stuck: not having Telegram at all, finding the real BotFather (there are impersonators),
+// and the username - which must be unique across all of Telegram and end in "bot", so the first
+// few anyone tries are taken and a non-technical student decides the product is broken.
+function TelegramHelp({ agentName, seed }: { agentName?: string | null; seed: string }) {
+  // Telegram's rules: 5-32 characters, letters digits and underscores, ending in "bot". A short
+  // tail because the clean form of any name is usually taken already. DERIVED from the agent id
+  // rather than random: Math.random() would differ between server and client render and change
+  // on every re-render, which is no way to treat a value someone is about to copy.
+  const suggestion = useMemo(() => {
+    const base = (agentName || "college").replace(/[^a-zA-Z0-9]/g, "").slice(0, 18) || "college";
+    let h = 0;
+    for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+    const tail = h.toString(36).slice(0, 4).padStart(4, "0");
+    return `${base}_${tail}_bot`;
+  }, [agentName, seed]);
+
+  return (
+    <div className="space-y-3 rounded-xl border bg-muted/30 p-3">
+      {/* First, because everything below assumes it is installed. telegram.org/dl is Telegram's
+          own download link and picks the right store for the device it is opened on. */}
+      <p className="text-xs text-muted-foreground">
+        Don&apos;t have Telegram yet?{" "}
+        <a
+          href="https://telegram.org/dl"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-primary underline-offset-2 hover:underline"
+        >
+          Get it for your phone or computer
+        </a>
+        .
+      </p>
+      <p className="text-xs text-muted-foreground">
+        BotFather asks for a display name (anything you like), then a username that has to be
+        unique and end in <span className="font-mono">bot</span>. That second one is where people
+        get stuck, so here is one that should be free.
+      </p>
+      <CopyRow label="Suggested username" value={suggestion} />
+      <CopyRow label="Send BotFather this" value="/newbot" />
+      {/* ?start= is not decoration: a bare t.me/BotFather often opens a landing page or a chat
+          list on desktop. The payload makes it open the BotFather chat with a START button. */}
+      <Button asChild size="sm" variant="outline">
+        <a href="https://t.me/BotFather?start=newbot" target="_blank" rel="noopener noreferrer">
+          Open BotFather in Telegram
+        </a>
+      </Button>
+    </div>
+  );
+}
+
+/** A t.me link that opens the student's own bot and sends /start, or null if we can't build one.
+ *
+ * connectTelegram stores the bot's @username from getMe as `account`. The ?start payload makes
+ * Telegram reliably show a START button, and the receiver treats /start as the bind-and-greet
+ * handshake rather than a question for the agent. */
+function telegramStartUrl(account: string | null): string | null {
+  return account?.startsWith("@") ? `https://t.me/${account.slice(1)}?start=setup` : null;
+}
+
 export function ChannelCards({
   agentId,
+  agentName,
   onLinkedChange,
 }: {
   agentId: string;
+  /** Seeds the suggested Telegram bot username. Optional - it falls back to a generic base. */
+  agentName?: string | null;
   /** Reports whether any channel has somewhere to send, for callers that gate on it. */
   onLinkedChange?: (anyLinked: boolean) => void;
 }) {
@@ -216,6 +284,25 @@ export function ChannelCards({
                           ? `Open ${def.name}, find it, and send anything — that's how it learns which chat is yours.`
                           : def.connectedNote}
                       </p>
+                      {/* Telegram is the one channel where we hold enough to build the link -
+                          the bot's @username from getMe - so it gets a button rather than a
+                          sentence. The copyable link is for a student whose Telegram is on
+                          their phone while this page is open on a laptop. */}
+                      {needsFirstMessage &&
+                        def.id === "telegram" &&
+                        (() => {
+                          const url = telegramStartUrl(ch.account);
+                          return url ? (
+                            <div className="space-y-2">
+                              <Button asChild size="sm">
+                                <a href={url} target="_blank" rel="noopener noreferrer">
+                                  Open {ch.account} in Telegram
+                                </a>
+                              </Button>
+                              <CopyRow label="Or send yourself this link" value={url} />
+                            </div>
+                          ) : null;
+                        })()}
                       {/* Shown AFTER connecting, because both are per-agent values that don't
                           exist until then — and the setup can't be finished without them. */}
                       {def.showWebhookUrl && (
@@ -241,6 +328,7 @@ export function ChannelCards({
                           <li key={i}>{step}</li>
                         ))}
                       </ol>
+                      {def.id === "telegram" && <TelegramHelp agentName={agentName} seed={agentId} />}
                       {def.fields.map((f) => (
                         <div key={f.key} className="space-y-2">
                           <Label htmlFor={`${def.id}-${f.key}`}>{f.label}</Label>
