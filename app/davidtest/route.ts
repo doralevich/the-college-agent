@@ -100,6 +100,21 @@ export async function GET(req: NextRequest) {
     const workspaces = await getUserWorkspaces(userId);
     if (!workspaces.length) return fail("workspace");
 
+    // Step 2 of the dashboard checklist, "Technical setup", ticked.
+    //
+    // This is what the first cut got wrong. Seeding the intake alone left setupDone false,
+    // and the checklist gates step 3 on BOTH (`bothDone = onboardDone && setupDone`) - so
+    // "Create my agent" rendered disabled under "Finish steps 1 and 2 first", and the link
+    // dead-ended on a checklist with nothing clickable.
+    //
+    // Every credential column is nullable and stays null here: the row means "this step is
+    // done", not "Telegram is connected". The provisioner already treats Telegram as
+    // optional and configures around its absence.
+    const { error: setupErr } = await admin
+      .from("setup_submissions")
+      .upsert({ user_id: userId, submitted_at: new Date().toISOString() }, { onConflict: "user_id" });
+    if (setupErr) return fail("seed setup", setupErr.message);
+
     if (wantsIntake) {
       // Testing the questions themselves: drop the answers so the dashboard shows the
       // intake again. The agent, if one exists, is left alone - re-running the intake
@@ -145,10 +160,25 @@ export async function GET(req: NextRequest) {
     });
     if (verifyErr) return fail("sign in", verifyErr.message);
 
-    // Chat when it is ready to use; the dashboard root when the point is to walk the
-    // intake. The dashboard provisions the agent itself on first load once paid and
-    // onboarded, so there is no Agent37 call here.
-    return NextResponse.redirect(new URL(wantsIntake ? "/dashboard" : "/dashboard/chat", url));
+    // Where to land.
+    //
+    // Chat only once an agent actually exists. Provisioning is NOT automatic - it is a
+    // button on the checklist ("Create my agent"), and it takes minutes, which is far too
+    // long to hold a GET open for, so this route seeds the state and leaves that one click.
+    // Asking for /dashboard/chat without an agent does not error, it silently falls back to
+    // the checklist tab, which is a confusing way to arrive somewhere you did not ask for.
+    // So send them to the checklist deliberately instead - with both steps ticked, step 3 is
+    // highlighted and enabled, and it is one click, once, ever. Every later visit finds the
+    // agent and goes straight to Chat.
+    const { data: agentRow } = await admin
+      .from("agents")
+      .select("agent37_id")
+      .eq("workspace_id", workspaces[0].id)
+      .limit(1)
+      .maybeSingle();
+
+    const target = wantsIntake || !agentRow?.agent37_id ? "/dashboard" : "/dashboard/chat";
+    return NextResponse.redirect(new URL(target, url));
   } catch (err) {
     return fail("unexpected", err instanceof Error ? err.message : String(err));
   }
