@@ -7,7 +7,7 @@ import { ChatbotComparison } from "./components/ChatbotComparison";
 import { FourPillars } from "./components/FourPillars";
 import { Footer } from "./components/Footer";
 import { categoryLabel, getCollegeAgentPosts, postTitle } from "@/lib/sanity-blog";
-import { HOSTING_AMOUNT_CENTS, HOSTING_ANNUAL_AMOUNT_CENTS } from "@/lib/pricing/intro-cutoff";
+import { PLAN_TIERS } from "@/lib/pricing/intro-cutoff";
 
 // Re-render every 5 minutes so the "most recent posts" section rotates on its own as
 // new posts publish (and pricing flips automatically when the intro window closes).
@@ -100,8 +100,6 @@ const ASK_CATEGORIES = [
 ];
 
 function buildJsonLd() {
-  const hostingPrice = (HOSTING_AMOUNT_CENTS / 100).toFixed(0);
-  const hostingAnnualPrice = (HOSTING_ANNUAL_AMOUNT_CENTS / 100).toFixed(0);
   return {
   "@context": "https://schema.org",
   "@graph": [
@@ -146,8 +144,10 @@ function buildJsonLd() {
         "AI companion for college students, AI study companion, AI study partner, AI for college students, AI class schedule planner, AI college planner, AI internship prep, college AI companion",
       areaServed: "United States",
       offers: [
-        { "@type": "Offer", name: "The College Agent (monthly)", price: hostingPrice, priceCurrency: "USD" },
-        { "@type": "Offer", name: "The College Agent (annual)", price: hostingAnnualPrice, priceCurrency: "USD" },
+        ...PLAN_TIERS.flatMap((t) => [
+          { "@type": "Offer", name: `The College Agent ${t.name} (monthly)`, price: (t.monthlyCents / 100).toFixed(0), priceCurrency: "USD" },
+          { "@type": "Offer", name: `The College Agent ${t.name} (annual)`, price: (t.annualCents / 100).toFixed(0), priceCurrency: "USD" },
+        ]),
       ],
     },
     {
@@ -159,7 +159,7 @@ function buildJsonLd() {
       publisher: { "@id": "https://thecollegeagent.ai/#organization" },
       description:
         "An AI study companion and study partner for college students that helps with studying, class schedules, notes, deadlines, internships, and career planning across all four years of college.",
-      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      offers: { "@type": "Offer", price: (Math.min(...PLAN_TIERS.map((t) => t.monthlyCents)) / 100).toFixed(0), priceCurrency: "USD" },
     },
     {
       "@type": "FAQPage",

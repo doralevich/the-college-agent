@@ -2,10 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 import { useState } from "react";
-import {
-  HOSTING_AMOUNT_CENTS,
-  HOSTING_ANNUAL_AMOUNT_CENTS,
-} from "@/lib/pricing/intro-cutoff";
+import { plansSummary } from "@/lib/pricing/intro-cutoff";
 
 // The six-step walkthrough, clicked through accordion-style.
 //
@@ -13,11 +10,6 @@ import {
 // rewrite every step, pricing included. Those segments are ApolloClaw's now, and the
 // toggle had already stopped being rendered - stepsFor was pinned to "student" - so the
 // staff branch was dead copy quoting a $4,500 build nobody could buy.
-
-function price(cents: number): string {
-  const dollars = cents / 100;
-  return "$" + dollars.toLocaleString("en-US", { minimumFractionDigits: cents % 100 ? 2 : 0, maximumFractionDigits: 2 });
-}
 
 type Step = { title: string; body: string };
 
@@ -27,9 +19,6 @@ const MASCOT = "/avatars/mascot.webp";
 const STEP_GUYS = Array.from({ length: 6 }, () => MASCOT);
 
 function stepsFor(): Step[] {
-  const hosting = price(HOSTING_AMOUNT_CENTS);
-  const hostingAnnual = price(HOSTING_ANNUAL_AMOUNT_CENTS);
-
   return [
     {
       title: "Create Your Account",
@@ -37,7 +26,7 @@ function stepsFor(): Step[] {
     },
     {
       title: "Choose Your Plan",
-      body: `${hosting}/month, or ${hostingAnnual}/year (two months free). No setup fee. That covers your own private agent, hosting, monitoring, updates, and normal daily use, plus $20 in AI credits to get started. Secure checkout with Stripe, and a 7-day money-back guarantee.`,
+      body: `Pick one of three plans: ${plansSummary()}. Pay yearly and two months are free. No setup fee. Every plan covers your own private agent, hosting, monitoring, and updates, and the included AI usage refills every month. Secure checkout with Stripe, and a 7-day money-back guarantee.`,
     },
     {
       title: "Personalize Your Agent",

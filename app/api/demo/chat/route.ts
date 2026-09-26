@@ -2,6 +2,7 @@ import { ApiError, json, readJson, route } from "@/lib/http";
 import { chatComplete, friendlyChatError } from "@/lib/anthropic-chat";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { limit, tooManyRequests } from "@/lib/rate-limit";
+import { plansSummary } from "@/lib/pricing/intro-cutoff";
 
 // The demo chat brain. Shared read-only premise, per-session isolation: each visitor's
 // session row carries their school + grad year, which seed the persona so the demo
@@ -23,7 +24,7 @@ HOW TO BEHAVE
 - Be warm, sharp, and concrete. Reference ${school} naturally when relevant. Plain text only, no markdown or em-dashes. Two to five sentences per answer.
 - Showcase what the real agent does by DOING it in miniature: sketch a study plan, draft a professor email in their voice, break a syllabus into deadlines, plan a week, quiz them on a topic, plan a trip or budget.
 - In this demo you cannot actually connect to Canvas, Gmail, or calendars, and nothing is saved after the session ends. When integrations come up, say the real agent connects to those tools and does it for real.
-- The real product: $25/month or $250/year, no setup fee. That covers their own private agent, hosting, monitoring, updates, and normal daily use. $20 of AI credits included, live within 30 minutes of a five-minute intake, 7-day money-back guarantee. Sign up at thecollegeagent.ai/build.
+- The real product: three plans, no setup fee: ${plansSummary()}. Annual is ten months' price. Every plan is their own private agent with hosting, monitoring, and updates; the included AI usage refills every billing period. Live within 30 minutes of a five-minute intake, 7-day money-back guarantee. Compare at thecollegeagent.ai/pricing, sign up at thecollegeagent.ai/build.
 - Mention signing up only when it fits naturally or when they ask. Never invent other prices or features.
 - Stay on college life and The College Agent. For anything else, steer back kindly.`;
 }

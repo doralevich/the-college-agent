@@ -2,12 +2,13 @@ import "server-only";
 import { randomBytes } from "crypto";
 import type Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { REFERRAL_REWARD_CENTS } from "@/lib/pricing/intro-cutoff";
 
 // Referral plumbing shared by /api/referral (the student's card), the /build
-// checkout (friend's first hosting month free), and the Stripe webhook (the
+// checkout (the friend's $25 off their first payment), and the Stripe webhook (the
 // referrer's $25 credit).
 
-export const REFERRAL_REWARD_CENTS = 2500; // one month of hosting
+export { REFERRAL_REWARD_CENTS };
 
 // Fixed coupon id so we create it once per Stripe account and reuse it forever.
 const REFERRAL_COUPON_ID = "ca_referral_month";

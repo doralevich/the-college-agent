@@ -1,10 +1,7 @@
 import { ApiError, json, readJson, route } from "@/lib/http";
 import { chatComplete, friendlyChatError } from "@/lib/anthropic-chat";
 import { limit, tooManyRequests } from "@/lib/rate-limit";
-import {
-  HOSTING_AMOUNT_CENTS,
-  HOSTING_ANNUAL_AMOUNT_CENTS,
-} from "@/lib/pricing/intro-cutoff";
+import { plansSummary, REFERRAL_REWARD_CENTS } from "@/lib/pricing/intro-cutoff";
 
 // The marketing site's "Ask us anything" widget. Public and unauthenticated, so it is
 // deliberately narrow: short answers, capped history, capped input size, and a system
@@ -21,8 +18,7 @@ function price(cents: number): string {
 }
 
 function systemPrompt(): string {
-  const hosting = price(HOSTING_AMOUNT_CENTS);
-  const hostingAnnual = price(HOSTING_ANNUAL_AMOUNT_CENTS);
+  const referral = price(REFERRAL_REWARD_CENTS);
 
   return `You are the friendly assistant on thecollegeagent.ai, answering visitor questions about The College Agent. You are talking to prospective students and parents in a small chat widget.
 
@@ -33,7 +29,7 @@ WHAT IT DOES
 Class schedules, syllabus uploads that become deadlines, quiz and test schedules, study plans and practice questions, class notes kept organized, professor and advisor emails drafted in the student's voice, social events, friends and family birthdays, travel planning, budgets, gym and sleep routines, internship pipeline, resume and LinkedIn, grad school prep, and job search after graduation. It connects to tools students already use: Canvas, Blackbaud, Google Classroom, Gmail, Google Calendar, Outlook, Microsoft Teams, Google Drive, Dropbox, Notion, Todoist, LinkedIn, and thousands more via the Integrations tab.
 
 PRICING (current and exact, do not improvise)
-One plan, and no setup fee: ${hosting}/month or ${hostingAnnual}/year (the annual price equals ten monthly payments, so two months are free). That covers a private, dedicated agent instance, hosting, monitoring, updates, and normal daily use; sustained usage well beyond typical student use may be reviewed. There is a 7-day money-back guarantee on the purchase. Includes $20 of AI usage credits to start. After that, AI usage draws from a credit balance students can top up ($10/$25/$50), with low-balance alerts and optional auto-recharge. Advanced users can bring their own Anthropic or OpenAI API key. Hosting can be canceled any time and paused over the summer. Checkout is by Stripe. Referral program: share your link, your friend gets their first month free, and you get a free month when they join, stacking with no limit.
+Three plans, no setup fee: ${plansSummary()}. Every plan is the same private, dedicated agent with hosting, monitoring, and updates; the only difference is how much AI usage is included. The included AI usage refills every billing period. Annual billing on any plan is ten monthly payments, so two months are free, and the whole year of AI usage is added up front. There is a 7-day money-back guarantee on the purchase. If a student uses up their included AI usage, they can top up from Settings ($10/$25/$50), with low-balance alerts and optional auto-recharge. Advanced users can bring their own Anthropic or OpenAI API key. Plans can be canceled any time and paused over the summer. Checkout is by Stripe. Full comparison at /pricing. Referral program: share your link, your friend gets ${referral} off their first payment, and you get ${referral} off your next bill when they join, stacking with no limit.
 
 THE PROCESS
 Sign up at /build, pay, get a magic sign-in link by email (no password), fill out a five-minute intake (name the agent, give it a face, add classes), and the agent is live within 30 minutes. Full detail at /how-it-works.

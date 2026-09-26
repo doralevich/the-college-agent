@@ -24,6 +24,12 @@ const CATALOG = [
   { key: "ca_hosting_pro", name: "The College Agent — Professional Hosting", amount: 15900, recurring: "month" },
   { key: "ca_hosting", name: "The College Agent — Hosting", amount: 2500, recurring: "month" },
   { key: "ca_hosting_annual", name: "The College Agent — Hosting (Annual)", amount: 25000, recurring: "year" },
+  // Plus and Pro tiers. Mirrors PLAN_TIERS in lib/pricing/intro-cutoff.ts - this script is
+  // plain JS and cannot import it, so keep the two in step by hand.
+  { key: "ca_tier_50", name: "The College Agent — Plus", amount: 5000, recurring: "month" },
+  { key: "ca_tier_50_annual", name: "The College Agent — Plus (Annual)", amount: 50000, recurring: "year" },
+  { key: "ca_tier_100", name: "The College Agent — Pro", amount: 10000, recurring: "month" },
+  { key: "ca_tier_100_annual", name: "The College Agent — Pro (Annual)", amount: 100000, recurring: "year" },
   { key: "plan_undergraduate", name: "The Undergraduate", amount: 19900, recurring: false },
   { key: "plan_graduate", name: "The Graduate", amount: 39900, recurring: false },
   { key: "plan_scholar", name: "The Scholar", amount: 59900, recurring: false },

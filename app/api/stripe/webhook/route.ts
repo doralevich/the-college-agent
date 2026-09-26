@@ -1,6 +1,7 @@
 import type Stripe from "stripe";
 import { Agent37Error } from "@/lib/agent37";
 import { fundCredits } from "@/lib/credits";
+import { grantPlanAllowance } from "@/lib/plan-allowance";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/client";
 import { sendOrderSummaryEmail, type OrderForEmail } from "@/lib/email/order-summary";
@@ -53,9 +54,14 @@ export async function POST(req: Request) {
         await handleCheckoutCompleted(db, event.data.object as Stripe.Checkout.Session);
         break;
       case "invoice.paid":
-      case "invoice.payment_succeeded":
-        await syncBySubscription(db, subIdFromInvoice(event.data.object), "active");
+      case "invoice.payment_succeeded": {
+        const invoice = event.data.object as Stripe.Invoice;
+        // Access first. The allowance runs after it, so nothing it does can ever keep a
+        // paying student from being marked active.
+        await syncBySubscription(db, subIdFromInvoice(invoice), "active");
+        await grantInvoiceAllowance(db, invoice);
         break;
+      }
       case "invoice.payment_failed":
         await syncBySubscription(db, subIdFromInvoice(event.data.object), "past_due");
         break;
@@ -304,6 +310,20 @@ async function handleCheckoutCompleted(db: DB, session: Stripe.Checkout.Session)
     }
   }
 
+  // The first month's AI allowance. Granted HERE rather than only on invoice.paid because
+  // this is the one event guaranteed to know the student: the account may have been created
+  // a few lines up, and the first invoice.paid can arrive before this has run and find no
+  // entitlement to resolve them by. There is no agent yet, so it lands as a pending ledger
+  // row and provisioning delivers it. Keyed by the invoice id - invoice.paid's backstop for
+  // the same invoice is a no-op. Throws only if the ledger cannot be written; they paid for it.
+  if (userId && subscriptionId) {
+    await grantPlanAllowance(db, {
+      userId,
+      invoiceId: idOf(session.invoice),
+      lookupKey: session.metadata?.plan_lookup,
+    });
+  }
+
   // Referral reward: the friend already got their discount at checkout; credit the
   // referrer one hosting month. Throws on transient failures so Stripe retries —
   // the referrals row (unique per session) makes retries single-credit.
@@ -522,10 +542,49 @@ function idOf(v: string | { id: string } | null | undefined): string | null {
   return typeof v === "string" ? v : v.id;
 }
 
-// `Invoice.subscription` typing varies across API versions — read defensively.
+// Where an invoice keeps its subscription id depends on the API version it was rendered in.
+// Current versions put it at parent.subscription_details.subscription; older ones had a
+// top-level `subscription`. Webhook payloads follow the ENDPOINT's configured API version,
+// not the SDK's, so either shape can arrive - read the current one first, then the old.
+//
+// This used to read only the old field. Had the endpoint moved to a current version, every
+// invoice.paid and invoice.payment_failed would have resolved to null and silently skipped
+// the entitlement sync - a failed card would never have marked a student past_due.
 function subIdFromInvoice(invoice: Stripe.Invoice): string | null {
-  const sub = (invoice as unknown as { subscription?: string | { id: string } | null }).subscription;
-  return idOf(sub ?? null);
+  const current = invoice.parent?.subscription_details?.subscription ?? null;
+  const legacy = (invoice as unknown as { subscription?: string | { id: string } | null }).subscription ?? null;
+  return idOf(current ?? legacy);
+}
+
+// A plan's monthly AI allowance, for a paid subscription invoice: every renewal, plus a
+// backstop for the first invoice (which handleCheckoutCompleted normally grants - see there).
+//
+// The entitlement lookup runs BEFORE anything reaches Stripe, and doubles as the ownership
+// check. This account is shared with ApolloClaw and every one of its invoices lands here too;
+// only our subscriptions have an entitlement row, so theirs return at a free database read
+// instead of costing a Stripe call each. No row also covers the first invoice arriving before
+// checkout.session.completed has written one - that path grants it instead.
+//
+// The tier comes from the subscription's CURRENT price, not the checkout metadata, so a
+// student who changes plan in the billing portal gets the new tier's allowance next cycle.
+async function grantInvoiceAllowance(db: DB, invoice: Stripe.Invoice) {
+  const reason = invoice.billing_reason;
+  if (reason !== "subscription_cycle" && reason !== "subscription_create") return;
+  const subscriptionId = subIdFromInvoice(invoice);
+  if (!subscriptionId || !invoice.id) return;
+
+  const { data: ents } = await db
+    .from("entitlements")
+    .select("user_id")
+    .eq("stripe_subscription_id", subscriptionId)
+    .not("user_id", "is", null)
+    .limit(1);
+  const userId = ents?.[0]?.user_id as string | undefined;
+  if (!userId) return;
+
+  const sub = await getStripe().subscriptions.retrieve(subscriptionId);
+  const lookupKey = sub.items.data[0]?.price?.lookup_key ?? null;
+  await grantPlanAllowance(db, { userId, invoiceId: invoice.id, lookupKey });
 }
 
 // ---- Ambassador program (July 2026 PRD) ----

@@ -79,7 +79,10 @@ export const DEFAULT_AGENT = {
   // top-ups students buy in Settings -> Billing. (Was 20 when every box ran on a free
   // recurring platform allowance; the credits model replaces that.)
   monthlyCapUsd: 1,
-  // One-time AI credits included with the plan, granted when the agent is provisioned.
+  // One-time AI credits for accounts NOT on a paid plan (comped, or the old one-time fee),
+  // granted when the agent is provisioned. Students on a plan get their tier's monthly
+  // allowance instead (lib/plan-allowance.ts) - see the starting-balance note in
+  // app/api/provision/route.ts.
   starterCreditsUsd: 20,
 } as const;
 

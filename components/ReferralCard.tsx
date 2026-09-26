@@ -6,12 +6,19 @@ import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 
+// Cents to whole dollars: 2500 -> "$25". Named apart from lib/format's usd(), which takes
+// MICROS - passing cents to that one would print $0.03.
+function dollars(cents: number): string {
+  const d = cents / 100;
+  return "$" + d.toLocaleString("en-US", { minimumFractionDigits: d % 1 === 0 ? 0 : 2, maximumFractionDigits: 2 });
+}
+
 // "Give a month, get a month" — the student's referral card. Their friend gets the
 // first month of hosting free at checkout; they get a $25 credit (one hosting month)
 // when the friend joins. Credits stack with no cap; Stripe applies them to upcoming
 // invoices automatically.
 
-type ReferralInfo = { code: string; url: string; joined: number; monthsEarned: number };
+type ReferralInfo = { code: string; url: string; joined: number; monthsEarned: number; rewardCents: number };
 
 export function ReferralCard() {
   const [info, setInfo] = useState<ReferralInfo | null>(null);
@@ -62,10 +69,14 @@ export function ReferralCard() {
           <Gift className="h-5 w-5" />
         </div>
         <div className="min-w-0 flex-1">
-          <h2 className="text-base font-semibold">Give a month, get a month</h2>
+          {/* Stated in dollars, not months: the reward is a flat amount on both sides, which is
+              a free month on Essentials but only part of one on Plus or Pro. */}
+          <h2 className="text-base font-semibold">
+            Give {dollars(info.rewardCents)}, get {dollars(info.rewardCents)}
+          </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Share your link. Your friend gets their first month of hosting free, and you get a
-            free month when they join. Free months stack, no limit.
+            Share your link. Your friend gets {dollars(info.rewardCents)} off their first payment, and
+            you get {dollars(info.rewardCents)} off your next bill when they join. It stacks, no limit.
           </p>
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -88,8 +99,8 @@ export function ReferralCard() {
 
           {info.joined > 0 && (
             <p className="mt-3 text-sm font-medium text-primary">
-              {info.joined} {info.joined === 1 ? "friend" : "friends"} joined · {info.monthsEarned}{" "}
-              {info.monthsEarned === 1 ? "free month" : "free months"} earned
+              {info.joined} {info.joined === 1 ? "friend" : "friends"} joined ·{" "}
+              {dollars(info.monthsEarned * info.rewardCents)} earned
             </p>
           )}
         </div>

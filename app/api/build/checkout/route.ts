@@ -3,7 +3,7 @@ import { ApiError, json, readJson, route } from "@/lib/http";
 import { AMBASSADOR_PROGRAM_ENABLED, ambassadorBySlug } from "@/lib/ambassador";
 import { getStripe } from "@/lib/stripe/client";
 import { priceIdFor } from "@/lib/stripe/prices";
-import { HOSTING_LOOKUP, HOSTING_ANNUAL_LOOKUP } from "@/lib/pricing/intro-cutoff";
+import { lookupFor, planTier, type BillingInterval } from "@/lib/pricing/intro-cutoff";
 import { getOptionalUserId } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ensureReferralCoupon, resolveReferralCode } from "@/lib/referral";
@@ -30,8 +30,11 @@ type Body = {
   // Optional extra AI credits picked on the plan card ($10/$25/$50). Added as a
   // one-time line item; the webhook records it and provisioning delivers it.
   extraCreditsCents?: number;
-  // Hosting billing choice from the plan card: $25/month (default) or $250/year.
+  // Hosting billing choice from the plan card: monthly (default) or annual (10 x monthly).
   hostingInterval?: "monthly" | "annual";
+  // Plan tier from /pricing or the /build plan card: "essentials" | "plus" | "pro". Missing or
+  // unknown falls back to Essentials, so an older client still checks out on the $25 plan.
+  plan?: string;
   // Audience picked on /build. Only "Student" now - faculty, administration and athletics
   // moved to ApolloClaw - but it is still carried so the webhook keeps stamping a role and
   // older in-flight checkouts do not 400 on an unexpected field.
@@ -72,10 +75,12 @@ export const POST = route(async (req) => {
   const firstName = (body.firstName ?? "").trim();
   const lastName = (body.lastName ?? "").trim();
 
-  // One line item now: the subscription. The $599 one-time platform fee is gone, so there is
-  // no "due today" beyond the first period, and nothing to prorate against.
-  const hostingInterval = body.hostingInterval === "annual" ? "annual" : "monthly";
-  const hostingLookup = hostingInterval === "annual" ? HOSTING_ANNUAL_LOOKUP : HOSTING_LOOKUP;
+  // One line item: the subscription for the chosen tier and interval. There is no one-time
+  // fee, so nothing is due today beyond the first period. The tier's monthly AI allowance is
+  // not a line item - it is granted by the webhook when the invoice is paid.
+  const hostingInterval: BillingInterval = body.hostingInterval === "annual" ? "annual" : "monthly";
+  const tier = planTier(body.plan);
+  const hostingLookup = lookupFor(tier, hostingInterval);
 
   let hostingPriceId: string;
   try {
@@ -99,6 +104,9 @@ export const POST = route(async (req) => {
     product: "college-agent",
     plan_lookup: hostingLookup,
     plan_type: "student",
+    // For humans reading the Stripe dashboard. The webhook resolves the tier from the price's
+    // own lookup key instead, which stays true if the plan is later changed in the portal.
+    plan_tier: tier.id,
   };
   const buyerRole = (body.buyerRole ?? "").trim().slice(0, 60);
   if (buyerRole) metadata.buyer_role = buyerRole;
@@ -108,7 +116,7 @@ export const POST = route(async (req) => {
   metadata.hosting_interval = hostingInterval;
   // Proof of clickwrap acceptance, kept alongside the order in Stripe.
   metadata.terms_accepted_at = new Date().toISOString();
-  metadata.terms_version = "2026-07-04";
+  metadata.terms_version = "2026-09-26";
 
   // Ambassador link attribution (/r/{slug} cookie). Rides the metadata so the webhook
   // can attribute the sale; a promotion code entered on the Stripe page still wins.

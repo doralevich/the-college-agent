@@ -7,6 +7,7 @@ const baseUrl = "https://thecollegeagent.ai";
 // Blog post URLs are dynamically added below via Sanity fetch.
 const publicRoutes: { route: string; priority: number; changeFrequency: "weekly" | "monthly" }[] = [
   { route: "", priority: 1, changeFrequency: "weekly" },
+  { route: "/pricing", priority: 0.9, changeFrequency: "monthly" },
   { route: "/about", priority: 0.8, changeFrequency: "monthly" },
   { route: "/for-students", priority: 0.9, changeFrequency: "monthly" },
   { route: "/for-parents", priority: 0.9, changeFrequency: "monthly" },
