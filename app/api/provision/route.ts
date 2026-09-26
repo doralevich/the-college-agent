@@ -1,5 +1,6 @@
 import { agent37 } from "@/lib/agent37";
 import { fundCredits } from "@/lib/credits";
+import { deliverPendingAllowances } from "@/lib/plan-allowance";
 import { requireUser, requireEntitled } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { APP_ID, DEFAULT_AGENT, shapeForHosting } from "@/config/agents";
@@ -96,47 +97,67 @@ export const POST = route(async () => {
     throw new ApiError(500, "db_error", insErr.message);
   }
 
-  // One-time starter credits included with the plan. The ledger's partial unique index
-  // (one 'starter' row per user, ever) makes this idempotent: deleting and rebuilding an
-  // agent doesn't mint another grant. A failed grant stays on the ledger as status
-  // 'failed' with the error recorded, and the next provision retries it.
-  const { data: starterRow, error: starterInsErr } = await db
-    .from("wallet_transactions")
-    .insert({
-      user_id: user.id,
-      amount_cents: DEFAULT_AGENT.starterCreditsUsd * 100,
-      type: "starter",
-      status: "pending",
-    })
-    .select("id")
-    .maybeSingle();
-  // Conflict → they already have a starter row; retry it only if it previously failed.
-  let starterId = starterRow?.id as string | undefined;
-  if (!starterId && starterInsErr) {
-    const { data: existing } = await db
+  // Starting balance. A student on a plan gets their tier's monthly AI allowance, which the
+  // webhook recorded as a pending ledger row when the first invoice was paid - before this
+  // agent existed. It is delivered here. That allowance REPLACES the old one-time $20 starter
+  // for anyone on a plan: $25 means $5 of AI usage a month, not $5 plus a $20 bonus.
+  //
+  // An account with no subscription - comped by an admin, or a student from the old one-time
+  // platform fee - never produces an invoice and so never gets an allowance. Dropping the
+  // starter for them too would leave an agent with $0 of budget that cannot answer anything,
+  // so they keep the starter grant exactly as before.
+  const { data: entRows } = await db
+    .from("entitlements")
+    .select("stripe_subscription_id")
+    .eq("email", (user.email ?? "").toLowerCase())
+    .limit(1);
+  const onPlan = !!entRows?.[0]?.stripe_subscription_id;
+
+  await deliverPendingAllowances(db, user.id, agent.id);
+
+  // One-time starter credits, for accounts NOT on a plan (see above). The ledger's partial
+  // unique index (one 'starter' row per user, ever) makes this idempotent: deleting and
+  // rebuilding an agent doesn't mint another grant. A failed grant stays on the ledger as
+  // status 'failed' with the error recorded, and the next provision retries it.
+  if (!onPlan) {
+    const { data: starterRow, error: starterInsErr } = await db
       .from("wallet_transactions")
-      .select("id, status")
-      .eq("user_id", user.id)
-      .eq("type", "starter")
+      .insert({
+        user_id: user.id,
+        amount_cents: DEFAULT_AGENT.starterCreditsUsd * 100,
+        type: "starter",
+        status: "pending",
+      })
+      .select("id")
       .maybeSingle();
-    if (existing && existing.status !== "succeeded") starterId = existing.id as string;
-  }
-  if (starterId) {
-    try {
-      // Ledger row id doubles as the idempotency key — a re-provision retry can't double-grant.
-      // fundCredits applies the markup, so the student sees the full starterCreditsUsd.
-      await fundCredits(agent.id, usdToMicros(DEFAULT_AGENT.starterCreditsUsd), starterId);
-      await db
+    // Conflict → they already have a starter row; retry it only if it previously failed.
+    let starterId = starterRow?.id as string | undefined;
+    if (!starterId && starterInsErr) {
+      const { data: existing } = await db
         .from("wallet_transactions")
-        .update({ status: "succeeded", failure_reason: null })
-        .eq("id", starterId);
-    } catch (e) {
-      const reason = String((e as Error)?.message ?? e).slice(0, 500);
-      console.error("[provision:starter-credits]", agent.id, reason);
-      await db
-        .from("wallet_transactions")
-        .update({ status: "failed", failure_reason: reason })
-        .eq("id", starterId);
+        .select("id, status")
+        .eq("user_id", user.id)
+        .eq("type", "starter")
+        .maybeSingle();
+      if (existing && existing.status !== "succeeded") starterId = existing.id as string;
+    }
+    if (starterId) {
+      try {
+        // Ledger row id doubles as the idempotency key — a re-provision retry can't double-grant.
+        // fundCredits applies the markup, so the student sees the full starterCreditsUsd.
+        await fundCredits(agent.id, usdToMicros(DEFAULT_AGENT.starterCreditsUsd), starterId);
+        await db
+          .from("wallet_transactions")
+          .update({ status: "succeeded", failure_reason: null })
+          .eq("id", starterId);
+      } catch (e) {
+        const reason = String((e as Error)?.message ?? e).slice(0, 500);
+        console.error("[provision:starter-credits]", agent.id, reason);
+        await db
+          .from("wallet_transactions")
+          .update({ status: "failed", failure_reason: reason })
+          .eq("id", starterId);
+      }
     }
   }
 

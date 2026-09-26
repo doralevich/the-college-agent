@@ -1,5 +1,6 @@
 import "server-only";
 import { getStripe } from "./client";
+import { PLAN_TIERS } from "@/lib/pricing/intro-cutoff";
 
 // Same idempotent catalog seed as scripts/seed-stripe-catalog.mjs, but callable from a
 // server route. Products are matched by metadata.catalog_key, prices by lookup_key.
@@ -14,11 +15,23 @@ type CatalogItem = {
   recurring: false | "month" | "year";
 };
 
+// The three plan tiers, generated from PLAN_TIERS so an amount lives in exactly one place.
+// Each is a subscription and nothing else, monthly or annual (annual = 10 x monthly).
+//
+// The $25 tier keeps its original product names on purpose: those products already carry
+// every existing subscriber, and a rename here would change what shows on their invoices.
+function tierCatalog(): CatalogItem[] {
+  return PLAN_TIERS.flatMap((tier) => {
+    const base = tier.id === "essentials" ? "The College Agent — Hosting" : `The College Agent — ${tier.name}`;
+    return [
+      { key: tier.monthlyLookup, name: base, amount: tier.monthlyCents, recurring: "month" as const },
+      { key: tier.annualLookup, name: `${base} (Annual)`, amount: tier.annualCents, recurring: "year" as const },
+    ];
+  });
+}
+
 const CATALOG: CatalogItem[] = [
-  // The College Agent — a subscription and nothing else: $25/month or $250/year
-  // (annual = 10 x monthly, "2 months free"). No one-time fee.
-  { key: "ca_hosting", name: "The College Agent — Hosting", amount: 2500, recurring: "month" },
-  { key: "ca_hosting_annual", name: "The College Agent — Hosting (Annual)", amount: 25000, recurring: "year" },
+  ...tierCatalog(),
   // Legacy configurator catalog (multi-tier /build configurator) — keep seeded for
   // back-compat until those routes go away.
   { key: "plan_undergraduate", name: "The Undergraduate", amount: 19900, recurring: false },

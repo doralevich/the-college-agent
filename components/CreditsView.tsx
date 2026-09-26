@@ -90,7 +90,7 @@ export function CreditsView() {
         <h2 className="text-lg font-medium">Usage Credits</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Credits pay for what your agent does: model calls, search, and tools. Your plan
-          included $20 to start.
+          adds its AI usage every month; top up here if you run low.
         </p>
       </div>
 

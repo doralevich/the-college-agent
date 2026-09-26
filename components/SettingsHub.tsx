@@ -103,8 +103,7 @@ export function SettingsHub({
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Refer &amp; Earn</h1>
             <p className="text-sm text-muted-foreground">
-              Share your link. Give a friend their first month free, and earn a free month
-              yourself, no limit.
+              Share your link. Give a friend $25 off, and get $25 off yourself, no limit.
             </p>
           </div>
           <ReferralCard />

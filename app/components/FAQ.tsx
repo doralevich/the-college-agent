@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { plansSummary } from "@/lib/pricing/intro-cutoff";
 
 const FAQS = [
   {
@@ -9,11 +10,11 @@ const FAQS = [
   },
   {
     q: "What does it cost?",
-    a: "One plan, everything included, and no setup fee: $25/month or $250/year (the annual price is ten months, so two months are free). That covers your own private agent, hosting, monitoring, updates, and normal daily use. Every new account starts with $20 of AI usage credits.",
+    a: `Three plans, no setup fee: ${plansSummary()}. Every plan is your own private agent with hosting, monitoring, and updates. The included AI usage refills every month. Pay yearly and two months are free. Compare them on the Pricing page.`,
   },
   {
     q: "Is there a refund policy?",
-    a: "Yes. There is a 7-day money-back guarantee: if The College Agent is not for you, tell us within 7 days of purchase and we refund your platform fee and first hosting payment in full. The details are in our Terms & Conditions.",
+    a: "Yes. There is a 7-day money-back guarantee: if The College Agent is not for you, tell us within 7 days of purchase and we refund your first payment in full. The details are in our Terms & Conditions.",
   },
   {
     q: "How fast is my agent live?",
@@ -29,7 +30,7 @@ const FAQS = [
   },
   {
     q: "Do I need my own AI account?",
-    a: "No. Your plan includes $20 of AI usage credits, and you can top up from your dashboard ($10, $25, or $50) with low-balance alerts and optional auto-recharge. Advanced users can bring their own Anthropic or OpenAI API key instead.",
+    a: "No. Every plan includes AI usage that refills monthly, and you can top up from your dashboard ($10, $25, or $50) with low-balance alerts and optional auto-recharge. Advanced users can bring their own Anthropic or OpenAI API key instead.",
   },
   {
     q: 'What is a "named persona" and why does it matter?',

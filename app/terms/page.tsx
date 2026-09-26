@@ -1,11 +1,7 @@
 import type { Metadata } from "next";
 import Nav from "../components/Nav";
 import { Footer } from "../components/Footer";
-import {
-  HOSTING_AMOUNT_CENTS,
-  FAIR_USE_NOTE,
-  HOSTING_ANNUAL_AMOUNT_CENTS,
-} from "@/lib/pricing/intro-cutoff";
+import { FAIR_USE_NOTE, plansSummary } from "@/lib/pricing/intro-cutoff";
 
 // The Terms students accept at checkout (the /build info step links here and the
 // checkout API refuses sessions without acceptance). Pricing renders from
@@ -19,16 +15,10 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://thecollegeagent.ai/terms" },
 };
 
-const TERMS_UPDATED = "July 4, 2026";
-
-function price(cents: number): string {
-  return "$" + (cents / 100).toLocaleString("en-US", { minimumFractionDigits: cents % 100 ? 2 : 0, maximumFractionDigits: 2 });
-}
+// Keep in step with metadata.terms_version in app/api/build/checkout/route.ts.
+const TERMS_UPDATED = "September 26, 2026";
 
 export default function TermsPage() {
-  const hosting = price(HOSTING_AMOUNT_CENTS);
-  const hostingAnnual = price(HOSTING_ANNUAL_AMOUNT_CENTS);
-
   return (
     <>
       <Nav />
@@ -56,7 +46,7 @@ export default function TermsPage() {
               <li>Your own named agent, built and configured from your intake, typically live within 30 minutes of a completed intake</li>
               <li>A private, dedicated agent instance, hosted and kept running 24/7, reachable from your dashboard and on Telegram</li>
               <li>Monitoring and updates for the life of your subscription</li>
-              <li>$20 of included AI usage credits to start, with the option to add more</li>
+              <li>A monthly AI usage allowance set by your plan, with the option to add more</li>
               <li>Access to integrations with third-party tools you choose to connect</li>
             </ul>
             <p>Timelines such as &ldquo;live within 30 minutes&rdquo; are targets, not guarantees; the clock starts when your completed intake is received.</p>
@@ -65,9 +55,9 @@ export default function TermsPage() {
           <Section title="4. Pricing &amp; Payment">
             <p>Current pricing, in USD. There is no setup or build fee:</p>
             <ul>
-              <li><strong>Subscription:</strong> your choice of {hosting} per month or {hostingAnnual} per year (the annual price equals ten monthly payments), billed in advance on a recurring subscription that starts at purchase. The price shown at checkout is the price you pay; any discount or promotion code applied at checkout is reflected there.</li>
-              <li><strong>What it covers:</strong> {FAIR_USE_NOTE} Where we review an account, we will contact you first and work out a fair arrangement before making any change; we will not bill you retroactively for past usage.</li>
-              <li><strong>AI usage credits:</strong> $20 included with your purchase; optional top-ups available from your dashboard.</li>
+              <li><strong>Subscription:</strong> your choice of plan: {plansSummary()}. Each plan is also available yearly at ten times the monthly price. Billed in advance on a recurring subscription that starts at purchase. The price shown at checkout is the price you pay; any discount or promotion code applied at checkout is reflected there.</li>
+              <li><strong>What it covers:</strong> {FAIR_USE_NOTE}</li>
+              <li><strong>AI usage allowance:</strong> added to your credit balance each time your subscription is paid: one month&apos;s allowance on a monthly plan, twelve months&apos; at once on a yearly plan. Optional top-ups are available from your dashboard.</li>
             </ul>
             <p>Payments are processed by Stripe. We never see or store your card number. By purchasing, you authorize us (through Stripe) to charge the recurring subscription fee on the billing interval you chose until you cancel. Prices do not include any applicable taxes, which are your responsibility where required by law.</p>
             <p>We may change pricing with at least 30 days&apos; advance notice to you by email; changes apply from your next billing cycle after the notice period. Promotional pricing, referral rewards, and credits have no cash value and are not transferable.</p>
@@ -80,7 +70,7 @@ export default function TermsPage() {
               <li><strong>How to request:</strong> Email <a href="mailto:hello@thecollegeagent.ai" style={{ color: "var(--green)" }}>hello@thecollegeagent.ai</a> from the email address on your account with the subject &ldquo;Refund request.&rdquo; No forms, no phone calls, no questions required.</li>
               <li><strong>What you get back:</strong> 100% of your first payment, returned to your original payment method through Stripe, normally within 5 to 10 business days of our confirmation.</li>
               <li><strong>What happens next:</strong> On refund, your agent is decommissioned and your account is closed. Download anything you want to keep from your dashboard before or promptly after requesting the refund; we will honor download requests for at least 14 days after the refund is issued.</li>
-              <li><strong>Credits:</strong> The $20 of included AI usage credits are part of the refunded purchase and are forfeited. Separately purchased credit top-ups are refunded to the extent unused.</li>
+              <li><strong>Credits:</strong> The AI usage allowance included with your plan is part of the refunded purchase and is forfeited. Separately purchased credit top-ups are refunded to the extent unused.</li>
             </ul>
             <p><strong>After the 7-day window closes, payments already made are final and non-refundable.</strong> Your agent is custom-built and provisioned specifically for you, which is why the window exists and why it ends.</p>
             <p>After the first period: you may cancel at any time (Section 6), which stops future charges. Fees already billed for the current period are non-refundable, and your agent stays live through the end of the period you paid for.</p>
@@ -93,7 +83,7 @@ export default function TermsPage() {
           </Section>
 
           <Section title="7. AI Usage Credits">
-            <p>Your agent&apos;s AI usage draws from your credit balance. Your purchase includes $20 of credits; you can add more from the Credits tab, set low-balance alerts, or enable auto-recharge. If you enable auto-recharge, you authorize the recharge amount you configured each time your balance falls below your threshold, until you turn it off.</p>
+            <p>Your agent&apos;s AI usage draws from your credit balance. Your plan adds its AI usage allowance each billing period; you can add more from the Credits tab, set low-balance alerts, or enable auto-recharge. If you enable auto-recharge, you authorize the recharge amount you configured each time your balance falls below your threshold, until you turn it off.</p>
             <p>Credits are consumed as your agent works and are not redeemable for cash. Unused separately purchased credits are refundable on account closure; included or promotional credits are not. Advanced users may connect their own AI provider API key instead, in which case that provider bills you directly under its own terms.</p>
           </Section>
 

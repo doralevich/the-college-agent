@@ -13,6 +13,7 @@ const NAV_LINKS: NavItem[] = [
   { label: "Students", href: "/for-students" },
   { label: "Parents", href: "/for-parents" },
   { label: "How It Works", href: "/how-it-works" },
+  { label: "Pricing", href: "/pricing" },
   { label: "What Is an Agent?", href: "/what-is-an-agent" },
   { label: "Contact", href: "/contact" },
 ];

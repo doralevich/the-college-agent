@@ -40,16 +40,83 @@ describe("subscription pricing", () => {
     }
   });
 
-  it("states the fair-use promise in the student's own terms", () => {
-    // Quoted verbatim on /build and in Terms. Both render this constant rather than their
-    // own copy, so the promise and the price cannot drift apart.
-    expect(pricing.FAIR_USE_NOTE).toContain("$25/month");
+  it("states what every plan covers in the student's own terms", () => {
+    // Rendered on /build and in Terms from this one constant. With usage metered by a
+    // monthly allowance, the old "normal daily use ... may be reviewed" promise would
+    // contradict every plan card, so it must not come back.
     expect(pricing.FAIR_USE_NOTE).toContain("your own private agent");
-    expect(pricing.FAIR_USE_NOTE).toMatch(/may be reviewed/i);
+    expect(pricing.FAIR_USE_NOTE).toMatch(/monthly AI allowance/i);
+    expect(pricing.FAIR_USE_NOTE).not.toMatch(/may be reviewed/i);
   });
 
   it("keeps the retired intro promo switched off", () => {
     expect(pricing.introPromoActive()).toBe(false);
+  });
+});
+
+describe("plan tiers", () => {
+  const byId = (id: string) => pricing.PLAN_TIERS.find((t) => t.id === id)!;
+
+  it("sells $25, $50 and $100 a month with $5, $15 and $40 of AI usage", () => {
+    expect(pricing.PLAN_TIERS.map((t) => [t.id, t.monthlyCents, t.allowanceCents])).toEqual([
+      ["essentials", 2500, 500],
+      ["plus", 5000, 1500],
+      ["pro", 10000, 4000],
+    ]);
+  });
+
+  it("prices every year at ten months", () => {
+    for (const t of pricing.PLAN_TIERS) expect(t.annualCents, t.id).toBe(t.monthlyCents * 10);
+  });
+
+  it("keeps Essentials on the original lookup keys so existing subscribers map to it", () => {
+    expect(byId("essentials").monthlyLookup).toBe(pricing.HOSTING_LOOKUP);
+    expect(byId("essentials").annualLookup).toBe(pricing.HOSTING_ANNUAL_LOOKUP);
+    expect(byId("essentials").monthlyCents).toBe(pricing.HOSTING_AMOUNT_CENTS);
+  });
+
+  it("gives every tier and interval its own lookup key", () => {
+    const keys = pricing.PLAN_TIERS.flatMap((t) => [t.monthlyLookup, t.annualLookup]);
+    expect(new Set(keys).size).toBe(keys.length);
+    // Archived in Stripe. A lookup key can't be reused once its price is archived.
+    expect(keys).not.toContain("ca_hosting_pro");
+    expect(keys).not.toContain("ca_plan_pro");
+  });
+
+  it("round-trips every lookup key back to its tier and interval", () => {
+    for (const t of pricing.PLAN_TIERS) {
+      for (const interval of ["monthly", "annual"] as const) {
+        const key = pricing.lookupFor(t, interval);
+        expect(pricing.tierForLookup(key)).toEqual({ tier: t, interval });
+      }
+    }
+  });
+
+  it("ignores lookup keys that are not a plan (ApolloClaw shares the Stripe account)", () => {
+    expect(pricing.tierForLookup(null)).toBeNull();
+    expect(pricing.tierForLookup("")).toBeNull();
+    expect(pricing.tierForLookup("ca_credits_1000")).toBeNull();
+    expect(pricing.tierForLookup("apolloclaw_hosting")).toBeNull();
+  });
+
+  it("loads a month of allowance per monthly invoice and twelve per annual one", () => {
+    expect(pricing.allowanceCentsFor(byId("essentials"), "monthly")).toBe(500);
+    expect(pricing.allowanceCentsFor(byId("plus"), "annual")).toBe(1500 * 12);
+    expect(pricing.allowanceCentsFor(byId("pro"), "annual")).toBe(4000 * 12);
+  });
+
+  it("falls back to Essentials for a missing or unknown plan", () => {
+    expect(pricing.planTier(undefined).id).toBe("essentials");
+    expect(pricing.planTier("platinum").id).toBe("essentials");
+    expect(pricing.planTier("pro").id).toBe("pro");
+  });
+
+  it("quotes every plan in the one-line summary", () => {
+    const summary = pricing.plansSummary();
+    expect(summary).toContain("Essentials $25/month ($5 of AI usage included)");
+    expect(summary).toContain("Plus $50/month ($15 of AI usage included)");
+    expect(summary).toContain("Pro $100/month ($40 of AI usage included)");
+    expect(pricing.PLANS_FROM).toBe("$25");
   });
 });
 

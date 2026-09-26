@@ -34,8 +34,17 @@ type Summary = {
     status: string;
     hosting_amount: number | null;
   } | null;
-  // Current /build purchase — one-time setup + monthly hosting on the entitlement.
-  subscription: { status: string; hostingAmount: number } | null;
+  // Current /build purchase — a plan subscription, read live from Stripe by the API. `plan` is
+  // null when that read failed; the portal button still covers everything.
+  subscription: {
+    status: string;
+    plan: {
+      name: string | null;
+      amountCents: number;
+      interval: "month" | "year";
+      allowanceCents: number | null;
+    } | null;
+  } | null;
   canManage: boolean;
 };
 
@@ -127,8 +136,10 @@ export function BillingView() {
   );
 }
 
-// The current /build purchase: a one-time setup fee (already paid) plus monthly hosting.
-// Cancel-hosting, card updates, and invoices all live in the Stripe billing portal.
+// The current /build purchase: one plan subscription (Essentials / Plus / Pro, monthly or
+// annual) with a monthly AI allowance. There is no setup fee any more - the row that said one
+// was "paid once at checkout" described a charge nobody on this flow has paid. Plan changes,
+// card updates, invoices and cancelling all live in the Stripe billing portal.
 function HostingPlan({
   sub,
   canManage,
@@ -145,7 +156,9 @@ function HostingPlan({
   return (
     <div className="rounded-2xl border">
       <div className="flex items-start justify-between gap-3 border-b p-6">
-        <div className="text-lg font-medium">The College Agent</div>
+        <div className="text-lg font-medium">
+          The College Agent{sub.plan?.name ? ` ${sub.plan.name}` : ""}
+        </div>
         <span
           className={cn(
             "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
@@ -157,21 +170,35 @@ function HostingPlan({
       </div>
 
       <dl className="divide-y">
-        <Row label="Setup">
-          <div className="font-medium">One-time setup</div>
-          <div className="mt-0.5 text-xs text-muted-foreground">Paid once at checkout</div>
+        <Row label="Plan">
+          {sub.plan ? (
+            <>
+              <div className="font-medium">
+                {sub.plan.name ?? "Your plan"}
+                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                  {formatUSD(sub.plan.amountCents)}/{sub.plan.interval === "year" ? "yr" : "mo"}
+                </span>
+              </div>
+              <div className="mt-0.5 text-xs text-muted-foreground">
+                Your private agent, hosting, monitoring, and updates
+              </div>
+            </>
+          ) : (
+            <div className="text-sm text-muted-foreground">
+              See your plan and price in the billing portal below.
+            </div>
+          )}
         </Row>
-        <Row label="Hosting">
-          <div className="font-medium">
-            Cloud hosting
-            <span className="ml-2 text-sm font-normal text-muted-foreground">
-              {formatUSD(sub.hostingAmount)}/mo
-            </span>
-          </div>
-          <div className="mt-0.5 text-xs text-muted-foreground">
-            Keeps your agent running around the clock
-          </div>
-        </Row>
+        {sub.plan?.allowanceCents != null && (
+          <Row label="AI usage">
+            <div className="font-medium">{formatUSD(sub.plan.allowanceCents)} included every month</div>
+            <div className="mt-0.5 text-xs text-muted-foreground">
+              {sub.plan.interval === "year"
+                ? "A year's worth is added when your plan renews"
+                : "Added to your balance each time your plan renews"}
+            </div>
+          </Row>
+        )}
       </dl>
 
       {canManage && (

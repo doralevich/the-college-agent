@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Nav from "../components/Nav";
 import { Footer } from "../components/Footer";
+import { PLANS_FROM, plansSummary } from "@/lib/pricing/intro-cutoff";
 
 export const metadata: Metadata = {
   title: "FAQ — The College Agent, AI Companion for College Students",
@@ -67,7 +68,7 @@ const faqSchema = {
       name: "What does The College Agent cost?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "The College Agent is one plan with everything included and no setup fee: $25/month or $250/year (the annual price equals ten monthly payments, so two months are free). That covers your own private agent, hosting, monitoring, updates, and normal daily use. Every new account starts with $20 of AI usage credits, and there is a 7-day money-back guarantee. Visit thecollegeagent.ai/build to get started.",
+        text: `The College Agent has three plans and no setup fee: ${plansSummary()}. Every plan is your own private agent with hosting, monitoring, and updates, and the included AI usage refills every month. Pay yearly and two months are free. There is a 7-day money-back guarantee. Compare plans at thecollegeagent.ai/pricing.`,
       },
     },
     {
@@ -168,8 +169,8 @@ const FAQS = [
     q: "What does The College Agent cost?",
     a: (
       <>
-        <p>One plan, everything included, and no setup fee: $25/month or $250/year (the annual price equals ten monthly payments, so two months are free). That covers your own private agent, hosting, monitoring, updates, and normal daily use; sustained usage well beyond typical student use may be reviewed. Every new account starts with $20 of AI usage credits, and there is a 7-day money-back guarantee: if it&apos;s not for you, one email within 7 days gets you a full refund.</p>
-        <p>To get started, visit <a href="/build" style={{ color: "var(--green)" }}>thecollegeagent.ai/build</a>.</p>
+        <p>Three plans, no setup fee: {plansSummary()}. Every plan is your own private agent with hosting, monitoring, and updates; the only difference is how much AI usage is included, and it refills every month. Pay yearly and two months are free. There is a 7-day money-back guarantee: if it&apos;s not for you, one email within 7 days gets you a full refund.</p>
+        <p>Compare plans on the <a href="/pricing" style={{ color: "var(--green)" }}>pricing page</a>.</p>
         <p>For context, a single private tutoring session typically costs $80–$150. A college counselor charges $3,000–$10,000. The College Agent covers academic organization, communication support, internship tracking, and career planning, across all four years, for a fraction of what parents typically spend on individual academic services.</p>
         <p>Many parents purchase the agent as a gift for their student, for freshman move-in, a birthday, or as an investment in their four-year success. If you&apos;re a parent considering it for your student, the <a href="/for-parents" style={{ color: "var(--green)" }}>parents page</a> has more context on what to expect.</p>
       </>
@@ -287,7 +288,7 @@ export default function FAQPage() {
           <div style={{ marginTop: 56, padding: "36px", background: "var(--navy, #0b1729)", borderRadius: 16, textAlign: "center" }}>
             <h2 style={{ fontSize: 24, fontWeight: 800, color: "#fff", marginBottom: 12, letterSpacing: "-.025em" }}>Ready to build your agent?</h2>
             <p style={{ fontSize: 15, color: "rgba(255,255,255,.6)", marginBottom: 28, lineHeight: 1.7 }}>
-              One plan, everything included. Your agent can be live 30 minutes from now.
+              Plans from {PLANS_FROM}/month, everything included. Your agent can be live 30 minutes from now.
             </p>
             <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
               <a href="/build" className="btn-green">Let&apos;s Get Started</a>

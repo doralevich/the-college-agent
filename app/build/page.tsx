@@ -4,14 +4,18 @@ import { useEffect, useState } from "react";
 import BuildNav from "../components/BuildNav";
 import { trackMeta } from "../components/MetaPixel";
 import {
-  HOSTING_AMOUNT_CENTS,
-  HOSTING_ANNUAL_AMOUNT_CENTS,
   FAIR_USE_NOTE,
+  PLAN_TIERS,
+  DEFAULT_PLAN_TIER,
+  REFERRAL_REWARD_CENTS,
+  planTier,
+  type PlanTierId,
 } from "@/lib/pricing/intro-cutoff";
 
-// One price: $25/month, or $250/year (annual = 10 x monthly, 2 months free). Nothing is
-// charged up front — the $599 platform fee is retired, so checkout is a single recurring
-// line item.
+// Three plans - Essentials $25, Plus $50, Pro $100 a month, or 10 x that yearly - each the
+// same private agent with a different monthly AI allowance ($5 / $15 / $40). Nothing is
+// charged up front: checkout is a single recurring line item for the chosen plan. The plan
+// can arrive preselected from /pricing as ?plan=<tier>&interval=<monthly|annual>.
 //
 // There is also no longer a "who is this for" step. It existed to route faculty,
 // administration and athletic-department buyers to a $4,500 professional build; those
@@ -53,11 +57,13 @@ export default function BuildPage() {
   // Checkout requires an explicit Terms acceptance — the API refuses sessions
   // without it, and the acceptance timestamp rides the Stripe metadata.
   const [agreeTerms, setAgreeTerms] = useState(false);
-  // Optional extra credits on top of the included $20 — default none. Added as a
+  // Optional extra credits on top of the plan's monthly allowance — default none. Added as a
   // one-time Stripe line item; delivered to the agent at provisioning.
   const [extraCents, setExtraCents] = useState(0);
-  // Hosting billing choice: $25/month or $250/year (2 months free on annual).
+  // Billing choice for the chosen plan: monthly, or annual at 10 x monthly (2 months free).
   const [hostingInterval, setHostingInterval] = useState<"monthly" | "annual">("monthly");
+  // Which plan. Defaults to Essentials; /pricing links in with ?plan= to preselect one.
+  const [planId, setPlanId] = useState<PlanTierId>(DEFAULT_PLAN_TIER);
   // Rides checkout metadata so the post-payment intake and our records agree on who this
   // was sold to. Constant now that students are the only segment, and kept rather than
   // dropped so the webhook and the ambassador records keep the field they already read.
@@ -66,14 +72,29 @@ export default function BuildPage() {
   // flow and a canceled-checkout round trip. Applied server-side at checkout.
   const [ref, setRef] = useState<string>("");
 
+  // URL state, read once on mount: the referral code, and a plan chosen on /pricing.
+  //
+  // Applied in a deferred callback rather than synchronously in the effect body - the shape
+  // react-hooks/set-state-in-effect accepts, as elsewhere in this codebase. It has to be read
+  // after mount at all because this page renders on the server too, where there is no URL.
   useEffect(() => {
-    const fromUrl = new URLSearchParams(window.location.search).get("ref")?.trim() ?? "";
-    if (fromUrl) {
-      localStorage.setItem("ca-ref", fromUrl);
-      setRef(fromUrl);
-    } else {
-      setRef(localStorage.getItem("ca-ref") ?? "");
-    }
+    const params = new URLSearchParams(window.location.search);
+    const fromUrl = params.get("ref")?.trim() ?? "";
+    if (fromUrl) localStorage.setItem("ca-ref", fromUrl);
+    const refCode = fromUrl || (localStorage.getItem("ca-ref") ?? "");
+    const planParam = params.get("plan");
+    const chosen = PLAN_TIERS.find((t) => t.id === planParam);
+    const annual = params.get("interval") === "annual";
+    void Promise.resolve().then(() => {
+      setRef(refCode);
+      if (chosen) {
+        setPlanId(chosen.id);
+        // They already compared plans on /pricing - skip the welcome pitch and land on the
+        // plan step with their pick selected.
+        setStep("plan");
+      }
+      if (annual) setHostingInterval("annual");
+    });
   }, []);
 
   // The HTML snippet pulls Inter + IBM Plex Mono from Google Fonts. App Router
@@ -95,8 +116,9 @@ export default function BuildPage() {
     };
   }, []);
 
-  const hostingPrice = formatPrice(HOSTING_AMOUNT_CENTS);
-  const hostingAnnualPrice = formatPrice(HOSTING_ANNUAL_AMOUNT_CENTS);
+  const tier = planTier(planId);
+  const hostingPrice = formatPrice(tier.monthlyCents);
+  const hostingAnnualPrice = formatPrice(tier.annualCents);
 
   function continueToPlan() {
     setError(null);
@@ -158,6 +180,7 @@ export default function BuildPage() {
           lastName: info.lastName.trim(),
           termsAccepted: agreeTerms,
           hostingInterval,
+          plan: planId,
           buyerRole,
           ...(extraCents > 0 ? { extraCreditsCents: extraCents } : {}),
           ...(ref ? { ref } : {}),
@@ -220,7 +243,7 @@ export default function BuildPage() {
                   <button type="button" className="ca-cta" onClick={continueToPlan}>
                     Let&apos;s get started
                   </button>
-                  <p className="ca-trust">One plan. Everything included.</p>
+                  <p className="ca-trust">Plans from {formatPrice(PLAN_TIERS[0].monthlyCents)}/month. Everything included.</p>
                 </div>
               </>
             )}
@@ -228,17 +251,32 @@ export default function BuildPage() {
             {step === "plan" && (
               <>
                 <p className="ca-eyebrow">Get started</p>
-                <h2 className="ca-h2">One plan. Everything included.</h2>
+                <h2 className="ca-h2">Pick your plan.</h2>
                 <p className="ca-sub">
-                  Your own AI agent, set up for you and ready to go. No setup fee, no add-ons, no
-                  hosting tiers to figure out.
+                  Every plan is your own private agent, set up for you. The difference is how much AI
+                  usage comes with it each month.
+                </p>
+
+                <div className="ca-extra-chips ca-plan-chips" role="group" aria-label="Plan">
+                  {PLAN_TIERS.map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      className={planId === t.id ? "is-active" : ""}
+                      onClick={() => setPlanId(t.id)}
+                      aria-pressed={planId === t.id}
+                    >
+                      {t.name} · {formatPrice(hostingInterval === "annual" ? t.annualCents : t.monthlyCents)}
+                    </button>
+                  ))}
+                </div>
+                <p className="ca-compare">
+                  <a href="/pricing">Compare plans</a>
                 </p>
 
                 <div className="ca-card">
-                  <h3 className="ca-plan-name">The College Agent</h3>
-                  <p className="ca-plan-desc">
-                    Your AI, built around your classes, your calendar, and your life. Live within 30 minutes.
-                  </p>
+                  <h3 className="ca-plan-name">{tier.name}</h3>
+                  <p className="ca-plan-desc">{tier.blurb} Live within 30 minutes.</p>
 
                   <div className="ca-price-row">
                     <span className="ca-price">
@@ -274,14 +312,16 @@ export default function BuildPage() {
                   </p>
                   {ref && (
                     <p className="ca-savenote" style={{ color: "var(--ca-green)", fontWeight: 600 }}>
-                      Referral applied: your first month is free.
+                      {hostingInterval === "monthly" && tier.monthlyCents <= REFERRAL_REWARD_CENTS
+                        ? "Referral applied: your first month is free."
+                        : `Referral applied: ${formatPrice(REFERRAL_REWARD_CENTS)} off your first payment.`}
                     </p>
                   )}
 
                   <ul className="ca-features">
                     <li><span className="ca-check"><CheckIcon /></span>Your own private agent, built and set up for you</li>
                     <li><span className="ca-check"><CheckIcon /></span>Hosting, monitoring, and updates included</li>
-                    <li><span className="ca-check"><CheckIcon /></span>$20 in AI credits included to get you started</li>
+                    <li><span className="ca-check"><CheckIcon /></span><span><b>{formatPrice(tier.allowanceCents)} of AI usage</b> included every month</span></li>
                     <li><span className="ca-check"><CheckIcon /></span>Works on the web and Telegram, any device</li>
                     <li><span className="ca-check"><CheckIcon /></span>Connect your calendar, email, Canvas, and more</li>
                     <li><span className="ca-check"><CheckIcon /></span>Cancel anytime, pause over summer</li>
@@ -773,6 +813,22 @@ export default function BuildPage() {
           border-color: var(--ca-green);
           background: var(--ca-green);
           color: #fff;
+        }
+        /* The plan picker: the same chips, centred above the card. */
+        .ca-plan-chips {
+          justify-content: center;
+          margin: 0 auto 6px;
+        }
+        .ca-compare {
+          text-align: center;
+          font-size: 13px;
+          margin: 8px 0 0;
+        }
+        .ca-compare a {
+          color: var(--ca-green);
+          font-weight: 500;
+          text-decoration: underline;
+          text-underline-offset: 2px;
         }
 
         .ca-terms {

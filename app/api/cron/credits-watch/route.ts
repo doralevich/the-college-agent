@@ -1,5 +1,6 @@
 import { agent37 } from "@/lib/agent37";
 import { fundCredits } from "@/lib/credits";
+import { deliverPendingAllowances } from "@/lib/plan-allowance";
 import { displayMicros } from "@/lib/markup";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/client";
@@ -391,6 +392,11 @@ async function sweepOne(db: DB, ent: EntRow, summary: Record<string, number>) {
         .eq("id", starter.id);
     }
   }
+
+  // Self-heal the plan's monthly AI allowance the same way: a row still pending (granted
+  // before the agent existed, and provisioning missed it) or failed is delivered here. The
+  // row id is the idempotency key, so a sweep can never double-fund.
+  summary.recharges += await deliverPendingAllowances(db, ent.user_id, agentId);
 
   // Reconcile paid-but-pending top-ups (a webhook delivery that kept failing): verify the
   // payment with Stripe directly, then deliver the credits and settle the row. Abandoned
