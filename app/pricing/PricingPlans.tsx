@@ -55,6 +55,10 @@ const FAQ: { q: string; a: string }[] = [
     a: "Annual is ten months' price for twelve: two months free. A full year of AI usage is added when you subscribe, and again each year you renew.",
   },
   {
+    q: "Can I switch plans later?",
+    a: "Yes, from Billing in your dashboard. Your new plan starts on your next billing date, with its AI usage.",
+  },
+  {
     q: "Can I cancel?",
     a: "Yes, any time. And every plan comes with a 7-day money-back guarantee.",
   },

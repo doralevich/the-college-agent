@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { ExternalLink, Loader2 } from "lucide-react";
+import { ArrowUpDown, ExternalLink, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import {
@@ -83,7 +83,7 @@ export function BillingView() {
     };
   }, []);
 
-  async function openPortal() {
+  async function openPortal(flow?: "change_plan") {
     setOpening(true);
     // Open the tab synchronously inside the click so the browser doesn't treat the later
     // (post-await) navigation as a popup and block it. We then point it at the portal URL.
@@ -91,7 +91,7 @@ export function BillingView() {
     try {
       const { url } = await apiFetch<{ url: string }>("/api/billing/portal", {
         method: "POST",
-        body: JSON.stringify({}),
+        body: JSON.stringify(flow ? { flow } : {}),
       });
       if (tab) tab.location.href = url; // Stripe-hosted portal in a new tab
       else window.location.href = url; // popup blocked → fall back to same tab
@@ -117,9 +117,15 @@ export function BillingView() {
           <Loader2 className="h-4 w-4 animate-spin" /> Loading…
         </div>
       ) : data?.order ? (
-        <Plan order={data.order} canManage={data.canManage} opening={opening} onManage={openPortal} />
+        <Plan order={data.order} canManage={data.canManage} opening={opening} onManage={() => openPortal()} />
       ) : data?.subscription ? (
-        <HostingPlan sub={data.subscription} canManage={data.canManage} opening={opening} onManage={openPortal} />
+        <HostingPlan
+          sub={data.subscription}
+          canManage={data.canManage}
+          opening={opening}
+          onManage={() => openPortal()}
+          onChangePlan={() => openPortal("change_plan")}
+        />
       ) : (
         <div className="rounded-2xl border p-6">
           <p className="text-sm text-muted-foreground">
@@ -145,11 +151,13 @@ function HostingPlan({
   canManage,
   opening,
   onManage,
+  onChangePlan,
 }: {
   sub: NonNullable<Summary["subscription"]>;
   canManage: boolean;
   opening: boolean;
   onManage: () => void;
+  onChangePlan: () => void;
 }) {
   const status = statusPill(sub.status);
 
@@ -203,12 +211,22 @@ function HostingPlan({
 
       {canManage && (
         <div className="border-t p-6">
-          <Button onClick={onManage} disabled={opening}>
-            {opening ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
-            Manage subscription
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            {sub.plan?.allowanceCents != null && (
+              <Button onClick={onChangePlan} disabled={opening}>
+                {opening ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUpDown className="h-4 w-4" />}
+                Change plan
+              </Button>
+            )}
+            <Button variant="outline" onClick={onManage} disabled={opening}>
+              <ExternalLink className="h-4 w-4" />
+              Manage subscription
+            </Button>
+          </div>
           <p className="mt-2 text-xs text-muted-foreground">
-            Update your card, view invoices, or cancel hosting in the Stripe billing portal.
+            {sub.plan?.allowanceCents != null
+              ? "A new plan starts on your next billing date. Update your card, view invoices, or cancel in the billing portal."
+              : "Update your card, view invoices, or cancel in the Stripe billing portal."}
           </p>
         </div>
       )}
