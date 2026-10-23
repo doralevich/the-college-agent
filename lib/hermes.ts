@@ -1,5 +1,6 @@
 import "server-only";
 import { agent37 } from "@/lib/agent37";
+import { runtimeForTemplate } from "@/config/agents";
 import { DEFAULT_CHAT_MODEL_ID } from "@/lib/chat-models";
 import { INTAKE_GROUPS, formatIntakeValue } from "@/lib/intake-schema";
 
@@ -350,20 +351,34 @@ export function buildCheckinPrompt(p: HermesPersonaInput, label: string): string
 }
 
 // Poll Agent37 until the instance reports `running` (exec needs a live box). Bounded.
-async function waitForRunning(agent37Id: string, timeoutMs = 60_000): Promise<boolean> {
+// Resolves to the instance's template (null if Agent37 did not say), or false on timeout.
+async function waitForRunning(agent37Id: string, timeoutMs = 60_000): Promise<{ template: string | null } | false> {
   const deadline = Date.now() + timeoutMs;
   // NOTE: Date.now() is fine here — this runs in a normal request, not a workflow script.
   while (Date.now() < deadline) {
     try {
       const { data } = await agent37.listAgents();
       const inst = data.find((i) => i.id === agent37Id);
-      if (inst?.status === "running") return true;
+      if (inst?.status === "running") return { template: inst.template ?? null };
     } catch {
       /* transient — retry */
     }
     await new Promise((r) => setTimeout(r, 4000));
   }
   return false;
+}
+
+/**
+ * The shell line that sets IS_HERMES. From the template when we know it; only an unknown
+ * template falls back to looking at the box, and then OpenClaw's workspace alone decides - this
+ * script creates $HOME/.hermes itself, so "no .hermes folder" stopped meaning anything after the
+ * first run and every re-run (an intake edit, a Telegram connect) called an OpenClaw box Hermes.
+ */
+export function runtimeDetectLine(template: string | null): string {
+  const runtime = runtimeForTemplate(template);
+  if (runtime === "openclaw") return `IS_HERMES=0; echo "RUNTIME_HERMES:0"`;
+  if (runtime === "hermes") return `IS_HERMES=1; echo "RUNTIME_HERMES:1"`;
+  return `if [ -d "\${OPENCLAW_STATE_DIR:-$HOME/.openclaw}/workspace" ]; then IS_HERMES=0; else IS_HERMES=1; fi; echo "RUNTIME_HERMES:$IS_HERMES"`;
 }
 
 const b64 = (s: string) => Buffer.from(s, "utf8").toString("base64");
@@ -452,13 +467,11 @@ export async function configureHermes(
   const script = [
     `export PATH="$HOME/.local/bin:$PATH"`,
     // install Hermes only if the template didn't ship it
-    // Which runtime is on this box? Decided FIRST, because the very next line creates
-    // $HOME/.hermes and would otherwise make the answer "Hermes" on every box forever.
-    //
-    // An OpenClaw box has no `hermes` binary, so the install line below would have DOWNLOADED
-    // AND INSTALLED Hermes onto it - a second agent runtime on a machine that already has one.
-    // Unknown boxes default to Hermes, which is every instance this app has provisioned to date.
-    `if [ -d "\${OPENCLAW_STATE_DIR:-$HOME/.openclaw}/workspace" ] && [ ! -d "\${HERMES_STATE_DIR:-$HOME/.hermes}" ]; then IS_HERMES=0; else IS_HERMES=1; fi; echo "RUNTIME_HERMES:$IS_HERMES"`,
+    // Which runtime is on this box - from its template, which Agent37 reports (see
+    // runtimeDetectLine). Getting this wrong on an OpenClaw box is not harmless: the install line
+    // below DOWNLOADS AND INSTALLS Hermes onto it and starts a second agent runtime beside the one
+    // the box already has. Only an unknown template is guessed at, and then it defaults to Hermes.
+    runtimeDetectLine(running.template),
     `[ "$IS_HERMES" = "1" ] && { command -v hermes >/dev/null 2>&1 || curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash -s -- --non-interactive --skip-setup --skip-browser; }; true`,
     `export PATH="$HOME/.local/bin:$PATH"`,
     `mkdir -p "$HOME/.hermes" "$HOME/.hermes/logs" "$HOME/.hermes/memories" "$HOME/.hermes/context"`,
@@ -495,10 +508,14 @@ export async function configureHermes(
     // reports OK while the agent answers "I don't know who you are". ApolloClaw hit exactly that
     // and fixed it by writing to every location the box actually has; this is the same idea.
     //
-    // Guarded on the directory EXISTING, so on today's Hermes boxes this is a no-op and Ben's
-    // agent is untouched. It is what lets the template flip to the Apollo build without the
-    // persona pipeline changing at all.
-    `OCW="\${OPENCLAW_STATE_DIR:-$HOME/.openclaw}/workspace"; if [ -d "$OCW" ]; then ` +
+    // On an OpenClaw box, WAIT for the workspace first: Agent37 reports the instance running
+    // before OpenClaw has finished creating it, and on a brand-new box this script runs within
+    // seconds of that. Up to a minute, then create it ourselves - OpenClaw seeds only the
+    // workspace files that are missing, so ours survive its first boot either way. On a Hermes
+    // box it stays guarded on the directory already existing, which it never does.
+    `OCW="\${OPENCLAW_STATE_DIR:-$HOME/.openclaw}/workspace"; ` +
+      `if [ "$IS_HERMES" = "0" ]; then i=0; while [ ! -d "$OCW" ] && [ $i -lt 30 ]; do sleep 2; i=$((i+1)); done; mkdir -p "$OCW"; fi; ` +
+      `if [ -d "$OCW" ]; then ` +
       `echo "${soulB64}" | base64 -d > "$OCW/SOUL.md"; ` +
       `echo "${userB64}" | base64 -d > "$OCW/USER.md"; ` +
       `echo "${fullB64}" | base64 -d > "$OCW/STUDENT_PROFILE.md"; ` +
@@ -574,6 +591,11 @@ export async function switchModelProvider(
 ): Promise<ConfigureResult> {
   const running = await waitForRunning(agent37Id);
   if (!running) return { ok: false, detail: "instance did not reach running state in time" };
+  // Every line below drives the `hermes` CLI and restarts a Hermes gateway. On an OpenClaw box
+  // that would start a run-loop for a binary that should not be there.
+  if (runtimeForTemplate(running.template) === "openclaw") {
+    return { ok: false, detail: "model switching is not supported on OpenClaw agents yet" };
+  }
 
   const lines: string[] = [
     `export PATH="$HOME/.local/bin:$PATH"`,

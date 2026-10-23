@@ -114,6 +114,28 @@ const TEMPLATE_PORTS: Record<string, Record<PortName, number>> = {
   "agent37-openclaw": OPENCLAW_PORTS,
 };
 
+// Which agent runtime each template runs - Hermes or OpenClaw. The same map ApolloClaw keeps.
+//
+// Provisioning needs this because the two keep their files in different places and only Hermes
+// has the `hermes` CLI the setup script drives. It used to GUESS by looking for OpenClaw's
+// workspace folder, and on a brand-new box that folder may not exist yet - OpenClaw creates it as
+// it finishes booting, after Agent37 already reports the instance "running". The guess then said
+// "Hermes", and the script installed and started a second agent runtime on an OpenClaw box and
+// wrote the student's profile where OpenClaw never reads it. The template is not a guess.
+export type AgentRuntime = "hermes" | "openclaw";
+const TEMPLATE_RUNTIMES: Record<string, AgentRuntime> = {
+  "agent37-openclaw": "openclaw",
+  "agent37-hermes": "hermes",
+  "agent37-hermes-small": "hermes",
+  "college-agent": "hermes",
+  "apollo-agent": "hermes",
+};
+
+/** The runtime a template runs, or null for a template we do not know. */
+export function runtimeForTemplate(template: string | null | undefined): AgentRuntime | null {
+  return (template ? TEMPLATE_RUNTIMES[template] : undefined) ?? null;
+}
+
 /**
  * The ports this agent's template serves.
  *
