@@ -8,10 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "test:e2e": "node --env-file=.env.local --import tsx tests/e2e/lifecycle.e2e.ts",
-    "stripe:listen": "node --env-file=.env.local -e \"require('child_process').spawn('stripe',['listen','--api-key',process.env.STRIPE_SECRET_KEY,'--forward-to','localhost:3000/api/stripe/webhook'],{stdio:'inherit'})\"",
-    "release:agent": "bash template/release.sh"
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.136.0",

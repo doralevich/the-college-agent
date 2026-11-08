@@ -3,6 +3,7 @@ import Nav from "../components/Nav";
 import { PageHero } from "../components/PageHero";
 import { Footer } from "../components/Footer";
 import { BookOpenCheck, Clock, FileText, NotebookTabs, Sparkles, TrendingUp } from "lucide-react";
+import { BUILD_URL } from "@/lib/apolloclaw-links";
 
 export const metadata: Metadata = {
   title: "AI Study Companion for College — Study Smarter, Retain More",
@@ -209,7 +210,7 @@ export default function StudyPage() {
               Everything connects. Your agent knows when exam season is, so it automatically backs off on surfacing non-urgent tasks and focuses your attention where it needs to be. That kind of context-aware support is what makes The College Agent different from any individual study app or AI tool.
             </p>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-              <a href="/build" className="btn-green">Build My Agent</a>
+              <a href={BUILD_URL} className="btn-green">Build My Agent</a>
               <a href="/internships" className="btn-outline-dark">AI Internship Prep</a>
             </div>
           </div>

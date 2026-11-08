@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { pickMascot } from "@/lib/mascots";
 import { trackMetaCustom } from "@/app/components/MetaPixel";
+import { BUILD_URL } from "@/lib/apolloclaw-links";
 
 // Entry gate + capped demo chat. The form is framed as "set up your agent," not "give
 // us your info." Two consent boxes, neither pre-checked: email and SMS are separate
@@ -378,7 +379,7 @@ export function DemoExperience({ refSlug }: { refSlug: string }) {
                 The real one remembers everything, connects to Canvas, Gmail, and your calendar,
                 and works for you 24/7. Live within 30 minutes, with a 7-day money-back guarantee.
               </p>
-              <a href="/build" style={{ display: "inline-flex", background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", padding: "12px 26px", borderRadius: 8, textDecoration: "none" }}>
+              <a href={BUILD_URL} style={{ display: "inline-flex", background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", padding: "12px 26px", borderRadius: 8, textDecoration: "none" }}>
                 Build my real agent
               </a>
             </div>

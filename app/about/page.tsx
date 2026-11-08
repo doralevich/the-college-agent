@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Nav from "../components/Nav";
 import { Footer } from "../components/Footer";
+import { BUILD_URL } from "@/lib/apolloclaw-links";
 
 export const metadata: Metadata = {
   title: "About The College Agent — AI Built for Your Entire College Journey",
@@ -120,7 +121,7 @@ export default function AboutPage() {
           </Section>
 
           <div style={{ marginTop: 48, display: "flex", gap: 16, flexWrap: "wrap" }}>
-            <a href="/build" className="btn-purple">Build My Agent</a>
+            <a href={BUILD_URL} className="btn-purple">Build My Agent</a>
             <a href="/for-students" className="btn-outline-dark">For Students</a>
             <a href="/for-parents" className="btn-outline-dark">For Parents</a>
             <a href="/blog" className="btn-outline-dark">Read the Blog</a>

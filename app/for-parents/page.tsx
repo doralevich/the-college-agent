@@ -3,6 +3,7 @@ import Nav from "../components/Nav";
 import { PageHero } from "../components/PageHero";
 import { Footer } from "../components/Footer";
 import { BookOpenCheck, BriefcaseBusiness, CalendarDays, GraduationCap, ShieldCheck, TrendingUp } from "lucide-react";
+import { BUILD_URL } from "@/lib/apolloclaw-links";
 
 export const metadata: Metadata = {
   title: "AI for Your College Student — The College Agent for Parents",
@@ -206,10 +207,10 @@ export default function ForParentsPage() {
               A deadline that isn&apos;t missed. An internship application submitted on time. A meaningful relationship built with a professor or mentor. A resume that&apos;s ready when the right opportunity appears. An interview earned because preparation started freshman year, not senior year. A graduate who leaves college more organized, more confident, and better prepared for what&apos;s next. Those moments don&apos;t happen by accident. They happen because students have a system that helps them stay organized, focused, and moving forward. That&apos;s the return on investment.
             </p>
             <p style={{ fontSize: 16, lineHeight: 1.8, color: "rgba(11,23,41,.7)", marginBottom: 32 }}>
-              Many parents purchase the agent as a gift, for freshman move-in, a birthday, or any moment they want to give their student a real edge. See current plans at <a href="/build" style={{ color: "var(--green)", textDecoration: "underline" }}>thecollegeagent.ai/build</a>.
+              Many parents purchase the agent as a gift, for freshman move-in, a birthday, or any moment they want to give their student a real edge. See current plans at <a href={BUILD_URL} style={{ color: "var(--green)", textDecoration: "underline" }}>thecollegeagent.ai/build</a>.
             </p>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-              <a href="/build" className="btn-green">View Plans &amp; Pricing</a>
+              <a href={BUILD_URL} className="btn-green">View Plans &amp; Pricing</a>
               <a href="/faq" className="btn-outline-dark">Read the FAQ</a>
             </div>
           </div>

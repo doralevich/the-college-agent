@@ -15,35 +15,35 @@ describe("ambassador program is off", () => {
 
   // Every path that reads an ambassador out of the request. A new one added without the
   // flag would attribute a sale, or personalise a demo, for a program that is not running.
+  //
+  // Checkout attribution, sale recording and the self lookup used to be on this list. They
+  // went with this site's checkout, webhook and sign-in when selling moved to ApolloClaw
+  // (Nov 2026); a revived program records its sales over there, from the promotion code on
+  // the checkout session.
   it.each([
     ["app/r/[slug]/route.ts", "the share link"],
-    ["app/api/build/checkout/route.ts", "checkout attribution"],
     ["app/api/demo/start/route.ts", "demo personalisation"],
-    ["app/api/stripe/webhook/route.ts", "sale recording"],
     ["app/api/ambassador-request/route.ts", "the application endpoint"],
-    ["app/api/ambassador/me/route.ts", "the self lookup"],
   ])("%s checks the flag (%s)", (path) => {
     expect(read(path)).toContain("AMBASSADOR_PROGRAM_ENABLED");
   });
 
+  // The ambassador dashboard and playbook pages are gone rather than hidden: they needed this
+  // site's own sign-in, which it no longer has.
   it.each([
     "app/ambassador/page.tsx",
     "app/ambassador/apply/page.tsx",
-    "app/ambassador/dashboard/page.tsx",
-    "app/ambassador/playbook/page.tsx",
     "app/ambassadors/page.tsx",
-    "app/ambassadors/dashboard/page.tsx",
   ])("%s 404s while the program is off", (path) => {
     const src = read(path);
     expect(src).toContain("AMBASSADOR_PROGRAM_ENABLED");
     expect(src).toContain("notFound()");
   });
 
-  it("keeps the admin view, which is how the stored ambassadors stay reachable", () => {
-    // Off is not deleted. The two rows, their Stripe coupons and their promotion codes all
-    // survive, and an admin can still see them - that is what makes this reversible.
-    expect(read("app/(authed)/admin/ambassadors/page.tsx")).not.toContain("AMBASSADOR_PROGRAM_ENABLED");
-  });
+  // Off is still not deleted: the ambassadors table, the approved rows, their Stripe coupons
+  // and promotion codes all survive in this site's Supabase project. The admin view that
+  // listed them went with the rest of the signed-in surfaces; the rows are reachable from the
+  // Supabase dashboard until a revived program gets a page again.
 
   it("does not link to the program from the site", () => {
     expect(read("app/components/Footer.tsx")).not.toContain("/ambassador");

@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { useState } from "react";
 import { plansSummary } from "@/lib/pricing/intro-cutoff";
+import { BUILD_URL } from "@/lib/apolloclaw-links";
 
 // The six-step walkthrough, clicked through accordion-style.
 //
@@ -86,7 +87,7 @@ export default function HowItWorksSteps() {
       </div>
 
       <div className="hiw-cta">
-        <a href="/build" className="hiw-btn">Build My Agent</a>
+        <a href={BUILD_URL} className="hiw-btn">Build My Agent</a>
       </div>
 
       <style>{`

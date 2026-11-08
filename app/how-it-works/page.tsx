@@ -3,6 +3,7 @@ import Nav from "../components/Nav";
 import { PageHero } from "../components/PageHero";
 import { Footer } from "../components/Footer";
 import HowItWorksSteps from "./HowItWorksSteps";
+import { BUILD_URL } from "@/lib/apolloclaw-links";
 
 export const metadata: Metadata = {
   title: "How It Works, The College Agent",
@@ -51,7 +52,7 @@ export default function HowItWorksPage() {
               time, for any reason. If you ever decide to delete your account, grab everything
               first and walk away with it. No lock-in, ever.
             </p>
-            <a href="/build" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", padding: "14px 30px", borderRadius: 4, boxShadow: "0 8px 24px rgba(61,139,61,.3)", textDecoration: "none", marginTop: 14 }}>
+            <a href={BUILD_URL} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: "var(--green)", color: "#fff", fontSize: 13, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", padding: "14px 30px", borderRadius: 4, boxShadow: "0 8px 24px rgba(61,139,61,.3)", textDecoration: "none", marginTop: 14 }}>
               Let&apos;s Get Started
             </a>
           </div>

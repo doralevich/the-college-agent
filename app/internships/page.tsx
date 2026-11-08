@@ -3,6 +3,7 @@ import Nav from "../components/Nav";
 import { PageHero } from "../components/PageHero";
 import { Footer } from "../components/Footer";
 import { BriefcaseBusiness, CalendarDays, FileText, Mail, Network, TrendingUp } from "lucide-react";
+import { BUILD_URL } from "@/lib/apolloclaw-links";
 
 export const metadata: Metadata = {
   title: "AI Internship Prep — Land Your First Internship Before Junior Year",
@@ -179,7 +180,7 @@ export default function InternshipsPage() {
               </div>
             ))}
             <div style={{ marginTop: 16, display: "flex", gap: 14, flexWrap: "wrap" }}>
-              <a href="/build" className="btn-green">Build My Agent</a>
+              <a href={BUILD_URL} className="btn-green">Build My Agent</a>
               <a href="/study" className="btn-outline-dark">AI Study Companion</a>
             </div>
           </div>
