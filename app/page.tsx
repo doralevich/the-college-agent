@@ -8,6 +8,7 @@ import { FourPillars } from "./components/FourPillars";
 import { Footer } from "./components/Footer";
 import { categoryLabel, getCollegeAgentPosts, postTitle } from "@/lib/sanity-blog";
 import { PLAN_TIERS } from "@/lib/pricing/intro-cutoff";
+import { BUILD_URL } from "@/lib/apolloclaw-links";
 
 // Re-render every 5 minutes so the "most recent posts" section rotates on its own as
 // new posts publish (and pricing flips automatically when the intro window closes).
@@ -260,7 +261,7 @@ export default async function Home() {
               patterns, and your goals and priorities.
             </p>
             <div className="hero-cta-row" style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 0 }}>
-              <a href="/build" className="btn-purple">Build My Agent</a>
+              <a href={BUILD_URL} className="btn-purple">Build My Agent</a>
               <a href="/demo" className="btn-outline">Try the Free Demo</a>
             </div>
           </div>
@@ -322,7 +323,7 @@ export default async function Home() {
               ))}
             </div>
             <div style={{ textAlign: "center", marginTop: 32 }}>
-              <a href="/build" className="btn-purple">Build My Agent</a>
+              <a href={BUILD_URL} className="btn-purple">Build My Agent</a>
             </div>
             <div style={{ textAlign: "center", marginTop: 20, display: "flex", justifyContent: "center", gap: 28, flexWrap: "wrap" }}>
               <a href="/study" style={{ fontSize: 13, fontWeight: 600, color: "var(--green)", textDecoration: "underline", textUnderlineOffset: 3 }}>AI Study Companion &rarr;</a>

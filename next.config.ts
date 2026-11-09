@@ -44,19 +44,34 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  experimental: {
-    // proxy.ts matches /api/agents/:path* — which now includes the chat file-upload route.
-    // The proxy body cap defaults to 10MB and SILENTLY TRUNCATES larger bodies, which would
-    // corrupt attachments. Raise it so real files (the Agents API multipart cap is generous)
-    // pass through intact.
-    proxyClientMaxBodySize: "25mb",
-  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
   async redirects() {
+    // THE HANDOFF (Nov 2026). This site is the storefront; checkout, sign-in, the questionnaire,
+    // the build and the dashboard run on ApolloClaw (lib/apolloclaw-links.ts). These keep every
+    // link printed before the cutover working: the /build buttons in old emails and posts, the
+    // /login bookmark, the dashboard links in the welcome email. /build keeps its ?plan= and
+    // ?interval= so a pricing deep link still preselects the plan over there; the plan ids map
+    // one to one onto the student plans (college_<tier>), see the pricing cards.
+    //
+    // Temporary (307) on purpose for the first weeks: a permanent redirect is cached by browsers
+    // for as long as they like, and a wrong one would be stuck in people's history. Flip to
+    // permanent once a purchase has gone through the whole path.
+    const apollo = "https://apolloclaw.ai";
     return [
       { source: "/affiliate", destination: "/ambassador", permanent: true },
+      { source: "/build", has: [{ type: "query", key: "plan", value: "(?<plan>essentials|plus|pro)" }], destination: `${apollo}/onboard?agent=college&plan=college_:plan`, permanent: false },
+      { source: "/build", destination: `${apollo}/onboard?agent=college`, permanent: false },
+      { source: "/build/success", destination: `${apollo}/dashboard`, permanent: false },
+      { source: "/login", destination: `${apollo}/login`, permanent: false },
+      { source: "/reset-password", destination: `${apollo}/login`, permanent: false },
+      { source: "/auth/callback", destination: `${apollo}/login`, permanent: false },
+      { source: "/dashboard", destination: `${apollo}/dashboard`, permanent: false },
+      { source: "/dashboard/:path*", destination: `${apollo}/dashboard`, permanent: false },
+      { source: "/setup", destination: `${apollo}/dashboard`, permanent: false },
+      { source: "/admin", destination: `${apollo}/admin`, permanent: false },
+      { source: "/admin/:path*", destination: `${apollo}/admin`, permanent: false },
     ];
   },
 };

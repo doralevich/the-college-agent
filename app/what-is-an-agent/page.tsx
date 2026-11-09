@@ -5,6 +5,7 @@ import { Footer } from "../components/Footer";
 import { AgentChatDemo } from "../components/AgentChatDemo";
 import { ChatbotComparison } from "../components/ChatbotComparison";
 import { FourPillars } from "../components/FourPillars";
+import { BUILD_URL } from "@/lib/apolloclaw-links";
 
 export const metadata: Metadata = {
   title: "What Is an AI Agent? (And How It's Different from a Chatbot)",
@@ -77,7 +78,7 @@ export default function WhatIsAnAgentPage() {
               and actually helps you run your college life. Live in about 30 minutes.
             </p>
             <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
-              <a href="/build" className="cta-btn">Build My Agent</a>
+              <a href={BUILD_URL} className="cta-btn">Build My Agent</a>
               <a href="/demo" className="cta-btn-outline">Try the Free Demo</a>
             </div>
           </div>

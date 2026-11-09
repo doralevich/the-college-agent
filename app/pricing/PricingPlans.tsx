@@ -1,13 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import {
-  PLAN_TIERS,
-  type BillingInterval,
-  type PlanTier,
-} from "@/lib/pricing/intro-cutoff";
+import { PLAN_TIERS, type PlanTier } from "@/lib/pricing/intro-cutoff";
+import { buildUrlForPlan } from "@/lib/apolloclaw-links";
 
-// The interactive half of /pricing: the monthly/annual toggle and the three plan cards.
+// The plan cards on /pricing.
 //
 // The plans are the same agent at three allowances, so the cards carry only what differs -
 // price and AI usage - and everything they share sits once, below, under "Every plan
@@ -18,9 +14,10 @@ import {
 // list right above it and the FAQ right below. It still sits beside the price on /build and in
 // the Terms, where it is the only statement of the promise.
 //
-// Each card links into /build with ?plan and ?interval, which preselects that plan there.
-// Styling reuses /build's tokens (green #2D7A3A on cream) so arriving at checkout does not
-// feel like a different site.
+// Each card links into ApolloClaw's checkout with the plan preselected (lib/apolloclaw-links.ts),
+// which is where every agent in the family is bought since Nov 2026. Monthly only for now: the
+// yearly option (ten months' price for twelve) comes back the day that checkout sells it, and
+// the toggle, the per-card yearly maths and its FAQ entry are in this file's history.
 
 function dollars(cents: number): string {
   const d = cents / 100;
@@ -51,10 +48,6 @@ const FAQ: { q: string; a: string }[] = [
     a: "Top up any time from Settings and your agent keeps going. Otherwise, your allowance is added again at your next billing date.",
   },
   {
-    q: "How does annual billing work?",
-    a: "Annual is ten months' price for twelve: two months free. A full year of AI usage is added when you subscribe, and again each year you renew.",
-  },
-  {
     q: "Can I switch plans later?",
     a: "Yes, from Billing in your dashboard. Your new plan starts on your next billing date, with its AI usage.",
   },
@@ -72,10 +65,9 @@ function CheckIcon() {
   );
 }
 
-function PlanCard({ tier, interval }: { tier: PlanTier; interval: BillingInterval }) {
-  const annual = interval === "annual";
-  const price = annual ? tier.annualCents : tier.monthlyCents;
-  const href = `/build?plan=${tier.id}&interval=${interval}`;
+function PlanCard({ tier }: { tier: PlanTier }) {
+  const price = tier.monthlyCents;
+  const href = buildUrlForPlan(tier.id);
   return (
     <div className={`cp-card${tier.popular ? " is-popular" : ""}`}>
       {tier.popular && <span className="cp-badge">Most popular</span>}
@@ -84,19 +76,14 @@ function PlanCard({ tier, interval }: { tier: PlanTier; interval: BillingInterva
 
       <div className="cp-price-row">
         <span className="cp-price">{dollars(price)}</span>
-        <span className="cp-period">{annual ? "/year" : "/month"}</span>
+        <span className="cp-period">/month</span>
       </div>
-      <p className="cp-subprice">
-        {annual
-          ? `${dollars(Math.round(tier.annualCents / 12))}/month, billed yearly · 2 months free`
-          : "Billed monthly · cancel any time"}
-      </p>
+      <p className="cp-subprice">Billed monthly · cancel any time</p>
 
       {/* The one thing that differs between plans, so it gets the weight. */}
       <div className="cp-allowance">
         <span className="cp-allowance-amount">{dollars(tier.allowanceCents)}</span>
         <span className="cp-allowance-label">of AI usage included every month</span>
-        {annual && <span className="cp-allowance-note">{dollars(tier.allowanceCents * 12)} added up front each year</span>}
       </div>
 
       <a href={href} className={`cp-cta${tier.popular ? "" : " is-outline"}`}>
@@ -107,8 +94,6 @@ function PlanCard({ tier, interval }: { tier: PlanTier; interval: BillingInterva
 }
 
 export default function PricingPlans() {
-  const [billing, setBilling] = useState<BillingInterval>("monthly");
-
   return (
     <section className="cp">
       <div className="cp-head">
@@ -118,30 +103,11 @@ export default function PricingPlans() {
           Every plan is your own private agent, set up for you. The difference is how much AI usage
           comes with it each month.
         </p>
-
-        <div className="cp-toggle" role="group" aria-label="Billing interval">
-          <button
-            type="button"
-            className={billing === "monthly" ? "is-active" : ""}
-            onClick={() => setBilling("monthly")}
-            aria-pressed={billing === "monthly"}
-          >
-            Monthly
-          </button>
-          <button
-            type="button"
-            className={billing === "annual" ? "is-active" : ""}
-            onClick={() => setBilling("annual")}
-            aria-pressed={billing === "annual"}
-          >
-            Annual <span className="cp-save">2 months free</span>
-          </button>
-        </div>
       </div>
 
       <div className="cp-grid">
         {PLAN_TIERS.map((tier) => (
-          <PlanCard key={tier.id} tier={tier} interval={billing} />
+          <PlanCard key={tier.id} tier={tier} />
         ))}
       </div>
 
@@ -194,23 +160,6 @@ export default function PricingPlans() {
         .cp-h1 { font-size: 40px; line-height: 1.12; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 14px; }
         .cp-sub { font-size: 17px; line-height: 1.6; color: var(--cp-body); margin: 0 auto 28px; max-width: 520px; }
 
-        .cp-toggle {
-          display: inline-flex; gap: 4px; background: var(--cp-white);
-          border: 1px solid var(--cp-line); border-radius: 12px; padding: 4px;
-        }
-        .cp-toggle button {
-          font: inherit; font-size: 14px; font-weight: 500; border: none; background: transparent;
-          color: var(--cp-body); padding: 9px 20px; border-radius: 9px; cursor: pointer;
-          transition: background 0.18s ease, color 0.18s ease;
-        }
-        .cp-toggle button.is-active { background: var(--cp-green); color: #fff; }
-        .cp-save {
-          font-family: var(--cp-mono); font-size: 10px; letter-spacing: 0.04em;
-          background: var(--cp-green-check); color: var(--cp-green-dark);
-          border-radius: 999px; padding: 2px 7px; margin-left: 7px; vertical-align: middle;
-        }
-        .cp-toggle button.is-active .cp-save { background: rgba(255,255,255,0.22); color: #fff; }
-
         .cp-grid {
           display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px;
           max-width: 1040px; margin: 44px auto 0; align-items: stretch;
@@ -240,7 +189,6 @@ export default function PricingPlans() {
         }
         .cp-allowance-amount { font-size: 26px; font-weight: 700; color: var(--cp-green-dark); line-height: 1.1; }
         .cp-allowance-label { font-size: 13.5px; color: var(--cp-ink); }
-        .cp-allowance-note { font-size: 12px; color: var(--cp-body); margin-top: 4px; }
 
         .cp-cta {
           margin-top: auto; display: flex; align-items: center; justify-content: center;

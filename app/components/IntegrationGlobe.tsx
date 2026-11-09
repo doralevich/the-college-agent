@@ -4,6 +4,7 @@
 import { useEffect, useRef } from "react";
 import createGlobe from "cobe";
 import { composioLogoUrl } from "@/lib/integration-catalog";
+import { BUILD_URL } from "@/lib/apolloclaw-links";
 
 const FEATURED_LOGOS = [
   { slug: "gmail", label: "Gmail", size: "lg", left: "2%", top: "26%" },
@@ -189,7 +190,7 @@ export default function IntegrationGlobe() {
       </div>
 
       <div className="integration-globe-cta">
-        <a href="/build" className="btn-purple" style={{ fontSize: 14, padding: "16px 44px" }}>
+        <a href={BUILD_URL} className="btn-purple" style={{ fontSize: 14, padding: "16px 44px" }}>
           Build My Agent
         </a>
       </div>

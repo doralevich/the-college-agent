@@ -16,14 +16,14 @@ const publicRoutes: { route: string; priority: number; changeFrequency: "weekly"
   { route: "/internships", priority: 0.9, changeFrequency: "monthly" },
   { route: "/faq", priority: 0.8, changeFrequency: "monthly" },
   { route: "/blog", priority: 0.8, changeFrequency: "weekly" },
-  { route: "/build", priority: 0.8, changeFrequency: "monthly" },
   { route: "/how-it-works", priority: 0.8, changeFrequency: "monthly" },
   { route: "/what-is-an-agent", priority: 0.7, changeFrequency: "monthly" },
   { route: "/demo", priority: 0.7, changeFrequency: "monthly" },
   { route: "/consultation", priority: 0.7, changeFrequency: "monthly" },
   { route: "/contact", priority: 0.6, changeFrequency: "monthly" },
-  { route: "/orgs", priority: 0.6, changeFrequency: "monthly" },
-  // /onboard has no page — intentionally excluded from sitemap (404s)
+  // /build is gone from here on purpose: it redirects to ApolloClaw's checkout
+  // (next.config.ts), and a sitemap should list pages, not redirects. /orgs and the
+  // ambassador pages 404 while the program is switched off, so they are out too.
   // Legal/utility pages kept indexable but de-prioritized so they don't outrank the
   // homepage or landing pages for brand queries.
   { route: "/privacy", priority: 0.3, changeFrequency: "monthly" },

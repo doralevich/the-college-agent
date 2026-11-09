@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
+import { BUILD_URL, DASHBOARD_URL, LOGIN_URL } from "@/lib/apolloclaw-links";
 
 // Top nav: the pages a prospect reaches for first. Most are flat links; "Resources"
 // is a dropdown grouping the read-more pages. Audience/use-case pages not listed here
@@ -21,21 +21,10 @@ const NAV_LINKS: NavItem[] = [
 export default function Nav() {
   const [open, setOpen] = useState(false);
 
-  // Swap the "Log In" affordance for "Dashboard" once we know the visitor already has a
-  // session. Starts false so the first client render matches the static SSR'd markup
-  // (no hydration mismatch); the browser session resolves a tick later and flips it.
-  const [authed, setAuthed] = useState(false);
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getSession().then(({ data }) => setAuthed(!!data.session));
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) =>
-      setAuthed(!!session)
-    );
-    return () => sub.subscription.unsubscribe();
-  }, []);
-
-  // "My Dashboard" dropdown in the utility bar: Open Dashboard / Log Out when signed
-  // in, Log In when not. Closes on outside click.
+  // "My Dashboard" dropdown in the utility bar: Log In and Open Dashboard, both on ApolloClaw,
+  // where every student's account lives since Nov 2026 (lib/apolloclaw-links.ts). This site has
+  // no session of its own any more, so there is nothing to detect and no Log Out. Closes on
+  // outside click.
   const [acctOpen, setAcctOpen] = useState(false);
   const acctRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -45,15 +34,6 @@ export default function Nav() {
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
-  async function logout() {
-    try {
-      await createClient().auth.signOut();
-    } catch {
-      /* signOut is best-effort; the redirect resets UI state regardless */
-    }
-    window.location.assign("/");
-  }
-
   // External links open in a new tab.
   const extProps = (href: string) =>
     href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {};
@@ -81,16 +61,8 @@ export default function Nav() {
               </button>
               {acctOpen && (
                 <div className="nav-topbar-menu" role="menu">
-                  {authed ? (
-                    <>
-                      <Link href="/dashboard" className="nav-topbar-item" role="menuitem">Open Dashboard</Link>
-                      <button type="button" className="nav-topbar-item" role="menuitem" onClick={logout}>
-                        Log Out
-                      </button>
-                    </>
-                  ) : (
-                    <a href="/login" className="nav-topbar-item" role="menuitem">Log In</a>
-                  )}
+                  <a href={LOGIN_URL} className="nav-topbar-item" role="menuitem">Log In</a>
+                  <a href={DASHBOARD_URL} className="nav-topbar-item" role="menuitem">Open Dashboard</a>
                 </div>
               )}
             </div>
@@ -132,7 +104,7 @@ export default function Nav() {
 
           {/* Desktop CTA */}
           <div className="nav-cta-desktop">
-            <a href="/build" className="btn-purple" style={{ fontSize: 12, padding: "10px 22px" }}>
+            <a href={BUILD_URL} className="btn-purple" style={{ fontSize: 12, padding: "10px 22px" }}>
               Build My Agent
             </a>
           </div>
@@ -167,7 +139,7 @@ export default function Nav() {
                 {l.label}
               </a>
             ))}
-            <a href="/build" className="btn-purple nav-mobile-cta" onClick={() => setOpen(false)}>
+            <a href={BUILD_URL} className="btn-purple nav-mobile-cta" onClick={() => setOpen(false)}>
               Build My Agent
             </a>
           </div>

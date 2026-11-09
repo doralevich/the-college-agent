@@ -1,3 +1,4 @@
+import { BUILD_URL } from "@/lib/apolloclaw-links";
 // "Your 24/7 AI Academic Assistant" — the at-a-glance capability list (copy by Jill).
 // Reusable so it can sit on the For Students page and/or the homepage.
 
@@ -35,7 +36,7 @@ export function AcademicAssistant({ background = "#fff" }: { background?: string
           ))}
         </ul>
         <div style={{ marginTop: 36 }}>
-          <a href="/build" className="aa-btn">Build My Agent</a>
+          <a href={BUILD_URL} className="aa-btn">Build My Agent</a>
         </div>
       </div>
 

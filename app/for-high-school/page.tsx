@@ -3,6 +3,7 @@ import Nav from "../components/Nav";
 import { PageHero } from "../components/PageHero";
 import { Footer } from "../components/Footer";
 import { BookOpenCheck, CalendarDays, GraduationCap, NotebookTabs, Sparkles, TrendingUp } from "lucide-react";
+import { BUILD_URL } from "@/lib/apolloclaw-links";
 
 export const metadata: Metadata = {
   title: "AI College Prep for High Schoolers — The College Agent",
@@ -210,7 +211,7 @@ export default function ForHighSchoolPage() {
               The College Agent is that system. And if you build it now, you&apos;ll arrive at college already knowing how it works, so your first semester is about growth, not scrambling.
             </p>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-              <a href="/build" className="btn-green">Build My Agent</a>
+              <a href={BUILD_URL} className="btn-green">Build My Agent</a>
               <a href="/for-students" className="btn-outline-dark">The Full Student View</a>
             </div>
           </div>

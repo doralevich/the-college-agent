@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Nav from "../components/Nav";
 import { Footer } from "../components/Footer";
 import { PLANS_FROM, plansSummary } from "@/lib/pricing/intro-cutoff";
+import { BUILD_URL } from "@/lib/apolloclaw-links";
 
 export const metadata: Metadata = {
   title: "FAQ — The College Agent, AI Companion for College Students",
@@ -291,7 +292,7 @@ export default function FAQPage() {
               Plans from {PLANS_FROM}/month, everything included. Your agent can be live 30 minutes from now.
             </p>
             <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
-              <a href="/build" className="btn-green">Let&apos;s Get Started</a>
+              <a href={BUILD_URL} className="btn-green">Let&apos;s Get Started</a>
               <a href="/about" className="btn-outline-light">About The College Agent</a>
             </div>
           </div>

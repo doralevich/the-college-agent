@@ -1,3 +1,4 @@
+import { BUILD_URL } from "@/lib/apolloclaw-links";
 // "50 Ways The College Agent Helps Students" — a comprehensive, SEO-rich capability
 // grid. Two labeled groups (academics; career + life) of 25 short items each.
 
@@ -96,7 +97,7 @@ export function FiftyWays({ background = "var(--cream2)" }: { background?: strin
         </div>
 
         <div style={{ textAlign: "center", marginTop: 44 }}>
-          <a href="/build" className="fw-btn">Build My Agent</a>
+          <a href={BUILD_URL} className="fw-btn">Build My Agent</a>
         </div>
       </div>
 
