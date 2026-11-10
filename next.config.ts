@@ -55,23 +55,24 @@ const nextConfig: NextConfig = {
     // ?interval= so a pricing deep link still preselects the plan over there; the plan ids map
     // one to one onto the student plans (college_<tier>), see the pricing cards.
     //
-    // Temporary (307) on purpose for the first weeks: a permanent redirect is cached by browsers
-    // for as long as they like, and a wrong one would be stuck in people's history. Flip to
-    // permanent once a purchase has gone through the whole path.
+    // Permanent (308) since Nov 10 2026, once a college purchase had gone through the whole path
+    // on ApolloClaw (David). They shipped as temporary first because browsers and search engines
+    // cache a permanent redirect for as long as they like, and a wrong one would have been stuck
+    // in people's history. Permanent also tells search engines to move these URLs' standing over.
     const apollo = "https://apolloclaw.ai";
     return [
       { source: "/affiliate", destination: "/ambassador", permanent: true },
-      { source: "/build", has: [{ type: "query", key: "plan", value: "(?<plan>essentials|plus|pro)" }], destination: `${apollo}/onboard?agent=college&plan=college_:plan`, permanent: false },
-      { source: "/build", destination: `${apollo}/onboard?agent=college`, permanent: false },
-      { source: "/build/success", destination: `${apollo}/dashboard`, permanent: false },
-      { source: "/login", destination: `${apollo}/login`, permanent: false },
-      { source: "/reset-password", destination: `${apollo}/login`, permanent: false },
-      { source: "/auth/callback", destination: `${apollo}/login`, permanent: false },
-      { source: "/dashboard", destination: `${apollo}/dashboard`, permanent: false },
-      { source: "/dashboard/:path*", destination: `${apollo}/dashboard`, permanent: false },
-      { source: "/setup", destination: `${apollo}/dashboard`, permanent: false },
-      { source: "/admin", destination: `${apollo}/admin`, permanent: false },
-      { source: "/admin/:path*", destination: `${apollo}/admin`, permanent: false },
+      { source: "/build", has: [{ type: "query", key: "plan", value: "(?<plan>essentials|plus|pro)" }], destination: `${apollo}/onboard?agent=college&plan=college_:plan`, permanent: true },
+      { source: "/build", destination: `${apollo}/onboard?agent=college`, permanent: true },
+      { source: "/build/success", destination: `${apollo}/dashboard`, permanent: true },
+      { source: "/login", destination: `${apollo}/login`, permanent: true },
+      { source: "/reset-password", destination: `${apollo}/login`, permanent: true },
+      { source: "/auth/callback", destination: `${apollo}/login`, permanent: true },
+      { source: "/dashboard", destination: `${apollo}/dashboard`, permanent: true },
+      { source: "/dashboard/:path*", destination: `${apollo}/dashboard`, permanent: true },
+      { source: "/setup", destination: `${apollo}/dashboard`, permanent: true },
+      { source: "/admin", destination: `${apollo}/admin`, permanent: true },
+      { source: "/admin/:path*", destination: `${apollo}/admin`, permanent: true },
     ];
   },
 };
